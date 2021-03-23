@@ -1,0 +1,13 @@
+$schema: http://json-schema.org/draft-07/schema#
+$context:
+  message_key: "$.id"
+type: object
+properties:
+  name:
+    type: string
+  mail:
+    type: string
+    $source: "$.email"
+  address:
+    type: string
+    $source: '$.concat($.address.city, ", ", $.address.street)'
