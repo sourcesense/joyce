@@ -5,9 +5,16 @@ type: object
 properties:
   name:
     type: string
+    required: true
   mail:
     type: string
-    $source: "$.email"
+    required: true
+    $path: $.email
   address:
     type: string
-    $source: '$.concat($.address.city, ", ", $.address.street)'
+    $path:
+      - $.address.city
+      - ", "
+      - $.address.street
+
+
