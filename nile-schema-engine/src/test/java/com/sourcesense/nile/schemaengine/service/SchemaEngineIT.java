@@ -53,6 +53,7 @@ public class SchemaEngineIT {
 		Assertions.assertEquals("nile://oracle/users/1", result.getContext().get().get("message_key"));
 		Assertions.assertEquals("users", result.getContext().get().get("collection"));
 		Assertions.assertEquals("simpleUser", result.getJson().get("docType").asText());
+		Assertions.assertEquals("nile://oracle/users/1", result.getJson().get("uid").asText());
 	}
 
 	@SpringBootApplication

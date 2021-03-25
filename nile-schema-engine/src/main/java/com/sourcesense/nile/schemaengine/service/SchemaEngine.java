@@ -57,14 +57,23 @@ public class SchemaEngine implements ApplicationContextAware {
 	 */
 	@PostConstruct
 	public void defaultInit() {
+
+		// TODO: define custom metaschema populated with non validation keywoards
+		// https://github.com/networknt/json-schema-validator/blob/master/src/main/java/com/networknt/schema/JsonMetaSchema.java#L188
+
 		/**
 		 * Register Default Handlers
 		 */
-		TransormerHandler pathHandler = applicationContext.getBean("jsonPathTransformerHandler", TransormerHandler.class);
-		this.registerHandler("$path", pathHandler);
+		Map<String, String> defaultHandlers = Map.of(
+				"$path", "jsonPathTransformerHandler",
+				"$fixed", "fixedValueTransformerHandler",
+				"$contextValue", "contextValueTransformerHandler"
+		);
+		for (String key : defaultHandlers.keySet()) {
+			TransormerHandler handler = applicationContext.getBean(defaultHandlers.get(key), TransormerHandler.class);
+			this.registerHandler(key, handler);
+		}
 
-		FixedValueTransformerHandler fixedHandler = applicationContext.getBean("fixedValueTransformerHandler", FixedValueTransformerHandler.class);
-		this.registerHandler("$fixed", fixedHandler);
 
 		/**
 		 * Register Handlers from configuration

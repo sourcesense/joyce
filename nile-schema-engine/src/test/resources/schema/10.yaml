@@ -21,6 +21,10 @@ properties:
     type: string
     nullable: true
     $fixed: simpleUser
+  uid:
+    type: string
+    $contextValue: $.message_key
+    nullable: true
   address:
     type: string
     $path:
