@@ -11,5 +11,5 @@ import java.util.Optional;
 @RequiredArgsConstructor
 public class ProcessResult {
 	private final JsonNode json;
-	private final Optional<Map<String, Object>> context;
+	private final Optional<SchemaContext> context;
 }

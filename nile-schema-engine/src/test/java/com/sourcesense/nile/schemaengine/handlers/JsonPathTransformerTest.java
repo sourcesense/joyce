@@ -14,6 +14,7 @@ import java.net.URISyntaxException;
 import java.net.URL;
 import java.nio.file.Files;
 import java.nio.file.Path;
+import java.util.Optional;
 
 @ExtendWith(MockitoExtension.class)
 public class JsonPathTransformerTest {
@@ -24,7 +25,7 @@ public class JsonPathTransformerTest {
 		JsonPathTransformerHandler handler = getJsonPathTransformerHandler();
 		JsonNode source = getSourceJsonNode();
 		JsonNode value = new TextNode("$.email");
-		JsonNode result = handler.process("mail", value, source);
+		JsonNode result = handler.process( value, source, Optional.empty());
 		Assertions.assertEquals(result.asText(), "Sincere@april.biz");
 	}
 
@@ -34,7 +35,7 @@ public class JsonPathTransformerTest {
 		JsonPathTransformerHandler handler = getJsonPathTransformerHandler();
 		JsonNode source = getSourceJsonNode();
 		JsonNode value = new TextNode("$.concat($.address.city, $.address.street)");
-		JsonNode result = handler.process("address",  value, source);
+		JsonNode result = handler.process( value, source, Optional.empty());
 		Assertions.assertEquals("GwenboroughKulas Light", result.asText());
 	}
 
@@ -46,7 +47,7 @@ public class JsonPathTransformerTest {
 		value.add("$.address.city");
 		value.add(" - ");
 		value.add("$.address.street");
-		JsonNode result = handler.process("address",  value, source);
+		JsonNode result = handler.process(value, source, Optional.empty());
 		Assertions.assertEquals("Gwenborough - Kulas Light", result.asText());
 	}
 

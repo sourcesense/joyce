@@ -17,6 +17,10 @@ properties:
     type: string
     required: true
     $path: $.email
+  docType:
+    type: string
+    nullable: true
+    $fixed: simpleUser
   address:
     type: string
     $path:

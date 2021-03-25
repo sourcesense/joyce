@@ -14,11 +14,13 @@ import com.jayway.jsonpath.spi.json.JacksonJsonProvider;
 import com.jayway.jsonpath.spi.json.JsonProvider;
 import com.jayway.jsonpath.spi.mapper.JacksonMappingProvider;
 import com.jayway.jsonpath.spi.mapper.MappingProvider;
+import com.sourcesense.nile.schemaengine.dto.SchemaContext;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Component;
 
 import javax.annotation.PostConstruct;
 import java.util.EnumSet;
+import java.util.Optional;
 import java.util.Set;
 
 @Component("jsonPathTransformerHandler")
@@ -48,13 +50,13 @@ public class JsonPathTransformerHandler implements TransormerHandler {
 	}
 
 	@Override
-	public JsonNode process(String key, JsonNode value, JsonNode sourceJsonNode) {
+	public JsonNode process(JsonNode value, JsonNode source, Optional<SchemaContext> context) {
 		if (value.getNodeType().equals(JsonNodeType.ARRAY)){
 			StringBuffer stringBuffer = new StringBuffer();
 			for (JsonNode jsonNode : ((ArrayNode) value)) {
 				if(jsonNode.getNodeType().equals(JsonNodeType.STRING)){
 					if(jsonNode.asText().startsWith("$")){
-						JsonNode resolvedPath = this.read(sourceJsonNode, jsonNode.asText());
+						JsonNode resolvedPath = this.read(source, jsonNode.asText());
 						stringBuffer.append(resolvedPath.asText());
 					} else {
 						stringBuffer.append(jsonNode.asText());
@@ -65,7 +67,7 @@ public class JsonPathTransformerHandler implements TransormerHandler {
 			}
 			return new TextNode(stringBuffer.toString());
 		} else {
-			return this.read(sourceJsonNode, value.asText());
+			return this.read(source, value.asText());
 		}
 	}
 

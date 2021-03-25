@@ -54,15 +54,13 @@ public class SchemaEngineTest {
 
 		SchemaEngine schemaEngine = new SchemaEngine(props);
 		TransormerHandler jsonPathTransformerHandler = Mockito.mock(TransormerHandler.class);
-		Mockito.when(jsonPathTransformerHandler.process(ArgumentMatchers.eq("address"), any(), any()))
-				.thenReturn(new TextNode("an address"));
-		Mockito.when(jsonPathTransformerHandler.process(ArgumentMatchers.eq("mail"), any(), any()))
-				.thenReturn(new TextNode("a mail"));
+		Mockito.when(jsonPathTransformerHandler.process(any(), any(), any()))
+				.thenReturn(new TextNode("foobar"));
 		schemaEngine.registerHandler("path", jsonPathTransformerHandler);
 		ProcessResult result = schemaEngine.process(schema, source);
 		Assertions.assertEquals("Leanne Graham", result.getJson().get("name").asText());
-		Assertions.assertEquals("a mail",  result.getJson().get("mail").asText());
-		Assertions.assertEquals("an address", result.getJson().get("address").asText());
+		Assertions.assertEquals("foobar",  result.getJson().get("mail").asText());
+		Assertions.assertEquals("foobar", result.getJson().get("address").asText());
 	}
 
 
@@ -72,15 +70,13 @@ public class SchemaEngineTest {
 		String source = Files.readString(loadResource("source/10.json"));
 		SchemaEngine schemaEngine = new SchemaEngine(props);
 		TransormerHandler jsonPathTransformerHandler = Mockito.mock(TransormerHandler.class);
-		Mockito.when(jsonPathTransformerHandler.process(ArgumentMatchers.eq("address"), any(), any()))
-				.thenReturn(new TextNode("an address"));
-		Mockito.when(jsonPathTransformerHandler.process(ArgumentMatchers.eq("mail"), any(), any()))
-				.thenReturn(new TextNode("a mail"));
+		Mockito.when(jsonPathTransformerHandler.process(any(), any(), any()))
+				.thenReturn(new TextNode("foobar"));
 		schemaEngine.registerHandler("$path", jsonPathTransformerHandler);
 		ProcessResult result = schemaEngine.process(schema, source);
 		Assertions.assertEquals("Leanne Graham", result.getJson().get("name").asText());
-		Assertions.assertEquals("a mail",  result.getJson().get("mail").asText());
-		Assertions.assertEquals("an address", result.getJson().get("address").asText());
+		Assertions.assertEquals("foobar",  result.getJson().get("mail").asText());
+		Assertions.assertEquals("foobar", result.getJson().get("address").asText());
 	}
 
 	@Test
@@ -89,8 +85,7 @@ public class SchemaEngineTest {
 		String source = Files.readString(loadResource("source/10.json"));
 		SchemaEngine schemaEngine = new SchemaEngine(props);
 		TransormerHandler jsonPathTransformerHandler = Mockito.mock(TransormerHandler.class);
-		Mockito.when(jsonPathTransformerHandler.process(ArgumentMatchers.eq("address"), any(), any()))
-				.thenReturn(new TextNode("an address"));
+
 		schemaEngine.registerHandler("$path", jsonPathTransformerHandler);
 
 		SchemaIsNotValidException exc = Assertions.assertThrows(SchemaIsNotValidException.class, () -> {
@@ -105,12 +100,8 @@ public class SchemaEngineTest {
 		String source = Files.readString(loadResource("source/10.json"));
 		SchemaEngine schemaEngine = new SchemaEngine(props);
 		TransormerHandler jsonPathTransformerHandler = Mockito.mock(TransormerHandler.class);
-		Mockito.when(jsonPathTransformerHandler.process(ArgumentMatchers.eq("message_key"), any(), any()))
+		Mockito.when(jsonPathTransformerHandler.process(any(), any(), any()))
 				.thenReturn(new TextNode("bar"));
-		Mockito.when(jsonPathTransformerHandler.process(ArgumentMatchers.eq("address"), any(), any()))
-				.thenReturn(new TextNode("an address"));
-		Mockito.when(jsonPathTransformerHandler.process(ArgumentMatchers.eq("mail"), any(), any()))
-				.thenReturn(new TextNode("a mail"));
 		schemaEngine.registerHandler("$path", jsonPathTransformerHandler);
 
 		ProcessResult result = schemaEngine.process(schema, source);

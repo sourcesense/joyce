@@ -1,8 +1,6 @@
 package com.sourcesense.nile.schemaengine;
 
 
-import com.fasterxml.jackson.databind.ObjectMapper;
-import com.fasterxml.jackson.databind.node.ObjectNode;
 import com.fasterxml.jackson.databind.node.TextNode;
 import com.sourcesense.nile.schemaengine.handlers.TransormerHandler;
 import org.springframework.boot.autoconfigure.SpringBootApplication;
@@ -13,7 +11,7 @@ public class TestApplication {
 
 	@Bean(name = "fooHandler")
 	TransormerHandler handler(){
-		TransormerHandler transormerHandler = (key, schema, sourceJsonNode) -> new TextNode("bar");
+		TransormerHandler transormerHandler = (schema, sourceJsonNode,context) -> new TextNode("bar");
 		return transormerHandler;
 	}
 }

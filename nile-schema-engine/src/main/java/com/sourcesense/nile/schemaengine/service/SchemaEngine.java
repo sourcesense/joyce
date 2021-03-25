@@ -15,11 +15,14 @@ import com.networknt.schema.SpecVersion;
 import com.networknt.schema.ValidationResult;
 
 import com.sourcesense.nile.schemaengine.dto.ProcessResult;
+import com.sourcesense.nile.schemaengine.dto.SchemaContext;
 import com.sourcesense.nile.schemaengine.exceptions.HandlerBeanNameNotFound;
 import com.sourcesense.nile.schemaengine.exceptions.SchemaIsNotValidException;
+import com.sourcesense.nile.schemaengine.handlers.FixedValueTransformerHandler;
 import com.sourcesense.nile.schemaengine.handlers.TransormerHandler;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.BeansException;
+import org.springframework.boot.autoconfigure.web.ResourceProperties;
 import org.springframework.context.ApplicationContext;
 import org.springframework.context.ApplicationContextAware;
 import org.springframework.stereotype.Service;
@@ -54,9 +57,18 @@ public class SchemaEngine implements ApplicationContextAware {
 	 */
 	@PostConstruct
 	public void defaultInit() {
-
+		/**
+		 * Register Default Handlers
+		 */
 		TransormerHandler pathHandler = applicationContext.getBean("jsonPathTransformerHandler", TransormerHandler.class);
 		this.registerHandler("$path", pathHandler);
+
+		FixedValueTransformerHandler fixedHandler = applicationContext.getBean("fixedValueTransformerHandler", FixedValueTransformerHandler.class);
+		this.registerHandler("$fixed", fixedHandler);
+
+		/**
+		 * Register Handlers from configuration
+		 */
 		for (String key : this.properties.getHandlers().keySet()){
 			TransormerHandler handler = applicationContext.getBean(this.properties.getHandlers().get(key), TransormerHandler.class);
 			if (handler == null){
@@ -72,7 +84,7 @@ public class SchemaEngine implements ApplicationContextAware {
 	 * @param source
 	 * @return
 	 */
-	protected Optional<Map<String, Object>> parseContext(JsonNode node, JsonNode source){
+	protected Optional<SchemaContext> parseContext(JsonNode node, JsonNode source){
 		Optional<ObjectNode> contextNode = Optional.ofNullable((ObjectNode)node.get(CONTEXT_KEY));
 		if(!contextNode.isPresent()){
 			return Optional.empty();
@@ -81,16 +93,16 @@ public class SchemaEngine implements ApplicationContextAware {
 		for (Iterator<Map.Entry<String, JsonNode>> it = contextNode.get().fields(); it.hasNext(); ) {
 			Map.Entry<String, JsonNode> field = it.next();
 			if(field.getValue().getNodeType().equals(JsonNodeType.OBJECT)){
-				Optional<JsonNode> transformed = this.applyHandlers(field.getKey(), field.getValue(), source);
+				Optional<JsonNode> transformed = this.applyHandlers(field.getKey(), field.getValue(), source, Optional.empty());
 				transformed.ifPresent(jsonNode -> {
 					contextNode.get().set(field.getKey(), jsonNode);
 				});
 
 			}
 		}
-
-		return Optional.of(mapper.convertValue(contextNode.get(), new TypeReference<>() {
+		SchemaContext schemaContext = new SchemaContext(mapper.convertValue(contextNode.get(), new TypeReference<>() {
 		}));
+		return Optional.of(schemaContext);
 	}
 
 	/**
@@ -103,11 +115,11 @@ public class SchemaEngine implements ApplicationContextAware {
 	 * @param sourceJsonNode
 	 * @return
 	 */
-	private JsonNode parse(String key, JsonNode schema, JsonNode sourceJsonNode) {
+	private JsonNode parse(String key, JsonNode schema, JsonNode sourceJsonNode, Optional<SchemaContext> context) {
 
 		if (schema.getNodeType().equals(JsonNodeType.OBJECT)){
 			// Apply custom handlers
-			Optional<JsonNode> transformed = this.applyHandlers(key, schema, sourceJsonNode);
+			Optional<JsonNode> transformed = this.applyHandlers(key, schema, sourceJsonNode, context);
 			transformed.ifPresent(jsonNode -> {
 				((ObjectNode)sourceJsonNode).set(key, jsonNode);
 			});
@@ -120,7 +132,7 @@ public class SchemaEngine implements ApplicationContextAware {
 					Iterator<Map.Entry<String, JsonNode>> iter = props.fields();
 					while (iter.hasNext()) {
 						Map.Entry<String, JsonNode> entry = iter.next();
-						JsonNode node = this.parse(entry.getKey(), entry.getValue(), sourceJsonNode);
+						JsonNode node = this.parse(entry.getKey(), entry.getValue(), sourceJsonNode, context);
 						objectNode.set(entry.getKey(), node);
 					}
 				}
@@ -128,7 +140,7 @@ public class SchemaEngine implements ApplicationContextAware {
 			} else if (type.equals("array")){
 				ArrayNode arrayNode = mapper.createArrayNode();
 				for (JsonNode item : sourceJsonNode.get(key)){
-					JsonNode parsedItem = this.parse(null, schema.get("items"), item);
+					JsonNode parsedItem = this.parse(null, schema.get("items"), item, context);
 					arrayNode.add(parsedItem);
 				}
 				return arrayNode;
@@ -161,7 +173,7 @@ public class SchemaEngine implements ApplicationContextAware {
 	 * @param sourceJsonNode
 	 * @return
 	 */
-	private Optional<JsonNode> applyHandlers(String key, JsonNode schema, JsonNode sourceJsonNode) {
+	private Optional<JsonNode> applyHandlers(String key, JsonNode schema, JsonNode sourceJsonNode, Optional<SchemaContext> context) {
 		TransormerHandler handler = null;
 		JsonNode value = null;
 		for (String handlerKey : this.handlers.keySet()){
@@ -172,7 +184,7 @@ public class SchemaEngine implements ApplicationContextAware {
 			}
 		}
 		if (handler != null) {
-			return Optional.ofNullable(handler.process(key, value, sourceJsonNode));
+			return Optional.ofNullable(handler.process(value, sourceJsonNode, context));
 		} else {
 			return Optional.empty();
 		}
@@ -202,13 +214,14 @@ public class SchemaEngine implements ApplicationContextAware {
 	 */
 	public ProcessResult process(JsonNode schema, JsonNode source) {
 		JsonSchema jsonSchema = factory.getSchema(schema);
-		Optional<Map<String, Object>> context = parseContext(jsonSchema.getSchemaNode(), source);
-		JsonNode result = this.parse(null, jsonSchema.getSchemaNode(), source);
+		Optional<SchemaContext> context = parseContext(jsonSchema.getSchemaNode(), source);
+		JsonNode result = this.parse(null, jsonSchema.getSchemaNode(), source, context);
 
 		ValidationResult validation = jsonSchema.validateAndCollect(result);
 		if(validation.getValidationMessages().size() > 0){
 			throw new SchemaIsNotValidException(validation);
 		}
+
 		return new ProcessResult(result, context);
 	}
 
