@@ -1,48 +1,57 @@
 package com.sourcesense.nile.schemaengine.service;
 
 import com.fasterxml.jackson.databind.JsonNode;
-import com.sourcesense.nile.schemaengine.handlers.JsonPathTransformerHandler;
+import com.fasterxml.jackson.databind.ObjectMapper;
+import com.sourcesense.nile.schemaengine.TestApplication;
+import com.sourcesense.nile.schemaengine.dto.ProcessResult;
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.extension.ExtendWith;
+import org.mockito.junit.jupiter.MockitoExtension;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.beans.factory.annotation.Value;
-import org.springframework.boot.SpringBootConfiguration;
-import org.springframework.boot.autoconfigure.EnableAutoConfiguration;
 import org.springframework.boot.autoconfigure.SpringBootApplication;
 import org.springframework.boot.test.context.SpringBootTest;
-import org.springframework.context.annotation.ComponentScan;
-import org.springframework.core.io.Resource;
 import org.springframework.core.io.ResourceLoader;
-import org.springframework.test.context.ContextConfiguration;
+import org.springframework.test.context.ActiveProfiles;
 
 import java.io.IOException;
 import java.net.URISyntaxException;
-import java.net.URL;
 import java.nio.file.Files;
 import java.nio.file.Path;
-import java.nio.file.Paths;
 
-@SpringBootTest(classes = {SchemaEngine.class, SchemaEngineProperties.class, JsonPathTransformerHandler.class})
-@ContextConfiguration
+@SpringBootTest(classes = TestApplication.class)
+@ActiveProfiles({"default", "test"})
+@ExtendWith(MockitoExtension.class)
 public class SchemaEngineIT {
+	private ObjectMapper mapper = new ObjectMapper();
+
 	@Autowired
 	private SchemaEngine schemaEngine;
 
-	@Value("classpath:schema-01.yaml")
-	Resource schemaResource;
+	@Autowired
+	private ResourceLoader resourceLoader;
 
-	@Value("classpath:source-01.json")
-	Resource sourceResource;
 
 	@Test
-	public void schemaParsing01() throws IOException, URISyntaxException {
-		String schema = Files.readString(Path.of(schemaResource.getURI()));
-		String source = Files.readString(Path.of(sourceResource.getURI()));
-		JsonNode result = schemaEngine.process(schema, source);
-
+	public void loadHandlerFromApplciationYamlShouldWork() throws IOException, URISyntaxException {
+		String schema = Files.readString(Path.of(resourceLoader.getResource("schema/11.yaml").getURI()));
+		String source = Files.readString(Path.of(resourceLoader.getResource("source/10.json").getURI()));
+		JsonNode result = schemaEngine.process(schema, source).getJson();
 		Assertions.assertEquals("Leanne Graham", result.get("name").asText());
 		Assertions.assertEquals("Sincere@april.biz", result.get("mail").asText());
-		Assertions.assertEquals("Gwenborough, Kulas Light", result.get("address").asText());
+		Assertions.assertEquals("bar", result.get("foo").asText());
+	}
+
+	@Test
+	public void schemaParsing10() throws IOException, URISyntaxException {
+		String schema = Files.readString(Path.of(resourceLoader.getResource("schema/10.yaml").getURI()));
+		String source = Files.readString(Path.of(resourceLoader.getResource("source/10.json").getURI()));
+		ProcessResult result = schemaEngine.process(schema, source);
+		Assertions.assertEquals("Leanne Graham", result.getJson().get("name").asText());
+		Assertions.assertEquals("Sincere@april.biz", result.getJson().get("mail").asText());
+		Assertions.assertEquals("Gwenborough, Kulas Light", result.getJson().get("address").asText());
+		Assertions.assertEquals("nile://oracle/users/1", result.getContext().get().get("message_key"));
+		Assertions.assertEquals("users", result.getContext().get().get("collection"));
 	}
 
 	@SpringBootApplication

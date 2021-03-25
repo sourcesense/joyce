@@ -47,8 +47,6 @@ public class JsonPathTransformerHandler implements TransormerHandler {
 		});
 	}
 
-
-
 	@Override
 	public JsonNode process(String key, JsonNode value, JsonNode sourceJsonNode) {
 		ObjectMapper mapper = new ObjectMapper();

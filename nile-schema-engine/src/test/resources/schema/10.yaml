@@ -1,6 +1,13 @@
 $schema: http://json-schema.org/draft-07/schema#
 $context:
-  message_key: "$.id"
+  message_key:
+    $path:
+      - nile://oracle/users/
+      - $.id
+  collection: users
+  cassandra_schema: short_users
+  metadata:
+    foo: bar
 type: object
 properties:
   name:

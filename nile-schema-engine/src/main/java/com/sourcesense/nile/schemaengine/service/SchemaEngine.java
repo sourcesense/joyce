@@ -7,18 +7,19 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.databind.node.ArrayNode;
 import com.fasterxml.jackson.databind.node.JsonNodeType;
 import com.fasterxml.jackson.databind.node.ObjectNode;
+import com.fasterxml.jackson.databind.node.TextNode;
 import com.fasterxml.jackson.dataformat.yaml.YAMLFactory;
 import com.networknt.schema.JsonSchema;
 import com.networknt.schema.JsonSchemaFactory;
 import com.networknt.schema.SpecVersion;
 import com.networknt.schema.ValidationResult;
+
+import com.sourcesense.nile.schemaengine.dto.ProcessResult;
 import com.sourcesense.nile.schemaengine.exceptions.HandlerBeanNameNotFound;
-import com.sourcesense.nile.schemaengine.exceptions.HandlerKeyMustStartWithDollarException;
 import com.sourcesense.nile.schemaengine.exceptions.SchemaIsNotValidException;
 import com.sourcesense.nile.schemaengine.handlers.TransormerHandler;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.BeansException;
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.ApplicationContext;
 import org.springframework.context.ApplicationContextAware;
 import org.springframework.stereotype.Service;
@@ -38,7 +39,7 @@ public class SchemaEngine implements ApplicationContextAware {
 	private JsonSchemaFactory factory;
 	private Map<String, TransormerHandler> handlers;
 	private final SchemaEngineProperties properties;
-	private ApplicationContext context;
+	private ApplicationContext applicationContext;
 
 	public SchemaEngine(SchemaEngineProperties properties) {
 		this.factory = JsonSchemaFactory.getInstance(SpecVersion.VersionFlag.V7);
@@ -54,10 +55,10 @@ public class SchemaEngine implements ApplicationContextAware {
 	@PostConstruct
 	public void defaultInit() {
 
-		TransormerHandler pathHandler = context.getBean("jsonPathTransformerHandler", TransormerHandler.class);
+		TransormerHandler pathHandler = applicationContext.getBean("jsonPathTransformerHandler", TransormerHandler.class);
 		this.registerHandler("$path", pathHandler);
 		for (String key : this.properties.getHandlers().keySet()){
-			TransormerHandler handler = context.getBean(this.properties.getHandlers().get(key), TransormerHandler.class);
+			TransormerHandler handler = applicationContext.getBean(this.properties.getHandlers().get(key), TransormerHandler.class);
 			if (handler == null){
 				throw new HandlerBeanNameNotFound(String.format("%s not found", this.properties.getHandlers().get(key)));
 			}
@@ -66,66 +67,46 @@ public class SchemaEngine implements ApplicationContextAware {
 	}
 
 	/**
-	 * Register a new transformation handler for the given Key
-	 * @param key a key that MUST start with a dollar sign
-	 * @param handler an instance implementing TransformationHandler
+	 * Parse the context node applying the transsformers if presents
+	 * @param node
+	 * @param source
+	 * @return
 	 */
-	public void registerHandler(String key, TransormerHandler handler) throws HandlerKeyMustStartWithDollarException {
-		if(!key.startsWith("$")){
-			throw new HandlerKeyMustStartWithDollarException(String.format("%s does not start with a dollar", key));
-		}
-		this.handlers.put(key, handler);
-	}
-
-	protected Optional<Map<String, Object>> getContext(JsonNode node){
-		Optional<JsonNode> contextNode = Optional.ofNullable(node.get(CONTEXT_KEY));
+	protected Optional<Map<String, Object>> parseContext(JsonNode node, JsonNode source){
+		Optional<ObjectNode> contextNode = Optional.ofNullable((ObjectNode)node.get(CONTEXT_KEY));
 		if(!contextNode.isPresent()){
 			return Optional.empty();
 		}
-		Map<String, Object> context = mapper.convertValue(contextNode.get(), new TypeReference<Map<String, Object>>(){});
-		return Optional.of(context);
+
+		for (Iterator<Map.Entry<String, JsonNode>> it = contextNode.get().fields(); it.hasNext(); ) {
+			Map.Entry<String, JsonNode> field = it.next();
+			if(field.getValue().getNodeType().equals(JsonNodeType.OBJECT)){
+				JsonNode transformed = this.applyHandlers(field.getKey(), field.getValue(), source);
+				contextNode.get().set(field.getKey(), transformed.get(field.getKey()));
+			}
+		}
+
+		return Optional.of(mapper.convertValue(contextNode.get(), new TypeReference<>() {
+		}));
 	}
 
 	/**
-	 * Create a new json described by the json-schema provided, with sourceJson as input for the transformation
-	 * with schema and source provided as string
-	 *
-	 * @param jsonSchema
-	 * @param sourceJson
-	 * @return
-	 */
-	public JsonNode process(String jsonSchema, String sourceJson) throws JsonProcessingException {
-		JsonNode schemaJsonNode = yamlReader.readValue(jsonSchema, JsonNode.class);
-		JsonNode sourceJsonNode = mapper.readValue(sourceJson, JsonNode.class);
-		return process(schemaJsonNode, sourceJsonNode);
-	}
-
-	/**
-	 * Create a new json described by the json-schema provided, with sourceJson as input for the transformation
-	 *
-	 * @param schemaJsonNode
+	 * Main Parse method, applies the transformer and navigate the schema calling parse recursively
+	 * Root key could be null
+	 * the schema is the json-schema definition
+	 * source is the json source node from wich the transformation are applied
+	 * @param key
+	 * @param schema
 	 * @param sourceJsonNode
 	 * @return
 	 */
-	private JsonNode process(JsonNode schemaJsonNode, JsonNode sourceJsonNode) {
-		JsonSchema schema = factory.getSchema(schemaJsonNode);
-		Optional<Map<String, Object>> context = getContext(schema.getSchemaNode());
-		JsonNode result = this.parse(null, schema.getSchemaNode(), sourceJsonNode);
-
-		ValidationResult validation = schema.validateAndCollect(result);
-		if(validation.getValidationMessages().size() > 0){
-			throw new SchemaIsNotValidException(validation);
-		}
-		return result;
-	}
-
 	private JsonNode parse(String key, JsonNode schema, JsonNode sourceJsonNode) {
 
 		if (schema.getNodeType().equals(JsonNodeType.OBJECT)){
 			// Apply custom handlers
 			sourceJsonNode = this.applyHandlers(key, schema, sourceJsonNode);
 
-			String type = schema.get("type").asText();
+			String type = Optional.ofNullable(schema.get("type")).orElse(new TextNode("string")).asText();
 			if(type.equals("object")){
 				ObjectNode objectNode = mapper.createObjectNode();
 				JsonNode props = schema.get("properties");
@@ -153,6 +134,27 @@ public class SchemaEngine implements ApplicationContextAware {
 		return null;
 	}
 
+	/**
+	 * Register a new transformation handler for the given Key
+	 * @param key a key that MUST start with a dollar sign
+	 * @param handler an instance implementing TransformationHandler
+	 */
+	public void registerHandler(String key, TransormerHandler handler) {
+		if(!key.startsWith("$")){
+			key = "$".concat(key);
+		}
+		this.handlers.put(key, handler);
+	}
+
+
+	/**
+	 * Apply registered handlers, it stops at the first encountered
+	 * TODO: find a way to choose which one is applied or apply all in a given order
+	 * @param key
+	 * @param schema
+	 * @param sourceJsonNode
+	 * @return
+	 */
 	private JsonNode applyHandlers(String key, JsonNode schema, JsonNode sourceJsonNode) {
 		TransormerHandler handler = null;
 		JsonNode value = null;
@@ -171,8 +173,42 @@ public class SchemaEngine implements ApplicationContextAware {
 	}
 
 
+	/**
+	 * Create a new json described by the json-schema provided, with sourceJson as input for the transformation
+	 * with schema and source provided as string
+	 *
+	 * @param jsonSchema
+	 * @param sourceJson
+	 * @return
+	 */
+	public ProcessResult process(String jsonSchema, String sourceJson) throws JsonProcessingException {
+		JsonNode schemaJsonNode = yamlReader.readValue(jsonSchema, JsonNode.class);
+		JsonNode sourceJsonNode = mapper.readValue(sourceJson, JsonNode.class);
+		return process(schemaJsonNode, sourceJsonNode);
+	}
+
+	/**
+	 * Create a new json described by the json-schema provided, with sourceJson as input for the transformation
+	 *
+	 * @param schema
+	 * @param source
+	 * @return
+	 */
+	public ProcessResult process(JsonNode schema, JsonNode source) {
+		JsonSchema jsonSchema = factory.getSchema(schema);
+		Optional<Map<String, Object>> context = parseContext(jsonSchema.getSchemaNode(), source);
+		JsonNode result = this.parse(null, jsonSchema.getSchemaNode(), source);
+
+		ValidationResult validation = jsonSchema.validateAndCollect(result);
+		if(validation.getValidationMessages().size() > 0){
+			throw new SchemaIsNotValidException(validation);
+		}
+		return new ProcessResult(result, context);
+	}
+
+
 	@Override
 	public void setApplicationContext(ApplicationContext applicationContext) throws BeansException {
-		this.context = applicationContext;
+		this.applicationContext = applicationContext;
 	}
 }

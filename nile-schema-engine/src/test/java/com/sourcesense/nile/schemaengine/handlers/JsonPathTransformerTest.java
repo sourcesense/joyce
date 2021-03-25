@@ -57,7 +57,7 @@ public class JsonPathTransformerTest {
 	}
 
 	private JsonNode getSourceJsonNode() throws IOException, URISyntaxException {
-		URL res =  this.getClass().getClassLoader().getResource("source-01.json");
+		URL res =  this.getClass().getClassLoader().getResource("source/10.json");
 		return mapper.readValue(Files.readString(Path.of((res.toURI()))), JsonNode.class);
 	}
 }

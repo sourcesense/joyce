@@ -1,13 +1,14 @@
 package com.sourcesense.nile.schemaengine.service;
 
-import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.databind.node.ObjectNode;
-import com.sourcesense.nile.schemaengine.exceptions.HandlerKeyMustStartWithDollarException;
+import com.sourcesense.nile.schemaengine.dto.ProcessResult;
 import com.sourcesense.nile.schemaengine.exceptions.SchemaIsNotValidException;
 import com.sourcesense.nile.schemaengine.handlers.JsonPathTransformerHandler;
+import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
+import org.mockito.ArgumentMatchers;
 import org.mockito.Mock;
 import org.mockito.Mockito;
 import org.mockito.junit.jupiter.MockitoExtension;
@@ -19,8 +20,6 @@ import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
 
-import static org.junit.jupiter.api.Assertions.assertThrows;
-import static org.junit.jupiter.api.Assertions.assertTrue;
 import static org.mockito.ArgumentMatchers.any;
 
 @ExtendWith(MockitoExtension.class)
@@ -43,17 +42,27 @@ public class SchemaEngineTest {
 	JsonPathTransformerHandler jsonPathTransformerHandler;
 
 	@Test
-	void registerHandlerWithWrogKeyShouldThrow(){
+	void registerHandlerKeyWithoutDollarShouldAddDollarSign() throws URISyntaxException, IOException {
+		String schema = Files.readString(loadResource("schema/10.yaml"));
+		String source = Files.readString(loadResource("source/10.json"));
+		ObjectNode node = getEmptyObject();
+		node.put("mail", "mario");
+		node.put("address", "mario");
+		Mockito.when(jsonPathTransformerHandler.process(any(), any(), any()))
+				.thenReturn(node);
+
 		SchemaEngine schemaEngine = new SchemaEngine(props);
-		assertThrows(HandlerKeyMustStartWithDollarException.class, () -> {
-			schemaEngine.registerHandler("path", jsonPathTransformerHandler);
-		});
+		schemaEngine.registerHandler("path", jsonPathTransformerHandler);
+		ProcessResult result = schemaEngine.process(schema, source);
+		Assertions.assertTrue(result.getJson().get("name").asText().equals("Leanne Graham"));
+		Assertions.assertTrue(result.getJson().get("mail").asText().equals("mario"));
+		Assertions.assertTrue(result.getJson().get("address").asText().equals("mario"));
 	}
 
 	@Test
 	void invalidSchemaShouldThrow() throws URISyntaxException, IOException {
-		String schema = Files.readString(loadResource("schema-01.yaml"));
-		String source = Files.readString(loadResource("source-01.json"));
+		String schema = Files.readString(loadResource("schema/10.yaml"));
+		String source = Files.readString(loadResource("source/10.json"));
 		ObjectNode node = getEmptyObject();
 		node.put("address", "mario");
 		Mockito.when(jsonPathTransformerHandler.process(any(), any(), any()))
@@ -61,15 +70,15 @@ public class SchemaEngineTest {
 
 		SchemaEngine schemaEngine = new SchemaEngine(props);
 		schemaEngine.registerHandler("$path", jsonPathTransformerHandler);
-		SchemaIsNotValidException exc = assertThrows(SchemaIsNotValidException.class, () -> {
+		SchemaIsNotValidException exc = Assertions.assertThrows(SchemaIsNotValidException.class, () -> {
 			schemaEngine.process(schema, source);
 		});
 	}
 
 	@Test
 	void dummyParserShouldBeRegisteredCorrectly() throws URISyntaxException, IOException {
-		String schema = Files.readString(loadResource("schema-01.yaml"));
-		String source = Files.readString(loadResource("source-01.json"));
+		String schema = Files.readString(loadResource("schema/10.yaml"));
+		String source = Files.readString(loadResource("source/10.json"));
 		ObjectNode node = getEmptyObject();
 				node.put("mail", "mario");
 				node.put("address", "mario");
@@ -78,9 +87,30 @@ public class SchemaEngineTest {
 
 		SchemaEngine schemaEngine = new SchemaEngine(props);
 		schemaEngine.registerHandler("$path", jsonPathTransformerHandler);
-		JsonNode result = schemaEngine.process(schema, source);
-		assertTrue(result.get("name").asText().equals("Leanne Graham"));
-		assertTrue(result.get("mail").asText().equals("mario"));
-		assertTrue(result.get("address").asText().equals("mario"));
+		ProcessResult result = schemaEngine.process(schema, source);
+		Assertions.assertTrue(result.getJson().get("name").asText().equals("Leanne Graham"));
+		Assertions.assertTrue(result.getJson().get("mail").asText().equals("mario"));
+		Assertions.assertTrue(result.getJson().get("address").asText().equals("mario"));
+	}
+
+	@Test
+	void contextShouldReturnTransformed() throws URISyntaxException, IOException {
+		String schema = Files.readString(loadResource("schema/10.yaml"));
+		String source = Files.readString(loadResource("source/10.json"));
+		SchemaEngine schemaEngine = new SchemaEngine(props);
+		schemaEngine.registerHandler("$path", jsonPathTransformerHandler);
+		ObjectNode node = getEmptyObject();
+		node.put("mail", "mario");
+		node.put("address", "mario");
+		Mockito.when(jsonPathTransformerHandler.process(any(), any(), any()))
+				.thenReturn(node);
+
+		Mockito.when(jsonPathTransformerHandler.process(ArgumentMatchers.eq("message_key"), any(), any()))
+				.thenReturn(getEmptyObject().put("message_key", "bar"));
+
+		ProcessResult result = schemaEngine.process(schema, source);
+
+		Assertions.assertEquals("users", result.getContext().get().get("collection"));
+		Assertions.assertEquals("bar", result.getContext().get().get("message_key"));
 	}
 }
