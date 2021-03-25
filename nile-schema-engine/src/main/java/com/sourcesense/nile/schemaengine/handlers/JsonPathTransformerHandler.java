@@ -49,9 +49,6 @@ public class JsonPathTransformerHandler implements TransormerHandler {
 
 	@Override
 	public JsonNode process(String key, JsonNode value, JsonNode sourceJsonNode) {
-		ObjectMapper mapper = new ObjectMapper();
-		ObjectNode returnNode = mapper.createObjectNode();
-
 		if (value.getNodeType().equals(JsonNodeType.ARRAY)){
 			StringBuffer stringBuffer = new StringBuffer();
 			for (JsonNode jsonNode : ((ArrayNode) value)) {
@@ -62,18 +59,14 @@ public class JsonPathTransformerHandler implements TransormerHandler {
 					} else {
 						stringBuffer.append(jsonNode.asText());
 					}
-					returnNode.set(key, new TextNode(stringBuffer.toString()));
 				} else {
 					log.error("values in array must be strings ");
 				}
 			}
-
+			return new TextNode(stringBuffer.toString());
 		} else {
-			JsonNode resolvedPath = this.read(sourceJsonNode, value.asText());
-			returnNode.set(key, resolvedPath);
+			return this.read(sourceJsonNode, value.asText());
 		}
-
-		return returnNode;
 	}
 
 	/**

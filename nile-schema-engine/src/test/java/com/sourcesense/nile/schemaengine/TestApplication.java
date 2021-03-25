@@ -13,12 +13,7 @@ public class TestApplication {
 
 	@Bean(name = "fooHandler")
 	TransormerHandler handler(){
-		TransormerHandler transormerHandler = (key, schema, sourceJsonNode) -> {
-			ObjectMapper mapper = new ObjectMapper();
-			ObjectNode returnNode = mapper.createObjectNode();
-			returnNode.set(key, new TextNode("bar"));
-			return  returnNode;
-		};
+		TransormerHandler transormerHandler = (key, schema, sourceJsonNode) -> new TextNode("bar");
 		return transormerHandler;
 	}
 }

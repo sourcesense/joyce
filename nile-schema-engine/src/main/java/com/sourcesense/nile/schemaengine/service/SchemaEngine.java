@@ -81,8 +81,11 @@ public class SchemaEngine implements ApplicationContextAware {
 		for (Iterator<Map.Entry<String, JsonNode>> it = contextNode.get().fields(); it.hasNext(); ) {
 			Map.Entry<String, JsonNode> field = it.next();
 			if(field.getValue().getNodeType().equals(JsonNodeType.OBJECT)){
-				JsonNode transformed = this.applyHandlers(field.getKey(), field.getValue(), source);
-				contextNode.get().set(field.getKey(), transformed.get(field.getKey()));
+				Optional<JsonNode> transformed = this.applyHandlers(field.getKey(), field.getValue(), source);
+				transformed.ifPresent(jsonNode -> {
+					contextNode.get().set(field.getKey(), jsonNode);
+				});
+
 			}
 		}
 
@@ -104,7 +107,10 @@ public class SchemaEngine implements ApplicationContextAware {
 
 		if (schema.getNodeType().equals(JsonNodeType.OBJECT)){
 			// Apply custom handlers
-			sourceJsonNode = this.applyHandlers(key, schema, sourceJsonNode);
+			Optional<JsonNode> transformed = this.applyHandlers(key, schema, sourceJsonNode);
+			transformed.ifPresent(jsonNode -> {
+				((ObjectNode)sourceJsonNode).set(key, jsonNode);
+			});
 
 			String type = Optional.ofNullable(schema.get("type")).orElse(new TextNode("string")).asText();
 			if(type.equals("object")){
@@ -155,7 +161,7 @@ public class SchemaEngine implements ApplicationContextAware {
 	 * @param sourceJsonNode
 	 * @return
 	 */
-	private JsonNode applyHandlers(String key, JsonNode schema, JsonNode sourceJsonNode) {
+	private Optional<JsonNode> applyHandlers(String key, JsonNode schema, JsonNode sourceJsonNode) {
 		TransormerHandler handler = null;
 		JsonNode value = null;
 		for (String handlerKey : this.handlers.keySet()){
@@ -166,9 +172,9 @@ public class SchemaEngine implements ApplicationContextAware {
 			}
 		}
 		if (handler != null) {
-			return handler.process(key, value, sourceJsonNode);
+			return Optional.ofNullable(handler.process(key, value, sourceJsonNode));
 		} else {
-			return sourceJsonNode;
+			return Optional.empty();
 		}
 	}
 
