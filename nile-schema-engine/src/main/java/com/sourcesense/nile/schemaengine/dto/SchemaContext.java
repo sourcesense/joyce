@@ -6,7 +6,7 @@ import java.util.Map;
 
 @RequiredArgsConstructor
 public class SchemaContext {
-	
+
 	final private Map<String, Object> context;
 
 	public Object get(String key){

@@ -1,0 +1,11 @@
+version: "3"
+
+services:
+  mongodb:
+    image: "bitnami/mongodb:latest"
+    environment:
+      - MONGODB_USERNAME=user
+      - MONGODB_PASSWORD=password
+      - MONGODB_DATABASE=ingestion
+    ports:
+      - "27017:27017"

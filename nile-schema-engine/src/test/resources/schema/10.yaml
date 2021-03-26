@@ -10,6 +10,10 @@ $context:
     foo: bar
 type: object
 properties:
+  uid:
+    type: string
+    nullable: true
+    $contextValue: $.message_key
   name:
     type: string
     required: true
@@ -21,10 +25,6 @@ properties:
     type: string
     nullable: true
     $fixed: simpleUser
-  uid:
-    type: string
-    $contextValue: $.message_key
-    nullable: true
   address:
     type: string
     $path:
