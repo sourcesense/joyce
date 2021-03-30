@@ -31,23 +31,14 @@ public class IngestionService {
 	public static String MESSAGE_KEY = "message_key";
 
 	final private SchemaEngine schemaEngine;
-	final private SchemaService schemaService;
 	final private KafkaTemplate<String, Map> kafkaTemplate;
 	final private ObjectMapper mapper;
 
-	@Value("${nile.ingestion.kafka.mainlog:mainlog}")
+	@Value("${nile.ingestion.kafka.mainlog-topic:mainlog}")
 	String mainlogTopic;
 
-	private ProcessResult getProcessResult(String schemaId, Map document) throws JsonProcessingException {
-		Optional<Schema> schema = schemaService.findById(schemaId);
-		if(schema.isEmpty()){
-			throw new SchemaNotFoundException(String.format("Schema %s does not exists", schemaId));
-		}
-		return schemaEngine.process(schema.get().getSchema(), document);
-	}
-
-	public Map processSchema(String schema, Map document) throws JsonProcessingException {
-		ProcessResult node = getProcessResult(schema, document);
+	public Map processSchema(Schema schema, Map document) throws JsonProcessingException {
+		ProcessResult node = schemaEngine.process(schema.getSchema(), document);
 
 		Map result = new HashMap<>();
 		node.getMetadata().ifPresent(metadata -> {
@@ -59,8 +50,8 @@ public class IngestionService {
 	}
 
 
-	public Boolean ingest(String schema, Map document) throws JsonProcessingException {
-		ProcessResult result = getProcessResult(schema, document);
+	public Boolean ingest(Schema schema, Map document) throws JsonProcessingException {
+		ProcessResult result = schemaEngine.process(schema.getSchema(), document);
 		if (result.getMetadata().isEmpty()){
 			throw new MissingMetadataException("Message has no metadata, cannot ingest docuemnt");
 		}

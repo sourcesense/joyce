@@ -11,11 +11,11 @@ import java.util.Map;
 @RequestMapping( value = "/api/ingestion")
 @Tag(name = "Ingestion API", description = "Ingestion API")
 public interface IngestionApi {
-	@PostMapping(value = "/{schema}", produces = "application/json; charset=utf-8")
+	@PostMapping(value = "/{schemaId}", produces = "application/json; charset=utf-8")
 	@ResponseStatus(code = HttpStatus.OK)
-	Boolean ingestDocument(@PathVariable String schema, @RequestBody Map document ) throws JsonProcessingException;
+	Boolean ingestDocument(@PathVariable String schemaId, @RequestBody Map document ) throws JsonProcessingException;
 
-	@PostMapping(value = "/{schema}/test", produces = "application/json; charset=utf-8")
+	@PostMapping(value = "/{schemaId}/test", produces = "application/json; charset=utf-8")
 	@ResponseStatus(code = HttpStatus.OK)
-	Map testDocumentIngestion(@PathVariable String schema, @RequestBody Map document ) throws JsonProcessingException;
+	Map testDocumentIngestion(@PathVariable String schemaId, @RequestBody Map document ) throws JsonProcessingException;
 }

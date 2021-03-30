@@ -1,5 +1,6 @@
 nile:
   ingestion:
     kafka:
-      mainlog: mainlog
+      mainlog-topic: mainlog
+      ingestion-topic: ingestion
       bootstrapAddress: kafka:9092
