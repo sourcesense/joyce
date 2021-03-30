@@ -1,0 +1,9 @@
+
+nile:
+  projection:
+    kafka:
+      mainlog-topic: mainlog
+      bootstrapAddress: kafka:9092
+    mongodb:
+      uri: mongodb://user:password@localhost:27017/ingestion
+      database: ingestion
