@@ -18,4 +18,12 @@ public class CustonExceptionHandler {
 	public ApiError jsonPathNotFound(PathNotFoundException exception, WebRequest request) {
 		return new ApiError(exception.getMessage(), exception.getClass().getCanonicalName());
 	}
+
+
+	@ExceptionHandler(value = SchemaNotFoundException.class)
+	@ResponseStatus(HttpStatus.NOT_FOUND)
+	@ResponseBody
+	public ApiError schemaNotFound(SchemaNotFoundException exception, WebRequest request) {
+		return new ApiError(exception.getMessage(), exception.getClass().getCanonicalName());
+	}
 }

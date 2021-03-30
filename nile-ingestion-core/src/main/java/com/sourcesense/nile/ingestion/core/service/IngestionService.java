@@ -22,7 +22,7 @@ public class IngestionService {
 	public Map processSchema(String schema, Map document) throws JsonProcessingException {
 		Optional<SchemaEntity> schemaEntity = schemaEntityDao.get(schema);
 		if(schemaEntity.isEmpty()){
-			throw new SchemaNotFoundException();
+			throw new SchemaNotFoundException(String.format("Schema %s does not exists", schema));
 		}
 		ProcessResult node = schemaEngine.process(schemaEntity.get().getSchema(), document);
 

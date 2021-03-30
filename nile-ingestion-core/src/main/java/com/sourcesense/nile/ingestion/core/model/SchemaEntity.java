@@ -11,4 +11,5 @@ public class SchemaEntity {
 	@Id
 	private String uid;
 	private String schema;
+	private String description;
 }
