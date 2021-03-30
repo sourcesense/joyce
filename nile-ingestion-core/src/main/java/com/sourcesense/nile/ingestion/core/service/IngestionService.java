@@ -24,7 +24,7 @@ public class IngestionService {
 		if(schemaEntity.isEmpty()){
 			throw new SchemaNotFoundException();
 		}
-		ProcessResult node = schemaEngine.process(schema, document);
+		ProcessResult node = schemaEngine.process(schemaEntity.get().getSchema(), document);
 
 		Map result = new HashMap<>();
 		node.getMetadata().ifPresent(metadata -> {
