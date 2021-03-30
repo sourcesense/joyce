@@ -26,7 +26,7 @@ public class SchemaApiController implements SchemaApi {
 	public Schema findById(String id) {
 		Optional<Schema> schema = schemaService.findById(id);
 		if (schema.isEmpty()){
-			throw new SchemaNotFoundException(String.format("Schema %s does not exists", id));
+			throw new SchemaNotFoundException(String.format("Schema [%s] does not exists", id));
 		}
 		return schema.get();
 	}

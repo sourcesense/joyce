@@ -14,8 +14,8 @@ public class IngestionController implements IngestionApi {
 	final private IngestionService ingestionService;
 
 	@Override
-	public Boolean ingestDocument(String schema, Map document) {
-		return null;
+	public Boolean ingestDocument(String schema, Map document) throws JsonProcessingException {
+		return ingestionService.ingest(schema, document);
 	}
 
 	@Override

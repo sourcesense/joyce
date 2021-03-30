@@ -13,7 +13,7 @@ import java.util.Map;
 public interface IngestionApi {
 	@PostMapping(value = "/{schema}", produces = "application/json; charset=utf-8")
 	@ResponseStatus(code = HttpStatus.OK)
-	Boolean ingestDocument(@PathVariable String schema, @RequestBody Map document );
+	Boolean ingestDocument(@PathVariable String schema, @RequestBody Map document ) throws JsonProcessingException;
 
 	@PostMapping(value = "/{schema}/test", produces = "application/json; charset=utf-8")
 	@ResponseStatus(code = HttpStatus.OK)

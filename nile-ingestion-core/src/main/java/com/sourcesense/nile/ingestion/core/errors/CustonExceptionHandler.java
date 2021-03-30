@@ -2,6 +2,7 @@ package com.sourcesense.nile.ingestion.core.errors;
 
 import com.jayway.jsonpath.PathNotFoundException;
 import com.sourcesense.nile.ingestion.core.dto.ApiError;
+import org.apache.kafka.common.KafkaException;
 import org.springframework.http.HttpStatus;
 import org.springframework.web.bind.annotation.ControllerAdvice;
 import org.springframework.web.bind.annotation.ExceptionHandler;
@@ -19,6 +20,19 @@ public class CustonExceptionHandler {
 		return new ApiError(exception.getMessage(), exception.getClass().getCanonicalName());
 	}
 
+	@ExceptionHandler(value = KafkaException.class)
+	@ResponseStatus(HttpStatus.INTERNAL_SERVER_ERROR)
+	@ResponseBody
+	public ApiError kafkaException(KafkaException exception, WebRequest request) {
+		return new ApiError(exception.getMessage(), exception.getClass().getCanonicalName());
+	}
+
+	@ExceptionHandler(value = MissingMetadataException.class)
+	@ResponseStatus(HttpStatus.INTERNAL_SERVER_ERROR)
+	@ResponseBody
+	public ApiError handler(MissingMetadataException exception, WebRequest request) {
+		return new ApiError(exception.getMessage(), exception.getClass().getCanonicalName());
+	}
 
 	@ExceptionHandler(value = SchemaNotFoundException.class)
 	@ResponseStatus(HttpStatus.NOT_FOUND)
