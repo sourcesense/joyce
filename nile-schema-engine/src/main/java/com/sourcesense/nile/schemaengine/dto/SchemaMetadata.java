@@ -5,14 +5,14 @@ import lombok.RequiredArgsConstructor;
 import java.util.Map;
 
 @RequiredArgsConstructor
-public class SchemaContext {
+public class SchemaMetadata {
 
-	final private Map<String, Object> context;
+	final private Map<String, Object> metadata;
 
 	public Object get(String key){
-		return context.get(key);
+		return metadata.get(key);
 	}
-	public Map<String, Object> getContext() {
-		return context;
+	public Map<String, Object> getAll() {
+		return metadata;
 	}
 }

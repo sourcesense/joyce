@@ -15,7 +15,7 @@ import java.util.Optional;
 @SpringBootTest
 @ActiveProfiles("cassandra")
 @EnableAutoConfiguration(exclude={CassandraDataAutoConfiguration.class})
-public class CassandraDaoTest {
+public class CassandraDaoTestIT {
 
 	@Autowired
 	Dao<SchemaEntity> schemaEntityDao;

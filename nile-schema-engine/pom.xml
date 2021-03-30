@@ -10,7 +10,7 @@
 
 	<groupId>com.sourcesense.nile</groupId>
 	<artifactId>schema-engine</artifactId>
-	<version>${nile.schema.version}</version>
+	<version>0.0.1-SNAPSHOT</version>
 	<name>schema-engine</name>
 	<description>Nile Schema Engine Library</description>
 	<properties>

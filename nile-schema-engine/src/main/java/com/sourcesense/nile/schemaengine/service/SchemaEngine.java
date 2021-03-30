@@ -15,14 +15,12 @@ import com.networknt.schema.SpecVersion;
 import com.networknt.schema.ValidationResult;
 
 import com.sourcesense.nile.schemaengine.dto.ProcessResult;
-import com.sourcesense.nile.schemaengine.dto.SchemaContext;
+import com.sourcesense.nile.schemaengine.dto.SchemaMetadata;
 import com.sourcesense.nile.schemaengine.exceptions.HandlerBeanNameNotFound;
 import com.sourcesense.nile.schemaengine.exceptions.SchemaIsNotValidException;
-import com.sourcesense.nile.schemaengine.handlers.FixedValueTransformerHandler;
 import com.sourcesense.nile.schemaengine.handlers.TransormerHandler;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.BeansException;
-import org.springframework.boot.autoconfigure.web.ResourceProperties;
 import org.springframework.context.ApplicationContext;
 import org.springframework.context.ApplicationContextAware;
 import org.springframework.stereotype.Service;
@@ -36,7 +34,7 @@ import java.util.Optional;
 @Service
 @Slf4j
 public class SchemaEngine implements ApplicationContextAware {
-	protected static String CONTEXT_KEY = "$context";
+	protected static String METADATA = "$metadata";
 	private ObjectMapper yamlReader;
 	private ObjectMapper mapper;
 	private JsonSchemaFactory factory;
@@ -67,7 +65,7 @@ public class SchemaEngine implements ApplicationContextAware {
 		Map<String, String> defaultHandlers = Map.of(
 				"$path", "jsonPathTransformerHandler",
 				"$fixed", "fixedValueTransformerHandler",
-				"$contextValue", "contextValueTransformerHandler"
+				"$meta", "metadataValueTransformerHandler"
 		);
 		for (String key : defaultHandlers.keySet()) {
 			TransormerHandler handler = applicationContext.getBean(defaultHandlers.get(key), TransormerHandler.class);
@@ -93,8 +91,8 @@ public class SchemaEngine implements ApplicationContextAware {
 	 * @param source
 	 * @return
 	 */
-	protected Optional<SchemaContext> parseContext(JsonNode node, JsonNode source){
-		Optional<ObjectNode> contextNode = Optional.ofNullable((ObjectNode)node.get(CONTEXT_KEY));
+	protected Optional<SchemaMetadata> parseContext(JsonNode node, JsonNode source){
+		Optional<ObjectNode> contextNode = Optional.ofNullable((ObjectNode)node.get(METADATA));
 		if(!contextNode.isPresent()){
 			return Optional.empty();
 		}
@@ -109,9 +107,9 @@ public class SchemaEngine implements ApplicationContextAware {
 
 			}
 		}
-		SchemaContext schemaContext = new SchemaContext(mapper.convertValue(contextNode.get(), new TypeReference<>() {
+		SchemaMetadata schemaMetadata = new SchemaMetadata(mapper.convertValue(contextNode.get(), new TypeReference<>() {
 		}));
-		return Optional.of(schemaContext);
+		return Optional.of(schemaMetadata);
 	}
 
 	/**
@@ -124,7 +122,7 @@ public class SchemaEngine implements ApplicationContextAware {
 	 * @param sourceJsonNode
 	 * @return
 	 */
-	private JsonNode parse(String key, JsonNode schema, JsonNode sourceJsonNode, Optional<SchemaContext> context) {
+	private JsonNode parse(String key, JsonNode schema, JsonNode sourceJsonNode, Optional<SchemaMetadata> context) {
 
 		if (schema.getNodeType().equals(JsonNodeType.OBJECT)){
 			// Apply custom handlers
@@ -182,7 +180,7 @@ public class SchemaEngine implements ApplicationContextAware {
 	 * @param sourceJsonNode
 	 * @return
 	 */
-	private Optional<JsonNode> applyHandlers(String key, JsonNode schema, JsonNode sourceJsonNode, Optional<SchemaContext> context) {
+	private Optional<JsonNode> applyHandlers(String key, JsonNode schema, JsonNode sourceJsonNode, Optional<SchemaMetadata> context) {
 		TransormerHandler handler = null;
 		JsonNode value = null;
 		for (String handlerKey : this.handlers.keySet()){
@@ -215,6 +213,20 @@ public class SchemaEngine implements ApplicationContextAware {
 	}
 
 	/**
+	 * Utility method
+	 *
+	 * @param jsonSchema
+	 * @param sourceJson
+	 * @return
+	 * @throws JsonProcessingException
+	 */
+	public ProcessResult process(String jsonSchema, Map sourceJson) throws JsonProcessingException {
+		JsonNode schemaJsonNode = yamlReader.readValue(jsonSchema, JsonNode.class);
+		JsonNode sourceJsonNode = mapper.convertValue(sourceJson, JsonNode.class);
+		return process(schemaJsonNode, sourceJsonNode);
+	}
+
+	/**
 	 * Create a new json described by the json-schema provided, with sourceJson as input for the transformation
 	 *
 	 * @param schema
@@ -223,7 +235,7 @@ public class SchemaEngine implements ApplicationContextAware {
 	 */
 	public ProcessResult process(JsonNode schema, JsonNode source) {
 		JsonSchema jsonSchema = factory.getSchema(schema);
-		Optional<SchemaContext> context = parseContext(jsonSchema.getSchemaNode(), source);
+		Optional<SchemaMetadata> context = parseContext(jsonSchema.getSchemaNode(), source);
 		JsonNode result = this.parse(null, jsonSchema.getSchemaNode(), source, context);
 
 		ValidationResult validation = jsonSchema.validateAndCollect(result);
@@ -231,7 +243,7 @@ public class SchemaEngine implements ApplicationContextAware {
 			throw new SchemaIsNotValidException(validation);
 		}
 
-		return new ProcessResult(result, context);
+		return new ProcessResult(mapper.convertValue(result, Map.class), context);
 	}
 
 

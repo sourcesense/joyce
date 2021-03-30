@@ -1,30 +1,37 @@
 package com.sourcesense.nile.ingestion.core.controllers;
 
 import com.sourcesense.nile.ingestion.core.api.SchemaApi;
-import com.sourcesense.nile.ingestion.core.dto.SchemaDto;
+import com.sourcesense.nile.ingestion.core.dto.Schema;
+import com.sourcesense.nile.ingestion.core.dto.SchemaShort;
+import com.sourcesense.nile.ingestion.core.service.SchemaService;
+import lombok.RequiredArgsConstructor;
 import org.springframework.web.bind.annotation.RestController;
 
 import java.util.List;
 
 @RestController
+@RequiredArgsConstructor
 public class SchemaApiController implements SchemaApi {
+	final protected SchemaService schemaService;
+
 	@Override
-	public List<SchemaDto> findAll() {
+	public List<SchemaShort> findAll() {
+		return schemaService.findAll();
+	}
+
+	@Override
+	public Schema findById(String id) {
 		return null;
 	}
 
 	@Override
-	public SchemaDto findById(String id) {
-		return new SchemaDto("test");
+	public Schema save(Schema schema) {
+		Schema saved = schemaService.save(schema);
+		return saved;
 	}
 
 	@Override
-	public SchemaDto save(SchemaDto user) {
-		return null;
-	}
-
-	@Override
-	public SchemaDto update(String id, SchemaDto user) {
+	public Schema update(String id, Schema user) {
 		return null;
 	}
 

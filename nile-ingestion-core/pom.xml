@@ -10,7 +10,7 @@
 
 	<groupId>com.sourcesense.nile</groupId>
 	<artifactId>ingestion-core</artifactId>
-  <version>${nile.ingestion.core.version}</version>
+  <version>0.0.1-SNAPSHOT</version>
 	<name>nile-ingestion-core</name>
 	<description>Nile Ingestion Core</description>
 
@@ -19,6 +19,11 @@
       <groupId>com.sourcesense.nile</groupId>
       <artifactId>schema-engine</artifactId>
       <version>${nile.ingestion.core.version}</version>
+    </dependency>
+    <dependency>
+      <groupId>org.mapstruct</groupId>
+      <artifactId>mapstruct</artifactId>
+      <version>${org.mapstruct.version}</version>
     </dependency>
 		<dependency>
 			<groupId>org.springframework.boot</groupId>
@@ -65,5 +70,37 @@
 			<scope>test</scope>
 		</dependency>
 	</dependencies>
-
+  <build>
+    <plugins>
+      <plugin>
+        <groupId>org.apache.maven.plugins</groupId>
+        <artifactId>maven-compiler-plugin</artifactId>
+        <version>3.8.1</version>
+        <configuration>
+          <annotationProcessorPaths>
+            <path>
+              <groupId>org.projectlombok</groupId>
+              <artifactId>lombok</artifactId>
+              <version>${lombok.version}</version>
+            </path>
+            <path>
+              <groupId>org.mapstruct</groupId>
+              <artifactId>mapstruct-processor</artifactId>
+              <version>${org.mapstruct.version}</version>
+            </path>
+<!--            <dependency>-->
+<!--              <groupId>org.projectlombok</groupId>-->
+<!--              <artifactId>lombok-mapstruct-binding</artifactId>-->
+<!--              <version>0.2.0</version>-->
+<!--            </dependency>-->
+          </annotationProcessorPaths>
+          <compilerArgs>
+            <compilerArg>
+              -Amapstruct.defaultComponentModel=spring
+            </compilerArg>
+          </compilerArgs>
+        </configuration>
+      </plugin>
+    </plugins>
+  </build>
 </project>

@@ -18,7 +18,7 @@ import java.util.Optional;
 @SpringBootTest
 @ActiveProfiles("mongodb")
 @EnableAutoConfiguration(exclude={CassandraDataAutoConfiguration.class})
-public class MongodbDaoTest {
+public class MongodbDaoTestIT {
 
 	@Autowired
 	Dao<SchemaEntity> schemaEntityDao;
@@ -39,7 +39,7 @@ public class MongodbDaoTest {
 		node.put("foo", "bar");
 		node.put("count", 4);
 		node.set("object", mapper.createObjectNode().put("miao", "bau"));
-		Map schema =   mapper.convertValue(node, Map.class);
+		String schema =   mapper.convertValue(node, String.class);
 		schemaEntity.setSchema(schema);
 		Assertions.assertDoesNotThrow(() -> {
 			schemaEntityDao.save(schemaEntity);

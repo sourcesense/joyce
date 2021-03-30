@@ -1,6 +1,5 @@
 package com.sourcesense.nile.schemaengine.service;
 
-import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.sourcesense.nile.schemaengine.TestApplication;
 import com.sourcesense.nile.schemaengine.dto.ProcessResult;
@@ -18,6 +17,7 @@ import java.io.IOException;
 import java.net.URISyntaxException;
 import java.nio.file.Files;
 import java.nio.file.Path;
+import java.util.Map;
 
 @SpringBootTest(classes = TestApplication.class)
 @ActiveProfiles({"default", "test"})
@@ -36,10 +36,10 @@ public class SchemaEngineIT {
 	public void loadHandlerFromApplciationYamlShouldWork() throws IOException, URISyntaxException {
 		String schema = Files.readString(Path.of(resourceLoader.getResource("schema/11.yaml").getURI()));
 		String source = Files.readString(Path.of(resourceLoader.getResource("source/10.json").getURI()));
-		JsonNode result = schemaEngine.process(schema, source).getJson();
-		Assertions.assertEquals("Leanne Graham", result.get("name").asText());
-		Assertions.assertEquals("Sincere@april.biz", result.get("mail").asText());
-		Assertions.assertEquals("bar", result.get("foo").asText());
+		Map result = schemaEngine.process(schema, source).getJson();
+		Assertions.assertEquals("Leanne Graham", result.get("name"));
+		Assertions.assertEquals("Sincere@april.biz", result.get("mail"));
+		Assertions.assertEquals("bar", result.get("foo"));
 	}
 
 	@Test
@@ -47,13 +47,13 @@ public class SchemaEngineIT {
 		String schema = Files.readString(Path.of(resourceLoader.getResource("schema/10.yaml").getURI()));
 		String source = Files.readString(Path.of(resourceLoader.getResource("source/10.json").getURI()));
 		ProcessResult result = schemaEngine.process(schema, source);
-		Assertions.assertEquals("Leanne Graham", result.getJson().get("name").asText());
-		Assertions.assertEquals("Sincere@april.biz", result.getJson().get("mail").asText());
-		Assertions.assertEquals("Gwenborough, Kulas Light", result.getJson().get("address").asText());
-		Assertions.assertEquals("nile://oracle/users/1", result.getContext().get().get("message_key"));
-		Assertions.assertEquals("users", result.getContext().get().get("collection"));
-		Assertions.assertEquals("simpleUser", result.getJson().get("docType").asText());
-		Assertions.assertEquals("nile://oracle/users/1", result.getJson().get("uid").asText());
+		Assertions.assertEquals("Leanne Graham", result.getJson().get("name"));
+		Assertions.assertEquals("Sincere@april.biz", result.getJson().get("mail"));
+		Assertions.assertEquals("Gwenborough, Kulas Light", result.getJson().get("address"));
+		Assertions.assertEquals("nile://oracle/users/1", result.getMetadata().get().get("message_key"));
+		Assertions.assertEquals("users", result.getMetadata().get().get("collection"));
+		Assertions.assertEquals("simpleUser", result.getJson().get("docType"));
+		Assertions.assertEquals("nile://oracle/users/1", result.getJson().get("uid"));
 	}
 
 	@SpringBootApplication

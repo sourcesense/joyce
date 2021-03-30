@@ -4,7 +4,7 @@ import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.databind.node.ObjectNode;
 import com.fasterxml.jackson.databind.node.TextNode;
-import com.sourcesense.nile.schemaengine.dto.SchemaContext;
+import com.sourcesense.nile.schemaengine.dto.SchemaMetadata;
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
@@ -20,17 +20,17 @@ public class ContextValueTransformerTest {
 
 	@Test
 	void testFixedValue() {
-		ContextValueTransformerHandler handler = new ContextValueTransformerHandler(mapper);
+		MetadataValueTransformerHandler handler = new MetadataValueTransformerHandler(mapper);
 		handler.configure();
 		ObjectNode source = mapper.createObjectNode();
 		source.put("foo", "baz");
 
 		Map<String, Object> contextMap = new HashMap<>();
 		contextMap.put("foo", "bar");
-		SchemaContext schemaContext = new SchemaContext(contextMap);
+		SchemaMetadata schemaMetadata = new SchemaMetadata(contextMap);
 
 		JsonNode value = new TextNode("$.foo");
-		JsonNode result = handler.process( value, source, Optional.of(schemaContext));
+		JsonNode result = handler.process( value, source, Optional.of(schemaMetadata));
 		Assertions.assertEquals("bar",result.asText());
 
 	}

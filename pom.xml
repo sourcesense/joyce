@@ -18,6 +18,7 @@
 		<java.version>11</java.version>
     <nile.ingestion.schema.version>0.0.1-SNAPSHOT</nile.ingestion.schema.version>
     <nile.ingestion.core.version>0.0.1-SNAPSHOT</nile.ingestion.core.version>
+    <org.mapstruct.version>1.4.1.Final</org.mapstruct.version>
 	</properties>
 
 	<modules>

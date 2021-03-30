@@ -11,7 +11,7 @@ import com.jayway.jsonpath.spi.json.JacksonJsonNodeJsonProvider;
 import com.jayway.jsonpath.spi.json.JsonProvider;
 import com.jayway.jsonpath.spi.mapper.JacksonMappingProvider;
 import com.jayway.jsonpath.spi.mapper.MappingProvider;
-import com.sourcesense.nile.schemaengine.dto.SchemaContext;
+import com.sourcesense.nile.schemaengine.dto.SchemaMetadata;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Component;
 
@@ -47,7 +47,7 @@ public class JsonPathTransformerHandler implements TransormerHandler {
 	}
 
 	@Override
-	public JsonNode process(JsonNode value, JsonNode source, Optional<SchemaContext> context) {
+	public JsonNode process(JsonNode value, JsonNode source, Optional<SchemaMetadata> context) {
 		if (value.getNodeType().equals(JsonNodeType.ARRAY)){
 			StringBuffer stringBuffer = new StringBuffer();
 			for (JsonNode jsonNode : ((ArrayNode) value)) {
