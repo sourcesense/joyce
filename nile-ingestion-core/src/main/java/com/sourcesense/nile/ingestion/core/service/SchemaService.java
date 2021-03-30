@@ -20,8 +20,13 @@ public class SchemaService {
 	private final Dao<SchemaEntity> schemaEntityDao;
 	private final SchemaMapper schemaMapper;
 
+	public static String UID_PATTERN = "nile://ingestion/schema/";
+
 	public Schema save(SchemaSave schema) {
 		SchemaEntity entity = schemaMapper.toEntity(schema);
+		if (!entity.getUid().startsWith(UID_PATTERN)){
+			entity.setUid(UID_PATTERN+entity.getUid());
+		}
 		schemaEntityDao.save(entity);
 		Optional<SchemaEntity> saved = schemaEntityDao.get(entity.getUid());
 		// TODO ??? move to DAO this logic??
@@ -35,10 +40,16 @@ public class SchemaService {
 	}
 
     public Optional<Schema> findById(String id) {
+			if (!id.startsWith(UID_PATTERN)){
+				id = UID_PATTERN+id;
+			}
 			return schemaEntityDao.get(id).map(schemaMapper::toDto);
     }
 
 	public void delete(String id) {
+		if (!id.startsWith(UID_PATTERN)){
+			id = UID_PATTERN+id;
+		}
 		Optional<SchemaEntity> entity = schemaEntityDao.get(id);
 		if(entity.isEmpty()){
 			throw new SchemaNotFoundException(String.format("Schema [%s] does not exists", id));

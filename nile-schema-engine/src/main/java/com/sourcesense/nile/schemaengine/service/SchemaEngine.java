@@ -226,6 +226,12 @@ public class SchemaEngine implements ApplicationContextAware {
 		return process(schemaJsonNode, sourceJsonNode);
 	}
 
+	public ProcessResult process(Map jsonSchema, Map sourceJson) throws JsonProcessingException {
+		JsonNode schemaJsonNode = mapper.convertValue(jsonSchema, JsonNode.class);
+		JsonNode sourceJsonNode = mapper.convertValue(sourceJson, JsonNode.class);
+		return process(schemaJsonNode, sourceJsonNode);
+	}
+
 	/**
 	 * Create a new json described by the json-schema provided, with sourceJson as input for the transformation
 	 *

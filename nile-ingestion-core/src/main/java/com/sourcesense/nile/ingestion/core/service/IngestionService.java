@@ -2,6 +2,7 @@ package com.sourcesense.nile.ingestion.core.service;
 
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
+import com.sourcesense.nile.ingestion.core.dto.Schema;
 import com.sourcesense.nile.ingestion.core.errors.MissingMetadataException;
 import com.sourcesense.nile.ingestion.core.errors.SchemaNotFoundException;
 import com.sourcesense.nile.ingestion.core.dao.Dao;
@@ -30,19 +31,19 @@ public class IngestionService {
 	public static String MESSAGE_KEY = "message_key";
 
 	final private SchemaEngine schemaEngine;
-	final private Dao<SchemaEntity> schemaEntityDao;
+	final private SchemaService schemaService;
 	final private KafkaTemplate<String, Map> kafkaTemplate;
 	final private ObjectMapper mapper;
 
 	@Value("${nile.ingestion.kafka.mainlog:mainlog}")
 	String mainlogTopic;
 
-	private ProcessResult getProcessResult(String schema, Map document) throws JsonProcessingException {
-		Optional<SchemaEntity> schemaEntity = schemaEntityDao.get(schema);
-		if(schemaEntity.isEmpty()){
-			throw new SchemaNotFoundException(String.format("Schema %s does not exists", schema));
+	private ProcessResult getProcessResult(String schemaId, Map document) throws JsonProcessingException {
+		Optional<Schema> schema = schemaService.findById(schemaId);
+		if(schema.isEmpty()){
+			throw new SchemaNotFoundException(String.format("Schema %s does not exists", schemaId));
 		}
-		return schemaEngine.process(schemaEntity.get().getSchema(), document);
+		return schemaEngine.process(schema.get().getSchema(), document);
 	}
 
 	public Map processSchema(String schema, Map document) throws JsonProcessingException {

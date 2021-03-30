@@ -22,7 +22,9 @@ public abstract class SchemaMapper {
 
 	@Mapping(target = "schema", source = "entity")
 	public abstract Schema toDto(SchemaEntity entity);
+
 	public abstract SchemaShort toDtoShort(SchemaEntity entity);
+
 	public abstract SchemaEntity toEntity(SchemaSave dto);
 
 	Map schemaAsMap(SchemaEntity entity) throws JsonProcessingException {
