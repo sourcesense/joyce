@@ -1,0 +1,5 @@
+nile:
+  schemaengine:
+    yaml: true
+    handlers:
+      foo: fooHandler
