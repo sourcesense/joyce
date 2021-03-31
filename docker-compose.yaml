@@ -39,5 +39,5 @@ services:
       - KAFKA_CREATE_TOPICS=mainlog:1:3,ingestion:1:3
       - KAFKA_ADVERTISED_LISTENERS=PLAINTEXT://kafka:9092
       - KAFKA_LISTENERS=PLAINTEXT://:9092
-    depends_on:
+    links:
       - zookeeper
