@@ -5,5 +5,8 @@ nile:
       mainlog-topic: mainlog
       bootstrapAddress: kafka:9092
     mongodb:
+      headers:
+        uid: X-Nile-uid
+        collection: X-Nile-collection
       uri: mongodb://user:password@localhost:27017/ingestion
       database: ingestion
