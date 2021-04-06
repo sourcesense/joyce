@@ -22,6 +22,7 @@
 
 	<modules>
 		<module>nile-schema-engine</module>
+		<module>nile-connector-core</module>
 	</modules>
 	<dependencies>
 		<dependency>
