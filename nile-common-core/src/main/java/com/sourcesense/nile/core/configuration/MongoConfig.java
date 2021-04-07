@@ -1,4 +1,4 @@
-package com.sourcesense.nile.ingestion.core.configuration;
+package com.sourcesense.nile.core.configuration;
 
 import com.mongodb.ConnectionString;
 import com.mongodb.MongoClientSettings;
@@ -13,10 +13,10 @@ import org.springframework.data.mongodb.core.MongoTemplate;
 @Configuration
 @Profile("mongodb")
 public class MongoConfig  {
-	@Value("${nile.ingestion.data.mongodb.uri:mongodb://localhost:27017/ingestion}")
+	@Value("${nile.data.mongodb.uri:mongodb://localhost:27017/ingestion}")
 	String mongoUri;
 
-	@Value("${nile.ingestion.data.mongodb.database:ingestion}")
+	@Value("${nile.data.mongodb.database:ingestion}")
 	String database;
 
 	@Bean

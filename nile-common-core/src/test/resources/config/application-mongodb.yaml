@@ -1,6 +1,5 @@
 nile:
-  ingestion:
-    data:
-      mongodb:
-        uri: mongodb://user:password@localhost:27017/ingestion
-        database: ingestion
+  data:
+    mongodb:
+      uri: mongodb://user:password@localhost:27017/ingestion
+      database: ingestion
