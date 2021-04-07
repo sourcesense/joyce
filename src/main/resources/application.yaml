@@ -1,12 +1,16 @@
-
+spring:
+  profiles:
+    active:
+      - mongodb
 nile:
   projection:
+    headers:
+      uid: X-Nile-uid
+      collection: X-Nile-collection
     kafka:
       mainlog-topic: mainlog
       bootstrapAddress: kafka:9092
+  data:
     mongodb:
-      headers:
-        uid: X-Nile-uid
-        collection: X-Nile-collection
       uri: mongodb://user:password@localhost:27017/ingestion
       database: ingestion

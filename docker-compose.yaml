@@ -1,0 +1,6 @@
+version: "3.6"
+
+services:
+  mongodbprojector:
+    build: .
+    image: "nile/mongodb-projector:latest"

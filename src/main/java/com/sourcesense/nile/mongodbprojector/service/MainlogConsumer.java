@@ -1,6 +1,5 @@
 package com.sourcesense.nile.mongodbprojector.service;
 
-import com.mongodb.client.MongoCollection;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.bson.Document;
@@ -13,17 +12,16 @@ import org.springframework.messaging.handler.annotation.Headers;
 import org.springframework.messaging.handler.annotation.Payload;
 import org.springframework.stereotype.Service;
 
-import java.rmi.server.UID;
 import java.util.Map;
 
 @Slf4j
 @Service
 @RequiredArgsConstructor
 public class MainlogConsumer {
-    @Value("${nile.projection.mongodb.headers.uid}")
+    @Value("${nile.projection.headers.uid}")
     String UID_HEADER;
 
-    @Value("${nile.projection.mongodb.headers.collection}")
+    @Value("${nile.projection.headers.collection}")
     String COLLECTION_HEADER;
 
     private final MongoTemplate mongoTemplate;
@@ -47,6 +45,7 @@ public class MainlogConsumer {
 
         } catch (Exception e){
             log.error("Cannot save message with key: {} cause: {}", key, e.getMessage());
+            //TODO: integrate notificationEngine
         }
 
     }
