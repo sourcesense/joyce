@@ -8,15 +8,14 @@ import com.fasterxml.jackson.databind.node.ArrayNode;
 import com.fasterxml.jackson.databind.node.JsonNodeType;
 import com.fasterxml.jackson.databind.node.ObjectNode;
 import com.fasterxml.jackson.databind.node.TextNode;
-import com.fasterxml.jackson.dataformat.yaml.YAMLFactory;
 import com.networknt.schema.JsonSchema;
 import com.networknt.schema.JsonSchemaFactory;
 import com.networknt.schema.SpecVersion;
 import com.networknt.schema.ValidationResult;
-
 import com.sourcesense.nile.schemaengine.dto.ProcessResult;
 import com.sourcesense.nile.schemaengine.dto.SchemaMetadata;
 import com.sourcesense.nile.schemaengine.exceptions.HandlerBeanNameNotFound;
+import com.sourcesense.nile.schemaengine.exceptions.InvalidSchemaVersion;
 import com.sourcesense.nile.schemaengine.exceptions.SchemaIsNotValidException;
 import com.sourcesense.nile.schemaengine.handlers.TransormerHandler;
 import lombok.extern.slf4j.Slf4j;
@@ -26,16 +25,15 @@ import org.springframework.context.ApplicationContextAware;
 import org.springframework.stereotype.Service;
 
 import javax.annotation.PostConstruct;
-import java.util.HashMap;
-import java.util.Iterator;
-import java.util.Map;
-import java.util.Optional;
+import java.util.*;
+import java.util.stream.Collectors;
+import java.util.stream.Stream;
+import java.util.stream.StreamSupport;
 
 @Service
 @Slf4j
 public class SchemaEngine implements ApplicationContextAware {
 	protected static String METADATA = "$metadata";
-	private ObjectMapper yamlReader;
 	private ObjectMapper mapper;
 	private JsonSchemaFactory factory;
 	private Map<String, TransormerHandler> handlers;
@@ -44,7 +42,6 @@ public class SchemaEngine implements ApplicationContextAware {
 
 	public SchemaEngine(SchemaEngineProperties properties) {
 		this.factory = JsonSchemaFactory.getInstance(SpecVersion.VersionFlag.V7);
-		this.yamlReader = new ObjectMapper(new YAMLFactory());
 		this.mapper = new ObjectMapper();
 		this.handlers = new HashMap<>();
 		this.properties = properties;
@@ -207,7 +204,7 @@ public class SchemaEngine implements ApplicationContextAware {
 	 * @return
 	 */
 	public ProcessResult process(String jsonSchema, String sourceJson) throws JsonProcessingException {
-		JsonNode schemaJsonNode = yamlReader.readValue(jsonSchema, JsonNode.class);
+		JsonNode schemaJsonNode = mapper.readValue(jsonSchema, JsonNode.class);
 		JsonNode sourceJsonNode = mapper.readValue(sourceJson, JsonNode.class);
 		return process(schemaJsonNode, sourceJsonNode);
 	}
@@ -221,7 +218,7 @@ public class SchemaEngine implements ApplicationContextAware {
 	 * @throws JsonProcessingException
 	 */
 	public ProcessResult process(String jsonSchema, Map sourceJson) throws JsonProcessingException {
-		JsonNode schemaJsonNode = yamlReader.readValue(jsonSchema, JsonNode.class);
+		JsonNode schemaJsonNode = mapper.readValue(jsonSchema, JsonNode.class);
 		JsonNode sourceJsonNode = mapper.convertValue(sourceJson, JsonNode.class);
 		return process(schemaJsonNode, sourceJsonNode);
 	}
@@ -256,5 +253,35 @@ public class SchemaEngine implements ApplicationContextAware {
 	@Override
 	public void setApplicationContext(ApplicationContext applicationContext) throws BeansException {
 		this.applicationContext = applicationContext;
+	}
+
+	/**
+	 * Detects if the changes in the schema are breaking changes or not, throws Exception if the schema changes are unacceptable
+	 * @param previousSchema
+	 * @param newSchema
+	 * @return
+	 */
+	public Boolean hasBreakingChanges(String previousSchema, String newSchema) throws JsonProcessingException {
+		JsonNode prevJson = mapper.readValue(previousSchema, JsonNode.class);
+		JsonNode newJson = mapper.readValue(newSchema, JsonNode.class);
+		List<String> newKeys = StreamSupport.stream(
+				Spliterators.spliteratorUnknownSize(newJson.get("properties").fields(), Spliterator.ORDERED), false)
+				.map(stringJsonNodeEntry -> stringJsonNodeEntry.getKey() + stringJsonNodeEntry.getValue().get("type").asText())
+				.collect(Collectors.toList());
+
+		List<String> prevkeys = StreamSupport.stream(
+				Spliterators.spliteratorUnknownSize(prevJson.get("properties").fields(), Spliterator.ORDERED), false)
+				.map(stringJsonNodeEntry -> stringJsonNodeEntry.getKey() + stringJsonNodeEntry.getValue().get("type").asText())
+				.collect(Collectors.toList());
+
+		List<String>missingFromNewSchema = prevkeys.stream()
+				.filter(s -> !newKeys.contains(s))
+				.collect(Collectors.toList());
+
+		if (missingFromNewSchema.size() > 0){
+			throw new InvalidSchemaVersion(String.format("New Schema is not valid some key were deleted %s", String.join(", ", missingFromNewSchema)));
+		}
+
+		return newKeys.size() > prevkeys.size();
 	}
 }

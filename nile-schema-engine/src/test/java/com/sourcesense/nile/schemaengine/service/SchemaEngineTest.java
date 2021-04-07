@@ -1,9 +1,8 @@
 package com.sourcesense.nile.schemaengine.service;
 
-import com.fasterxml.jackson.databind.ObjectMapper;
-import com.fasterxml.jackson.databind.node.ObjectNode;
 import com.fasterxml.jackson.databind.node.TextNode;
 import com.sourcesense.nile.schemaengine.dto.ProcessResult;
+import com.sourcesense.nile.schemaengine.exceptions.InvalidSchemaVersion;
 import com.sourcesense.nile.schemaengine.exceptions.SchemaIsNotValidException;
 import com.sourcesense.nile.schemaengine.handlers.TransormerHandler;
 import org.junit.jupiter.api.Assertions;
@@ -38,7 +37,7 @@ public class SchemaEngineTest {
 
 	@Test
 	void registerHandlerKeyWithoutDollarShouldAddDollarSign() throws URISyntaxException, IOException {
-		String schema = Files.readString(loadResource("schema/10.yaml"));
+		String schema = Files.readString(loadResource("schema/10.json"));
 		String source = Files.readString(loadResource("source/10.json"));
 
 		SchemaEngine schemaEngine = new SchemaEngine(props);
@@ -55,7 +54,7 @@ public class SchemaEngineTest {
 
 	@Test
 	void dummyParserShouldBeRegisteredCorrectly() throws URISyntaxException, IOException {
-		String schema = Files.readString(loadResource("schema/10.yaml"));
+		String schema = Files.readString(loadResource("schema/10.json"));
 		String source = Files.readString(loadResource("source/10.json"));
 		SchemaEngine schemaEngine = new SchemaEngine(props);
 		TransormerHandler jsonPathTransformerHandler = Mockito.mock(TransormerHandler.class);
@@ -70,7 +69,7 @@ public class SchemaEngineTest {
 
 	@Test
 	void invalidSchemaShouldThrow() throws URISyntaxException, IOException {
-		String schema = Files.readString(loadResource("schema/10.yaml"));
+		String schema = Files.readString(loadResource("schema/10.json"));
 		String source = Files.readString(loadResource("source/10.json"));
 		SchemaEngine schemaEngine = new SchemaEngine(props);
 		TransormerHandler jsonPathTransformerHandler = Mockito.mock(TransormerHandler.class);
@@ -85,7 +84,7 @@ public class SchemaEngineTest {
 
 	@Test
 	void metadataShouldReturnTransformed() throws URISyntaxException, IOException {
-		String schema = Files.readString(loadResource("schema/10.yaml"));
+		String schema = Files.readString(loadResource("schema/10.json"));
 		String source = Files.readString(loadResource("source/10.json"));
 		SchemaEngine schemaEngine = new SchemaEngine(props);
 		TransormerHandler jsonPathTransformerHandler = Mockito.mock(TransormerHandler.class);
@@ -96,5 +95,33 @@ public class SchemaEngineTest {
 		ProcessResult result = schemaEngine.process(schema, source);
 		Assertions.assertEquals("users", result.getMetadata().get().get("collection"));
 		Assertions.assertEquals("bar", result.getMetadata().get().get("message_key"));
+	}
+
+    @Test
+    void schemaWithVersionBreakingChangeShouldReturnTrue() throws URISyntaxException, IOException {
+		String schema = Files.readString(loadResource("schema/11.json"));
+		String newSchema = Files.readString(loadResource("schema/12.json"));;
+		SchemaEngine schemaEngine = new SchemaEngine(props);
+		Boolean ret = schemaEngine.hasBreakingChanges(schema, newSchema);
+		Assertions.assertTrue(ret);
+    }
+	@Test
+	void schemaWithChangingSourceOnAFieldShouldReturnFalse() throws URISyntaxException, IOException {
+		String schema = Files.readString(loadResource("schema/11.json"));
+		String newSchema = Files.readString(loadResource("schema/14.json"));;
+		SchemaEngine schemaEngine = new SchemaEngine(props);
+		Boolean ret = schemaEngine.hasBreakingChanges(schema, newSchema);
+		Assertions.assertFalse(ret);
+	}
+
+	@Test
+	void changingTypeWithoutRenamingShouldThrow() throws URISyntaxException, IOException {
+		String schema = Files.readString(loadResource("schema/12.json"));
+		String newSchema = Files.readString(loadResource("schema/13.json"));;
+		SchemaEngine schemaEngine = new SchemaEngine(props);
+		Assertions.assertThrows(InvalidSchemaVersion.class, () -> {
+			schemaEngine.hasBreakingChanges(schema, newSchema);
+		});
+
 	}
 }

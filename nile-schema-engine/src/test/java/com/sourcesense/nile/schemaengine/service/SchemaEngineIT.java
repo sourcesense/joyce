@@ -34,7 +34,7 @@ public class SchemaEngineIT {
 
 	@Test
 	public void loadHandlerFromApplciationYamlShouldWork() throws IOException, URISyntaxException {
-		String schema = Files.readString(Path.of(resourceLoader.getResource("schema/11.yaml").getURI()));
+		String schema = Files.readString(Path.of(resourceLoader.getResource("schema/11.json").getURI()));
 		String source = Files.readString(Path.of(resourceLoader.getResource("source/10.json").getURI()));
 		Map result = schemaEngine.process(schema, source).getJson();
 		Assertions.assertEquals("Leanne Graham", result.get("name"));
@@ -44,7 +44,7 @@ public class SchemaEngineIT {
 
 	@Test
 	public void schemaParsing10() throws IOException, URISyntaxException {
-		String schema = Files.readString(Path.of(resourceLoader.getResource("schema/10.yaml").getURI()));
+		String schema = Files.readString(Path.of(resourceLoader.getResource("schema/10.json").getURI()));
 		String source = Files.readString(Path.of(resourceLoader.getResource("source/10.json").getURI()));
 		ProcessResult result = schemaEngine.process(schema, source);
 		Assertions.assertEquals("Leanne Graham", result.getJson().get("name"));

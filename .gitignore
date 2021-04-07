@@ -131,3 +131,7 @@ fabric.properties
 hs_err_pid*
 
 # End of https://www.toptal.com/developers/gitignore/api/java,intellij
+.project
+nile-connector-core/.classpath
+nile-connector-core/.factorypath
+nile-connector-core/.project
