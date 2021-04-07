@@ -4,6 +4,7 @@ import com.jayway.jsonpath.PathNotFoundException;
 import com.sourcesense.nile.core.dto.ApiError;
 import com.sourcesense.nile.core.errors.SchemaNotFoundException;
 import com.sourcesense.nile.schemaengine.exceptions.InvalidSchemaVersion;
+import com.sourcesense.nile.schemaengine.exceptions.SchemaIsNotValidException;
 import org.apache.kafka.common.KafkaException;
 import org.springframework.http.HttpStatus;
 import org.springframework.web.bind.annotation.ControllerAdvice;
@@ -47,6 +48,13 @@ public class CustonExceptionHandler {
 	@ResponseStatus(HttpStatus.NOT_FOUND)
 	@ResponseBody
 	public ApiError schemaNotFound(SchemaNotFoundException exception, WebRequest request) {
+		return new ApiError(exception.getMessage(), exception.getClass().getCanonicalName());
+	}
+
+	@ExceptionHandler(value = SchemaIsNotValidException.class)
+	@ResponseStatus(HttpStatus.INTERNAL_SERVER_ERROR)
+	@ResponseBody
+	public ApiError handler(SchemaIsNotValidException exception, WebRequest request) {
 		return new ApiError(exception.getMessage(), exception.getClass().getCanonicalName());
 	}
 }

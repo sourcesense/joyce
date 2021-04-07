@@ -36,6 +36,9 @@ public class IngestionService {
 	public Map processSchema(Schema schema, Map document) throws JsonProcessingException {
 		ProcessResult node = schemaEngine.process(schema.getSchema(), document);
 
+		// Set schema version
+		setSchemaMetadata(schema, node.getJson());
+
 		Map result = new HashMap<>();
 		node.getMetadata().ifPresent(metadata -> {
 			result.put("metadata", metadata.getAll());
@@ -45,6 +48,12 @@ public class IngestionService {
 		return result;
 	}
 
+	private void setSchemaMetadata(Schema schema, Map json) {
+		json.put("_schema_version_", schema.getVersion());
+		json.put("_schema_uid_", schema.getUid());
+		json.put("_schema_name_", schema.getName());
+	}
+
 
 	public Boolean ingest(Schema schema, Map document) throws JsonProcessingException {
 		ProcessResult result = schemaEngine.process(schema.getSchema(), document);
@@ -52,6 +61,9 @@ public class IngestionService {
 			throw new MissingMetadataException("Message has no metadata, cannot ingest docuemnt");
 		}
 		String key = Optional.ofNullable((String)result.getMetadata().get().get(MESSAGE_KEY)).orElseThrow(() -> new MissingMetadataException(String.format("Missing [%s] from metadata, cannot ingest document", MESSAGE_KEY)));
+
+		// Set schema version
+		setSchemaMetadata(schema, result.getJson());
 
 		MessageBuilder<Map> message = MessageBuilder
 				.withPayload(result.getJson())
