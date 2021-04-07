@@ -1,8 +1,8 @@
 package com.sourcesense.nile.ingestion.core.service;
 
-import com.fasterxml.jackson.core.JsonProcessingException;
-import com.sourcesense.nile.ingestion.core.dto.Schema;
-import com.sourcesense.nile.ingestion.core.errors.SchemaNotFoundException;
+import com.sourcesense.nile.core.dto.Schema;
+import com.sourcesense.nile.core.service.SchemaService;
+import com.sourcesense.nile.core.errors.SchemaNotFoundException;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.kafka.annotation.KafkaListener;

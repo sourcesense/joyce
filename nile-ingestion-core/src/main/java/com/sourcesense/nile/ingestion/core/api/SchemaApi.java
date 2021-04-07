@@ -1,15 +1,14 @@
 package com.sourcesense.nile.ingestion.core.api;
 
 import com.fasterxml.jackson.core.JsonProcessingException;
-import com.sourcesense.nile.ingestion.core.dto.Schema;
-import com.sourcesense.nile.ingestion.core.dto.SchemaSave;
-import com.sourcesense.nile.ingestion.core.dto.SchemaShort;
+import com.sourcesense.nile.core.dto.Schema;
+import com.sourcesense.nile.core.dto.SchemaSave;
+import com.sourcesense.nile.core.dto.SchemaShort;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import org.springframework.http.HttpStatus;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
-import java.util.Optional;
 
 @RequestMapping( value = "/api/schema")
 @Tag(name = "Schema API", description = "Schema	 Management API")

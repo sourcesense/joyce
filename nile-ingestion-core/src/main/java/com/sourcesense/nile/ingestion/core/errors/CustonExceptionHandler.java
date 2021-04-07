@@ -1,7 +1,8 @@
 package com.sourcesense.nile.ingestion.core.errors;
 
 import com.jayway.jsonpath.PathNotFoundException;
-import com.sourcesense.nile.ingestion.core.dto.ApiError;
+import com.sourcesense.nile.core.dto.ApiError;
+import com.sourcesense.nile.core.errors.SchemaNotFoundException;
 import com.sourcesense.nile.schemaengine.exceptions.InvalidSchemaVersion;
 import org.apache.kafka.common.KafkaException;
 import org.springframework.http.HttpStatus;

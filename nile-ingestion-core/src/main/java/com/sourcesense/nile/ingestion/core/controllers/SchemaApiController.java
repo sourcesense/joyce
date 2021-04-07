@@ -2,11 +2,11 @@ package com.sourcesense.nile.ingestion.core.controllers;
 
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.sourcesense.nile.ingestion.core.api.SchemaApi;
-import com.sourcesense.nile.ingestion.core.dto.Schema;
-import com.sourcesense.nile.ingestion.core.dto.SchemaSave;
-import com.sourcesense.nile.ingestion.core.dto.SchemaShort;
-import com.sourcesense.nile.ingestion.core.errors.SchemaNotFoundException;
-import com.sourcesense.nile.ingestion.core.service.SchemaService;
+import com.sourcesense.nile.core.dto.Schema;
+import com.sourcesense.nile.core.dto.SchemaSave;
+import com.sourcesense.nile.core.dto.SchemaShort;
+import com.sourcesense.nile.core.errors.SchemaNotFoundException;
+import com.sourcesense.nile.core.service.SchemaService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.web.bind.annotation.RestController;
 
