@@ -25,7 +25,12 @@ public abstract class SchemaMapper {
 
 	public abstract SchemaShort toDtoShort(SchemaEntity entity);
 
+	@Mapping(target = "schema", source = "dto")
 	public abstract SchemaEntity toEntity(SchemaSave dto);
+
+	String schemaAsString(SchemaSave dto) throws JsonProcessingException {
+		return mapper.writeValueAsString(dto.getSchema());
+	}
 
 	Map schemaAsMap(SchemaEntity entity) throws JsonProcessingException {
 		return mapper.readValue(entity.getSchema(), Map.class);

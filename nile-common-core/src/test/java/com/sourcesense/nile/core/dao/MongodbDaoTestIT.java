@@ -1,5 +1,6 @@
 package com.sourcesense.nile.core.dao;
 
+import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.databind.node.ObjectNode;
 import com.sourcesense.nile.core.model.SchemaEntity;
@@ -30,7 +31,7 @@ public class MongodbDaoTestIT {
 	}
 
 	@Test
-	void addRemove(){
+	void addRemove() throws JsonProcessingException {
 		ObjectMapper mapper = new ObjectMapper();
 		SchemaEntity schemaEntity = new SchemaEntity();
 		schemaEntity.setUid("user-schema");
@@ -38,7 +39,7 @@ public class MongodbDaoTestIT {
 		node.put("foo", "bar");
 		node.put("count", 4);
 		node.set("object", mapper.createObjectNode().put("miao", "bau"));
-		String schema = mapper.convertValue(node, String.class);
+		String schema = mapper.writeValueAsString(node);
 		schemaEntity.setSchema(schema);
 		Assertions.assertDoesNotThrow(() -> {
 			schemaEntityDao.save(schemaEntity);
