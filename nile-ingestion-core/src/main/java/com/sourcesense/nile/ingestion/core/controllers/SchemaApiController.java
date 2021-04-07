@@ -1,5 +1,6 @@
 package com.sourcesense.nile.ingestion.core.controllers;
 
+import com.fasterxml.jackson.core.JsonProcessingException;
 import com.sourcesense.nile.ingestion.core.api.SchemaApi;
 import com.sourcesense.nile.ingestion.core.dto.Schema;
 import com.sourcesense.nile.ingestion.core.dto.SchemaSave;
@@ -32,7 +33,7 @@ public class SchemaApiController implements SchemaApi {
 	}
 
 	@Override
-	public Schema save(SchemaSave schema) {
+	public Schema save(SchemaSave schema) throws JsonProcessingException {
 		Schema saved = schemaService.save(schema);
 		return saved;
 	}

@@ -1,5 +1,6 @@
 package com.sourcesense.nile.ingestion.core.api;
 
+import com.fasterxml.jackson.core.JsonProcessingException;
 import com.sourcesense.nile.ingestion.core.dto.Schema;
 import com.sourcesense.nile.ingestion.core.dto.SchemaSave;
 import com.sourcesense.nile.ingestion.core.dto.SchemaShort;
@@ -24,7 +25,7 @@ public interface SchemaApi {
 
 	@PostMapping
 	@ResponseStatus(code = HttpStatus.CREATED)
-	Schema save(@RequestBody SchemaSave user);
+	Schema save(@RequestBody SchemaSave user) throws JsonProcessingException;
 
 	@DeleteMapping("/{id}")
 	@ResponseStatus(code = HttpStatus.NO_CONTENT)

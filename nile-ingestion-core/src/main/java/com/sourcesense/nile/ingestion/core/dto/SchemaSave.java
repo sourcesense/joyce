@@ -4,7 +4,7 @@ import lombok.Data;
 
 @Data
 public class SchemaSave {
-	private String uid;
+	private String name;
 	private String schema;
 	private String description;
 }

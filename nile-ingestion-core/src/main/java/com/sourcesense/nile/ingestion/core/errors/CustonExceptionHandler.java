@@ -2,6 +2,7 @@ package com.sourcesense.nile.ingestion.core.errors;
 
 import com.jayway.jsonpath.PathNotFoundException;
 import com.sourcesense.nile.ingestion.core.dto.ApiError;
+import com.sourcesense.nile.schemaengine.exceptions.InvalidSchemaVersion;
 import org.apache.kafka.common.KafkaException;
 import org.springframework.http.HttpStatus;
 import org.springframework.web.bind.annotation.ControllerAdvice;
@@ -12,6 +13,13 @@ import org.springframework.web.context.request.WebRequest;
 
 @ControllerAdvice(basePackages = "com.sourcesense.nile")
 public class CustonExceptionHandler {
+
+	@ExceptionHandler(value = InvalidSchemaVersion.class)
+	@ResponseStatus(HttpStatus.INTERNAL_SERVER_ERROR)
+	@ResponseBody
+	public ApiError handler(InvalidSchemaVersion exception, WebRequest request) {
+		return new ApiError(exception.getMessage(), exception.getClass().getCanonicalName());
+	}
 
 	@ExceptionHandler(value = PathNotFoundException.class)
 	@ResponseStatus(HttpStatus.INTERNAL_SERVER_ERROR)

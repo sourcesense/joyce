@@ -7,6 +7,9 @@ import java.util.Map;
 @Data
 public class Schema {
 	private String uid;
-	private Map schema;
+	private Integer version;
+	private String name;
 	private String description;
+	private Map schema;
+
 }
