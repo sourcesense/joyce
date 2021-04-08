@@ -1,7 +1,7 @@
 package com.sourcesense.nile.core.service;
 
 import com.fasterxml.jackson.core.JsonProcessingException;
-import com.sourcesense.nile.core.dao.Dao;
+import com.sourcesense.nile.core.dao.SchemaDao;
 import com.sourcesense.nile.core.dto.Schema;
 import com.sourcesense.nile.core.dto.SchemaSave;
 import com.sourcesense.nile.core.mapper.SchemaMapper;
@@ -22,7 +22,7 @@ import java.util.Optional;
 @MockitoSettings(strictness = Strictness.LENIENT)
 class SchemaServiceTest {
 		@Mock
-		Dao<SchemaEntity> schemaEntityDao;
+		SchemaDao schemaEntityDao;
 
 		@Mock
 		SchemaMapper schemaMapper;
@@ -33,6 +33,7 @@ class SchemaServiceTest {
     @Test
     void breakingChangeSchemaShouldStepVersion() throws JsonProcessingException {
 			SchemaService service = new SchemaService(schemaEntityDao, schemaMapper, schemaEngine);
+			service.uidPattern = "nile://ingestion/schema/%s";
 			SchemaSave schemaNew = null;
 			SchemaEntity entityNew = new SchemaEntity();
 			entityNew.setName("foobar");

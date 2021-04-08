@@ -9,7 +9,7 @@ import java.util.Optional;
 
 @Component
 @Profile("cassandra")
-public class CassandraSchemaDao implements Dao<SchemaEntity> {
+public class CassandraSchemaDao implements SchemaDao {
 	@Override
 	public Optional<SchemaEntity> get(String id) {
 		return Optional.empty();
@@ -28,5 +28,10 @@ public class CassandraSchemaDao implements Dao<SchemaEntity> {
 	@Override
 	public void delete(SchemaEntity schemaEntity) {
 
+	}
+
+	@Override
+	public List<SchemaEntity> getByName(String name) {
+		return null;
 	}
 }

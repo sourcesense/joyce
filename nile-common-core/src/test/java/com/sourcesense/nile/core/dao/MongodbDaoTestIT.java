@@ -22,7 +22,7 @@ import java.util.Optional;
 public class MongodbDaoTestIT {
 
 	@Autowired
-	Dao<SchemaEntity> schemaEntityDao;
+	SchemaDao schemaEntityDao;
 
 	@Test
 	void schemaDaoShouldBe(){

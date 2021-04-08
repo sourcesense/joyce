@@ -1,7 +1,7 @@
 package com.sourcesense.nile.core.service;
 
 import com.fasterxml.jackson.core.JsonProcessingException;
-import com.sourcesense.nile.core.dao.Dao;
+import com.sourcesense.nile.core.dao.SchemaDao;
 import com.sourcesense.nile.core.dto.Schema;
 import com.sourcesense.nile.core.dto.SchemaSave;
 import com.sourcesense.nile.core.dto.SchemaShort;
@@ -10,6 +10,7 @@ import com.sourcesense.nile.core.mapper.SchemaMapper;
 import com.sourcesense.nile.core.model.SchemaEntity;
 import com.sourcesense.nile.schemaengine.service.SchemaEngine;
 import lombok.RequiredArgsConstructor;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
 
 import java.util.List;
@@ -19,15 +20,17 @@ import java.util.stream.Collectors;
 @Service
 @RequiredArgsConstructor
 public class SchemaService {
-	private final Dao<SchemaEntity> schemaEntityDao;
+	private final SchemaDao schemaEntityDao;
 	private final SchemaMapper schemaMapper;
 	private final SchemaEngine schemaEngine;
 
-	public static String UID_PATTERN = "nile://ingestion/schema/";
+	@Value("${nile.schema.uidPattern:nile://ingestion/schema/%s}")
+	String uidPattern;
+
 
 	public Schema save(SchemaSave schema) throws JsonProcessingException {
 		SchemaEntity entity = schemaMapper.toEntity(schema);
-		String uid = UID_PATTERN+entity.getName();
+		String uid = String.format(uidPattern, entity.getName());
 		entity.setUid(uid);
 
 		Optional<SchemaEntity> previous = schemaEntityDao.get(uid);
@@ -58,21 +61,22 @@ public class SchemaService {
 				.collect(Collectors.toList());
 	}
 
-    public Optional<Schema> findById(String id) {
-			if (!id.startsWith(UID_PATTERN)){
-				id = UID_PATTERN+id;
-			}
-			return schemaEntityDao.get(id).map(schemaMapper::toDto);
+    public Optional<Schema> findByName(String name) {
+			return schemaEntityDao.get(String.format(uidPattern, name)).map(schemaMapper::toDto);
     }
 
-	public void delete(String id) {
-		if (!id.startsWith(UID_PATTERN)){
-			id = UID_PATTERN+id;
-		}
-		Optional<SchemaEntity> entity = schemaEntityDao.get(id);
+	public void delete(String name) {
+		Optional<SchemaEntity> entity = schemaEntityDao.get(String.format(uidPattern, name));
 		if(entity.isEmpty()){
-			throw new SchemaNotFoundException(String.format("Schema [%s] does not exists", id));
+			throw new SchemaNotFoundException(String.format("Schema [%s] does not exists", name));
 		}
 		schemaEntityDao.delete(entity.get());
+	}
+
+	public List<Schema> getAllVersions(String name) {
+		List<SchemaEntity> versions = schemaEntityDao.getByName(name);
+		return versions.stream()
+				.map(schemaMapper::toDto)
+				.collect(Collectors.toList());
 	}
 }

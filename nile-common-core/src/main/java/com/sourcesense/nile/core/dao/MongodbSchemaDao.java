@@ -15,7 +15,7 @@ import java.util.Optional;
 @Component
 @Profile("mongodb")
 @RequiredArgsConstructor
-public class MongodbSchemaDao implements Dao<SchemaEntity> {
+public class MongodbSchemaDao implements SchemaDao {
 
 	@Autowired
 	private MongoTemplate mongoTemplate;
@@ -40,5 +40,12 @@ public class MongodbSchemaDao implements Dao<SchemaEntity> {
 	@Override
 	public void delete(SchemaEntity schemaEntity) {
 		mongoTemplate.remove(schemaEntity);
+	}
+
+	@Override
+	public List<SchemaEntity> getByName(String name) {
+		Query query = Query.query(Criteria.where("name").is(name));
+		List<SchemaEntity> schemas = mongoTemplate.find(query, SchemaEntity.class);
+		return schemas;
 	}
 }
