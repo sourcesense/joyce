@@ -16,17 +16,21 @@ public interface SchemaApi {
 
 	@GetMapping(produces = "application/json; charset=utf-8")
 	@ResponseStatus(code = HttpStatus.OK)
-	List<SchemaShort> findAll();
+	List<SchemaShort> getAllSchema();
 
-	@GetMapping(value = "/{id}", produces = "application/json; charset=utf-8")
+	@GetMapping(value = "/{name}", produces = "application/json; charset=utf-8")
 	@ResponseStatus(code = HttpStatus.OK)
-	Schema findById(@PathVariable String id);
+	Schema getSchema(@PathVariable String name);
+
+	@GetMapping(value = "/{name}/versions", produces = "application/json; charset=utf-8")
+	@ResponseStatus(code = HttpStatus.OK)
+	List<Schema> getSchemaWithVersions(@PathVariable String name);
 
 	@PostMapping
 	@ResponseStatus(code = HttpStatus.CREATED)
-	Schema save(@RequestBody SchemaSave user) throws JsonProcessingException;
+	Schema saveSchema(@RequestBody SchemaSave user) throws JsonProcessingException;
 
-	@DeleteMapping("/{id}")
+	@DeleteMapping("/{name}")
 	@ResponseStatus(code = HttpStatus.NO_CONTENT)
-	void delete(@PathVariable String id);
+	void deleteSchema(@PathVariable String name);
 }

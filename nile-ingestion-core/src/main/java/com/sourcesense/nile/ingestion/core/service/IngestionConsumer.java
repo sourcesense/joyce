@@ -24,7 +24,7 @@ public class IngestionConsumer {
 	public void listenIngestion(@Payload Map message,
 														 @Header(KafkaHeaders.RECEIVED_MESSAGE_KEY) String messageKey) {
 		try {
-			Optional<Schema> schema = schemaService.findById(messageKey);
+			Optional<Schema> schema = schemaService.findByName(messageKey);
 			if(schema.isEmpty()){
 				throw new SchemaNotFoundException(String.format("Schema %s does not exists", messageKey));
 			}

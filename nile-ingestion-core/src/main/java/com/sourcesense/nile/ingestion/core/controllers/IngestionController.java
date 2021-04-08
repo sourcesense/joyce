@@ -19,7 +19,7 @@ public class IngestionController implements IngestionApi {
 	final private SchemaService schemaService;
 	@Override
 	public Boolean ingestDocument(String schemaId, Map document) throws JsonProcessingException {
-		Optional<Schema> schema = schemaService.findById(schemaId);
+		Optional<Schema> schema = schemaService.findByName(schemaId);
 		if(schema.isEmpty()){
 			throw new SchemaNotFoundException(String.format("Schema %s does not exists", schemaId));
 		}
@@ -28,7 +28,7 @@ public class IngestionController implements IngestionApi {
 
 	@Override
 	public Map testDocumentIngestion(String schemaId, Map document) throws JsonProcessingException {
-		Optional<Schema> schema = schemaService.findById(schemaId);
+		Optional<Schema> schema = schemaService.findByName(schemaId);
 		if(schema.isEmpty()){
 			throw new SchemaNotFoundException(String.format("Schema %s does not exists", schemaId));
 		}

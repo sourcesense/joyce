@@ -19,27 +19,36 @@ public class SchemaApiController implements SchemaApi {
 	final protected SchemaService schemaService;
 
 	@Override
-	public List<SchemaShort> findAll() {
+	public List<SchemaShort> getAllSchema() {
 		return schemaService.findAll();
 	}
 
 	@Override
-	public Schema findById(String id) {
-		Optional<Schema> schema = schemaService.findById(id);
+	public Schema getSchema(String name) {
+		Optional<Schema> schema = schemaService.findByName(name);
 		if (schema.isEmpty()){
-			throw new SchemaNotFoundException(String.format("Schema [%s] does not exists", id));
+			throw new SchemaNotFoundException(String.format("Schema [%s] does not exists", name));
 		}
 		return schema.get();
 	}
 
 	@Override
-	public Schema save(SchemaSave schema) throws JsonProcessingException {
+	public List<Schema> getSchemaWithVersions(String name) {
+		List<Schema> schemas = schemaService.getAllVersions(name);
+		if (schemas.size() < 1){
+			throw new SchemaNotFoundException(String.format("Schema [%s] does not exists", name));
+		}
+		return schemas;
+	}
+
+	@Override
+	public Schema saveSchema(SchemaSave schema) throws JsonProcessingException {
 		Schema saved = schemaService.save(schema);
 		return saved;
 	}
 
 	@Override
-	public void delete(String id) {
+	public void deleteSchema(String id) {
 		schemaService.delete(id);
 	}
 }
