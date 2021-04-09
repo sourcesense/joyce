@@ -9,9 +9,9 @@
 	</parent>
 
 	<groupId>com.sourcesense.nile</groupId>
-	<artifactId>schema-engine</artifactId>
+	<artifactId>nile-schema-engine</artifactId>
 	<version>0.0.1-SNAPSHOT</version>
-	<name>schema-engine</name>
+	<name>nile-schema-engine</name>
 	<description>Nile Schema Engine Library</description>
 	<properties>
 		<java.version>11</java.version>

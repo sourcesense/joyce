@@ -8,10 +8,8 @@ import com.fasterxml.jackson.databind.node.ArrayNode;
 import com.fasterxml.jackson.databind.node.JsonNodeType;
 import com.fasterxml.jackson.databind.node.ObjectNode;
 import com.fasterxml.jackson.databind.node.TextNode;
-import com.networknt.schema.JsonSchema;
-import com.networknt.schema.JsonSchemaFactory;
-import com.networknt.schema.SpecVersion;
-import com.networknt.schema.ValidationResult;
+import com.networknt.schema.*;
+import com.sourcesense.nile.schemaengine.NileMetaSchema;
 import com.sourcesense.nile.schemaengine.dto.ProcessResult;
 import com.sourcesense.nile.schemaengine.dto.SchemaMetadata;
 import com.sourcesense.nile.schemaengine.exceptions.HandlerBeanNameNotFound;
@@ -80,7 +78,21 @@ public class SchemaEngine implements ApplicationContextAware {
 			}
 			this.registerHandler(key, handler);
 		}
+
+		this.registerMetaSchema();
 	}
+
+	/**
+	 * Genrates the Meta Schema with correct registered Keywords
+	 */
+	public void registerMetaSchema() {
+		JsonMetaSchema metaSchema = NileMetaSchema.getInstance(new ArrayList<>(handlers.keySet()));
+		JsonSchemaFactory.Builder builder = new JsonSchemaFactory.Builder();
+		this.factory = builder.defaultMetaSchemaURI(metaSchema.getUri())
+				.addMetaSchema(metaSchema).build();
+	//
+	}
+
 
 	/**
 	 * Parse the context node applying the transsformers if presents

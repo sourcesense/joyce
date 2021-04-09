@@ -14,7 +14,7 @@
     <dependencies>
         <dependency>
             <groupId>com.sourcesense.nile</groupId>
-            <artifactId>schema-engine</artifactId>
+            <artifactId>nile-schema-engine</artifactId>
             <version>${nile.schema-engine.version}</version>
         </dependency>
         <dependency>

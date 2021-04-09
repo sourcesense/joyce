@@ -1,5 +1,5 @@
 {
-  "$schema": "http://json-schema.org/draft-07/schema#",
+  "$schema": "https://nile.sourcesensce.com/v1/schema",
   "$metadata": {
     "message_key": {
       "$path": [
@@ -14,8 +14,7 @@
   "type": "object",
   "properties": {
     "uid": {
-      "type": "string",
-      "nullable": true,
+      "type": ["string", "null"],
       "$meta": "$.message_key"
     },
     "name": {
@@ -28,8 +27,7 @@
       "$path": "$.email"
     },
     "docType": {
-      "type": "string",
-      "nullable": true,
+      "type": ["string", "null"],
       "$fixed": "simpleUser"
     },
     "address": {

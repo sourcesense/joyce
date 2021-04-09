@@ -45,6 +45,7 @@ public class SchemaEngineTest {
 		Mockito.when(jsonPathTransformerHandler.process(any(), any(), any()))
 				.thenReturn(new TextNode("foobar"));
 		schemaEngine.registerHandler("path", jsonPathTransformerHandler);
+		schemaEngine.registerMetaSchema();
 		ProcessResult result = schemaEngine.process(schema, source);
 		Assertions.assertEquals("Leanne Graham", result.getJson().get("name"));
 		Assertions.assertEquals("foobar",  result.getJson().get("mail"));
@@ -61,6 +62,9 @@ public class SchemaEngineTest {
 		Mockito.when(jsonPathTransformerHandler.process(any(), any(), any()))
 				.thenReturn(new TextNode("foobar"));
 		schemaEngine.registerHandler("$path", jsonPathTransformerHandler);
+		schemaEngine.registerHandler("$fixed", jsonPathTransformerHandler);
+		schemaEngine.registerHandler("$meta", jsonPathTransformerHandler);
+		schemaEngine.registerMetaSchema();
 		ProcessResult result = schemaEngine.process(schema, source);
 		Assertions.assertEquals("Leanne Graham", result.getJson().get("name"));
 		Assertions.assertEquals("foobar",  result.getJson().get("mail"));
@@ -70,12 +74,12 @@ public class SchemaEngineTest {
 	@Test
 	void invalidSchemaShouldThrow() throws URISyntaxException, IOException {
 		String schema = Files.readString(loadResource("schema/10.json"));
-		String source = Files.readString(loadResource("source/10.json"));
+		String source = Files.readString(loadResource("source/11.json"));
 		SchemaEngine schemaEngine = new SchemaEngine(props);
 		TransormerHandler jsonPathTransformerHandler = Mockito.mock(TransormerHandler.class);
 
 		schemaEngine.registerHandler("$path", jsonPathTransformerHandler);
-
+		schemaEngine.registerMetaSchema();
 		SchemaIsNotValidException exc = Assertions.assertThrows(SchemaIsNotValidException.class, () -> {
 			schemaEngine.process(schema, source);
 		});
@@ -91,6 +95,7 @@ public class SchemaEngineTest {
 		Mockito.when(jsonPathTransformerHandler.process(any(), any(), any()))
 				.thenReturn(new TextNode("bar"));
 		schemaEngine.registerHandler("$path", jsonPathTransformerHandler);
+		schemaEngine.registerMetaSchema();
 
 		ProcessResult result = schemaEngine.process(schema, source);
 		Assertions.assertEquals("users", result.getMetadata().get().get("collection"));
