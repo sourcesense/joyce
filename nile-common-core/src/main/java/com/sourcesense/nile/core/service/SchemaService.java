@@ -8,15 +8,18 @@ import com.sourcesense.nile.core.dto.SchemaShort;
 import com.sourcesense.nile.core.errors.SchemaNotFoundException;
 import com.sourcesense.nile.core.mapper.SchemaMapper;
 import com.sourcesense.nile.core.model.SchemaEntity;
+
 import com.sourcesense.nile.schemaengine.service.SchemaEngine;
 import lombok.RequiredArgsConstructor;
 import org.springframework.beans.factory.annotation.Value;
+import org.springframework.boot.autoconfigure.condition.ConditionalOnProperty;
 import org.springframework.stereotype.Service;
 
 import java.util.List;
 import java.util.Optional;
 import java.util.stream.Collectors;
 
+@ConditionalOnProperty(value = "nile.schema-service.enabled", havingValue = "true")
 @Service
 @RequiredArgsConstructor
 public class SchemaService {
@@ -24,7 +27,7 @@ public class SchemaService {
 	private final SchemaMapper schemaMapper;
 	private final SchemaEngine schemaEngine;
 
-	@Value("${nile.schema.uidPattern:nile://ingestion/schema/%s}")
+	@Value("${nile.schema-service.uidPattern:nile://ingestion/schema/%s}")
 	String uidPattern;
 
 
@@ -65,6 +68,15 @@ public class SchemaService {
 			return schemaEntityDao.get(String.format(uidPattern, name)).map(schemaMapper::toDto);
     }
 
+	public Optional<Schema> findByNameAndVersion(String name, Integer version) {
+		//TODO: make a specific method on dao to optimize ???
+		List<SchemaEntity> versions = schemaEntityDao.getByName(name);
+		return versions.stream()
+				.filter(schemaEntity -> schemaEntity.getVersion() == version)
+				.map(schemaMapper::toDto)
+				.findFirst();
+	}
+
 	public void delete(String name) {
 		Optional<SchemaEntity> entity = schemaEntityDao.get(String.format(uidPattern, name));
 		if(entity.isEmpty()){
@@ -73,10 +85,12 @@ public class SchemaService {
 		schemaEntityDao.delete(entity.get());
 	}
 
-	public List<Schema> getAllVersions(String name) {
+	public List<SchemaShort> getAllVersions(String name) {
 		List<SchemaEntity> versions = schemaEntityDao.getByName(name);
 		return versions.stream()
-				.map(schemaMapper::toDto)
+				.map(schemaMapper::toDtoShort)
 				.collect(Collectors.toList());
 	}
+
+
 }

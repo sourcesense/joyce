@@ -18,7 +18,6 @@ import java.util.Optional;
 
 @SpringBootTest
 @ActiveProfiles("mongodb")
-@EnableAutoConfiguration(exclude={CassandraDataAutoConfiguration.class})
 public class MongodbDaoTestIT {
 
 	@Autowired
