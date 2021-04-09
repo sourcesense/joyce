@@ -51,9 +51,6 @@ public class SchemaEngine implements ApplicationContextAware {
 	@PostConstruct
 	public void defaultInit() {
 
-		// TODO: define custom metaschema populated with non validation keywoards
-		// https://github.com/networknt/json-schema-validator/blob/master/src/main/java/com/networknt/schema/JsonMetaSchema.java#L188
-
 		/**
 		 * Register Default Handlers
 		 */
@@ -109,7 +106,7 @@ public class SchemaEngine implements ApplicationContextAware {
 		for (Iterator<Map.Entry<String, JsonNode>> it = contextNode.get().fields(); it.hasNext(); ) {
 			Map.Entry<String, JsonNode> field = it.next();
 			if(field.getValue().getNodeType().equals(JsonNodeType.OBJECT)){
-				Optional<JsonNode> transformed = this.applyHandlers(field.getKey(), field.getValue(), source, Optional.empty());
+				Optional<JsonNode> transformed = this.applyHandlers( field.getValue(), source, Optional.empty());
 				transformed.ifPresent(jsonNode -> {
 					contextNode.get().set(field.getKey(), jsonNode);
 				});
@@ -135,7 +132,7 @@ public class SchemaEngine implements ApplicationContextAware {
 
 		if (schema.getNodeType().equals(JsonNodeType.OBJECT)){
 			// Apply custom handlers
-			Optional<JsonNode> transformed = this.applyHandlers(key, schema, sourceJsonNode, context);
+			Optional<JsonNode> transformed = this.applyHandlers(schema, sourceJsonNode, context);
 			transformed.ifPresent(jsonNode -> {
 				((ObjectNode)sourceJsonNode).set(key, jsonNode);
 			});
@@ -184,26 +181,33 @@ public class SchemaEngine implements ApplicationContextAware {
 	/**
 	 * Apply registered handlers, it stops at the first encountered
 	 * TODO: find a way to choose which one is applied or apply all in a given order
-	 * @param key
 	 * @param schema
 	 * @param sourceJsonNode
 	 * @return
 	 */
-	private Optional<JsonNode> applyHandlers(String key, JsonNode schema, JsonNode sourceJsonNode, Optional<SchemaMetadata> context) {
-		TransormerHandler handler = null;
-		JsonNode value = null;
-		for (String handlerKey : this.handlers.keySet()){
-			if(schema.has(handlerKey)){
-				handler = this.handlers.get(handlerKey);
-				value = schema.get(handlerKey);
-				break;
-			}
-		}
-		if (handler != null) {
-			return Optional.ofNullable(handler.process(value, sourceJsonNode, context));
-		} else {
+	private Optional<JsonNode> applyHandlers(JsonNode schema, JsonNode sourceJsonNode, Optional<SchemaMetadata> context) {
+
+		if(sourceJsonNode.getNodeType() != JsonNodeType.OBJECT){
 			return Optional.empty();
 		}
+
+		// Apply handlers in cascade
+		List<String> knownHandlerKeys = StreamSupport.stream(
+				Spliterators.spliteratorUnknownSize(schema.fieldNames(), Spliterator.ORDERED),
+				false)
+				.filter(handlers.keySet()::contains)
+				.collect(Collectors.toList());
+		if (knownHandlerKeys.size() < 1){
+			return Optional.empty();
+		}
+
+		JsonNode returnNode = sourceJsonNode.deepCopy();
+		for (String handlerKey : knownHandlerKeys){
+				TransormerHandler handler = this.handlers.get(handlerKey);
+				returnNode = handler.process(schema.get(handlerKey), returnNode, context);
+
+		}
+		return Optional.ofNullable(returnNode);
 	}
 
 

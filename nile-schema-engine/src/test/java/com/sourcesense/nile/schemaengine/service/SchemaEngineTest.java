@@ -1,10 +1,12 @@
 package com.sourcesense.nile.schemaengine.service;
 
+import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.node.TextNode;
 import com.sourcesense.nile.schemaengine.dto.ProcessResult;
 import com.sourcesense.nile.schemaengine.exceptions.InvalidSchemaVersion;
 import com.sourcesense.nile.schemaengine.exceptions.SchemaIsNotValidException;
 import com.sourcesense.nile.schemaengine.handlers.TransormerHandler;
+import org.hamcrest.Matchers;
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
@@ -22,6 +24,7 @@ import java.nio.file.Path;
 import java.nio.file.Paths;
 
 import static org.mockito.ArgumentMatchers.any;
+import static org.mockito.ArgumentMatchers.eq;
 
 @ExtendWith(MockitoExtension.class)
 @MockitoSettings(strictness = Strictness.LENIENT)
@@ -85,6 +88,26 @@ public class SchemaEngineTest {
 		});
 	}
 
+	@Test
+	void handlersShouldBeAppliedCascading() throws URISyntaxException, IOException {
+		String schema = Files.readString(loadResource("schema/15.json"));
+		String source = Files.readString(loadResource("source/10.json"));
+		SchemaEngine schemaEngine = new SchemaEngine(props);
+		TransormerHandler handler = Mockito.mock(TransormerHandler.class);
+		Mockito.when(handler.process(eq(new TextNode("$.email")), any(), any()))
+				.thenReturn(new TextNode("mario"));
+
+		Mockito.when(handler.process(eq(new TextNode("uppercase")), eq(new TextNode("mario")), any()))
+				.thenReturn(new TextNode("MARIO"));
+
+		schemaEngine.registerHandler("$path", handler);
+		schemaEngine.registerHandler("$transform", handler);
+		schemaEngine.registerMetaSchema();
+		ProcessResult result = schemaEngine.process(schema, source);
+
+		Assertions.assertEquals("MARIO", result.getJson().get("name"));
+
+	}
 
 	@Test
 	void metadataShouldReturnTransformed() throws URISyntaxException, IOException {
