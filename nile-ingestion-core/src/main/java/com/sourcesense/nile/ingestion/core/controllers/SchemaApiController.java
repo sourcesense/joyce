@@ -33,12 +33,21 @@ public class SchemaApiController implements SchemaApi {
 	}
 
 	@Override
-	public List<Schema> getSchemaWithVersions(String name) {
-		List<Schema> schemas = schemaService.getAllVersions(name);
+	public List<SchemaShort> getSchemaWithVersions(String name) {
+		List<SchemaShort> schemas = schemaService.getAllVersions(name);
 		if (schemas.size() < 1){
 			throw new SchemaNotFoundException(String.format("Schema [%s] does not exists", name));
 		}
 		return schemas;
+	}
+
+	@Override
+	public Schema getSchemaVersion(String name, Integer version) {
+		Optional<Schema> schema = schemaService.findByNameAndVersion(name, version);
+		if (schema.isEmpty()){
+			throw new SchemaNotFoundException(String.format("Schema [%s] v%d does not exists", name, version));
+		}
+		return schema.get();
 	}
 
 	@Override

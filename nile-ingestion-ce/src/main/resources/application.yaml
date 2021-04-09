@@ -1,4 +1,7 @@
 nile:
+  schema-service:
+    enabled: true
+    uidPattern: nile://ingestion/schema/%s
   ingestion:
     kafka:
       mainlog-topic: mainlog

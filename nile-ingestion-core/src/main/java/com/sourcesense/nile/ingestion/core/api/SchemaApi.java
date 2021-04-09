@@ -22,9 +22,13 @@ public interface SchemaApi {
 	@ResponseStatus(code = HttpStatus.OK)
 	Schema getSchema(@PathVariable String name);
 
-	@GetMapping(value = "/{name}/versions", produces = "application/json; charset=utf-8")
+	@GetMapping(value = "/{name}/version", produces = "application/json; charset=utf-8")
 	@ResponseStatus(code = HttpStatus.OK)
-	List<Schema> getSchemaWithVersions(@PathVariable String name);
+	List<SchemaShort> getSchemaWithVersions(@PathVariable String name);
+
+	@GetMapping(value = "/{name}/version/{version}", produces = "application/json; charset=utf-8")
+	@ResponseStatus(code = HttpStatus.OK)
+	Schema getSchemaVersion(@PathVariable String name, @PathVariable Integer version);
 
 	@PostMapping
 	@ResponseStatus(code = HttpStatus.CREATED)

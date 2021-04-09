@@ -17,6 +17,7 @@ import java.util.Optional;
 public class IngestionController implements IngestionApi {
 	final private IngestionService ingestionService;
 	final private SchemaService schemaService;
+
 	@Override
 	public Boolean ingestDocument(String schemaId, Map document) throws JsonProcessingException {
 		Optional<Schema> schema = schemaService.findByName(schemaId);
