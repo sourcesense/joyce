@@ -1,0 +1,4 @@
+{
+    "users": "oc-pod://sarcazzo/schemauser",
+    "fatture": "oc-pod://sarcazzo/schemafatture"
+}
