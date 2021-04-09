@@ -1,4 +1,12 @@
 {
-    "users": "oc-pod://sarcazzo/schemauser",
-    "fatture": "oc-pod://sarcazzo/schemafatture"
+    "schemas": {
+        "users": {
+            "version": "dkdkd",
+            "source": "oc-pod://sarcazzo/schemauser/version/1"
+        },
+        "fatture": {
+            "version": "dkdkd",
+            "source": "oc-pod://sarcazzo/schemauser/version/1"
+        }
+    }
 }

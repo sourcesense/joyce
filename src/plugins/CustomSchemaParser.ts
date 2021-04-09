@@ -24,32 +24,12 @@ export class CustomeSchemaParser {
   }) {
     this.collectionName = schema["$metadata"].collection;
     this.properties = schema.properties;
-    this.required = Object.keys(this.properties).reduce((acc, label) => {
-      const prop = this.properties[label];
-      if (prop.required) {
-        return [...acc, label];
-      }
-      return acc;
-    }, []);
-    this.nullable = Object.keys(this.properties).reduce((acc, label) => {
-      const prop = this.properties[label];
-      if (prop.nullable) {
-        return [...acc, label];
-      }
-      return acc;
-    }, []);
   }
 
   getSchemaProperties() {
-    return Object.keys(this.properties).reduce((acc, label) => {
-      let prp = {};
-      console.log(label, this.nullable.includes(label));
-      if (this.nullable.includes(label)) {
-        prp = { type: [this.properties[label].type, "null"] };
-      } else {
-        prp = { type: this.properties[label].type };
-      }
-      return { ...acc, [label]: prp };
-    }, {});
+    return this.properties;
+  }
+  getSchemaToMongoProperties() {
+    return Object.keys(this.properties);
   }
 }

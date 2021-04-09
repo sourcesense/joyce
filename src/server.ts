@@ -4,41 +4,24 @@ import collectionHandler from "./modules/products/routes";
 import { CustomeSchemaParser } from "./plugins/CustomSchemaParser";
 import fs from "fs";
 import path from "path";
-const schemaString = fs.readFileSync(
-  path.join(__dirname, "../assets/user.json"),
-  "utf8"
-);
-const schema = new CustomeSchemaParser(JSON.parse(schemaString));
-console.log(schema);
-schema.getSchemaProperties();
-// const bodyJsonSchema = {
-//   type: "object",
-//   required: ["requiredKey"],
-//   properties: {
-//     someKey: { type: "string" },
-//     someOtherKey: { type: "number" },
-//     requiredKey: {
-//       type: "array",
-//       maxItems: 3,
-//       items: { type: "integer" },
-//     },
-//     nullableKey: { type: ["number", "null"] },
-//     multipleTypesKey: { type: ["boolean", "number"] },
-//   },
-// };
+import { readeFolder, readeFolderPromise } from "./plugins/FolderReader";
+// const schemaString = fs.readFileSync(
+//   path.join(__dirname, "../schemas/user.json"),
+//   "utf8"
+// );
+const schemasList_sync = readeFolder(path.join(__dirname, "../schemas"))
+  .map((fls) => fs.readFileSync(fls))
+  .reduce((acc, scm) => {
+    const schemaParsed = new CustomeSchemaParser(JSON.parse(scm));
+    return { ...acc, [schemaParsed.collectionName]: schemaParsed };
+  }, {});
 
-const bodyJsonSchema = {
-  type: "object",
-  required: schema.required,
-  properties: schema.getSchemaProperties(),
-};
-
-const queryStringJsonSchema = {
+const globaleQueryStringPagination = {
   page: { type: "integer" },
   size: { type: "integer" },
 };
 
-const paramsJsonSchema = undefined;
+//const paramsJsonSchema = undefined;
 // const paramsJsonSchema = {
 //   type: "object",
 //   properties: {
@@ -47,85 +30,82 @@ const paramsJsonSchema = undefined;
 //   },
 // };
 
-const schemas = {
-  body: bodyJsonSchema,
+// const schemas = {
+//   body: schemaString,
 
-  querystring: queryStringJsonSchema,
+//   querystring: globaleQueryStringPagination,
 
-  params: paramsJsonSchema,
-};
+//   params: paramsJsonSchema,
+// };
 
 function createServer(db) {
-  const server = fastify();
-  server.register(require("fastify-cors"));
-  server.register(require("fastify-oas"), {
-    routePrefix: "/docs",
-    exposeRoute: true,
-    swagger: {
-      info: {
-        title: "product api",
-        description: "api documentation",
-        version: "0.1.0",
-      },
-      servers: [
-        { url: "http://localhost:3000", description: "development" },
-        {
-          url: "https://<production-url>",
-          description: "production",
+  return readeFolderPromise(path.join(__dirname, "../schemas")).then(
+    (schemasList) => {
+      const server = fastify();
+      server.register(require("fastify-cors"));
+      server.register(require("fastify-oas"), {
+        routePrefix: "/docs",
+        exposeRoute: true,
+        swagger: {
+          info: {
+            title: "product api",
+            description: "api documentation",
+            version: "0.1.0",
+          },
+          servers: [
+            { url: "http://localhost:3000", description: "development" },
+            {
+              url: "https://<production-url>",
+              description: "production",
+            },
+          ],
+          schemes: ["http"],
+          consumes: ["application/json"],
+          produces: ["application/json"],
         },
-      ],
-      schemes: ["http"],
-      consumes: ["application/json"],
-      produces: ["application/json"],
-    },
-  });
+      });
+      schemasList.map((label) => {
+        const tempSchema = new CustomeSchemaParser(
+          JSON.parse(fs.readFileSync(label, "utf8"))
+        );
+        server.get(
+          `/${tempSchema.collectionName}`,
+          {
+            schema: {
+              querystring: globaleQueryStringPagination,
+              response: {
+                200: {
+                  type: "array",
+                  items: {
+                    type: "object",
+                    properties: tempSchema.getSchemaProperties(),
+                  },
+                },
+              },
+            },
+          },
+          function (req, res) {
+            res.status(200).send({});
+          }
+        );
+      });
 
-  server.get(
-    `/${schema.collectionName}/v1`,
-    {
-      schema: {
-        querystring: queryStringJsonSchema,
-        response: {
-          200: { type: "object", properties: schema.getSchemaProperties() },
-        },
-      },
-    },
-    function (req, res) {
-      res.status(200).send({});
+      // server.post(
+      //   `/collections/${schema.collectionName}`,
+      //   { schema: schemas },
+      //   function (req, res) {
+      //     res.status(200).send({});
+      //   }
+      // );
+
+      server.register(healthHandler, { prefix: "/health" });
+
+      server.setErrorHandler((error, req, res) => {
+        req.log.error(error.toString());
+        res.send({ error });
+      });
+      return server;
     }
   );
-
-  server.get(
-    `/${schema.collectionName}/v2`,
-    {
-      schema: {
-        querystring: queryStringJsonSchema,
-        response: {
-          200: { type: "object", properties: schema.getSchemaProperties() },
-        },
-      },
-    },
-    function (req, res) {
-      res.status(200).send({});
-    }
-  );
-  // server.post(
-  //   `/collections/${schema.collectionName}`,
-  //   { schema: schemas },
-  //   function (req, res) {
-  //     res.status(200).send({});
-  //   }
-  // );
-
-  server.register(healthHandler, { prefix: "/health" });
-  server.register(collectionHandler(db), { prefix: "/collection" });
-
-  server.setErrorHandler((error, req, res) => {
-    req.log.error(error.toString());
-    res.send({ error });
-  });
-
-  return server;
 }
-
 export default createServer;

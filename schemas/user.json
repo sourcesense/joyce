@@ -12,24 +12,33 @@
         "cassandra_schema": "short_users"
     },
     "type": "object",
+    "required": [
+        "name",
+        "mail"
+    ],
     "properties": {
         "uid": {
-            "type": "string",
-            "nullable": true,
+            "type": [
+                "string",
+                "null"
+            ],
             "$meta": "$.message_key"
         },
         "name": {
-            "type": "string",
-            "required": true
+            "type": "string"
+        },
+        "test_number": {
+            "type": "number"
         },
         "mail": {
             "type": "string",
-            "required": true,
             "$path": "$.email"
         },
         "docType": {
-            "type": "string",
-            "nullable": true,
+            "type": [
+                "string",
+                "null"
+            ],
             "$fixed": "simpleUser"
         },
         "address": {
