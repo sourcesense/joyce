@@ -14,38 +14,10 @@ const schemaSources = fs.readFileSync(
   "utf8"
 );
 const schemaConfiguration = new SchemaConfiguration(JSON.parse(schemaSources));
-// const schemaString = fs.readFileSync(
-//   path.join(__dirname, "../schemas/user.json"),
-//   "utf8"
-// );
-const schemasList_sync = readeFolder(path.join(__dirname, "../schemas"))
-  .map((fls) => fs.readFileSync(fls))
-  .reduce((acc, scm) => {
-    const schemaParsed = new CustomeSchemaParser(JSON.parse(scm));
-    return { ...acc, [schemaParsed.collectionName]: schemaParsed };
-  }, {});
-
 const globaleQueryStringPagination = {
   page: { type: "integer" },
   size: { type: "integer" },
 };
-
-//const paramsJsonSchema = undefined;
-// const paramsJsonSchema = {
-//   type: "object",
-//   properties: {
-//     par1: { type: "string" },
-//     par2: { type: "number" },
-//   },
-// };
-
-// const schemas = {
-//   body: schemaString,
-
-//   querystring: globaleQueryStringPagination,
-
-//   params: paramsJsonSchema,
-// };
 
 const requests = schemaConfiguration.requestSchemas();
 
@@ -79,7 +51,7 @@ function createServer(db) {
         schema
         // JSON.parse(fs.readFileSync(label, "utf8"))
       );
-      server.get(
+      server.get<{ Querystring: { page: number | null; size: number | null } }>(
         `/${tempSchema.collectionName}/${schema.version}`,
         {
           schema: {
@@ -95,20 +67,13 @@ function createServer(db) {
             },
           },
         },
-        function (req, res) {
+        async function (req, res) {
           res.status(200).send({});
+
+          const { page = 0, size = 10 } = req.query;
         }
       );
     });
-
-    // server.post(
-    //   `/collections/${schema.collectionName}`,
-    //   { schema: schemas },
-    //   function (req, res) {
-    //     res.status(200).send({});
-    //   }
-    // );
-
     server.register(healthHandler, { prefix: "/health" });
 
     server.setErrorHandler((error, req, res) => {
