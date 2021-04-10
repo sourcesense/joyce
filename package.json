@@ -15,11 +15,13 @@
   "author": "",
   "license": "ISC",
   "dependencies": {
+    "@vercel/fetch": "^6.1.0",
     "dotenv": "^8.2.0",
     "fastify": "^3.13.0",
     "fastify-cors": "^4.1.0",
     "fastify-oas": "^3.0.8",
-    "mongodb": "^3.6.4"
+    "mongodb": "^3.6.4",
+    "node-fetch": "^2.6.1"
   },
   "devDependencies": {
     "@types/babel__core": "^7.1.12",

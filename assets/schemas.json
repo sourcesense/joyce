@@ -1,12 +1,16 @@
 {
     "schemas": {
-        "users": {
-            "version": "dkdkd",
-            "source": "oc-pod://sarcazzo/schemauser/version/1"
+        "fattura": {
+            "version": "v2",
+            "source": "http://localhost:8080/api/schema/test-fattura"
         },
-        "fatture": {
-            "version": "dkdkd",
-            "source": "oc-pod://sarcazzo/schemauser/version/1"
+        "mazzinga": {
+            "version": "v1",
+            "source": "http://localhost:8080/api/schema/test-mazzinga"
+        },
+        "users": {
+            "version": "v15",
+            "source": "http://localhost:8080/api/schema/test-users"
         }
     }
 }

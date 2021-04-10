@@ -1,29 +1,30 @@
-interface SchemaParserProperty {
+export interface SchemaProperty {
   required?: boolean;
   type: string;
   nullable?: boolean;
 }
-interface SchemaParserProperties {
-  [key: string]: SchemaParserProperty;
+export interface SchemaProperties {
+  [key: string]: SchemaProperty;
 }
-interface SchemaMetadata {
+export interface SchemaMetadata {
   message_key: object;
   uid: string;
   collection: string;
   cassandra_schema: string;
 }
+export interface Schema {
+  $metadata: SchemaMetadata;
+  properties: SchemaProperties;
+}
 
 export class CustomeSchemaParser {
   readonly collectionName: string = "";
-  readonly properties: SchemaParserProperties = {};
+  readonly properties: SchemaProperties = {};
   readonly required: string[] = [];
   readonly nullable: string[] = [];
-  constructor(schema: {
-    $metadata: SchemaMetadata;
-    properties: SchemaParserProperties;
-  }) {
-    this.collectionName = schema["$metadata"].collection;
-    this.properties = schema.properties;
+  constructor({ schema: { $metadata, properties } }: { schema: Schema }) {
+    this.collectionName = $metadata?.collection;
+    this.properties = properties;
   }
 
   getSchemaProperties() {

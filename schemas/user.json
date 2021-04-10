@@ -1,53 +1,57 @@
 {
-    "$schema": "http://json-schema.org/draft-07/schema#",
-    "$metadata": {
-        "message_key": {
-            "$path": [
-                "nile://oracle/users/",
-                "$.id"
-            ]
+    "name": "test-users",
+    "description": "A Test users schema",
+    "schema": {
+        "$schema": "http://json-schema.org/draft-07/schema#",
+        "$metadata": {
+            "message_key": {
+                "$path": [
+                    "nile://oracle/users/",
+                    "$.id"
+                ]
+            },
+            "uid": "uid",
+            "collection": "users",
+            "cassandra_schema": "short_users"
         },
-        "uid": "uid",
-        "collection": "users",
-        "cassandra_schema": "short_users"
-    },
-    "type": "object",
-    "required": [
-        "name",
-        "mail"
-    ],
-    "properties": {
-        "uid": {
-            "type": [
-                "string",
-                "null"
-            ],
-            "$meta": "$.message_key"
-        },
-        "name": {
-            "type": "string"
-        },
-        "test_number": {
-            "type": "number"
-        },
-        "mail": {
-            "type": "string",
-            "$path": "$.email"
-        },
-        "docType": {
-            "type": [
-                "string",
-                "null"
-            ],
-            "$fixed": "simpleUser"
-        },
-        "address": {
-            "type": "string",
-            "$path": [
-                "$.address.city",
-                ", ",
-                "$.address.street"
-            ]
+        "type": "object",
+        "required": [
+            "name",
+            "mail"
+        ],
+        "properties": {
+            "uid": {
+                "type": [
+                    "string",
+                    "null"
+                ],
+                "$meta": "$.message_key"
+            },
+            "name": {
+                "type": "string"
+            },
+            "test_number": {
+                "type": "number"
+            },
+            "mail": {
+                "type": "string",
+                "$path": "$.email"
+            },
+            "docType": {
+                "type": [
+                    "string",
+                    "null"
+                ],
+                "$fixed": "simpleUser"
+            },
+            "address": {
+                "type": "string",
+                "$path": [
+                    "$.address.city",
+                    ", ",
+                    "$.address.street"
+                ]
+            }
         }
     }
 }

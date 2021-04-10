@@ -5,6 +5,15 @@ import { CustomeSchemaParser } from "./plugins/CustomSchemaParser";
 import fs from "fs";
 import path from "path";
 import { readeFolder, readeFolderPromise } from "./plugins/FolderReader";
+import {
+  ResponsableSchema,
+  SchemaConfiguration,
+} from "./plugins/SchemaConfiguration";
+const schemaSources = fs.readFileSync(
+  path.join(__dirname, "../assets/schemas.json"),
+  "utf8"
+);
+const schemaConfiguration = new SchemaConfiguration(JSON.parse(schemaSources));
 // const schemaString = fs.readFileSync(
 //   path.join(__dirname, "../schemas/user.json"),
 //   "utf8"
@@ -38,74 +47,75 @@ const globaleQueryStringPagination = {
 //   params: paramsJsonSchema,
 // };
 
+const requests = schemaConfiguration.requestSchemas();
+
 function createServer(db) {
-  return readeFolderPromise(path.join(__dirname, "../schemas")).then(
-    (schemasList) => {
-      const server = fastify();
-      server.register(require("fastify-cors"));
-      server.register(require("fastify-oas"), {
-        routePrefix: "/docs",
-        exposeRoute: true,
-        swagger: {
-          info: {
-            title: "product api",
-            description: "api documentation",
-            version: "0.1.0",
-          },
-          servers: [
-            { url: "http://localhost:3000", description: "development" },
-            {
-              url: "https://<production-url>",
-              description: "production",
-            },
-          ],
-          schemes: ["http"],
-          consumes: ["application/json"],
-          produces: ["application/json"],
+  return Promise.all(requests).then((schemasList) => {
+    const server = fastify();
+    server.register(require("fastify-cors"));
+    server.register(require("fastify-oas"), {
+      routePrefix: "/docs",
+      exposeRoute: true,
+      swagger: {
+        info: {
+          title: "product api",
+          description: "api documentation",
+          version: "0.1.0",
         },
-      });
-      schemasList.map((label) => {
-        const tempSchema = new CustomeSchemaParser(
-          JSON.parse(fs.readFileSync(label, "utf8"))
-        );
-        server.get(
-          `/${tempSchema.collectionName}`,
+        servers: [
+          { url: "http://localhost:3000", description: "development" },
           {
-            schema: {
-              querystring: globaleQueryStringPagination,
-              response: {
-                200: {
-                  type: "array",
-                  items: {
-                    type: "object",
-                    properties: tempSchema.getSchemaProperties(),
-                  },
+            url: "https://<production-url>",
+            description: "production",
+          },
+        ],
+        schemes: ["http"],
+        consumes: ["application/json"],
+        produces: ["application/json"],
+      },
+    });
+    schemasList.map((schema: ResponsableSchema) => {
+      const tempSchema = new CustomeSchemaParser(
+        schema
+        // JSON.parse(fs.readFileSync(label, "utf8"))
+      );
+      server.get(
+        `/${tempSchema.collectionName}/${schema.version}`,
+        {
+          schema: {
+            querystring: globaleQueryStringPagination,
+            response: {
+              200: {
+                type: "array",
+                items: {
+                  type: "object",
+                  properties: tempSchema.getSchemaProperties(),
                 },
               },
             },
           },
-          function (req, res) {
-            res.status(200).send({});
-          }
-        );
-      });
+        },
+        function (req, res) {
+          res.status(200).send({});
+        }
+      );
+    });
 
-      // server.post(
-      //   `/collections/${schema.collectionName}`,
-      //   { schema: schemas },
-      //   function (req, res) {
-      //     res.status(200).send({});
-      //   }
-      // );
+    // server.post(
+    //   `/collections/${schema.collectionName}`,
+    //   { schema: schemas },
+    //   function (req, res) {
+    //     res.status(200).send({});
+    //   }
+    // );
 
-      server.register(healthHandler, { prefix: "/health" });
+    server.register(healthHandler, { prefix: "/health" });
 
-      server.setErrorHandler((error, req, res) => {
-        req.log.error(error.toString());
-        res.send({ error });
-      });
-      return server;
-    }
-  );
+    server.setErrorHandler((error, req, res) => {
+      req.log.error(error.toString());
+      res.send({ error });
+    });
+    return server;
+  });
 }
 export default createServer;
