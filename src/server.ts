@@ -68,9 +68,20 @@ function createServer(db) {
           },
         },
         async function (req, res) {
-          res.status(200).send({});
-
           const { page = 0, size = 10 } = req.query;
+          try {
+            const collection = db.collection(
+              schema.schema.$metadata.collection
+            );
+            const docs = await collection
+              .find({})
+              .limit(size)
+              .skip(page * size)
+              .toArray();
+            res.status(200).send(docs);
+          } catch (errore) {
+            res.status(500).send(errore);
+          }
         }
       );
     });
