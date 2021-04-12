@@ -13,7 +13,8 @@
     "outDir": "dist",
     "rootDir": "src",
     "noImplicitAny": false,
-    "lib": ["es6"]
+    "lib": ["es6"],
+    "noUnusedLocals": true,
   },
   "include": ["src/**/*"],
   "exclude": [

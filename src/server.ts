@@ -1,10 +1,8 @@
 import fastify from "fastify";
 import healthHandler from "./modules/health/routes";
-import collectionHandler from "./modules/products/routes";
 import { CustomeSchemaParser } from "./plugins/CustomSchemaParser";
 import fs from "fs";
 import path from "path";
-import { readeFolder, readeFolderPromise } from "./plugins/FolderReader";
 import {
   ResponsableSchema,
   SchemaConfiguration,
