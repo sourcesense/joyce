@@ -3,6 +3,8 @@ package com.sourcesense.nile.ingestion.core.service;
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.sourcesense.nile.core.dto.Schema;
+import com.sourcesense.nile.core.model.Notification;
+import com.sourcesense.nile.core.service.NotificationService;
 import com.sourcesense.nile.ingestion.core.errors.MissingMetadataException;
 import com.sourcesense.nile.schemaengine.dto.ProcessResult;
 import com.sourcesense.nile.schemaengine.service.SchemaEngine;
@@ -29,8 +31,9 @@ public class IngestionService {
 	final private SchemaEngine schemaEngine;
 	final private KafkaTemplate<String, Map> kafkaTemplate;
 	final private ObjectMapper mapper;
+	final private NotificationService notificationEngine;
 
-	@Value("${nile.ingestion.kafka.mainlog-topic:mainlog}")
+	@Value("${nile.kafka.mainlog-topic:mainlog}")
 	String mainlogTopic;
 
 	public Map processSchema(Schema schema, Map document) throws JsonProcessingException {
@@ -84,6 +87,11 @@ public class IngestionService {
 
 		future.addCallback(stringMapSendResult -> {
 			log.debug("Correctly sent message with key: {} to kafka");
+			notificationEngine.sendNotification(Notification.builder()
+					.event("INGESTION_OK")
+					.source("INGESTION")
+					.correlation_uid(result.getMetadata().get().get("message_key").toString())
+					.build());
 			//TODO: integrate with Notification Service Events
 		}, throwable -> {
 			//TODO: integrate with Notification Service Events

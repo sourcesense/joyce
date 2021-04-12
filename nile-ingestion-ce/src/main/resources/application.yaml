@@ -2,8 +2,15 @@ nile:
   schema-service:
     enabled: true
     uidPattern: nile://ingestion/schema/%s
-  ingestion:
-    kafka:
-      mainlog-topic: mainlog
-      ingestion-topic: ingestion
-      bootstrapAddress: kafka:9092
+  notification-service:
+    enabled: true
+  kafka:
+    bootstrapAddress: kafka:9092
+    consumer:
+      groupId: nile-ingestion-local
+      enabled: true
+    producer:
+      enabled: true
+    mainlog-topic: mainlog
+    ingestion-topic: ingestion
+

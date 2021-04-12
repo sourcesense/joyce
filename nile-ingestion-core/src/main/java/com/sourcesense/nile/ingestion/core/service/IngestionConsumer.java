@@ -20,7 +20,7 @@ import java.util.Optional;
 public class IngestionConsumer {
 	final private IngestionService ingestionService;
 	final private SchemaService schemaService;
-	@KafkaListener(topics = "${nile.ingestion.kafka.ingestion-topic:ingestion}")
+	@KafkaListener(topics = "${nile.kafka.ingestion-topic:ingestion}")
 	public void listenIngestion(@Payload Map message,
 														 @Header(KafkaHeaders.RECEIVED_MESSAGE_KEY) String messageKey) {
 		try {
