@@ -17,10 +17,6 @@ public class SchemaEngineProperties {
 	 */
 	private Boolean yaml   = false;
 
-	public void setHandlers(Map<String, String> handlers) {
-		this.handlers = handlers;
-	}
-
 	/**
 	 * Map of handlers to load
 	 * the key is the key that you want to implement in the json-schema
