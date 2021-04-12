@@ -26,7 +26,7 @@ public class MainlogConsumer {
 
     private final MongoTemplate mongoTemplate;
 
-    @KafkaListener(topics = "${nile.projection.kafka.mainlog-topic:mainlog}")
+    @KafkaListener(topics = "${nile.kafka.mainlog-topic:mainlog}")
     public void receive(
             @Payload Map message,
             @Header(KafkaHeaders.RECEIVED_MESSAGE_KEY) String key,
