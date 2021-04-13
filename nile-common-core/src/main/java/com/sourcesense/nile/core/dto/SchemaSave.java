@@ -9,4 +9,5 @@ public class SchemaSave {
 	private String name;
 	private Map schema;
 	private String description;
+	private Boolean development;
 }

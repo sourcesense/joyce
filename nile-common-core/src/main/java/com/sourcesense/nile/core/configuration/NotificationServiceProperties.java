@@ -20,4 +20,9 @@ public class NotificationServiceProperties {
      * Notification topic
      */
     private String topic;
+
+    /**
+     * Notification Source, the software object that generated the notification
+     */
+    public String source;
 }

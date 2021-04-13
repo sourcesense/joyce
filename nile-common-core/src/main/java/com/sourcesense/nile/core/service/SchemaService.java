@@ -39,15 +39,24 @@ public class SchemaService {
 		Optional<SchemaEntity> previous = schemaEntityDao.get(uid);
 
 		if (previous.isPresent()){
-			Boolean breakingChanges = schemaEngine.hasBreakingChanges(previous.get().getSchema(), entity.getSchema());
-			if (breakingChanges){
-				// step version and store previous with changed id
-				previous.get().setUid(String.format("%s/%d", uid, previous.get().getVersion()));
-				entity.setVersion(previous.get().getVersion()+1);
+			if(entity.getDevelopment()){
+				// If schema is in development mode we skip schema checks, but we make shure to not break previous version by stepping up the version
+				if (!previous.get().getDevelopment()){
+					previous.get().setUid(String.format("%s/%d", uid, previous.get().getVersion()));
+					schemaEntityDao.save(previous.get());
+					entity.setVersion(previous.get().getVersion()+1);
+				}
 			} else {
-				entity.setVersion(previous.get().getVersion());
+				Boolean breakingChanges = schemaEngine.hasBreakingChanges(previous.get().getSchema(), entity.getSchema());
+				if (breakingChanges){
+					previous.get().setUid(String.format("%s/%d", uid, previous.get().getVersion()));
+					schemaEntityDao.save(previous.get());
+					entity.setVersion(previous.get().getVersion()+1);
+				} else {
+					entity.setVersion(previous.get().getVersion());
+				}
 			}
-			schemaEntityDao.save(previous.get());
+
 		} else {
 			// First version of the schema
 			entity.setVersion(1);

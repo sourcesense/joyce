@@ -13,5 +13,7 @@ public class SchemaEntity {
 	private String name;
 	private String description;
 	private String schema;
+	private Boolean development;
+
 
 }

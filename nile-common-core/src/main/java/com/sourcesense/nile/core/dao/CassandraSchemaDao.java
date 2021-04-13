@@ -1,14 +1,14 @@
 package com.sourcesense.nile.core.dao;
 
 import com.sourcesense.nile.core.model.SchemaEntity;
-import org.springframework.context.annotation.Profile;
+import org.springframework.boot.autoconfigure.condition.ConditionalOnProperty;
 import org.springframework.stereotype.Component;
 
 import java.util.List;
 import java.util.Optional;
 
+@ConditionalOnProperty(value = "nile.schema-service.database", havingValue = "cassandra")
 @Component
-@Profile("cassandra")
 public class CassandraSchemaDao implements SchemaDao {
 	@Override
 	public Optional<SchemaEntity> get(String id) {

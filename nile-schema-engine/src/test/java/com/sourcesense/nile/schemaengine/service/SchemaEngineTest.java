@@ -93,6 +93,7 @@ public class SchemaEngineTest {
 		String schema = Files.readString(loadResource("schema/15.json"));
 		String source = Files.readString(loadResource("source/10.json"));
 		SchemaEngine schemaEngine = new SchemaEngine(props);
+
 		TransormerHandler handler = Mockito.mock(TransormerHandler.class);
 		Mockito.when(handler.process(eq(new TextNode("$.email")), any(), any()))
 				.thenReturn(new TextNode("mario"));

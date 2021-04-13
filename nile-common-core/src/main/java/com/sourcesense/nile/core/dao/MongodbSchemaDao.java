@@ -3,6 +3,7 @@ package com.sourcesense.nile.core.dao;
 import com.sourcesense.nile.core.model.SchemaEntity;
 import lombok.RequiredArgsConstructor;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.boot.autoconfigure.condition.ConditionalOnProperty;
 import org.springframework.context.annotation.Profile;
 import org.springframework.data.mongodb.core.MongoTemplate;
 import org.springframework.data.mongodb.core.query.Criteria;
@@ -12,8 +13,8 @@ import org.springframework.stereotype.Component;
 import java.util.List;
 import java.util.Optional;
 
+@ConditionalOnProperty(value = "nile.schema-service.database", havingValue = "mongodb")
 @Component
-@Profile("mongodb")
 @RequiredArgsConstructor
 public class MongodbSchemaDao implements SchemaDao {
 

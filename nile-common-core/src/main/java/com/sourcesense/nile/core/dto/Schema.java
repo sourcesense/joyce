@@ -10,6 +10,7 @@ public class Schema {
 	private Integer version;
 	private String name;
 	private String description;
+	private Boolean development;
 	private Map schema;
 
 }

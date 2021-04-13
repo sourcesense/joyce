@@ -1,16 +1,41 @@
 package com.sourcesense.nile.core.service;
 
-import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.sourcesense.nile.core.configuration.NotificationServiceProperties;
-import com.sourcesense.nile.core.model.Notification;
+import lombok.Builder;
+import lombok.Getter;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnProperty;
 import org.springframework.kafka.core.KafkaTemplate;
+import org.springframework.kafka.support.KafkaHeaders;
+import org.springframework.messaging.Message;
+import org.springframework.messaging.support.MessageBuilder;
 import org.springframework.stereotype.Service;
 
 import java.util.Map;
+
+@Builder
+@Getter
+class Notification {
+    private String source;
+    private String event;
+    private String uid;
+    private Boolean success;
+    private Map metadata;
+
+
+    @Override
+    public String toString() {
+        return "Notification{" +
+                "source='" + source + '\'' +
+                ", event='" + event + '\'' +
+                ", uid='" + uid + '\'' +
+                ", success=" + success +
+                ", metadata=" + metadata +
+                '}';
+    }
+}
 
 @ConditionalOnProperty(value = "nile.notification-service.enabled", havingValue = "true")
 @Service
@@ -22,11 +47,38 @@ public class NotificationService {
     private final ObjectMapper mapper;
     final private KafkaTemplate<String, Map> kafkaTemplate;
 
-    public void sendNotification(Notification notification){
-        try {
-            log.info(mapper.writeValueAsString(notification));
-        } catch (JsonProcessingException e) {
-            log.error(e.getMessage());
-        }
+    public void ok(String uid, String event, Map metadata){
+        Notification notification = Notification.builder()
+                .success(true)
+                .source(properties.getSource())
+                .event(event)
+                .metadata(metadata)
+                .uid(uid)
+                .build();
+        this.sendNotification(notification);
+    }
+
+    public void ko(String uid, String event, Map metadata){
+        Notification notification = Notification.builder()
+                .success(false)
+                .source(properties.getSource())
+                .event(event)
+                .metadata(metadata)
+                .uid(uid)
+                .build();
+        this.sendNotification(notification);
+    }
+
+    private void sendNotification(Notification notification){
+        Message<Map> message = MessageBuilder
+                .withPayload(mapper.convertValue(notification, Map.class))
+                .setHeader(KafkaHeaders.TOPIC, properties.getTopic())
+                .setHeader(KafkaHeaders.MESSAGE_KEY, notification.getUid())
+                .build();
+        kafkaTemplate.send(message).addCallback(stringMapSendResult -> {
+            log.debug("Sent notification message", notification.toString());
+        }, throwable -> {
+            log.error(throwable.getMessage());
+        });
     }
 }
