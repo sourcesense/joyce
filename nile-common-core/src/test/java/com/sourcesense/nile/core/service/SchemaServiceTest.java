@@ -38,6 +38,7 @@ class SchemaServiceTest {
 			SchemaEntity entityNew = new SchemaEntity();
 			entityNew.setName("foobar");
 			entityNew.setSchema("foo");
+			entityNew.setDevelopment(false);
 
 			SchemaEntity entityOld = new SchemaEntity();
 			entityOld.setSchema("bar");
