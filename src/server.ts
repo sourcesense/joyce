@@ -2,21 +2,25 @@ import fastify from "fastify";
 import healthHandler from "./modules/health/routes";
 import { CustomeSchemaParser } from "./plugins/CustomSchemaParser";
 import fs from "fs";
-import path from "path";
+// import path from "path";
 import {
   ResponsableSchema,
   SchemaConfiguration,
 } from "./plugins/SchemaConfiguration";
-const schemaSources = fs.readFileSync(
-  path.join(__dirname, "../assets/schemas.json"),
-  "utf8"
-);
-const schemaConfiguration = new SchemaConfiguration(JSON.parse(schemaSources));
 const globaleQueryStringPagination = {
   page: { type: "integer" },
   size: { type: "integer" },
 };
-
+const SCHEMAS_SOURCE = process.env.SCHEMAS_SOURCE || "../assets/schemas.json";
+const PRODUCTION_URL = process.env.BASE_URL || "https://<production-url>";
+const INTERNAL_URL = process.env.BASE_URL || "http://localhost:3000";
+const HEALTH_PATH = process.env.HEALTH_PATH || "/health";
+// const schemaSources = fs.readFileSync(
+//   path.join(__dirname, SCHEMAS_SOURCE),
+//   "utf8"
+// );
+const schemaSources = fs.readFileSync(SCHEMAS_SOURCE, "utf8");
+const schemaConfiguration = new SchemaConfiguration(JSON.parse(schemaSources));
 const requests = schemaConfiguration.requestSchemas();
 
 function createServer(db) {
@@ -28,14 +32,14 @@ function createServer(db) {
       exposeRoute: true,
       swagger: {
         info: {
-          title: "product api",
+          title: "nile-rest-api",
           description: "api documentation",
-          version: "0.1.0",
+          version: "1.0.0",
         },
         servers: [
-          { url: "http://localhost:3000", description: "development" },
+          { url: INTERNAL_URL, description: "local network" },
           {
-            url: "https://<production-url>",
+            url: PRODUCTION_URL,
             description: "production",
           },
         ],
@@ -50,7 +54,7 @@ function createServer(db) {
         // JSON.parse(fs.readFileSync(label, "utf8"))
       );
       server.get<{ Querystring: { page: number | null; size: number | null } }>(
-        `/${tempSchema.collectionName}/${schema.version}`,
+        `/${tempSchema.collectionName}`,
         {
           schema: {
             querystring: globaleQueryStringPagination,
@@ -73,17 +77,23 @@ function createServer(db) {
             );
             const docs = await collection
               .find({})
+              .project(tempSchema.getSchemaPropertiesMongoProjection()) //è un ottimizzazione. Di fatto fastify già elimina le proprietà non comprese nello schema dichiarato poche righe sopra
+              .sort({ _id: 1 })
               .limit(size)
               .skip(page * size)
               .toArray();
-            res.status(200).send(docs);
+            res
+              .status(200)
+              .header("x-schema-version", schema.version)
+              .send(docs);
           } catch (errore) {
+            console.log(errore);
             res.status(500).send(errore);
           }
         }
       );
     });
-    server.register(healthHandler, { prefix: "/health" });
+    server.register(healthHandler, { prefix: HEALTH_PATH });
 
     server.setErrorHandler((error, req, res) => {
       req.log.error(error.toString());

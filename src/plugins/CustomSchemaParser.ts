@@ -33,4 +33,8 @@ export class CustomeSchemaParser {
   getSchemaToMongoProperties() {
     return Object.keys(this.properties);
   }
+  getSchemaPropertiesMongoProjection() {
+    const props = Object.keys(this.properties);
+    return props.reduce((r, prop) => ({ ...r, [prop]: 1 }), {});
+  }
 }

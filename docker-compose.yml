@@ -1,20 +1,23 @@
 version: "2"
 
 services:
-  mongodb:
-    image: "bitnami/mongodb:latest"
-    environment:
-      - MONGODB_USERNAME=my_user
-      - MONGODB_PASSWORD=password123
-      - MONGODB_DATABASE=my_database
-    ports:
-      - "27017:27017"
+  # mongodb:
+  #   image: "bitnami/mongodb:latest"
+  #   environment:
+  #     - MONGODB_USERNAME=my_user
+  #     - MONGODB_PASSWORD=password123
+  #     - MONGODB_DATABASE=my_database
+  #   ports:
+  #     - "27017:27017"
   myapp:
     build: ./
     environment:
       - MONGO_URI=mongodb://my_user:password123@mongodb:27017/my_database
-      - ENABLED_COLLECTIONS=frodo,senso
+      - SCHEMAS_SOURCE=/assets/schemas.json
     ports:
       - "3000:3000"
-    depends_on:
-      - "mongodb"
+    volumes:
+      - ./assets/:/assets/
+    # depends_on:
+    #   - "mongodb"
+    image: registry.sourcesense.com/nile/api-rest:latest
