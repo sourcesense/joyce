@@ -1,9 +1,10 @@
 package com.sourcesense.nile.ingestion.core.service;
 
 import com.fasterxml.jackson.core.JsonProcessingException;
+import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
+import com.fasterxml.jackson.databind.node.ObjectNode;
 import com.sourcesense.nile.core.dto.Schema;
-import com.sourcesense.nile.core.model.Notification;
 import com.sourcesense.nile.core.service.NotificationService;
 import com.sourcesense.nile.ingestion.core.errors.MissingMetadataException;
 import com.sourcesense.nile.schemaengine.dto.ProcessResult;
@@ -18,9 +19,13 @@ import org.springframework.messaging.support.MessageBuilder;
 import org.springframework.stereotype.Service;
 import org.springframework.util.concurrent.ListenableFuture;
 
-import java.util.HashMap;
-import java.util.Map;
-import java.util.Optional;
+import java.util.*;
+
+enum IngestionEvents {
+	INGESTION_SUCCEDED,
+	INGESTION_FAILED,
+	PROCESSING_FAILED;
+}
 
 @Service
 @Slf4j
@@ -29,72 +34,80 @@ public class IngestionService {
 	public static String MESSAGE_KEY = "message_key";
 
 	final private SchemaEngine schemaEngine;
-	final private KafkaTemplate<String, Map> kafkaTemplate;
+	final private KafkaTemplate<String, JsonNode> kafkaTemplate;
 	final private ObjectMapper mapper;
 	final private NotificationService notificationEngine;
 
 	@Value("${nile.kafka.mainlog-topic:mainlog}")
 	String mainlogTopic;
 
-	public Map processSchema(Schema schema, Map document) throws JsonProcessingException {
+	public JsonNode processSchema(Schema schema, JsonNode document) {
 		ProcessResult node = schemaEngine.process(schema.getSchema(), document);
 
 		// Set schema version
-		setSchemaMetadata(schema, node.getJson());
+		setSchemaMetadata(schema, (ObjectNode) node.getJson());
 
-		Map result = new HashMap<>();
+		ObjectNode result = mapper.createObjectNode();
 		node.getMetadata().ifPresent(metadata -> {
-			result.put("metadata", metadata.getAll());
+			result.set("metadata", metadata);
 		});
-		result.put("result", node.getJson());
+		result.set("result", node.getJson());
 
 		return result;
 	}
 
-	private void setSchemaMetadata(Schema schema, Map json) {
+	private void setSchemaMetadata(Schema schema, ObjectNode json) {
 		json.put("_schema_version_", schema.getVersion());
 		json.put("_schema_uid_", schema.getUid());
+
 		json.put("_schema_name_", schema.getName());
 	}
 
 
-	public Boolean ingest(Schema schema, Map document) throws JsonProcessingException {
+	public Boolean ingest(Schema schema, ObjectNode document) throws JsonProcessingException {
 		ProcessResult result = schemaEngine.process(schema.getSchema(), document);
+
 		if (result.getMetadata().isEmpty()){
-			throw new MissingMetadataException("Message has no metadata, cannot ingest docuemnt");
+			MissingMetadataException e = new MissingMetadataException("Message has no metadata, cannot ingest document");
+			ObjectNode metadata = mapper.createObjectNode();
+			metadata.put("error", e.getMessage());
+			notificationEngine.ko(null, IngestionEvents.PROCESSING_FAILED.toString(), metadata);
+			throw e;
 		}
-		String key = Optional.ofNullable((String)result.getMetadata().get().get(MESSAGE_KEY)).orElseThrow(() -> new MissingMetadataException(String.format("Missing [%s] from metadata, cannot ingest document", MESSAGE_KEY)));
+
+		String key = Optional.ofNullable(result.getMetadata().get().get(MESSAGE_KEY).asText()).orElseThrow(() -> {
+			MissingMetadataException e = new MissingMetadataException(String.format("Missing [%s] from metadata, cannot ingest document", MESSAGE_KEY));
+			ObjectNode metadata = mapper.createObjectNode();
+			metadata.put("error", e.getMessage());
+			notificationEngine.ko(null, IngestionEvents.PROCESSING_FAILED.toString(), metadata);
+			throw e;
+		});
 
 		// Set schema version
-		setSchemaMetadata(schema, result.getJson());
+		setSchemaMetadata(schema, (ObjectNode) result.getJson());
 
-		MessageBuilder<Map> message = MessageBuilder
+		MessageBuilder<JsonNode> message = MessageBuilder
 				.withPayload(result.getJson())
 				.setHeader(KafkaHeaders.TOPIC, mainlogTopic)
 				.setHeader(KafkaHeaders.MESSAGE_KEY, key);
 
-		for(String metadataKey : result.getMetadata().get().getAll().keySet()){
-			if (metadataKey != MESSAGE_KEY){
-				Object value = result.getMetadata().get().get(metadataKey);
-				if(!value.getClass().equals(String.class)){
-					value = mapper.writeValueAsString(value);
-				}
-				message.setHeader(String.format("X-Nile-%s", metadataKey), value);
+		for (Iterator<Map.Entry<String, JsonNode>> it = result.getMetadata().get().fields(); it.hasNext(); ) {
+			Map.Entry<String, JsonNode> item = it.next();
+			if (!item.getKey().equals(MESSAGE_KEY)){
+				message.setHeader(String.format("X-Nile-%s", item.getKey()), item.getValue().asText());
 			}
 		}
 
-		ListenableFuture<SendResult<String, Map>> future = kafkaTemplate.send(message.build());
+		ListenableFuture<SendResult<String, JsonNode>> future = kafkaTemplate.send(message.build());
 
 		future.addCallback(stringMapSendResult -> {
 			log.debug("Correctly sent message with key: {} to kafka");
-			notificationEngine.sendNotification(Notification.builder()
-					.event("INGESTION_OK")
-					.source("INGESTION")
-					.correlation_uid(result.getMetadata().get().get("message_key").toString())
-					.build());
-			//TODO: integrate with Notification Service Events
+
+			notificationEngine.ok(key, IngestionEvents.INGESTION_SUCCEDED.toString(), null);
 		}, throwable -> {
-			//TODO: integrate with Notification Service Events
+			ObjectNode metadata = mapper.createObjectNode();
+			metadata.put("error", throwable.getMessage());
+			notificationEngine.ko(key, IngestionEvents.INGESTION_FAILED.toString(), metadata);
 			log.error("Unable to send message with key {} error: {}", key, throwable.getMessage());
 		});
 		return true;

@@ -1,5 +1,6 @@
 package com.sourcesense.nile.ingestion.core.service;
 
+import com.fasterxml.jackson.databind.node.ObjectNode;
 import com.sourcesense.nile.core.dto.Schema;
 import com.sourcesense.nile.core.service.SchemaService;
 import com.sourcesense.nile.core.errors.SchemaNotFoundException;
@@ -21,7 +22,7 @@ public class IngestionConsumer {
 	final private IngestionService ingestionService;
 	final private SchemaService schemaService;
 	@KafkaListener(topics = "${nile.kafka.ingestion-topic:ingestion}")
-	public void listenIngestion(@Payload Map message,
+	public void listenIngestion(@Payload ObjectNode message,
 														 @Header(KafkaHeaders.RECEIVED_MESSAGE_KEY) String messageKey) {
 		try {
 			Optional<Schema> schema = schemaService.findByName(messageKey);

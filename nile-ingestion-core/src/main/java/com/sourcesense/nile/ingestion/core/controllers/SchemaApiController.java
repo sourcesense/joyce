@@ -1,7 +1,7 @@
 package com.sourcesense.nile.ingestion.core.controllers;
 
 import com.fasterxml.jackson.core.JsonProcessingException;
-import com.sourcesense.nile.ingestion.core.api.SchemaApi;
+import com.sourcesense.nile.core.api.SchemaApi;
 import com.sourcesense.nile.core.dto.Schema;
 import com.sourcesense.nile.core.dto.SchemaSave;
 import com.sourcesense.nile.core.dto.SchemaShort;

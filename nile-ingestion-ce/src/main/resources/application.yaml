@@ -1,9 +1,12 @@
 nile:
   schema-service:
     enabled: true
+    database: mongodb
     uidPattern: nile://ingestion/schema/%s
   notification-service:
     enabled: true
+    topic: notifications
+    source: Ingestion
   kafka:
     bootstrapAddress: kafka:9092
     consumer:
@@ -13,4 +16,8 @@ nile:
       enabled: true
     mainlog-topic: mainlog
     ingestion-topic: ingestion
+  data:
+    mongodb:
+      uri: mongodb://user:password@localhost:27017/ingestion
+      database: ingestion
 
