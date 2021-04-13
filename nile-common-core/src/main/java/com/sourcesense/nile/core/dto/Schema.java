@@ -1,5 +1,6 @@
 package com.sourcesense.nile.core.dto;
 
+import com.fasterxml.jackson.databind.JsonNode;
 import lombok.Data;
 
 import java.util.Map;
@@ -11,6 +12,5 @@ public class Schema {
 	private String name;
 	private String description;
 	private Boolean development;
-	private Map schema;
-
+	private JsonNode schema;
 }

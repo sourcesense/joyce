@@ -35,7 +35,7 @@ public class SchemaService {
 		SchemaEntity entity = schemaMapper.toEntity(schema);
 		String uid = String.format(uidPattern, entity.getName());
 		entity.setUid(uid);
-
+		// TODO: validate schema with schemaEngine
 		Optional<SchemaEntity> previous = schemaEntityDao.get(uid);
 
 		if (previous.isPresent()){

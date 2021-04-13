@@ -1,4 +1,4 @@
-package com.sourcesense.nile.ingestion.core.errors;
+package com.sourcesense.nile.core.errors;
 
 public class MissingMetadataException extends RuntimeException {
 	public MissingMetadataException(String s) {

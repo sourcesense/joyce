@@ -50,9 +50,9 @@ public class SchemaEngineTest {
 		schemaEngine.registerHandler("path", jsonPathTransformerHandler);
 		schemaEngine.registerMetaSchema();
 		ProcessResult result = schemaEngine.process(schema, source);
-		Assertions.assertEquals("Leanne Graham", result.getJson().get("name"));
-		Assertions.assertEquals("foobar",  result.getJson().get("mail"));
-		Assertions.assertEquals("foobar", result.getJson().get("address"));
+		Assertions.assertEquals("Leanne Graham", result.getJson().get("name").asText());
+		Assertions.assertEquals("foobar",  result.getJson().get("mail").asText());
+		Assertions.assertEquals("foobar", result.getJson().get("address").asText());
 	}
 
 
@@ -69,9 +69,9 @@ public class SchemaEngineTest {
 		schemaEngine.registerHandler("$meta", jsonPathTransformerHandler);
 		schemaEngine.registerMetaSchema();
 		ProcessResult result = schemaEngine.process(schema, source);
-		Assertions.assertEquals("Leanne Graham", result.getJson().get("name"));
-		Assertions.assertEquals("foobar",  result.getJson().get("mail"));
-		Assertions.assertEquals("foobar", result.getJson().get("address"));
+		Assertions.assertEquals("Leanne Graham", result.getJson().get("name").asText());
+		Assertions.assertEquals("foobar",  result.getJson().get("mail").asText());
+		Assertions.assertEquals("foobar", result.getJson().get("address").asText());
 	}
 
 	@Test
@@ -106,7 +106,7 @@ public class SchemaEngineTest {
 		schemaEngine.registerMetaSchema();
 		ProcessResult result = schemaEngine.process(schema, source);
 
-		Assertions.assertEquals("MARIO", result.getJson().get("name"));
+		Assertions.assertEquals("MARIO", result.getJson().get("name").asText());
 
 	}
 
@@ -122,8 +122,8 @@ public class SchemaEngineTest {
 		schemaEngine.registerMetaSchema();
 
 		ProcessResult result = schemaEngine.process(schema, source);
-		Assertions.assertEquals("users", result.getMetadata().get().get("collection"));
-		Assertions.assertEquals("bar", result.getMetadata().get().get("message_key"));
+		Assertions.assertEquals("users", result.getMetadata().get().get("collection").asText());
+		Assertions.assertEquals("bar", result.getMetadata().get().get("message_key").asText());
 	}
 
     @Test

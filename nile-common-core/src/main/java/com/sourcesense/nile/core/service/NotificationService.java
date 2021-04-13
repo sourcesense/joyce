@@ -1,5 +1,6 @@
 package com.sourcesense.nile.core.service;
 
+import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.sourcesense.nile.core.configuration.NotificationServiceProperties;
 import lombok.Builder;
@@ -22,7 +23,7 @@ class Notification {
     private String event;
     private String uid;
     private Boolean success;
-    private Map metadata;
+    private JsonNode metadata;
 
 
     @Override
@@ -45,9 +46,9 @@ public class NotificationService {
 
     private final NotificationServiceProperties properties;
     private final ObjectMapper mapper;
-    final private KafkaTemplate<String, Map> kafkaTemplate;
+    final private KafkaTemplate<String, JsonNode> kafkaTemplate;
 
-    public void ok(String uid, String event, Map metadata){
+    public void ok(String uid, String event, JsonNode metadata){
         Notification notification = Notification.builder()
                 .success(true)
                 .source(properties.getSource())
@@ -58,7 +59,7 @@ public class NotificationService {
         this.sendNotification(notification);
     }
 
-    public void ko(String uid, String event, Map metadata){
+    public void ko(String uid, String event, JsonNode metadata){
         Notification notification = Notification.builder()
                 .success(false)
                 .source(properties.getSource())
@@ -70,8 +71,8 @@ public class NotificationService {
     }
 
     private void sendNotification(Notification notification){
-        Message<Map> message = MessageBuilder
-                .withPayload(mapper.convertValue(notification, Map.class))
+        Message<JsonNode> message = MessageBuilder
+                .withPayload(mapper.convertValue(notification, JsonNode.class))
                 .setHeader(KafkaHeaders.TOPIC, properties.getTopic())
                 .setHeader(KafkaHeaders.MESSAGE_KEY, notification.getUid())
                 .build();
