@@ -11,7 +11,7 @@ const globaleQueryStringPagination = {
   page: { type: "integer" },
   size: { type: "integer" },
 };
-const SCHEMAS_SOURCE = process.env.SCHEMAS_SOURCE || "../assets/schemas.json";
+const SCHEMAS_SOURCE = process.env.SCHEMAS_SOURCE || "assets/schemas.json";
 const PRODUCTION_URL = process.env.BASE_URL || "https://<production-url>";
 const INTERNAL_URL = process.env.BASE_URL || "http://localhost:3000";
 const HEALTH_PATH = process.env.HEALTH_PATH || "/health";
@@ -25,6 +25,7 @@ const requests = schemaConfiguration.requestSchemas();
 
 function createServer(db) {
   return Promise.all(requests).then((schemasList) => {
+    const filteredSchemalist = schemasList.filter((e) => e.label);
     const server = fastify();
     server.register(require("fastify-cors"));
     server.register(require("fastify-oas"), {
@@ -48,7 +49,7 @@ function createServer(db) {
         produces: ["application/json"],
       },
     });
-    schemasList.map((schema: ResponsableSchema) => {
+    filteredSchemalist.map((schema: ResponsableSchema) => {
       const tempSchema = new CustomeSchemaParser(
         schema
         // JSON.parse(fs.readFileSync(label, "utf8"))

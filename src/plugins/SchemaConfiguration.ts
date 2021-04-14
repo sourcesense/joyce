@@ -27,12 +27,22 @@ export class SchemaConfiguration {
 
     return this.sources.map((resource) =>
       fetch(resource.source)
-        .then((r) => r.json())
+        .then((r) => {
+          if (!r.ok) {
+            throw r;
+          }
+          return r.json();
+        })
         .then((j) => {
           return {
             ...resource,
             schema: j.schema,
           };
+        })
+        .catch((e) => {
+          const { statusText } = e;
+          console.log(resource.label, statusText);
+          return {};
         })
     );
   }

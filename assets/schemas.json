@@ -2,7 +2,7 @@
     "schemas": {
         "fattura": {
             "version": "2",
-            "source": "http://localhost:8080/api/schema/test-fattura"
+            "source": "http://localhost:8080/api/schema/test-fatturaa"
         },
         "mazzinga": {
             "version": "1",
