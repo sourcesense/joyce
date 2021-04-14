@@ -2,7 +2,7 @@ nile:
   schema-service:
     enabled: true
     database: mongodb
-    uidPattern: nile://ingestion/schema/%s
+    subtype: import
   notification-service:
     enabled: true
     topic: notifications

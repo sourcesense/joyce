@@ -7,6 +7,7 @@ import com.sourcesense.nile.core.dto.SchemaSave;
 import com.sourcesense.nile.core.dto.SchemaShort;
 import com.sourcesense.nile.core.errors.SchemaNotFoundException;
 import com.sourcesense.nile.core.service.SchemaService;
+import com.sourcesense.nile.ingestion.core.service.IngestionService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.web.bind.annotation.RestController;
 
@@ -17,6 +18,7 @@ import java.util.Optional;
 @RequiredArgsConstructor
 public class SchemaApiController implements SchemaApi {
 	final protected SchemaService schemaService;
+	final protected IngestionService ingestionService;
 
 	@Override
 	public List<SchemaShort> getAllSchema() {
@@ -53,11 +55,13 @@ public class SchemaApiController implements SchemaApi {
 	@Override
 	public Schema saveSchema(SchemaSave schema) throws JsonProcessingException {
 		Schema saved = schemaService.save(schema);
+		ingestionService.publishSchema(saved);
 		return saved;
 	}
 
 	@Override
 	public void deleteSchema(String id) {
+		//TODO: pubblciare cancellazione dello schema
 		schemaService.delete(id);
 	}
 }

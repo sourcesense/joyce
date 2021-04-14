@@ -14,12 +14,7 @@
 	<name>nile-ingestion-ce</name>
 	<description>Nile Ingestion Microservice</description>
 
-	<dependencies>
-    <dependency>
-      <groupId>com.sourcesense.nile</groupId>
-      <artifactId>schema-engine</artifactId>
-      <version>${nile.ingestion.schema.version}</version>
-    </dependency>
+	<dependencies>_
     <dependency>
       <groupId>com.sourcesense.nile</groupId>
       <artifactId>ingestion-core</artifactId>
