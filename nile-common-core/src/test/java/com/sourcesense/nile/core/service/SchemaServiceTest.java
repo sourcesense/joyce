@@ -33,8 +33,9 @@ class SchemaServiceTest {
     @Test
     void breakingChangeSchemaShouldStepVersion() throws JsonProcessingException {
 			SchemaService service = new SchemaService(schemaEntityDao, schemaMapper, schemaEngine);
-			service.uidPattern = "nile://ingestion/schema/%s";
-			SchemaSave schemaNew = null;
+			service.subtype = "import";
+			SchemaSave schemaNew = new SchemaSave();
+			schemaNew.setName("foobar");
 			SchemaEntity entityNew = new SchemaEntity();
 			entityNew.setName("foobar");
 			entityNew.setSchema("foo");
@@ -49,7 +50,7 @@ class SchemaServiceTest {
 
 			Mockito.when(schemaMapper.toEntity(schemaNew)).thenReturn(entityNew);
 
-			Mockito.when(schemaEntityDao.get("nile://ingestion/schema/foobar"))
+			Mockito.when(schemaEntityDao.get("nile://schema/import/foobar"))
 					.thenReturn(Optional.of(entityOld))
 					.thenReturn(Optional.of(entityNew));
 

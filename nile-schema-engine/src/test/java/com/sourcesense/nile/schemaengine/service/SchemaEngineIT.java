@@ -51,10 +51,10 @@ public class SchemaEngineIT {
 		Assertions.assertEquals("Leanne Graham", result.getJson().get("name").asText());
 		Assertions.assertEquals("Sincere@april.biz", result.getJson().get("mail").asText());
 		Assertions.assertEquals("Gwenborough, Kulas Light", result.getJson().get("address").asText());
-		Assertions.assertEquals("nile://oracle/users/1", result.getMetadata().get().get("message_key").asText());
+
 		Assertions.assertEquals("users", result.getMetadata().get().get("collection").asText());
 		Assertions.assertEquals("simpleUser", result.getJson().get("docType").asText());
-		Assertions.assertEquals("nile://oracle/users/1", result.getJson().get("uid").asText());
+
 	}
 
 	@SpringBootApplication

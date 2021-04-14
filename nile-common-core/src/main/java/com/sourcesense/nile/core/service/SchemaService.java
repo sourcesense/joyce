@@ -7,6 +7,7 @@ import com.sourcesense.nile.core.dto.SchemaSave;
 import com.sourcesense.nile.core.dto.SchemaShort;
 import com.sourcesense.nile.core.errors.SchemaNotFoundException;
 import com.sourcesense.nile.core.mapper.SchemaMapper;
+import com.sourcesense.nile.core.model.NileURI;
 import com.sourcesense.nile.core.model.SchemaEntity;
 
 import com.sourcesense.nile.schemaengine.service.SchemaEngine;
@@ -15,6 +16,7 @@ import org.springframework.beans.factory.annotation.Value;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnProperty;
 import org.springframework.stereotype.Service;
 
+import java.net.URI;
 import java.util.List;
 import java.util.Optional;
 import java.util.stream.Collectors;
@@ -27,13 +29,17 @@ public class SchemaService {
 	private final SchemaMapper schemaMapper;
 	private final SchemaEngine schemaEngine;
 
-	@Value("${nile.schema-service.uidPattern:nile://ingestion/schema/%s}")
-	String uidPattern;
+	@Value("${nile.schema-service.subtype:import}")
+	String subtype;
 
+	private String getSchemaUid(String name){
+		NileURI uri = new NileURI(URI.create(String.format("nile://schema/%s/%s", subtype, name)));
+		return uri.toString();
+	}
 
 	public Schema save(SchemaSave schema) throws JsonProcessingException {
 		SchemaEntity entity = schemaMapper.toEntity(schema);
-		String uid = String.format(uidPattern, entity.getName());
+		String uid = getSchemaUid(schema.getName());
 		entity.setUid(uid);
 		// TODO: validate schema with schemaEngine
 		Optional<SchemaEntity> previous = schemaEntityDao.get(uid);
@@ -45,6 +51,8 @@ public class SchemaService {
 					previous.get().setUid(String.format("%s/%d", uid, previous.get().getVersion()));
 					schemaEntityDao.save(previous.get());
 					entity.setVersion(previous.get().getVersion()+1);
+				} else {
+					entity.setVersion(previous.get().getVersion());
 				}
 			} else {
 				Boolean breakingChanges = schemaEngine.hasBreakingChanges(previous.get().getSchema(), entity.getSchema());
@@ -74,7 +82,7 @@ public class SchemaService {
 	}
 
     public Optional<Schema> findByName(String name) {
-			return schemaEntityDao.get(String.format(uidPattern, name)).map(schemaMapper::toDto);
+			return schemaEntityDao.get(getSchemaUid(name)).map(schemaMapper::toDto);
     }
 
 	public Optional<Schema> findByNameAndVersion(String name, Integer version) {
@@ -87,7 +95,7 @@ public class SchemaService {
 	}
 
 	public void delete(String name) {
-		Optional<SchemaEntity> entity = schemaEntityDao.get(String.format(uidPattern, name));
+		Optional<SchemaEntity> entity = schemaEntityDao.get(getSchemaUid(name));
 		if(entity.isEmpty()){
 			throw new SchemaNotFoundException(String.format("Schema [%s] does not exists", name));
 		}

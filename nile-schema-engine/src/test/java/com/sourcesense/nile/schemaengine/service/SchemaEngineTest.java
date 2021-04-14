@@ -123,7 +123,6 @@ public class SchemaEngineTest {
 
 		ProcessResult result = schemaEngine.process(schema, source);
 		Assertions.assertEquals("users", result.getMetadata().get().get("collection").asText());
-		Assertions.assertEquals("bar", result.getMetadata().get().get("message_key").asText());
 	}
 
     @Test

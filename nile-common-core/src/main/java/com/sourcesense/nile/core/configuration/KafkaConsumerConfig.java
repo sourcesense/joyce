@@ -1,5 +1,6 @@
 package com.sourcesense.nile.core.configuration;
 
+import com.fasterxml.jackson.databind.node.ObjectNode;
 import org.apache.kafka.clients.consumer.ConsumerConfig;
 import org.apache.kafka.common.serialization.StringDeserializer;
 import org.springframework.beans.factory.annotation.Value;
@@ -27,7 +28,7 @@ public class KafkaConsumerConfig {
     String groupId;
 
     @Bean
-    public ConsumerFactory<String, Map> consumerFactory() {
+    public ConsumerFactory<String, ObjectNode> consumerFactory() {
         Map<String, Object> props = new HashMap<>();
         props.put(
                 ConsumerConfig.BOOTSTRAP_SERVERS_CONFIG,
@@ -41,15 +42,15 @@ public class KafkaConsumerConfig {
         props.put(ErrorHandlingDeserializer.KEY_DESERIALIZER_CLASS, StringDeserializer.class);
 
         props.put(ErrorHandlingDeserializer.VALUE_DESERIALIZER_CLASS, JsonDeserializer.class.getName());
-        props.put(JsonDeserializer.VALUE_DEFAULT_TYPE, "java.util.Map");
+        props.put(JsonDeserializer.VALUE_DEFAULT_TYPE, "com.fasterxml.jackson.databind.node.ObjectNode");
 
         return new DefaultKafkaConsumerFactory<>(props);
     }
 
     @Bean
-    public ConcurrentKafkaListenerContainerFactory<String, Map>
+    public ConcurrentKafkaListenerContainerFactory<String, ObjectNode>
     kafkaListenerContainerFactory() {
-        ConcurrentKafkaListenerContainerFactory<String, Map> factory =
+        ConcurrentKafkaListenerContainerFactory<String, ObjectNode> factory =
                 new ConcurrentKafkaListenerContainerFactory<>();
         factory.setConsumerFactory(consumerFactory());
         return factory;

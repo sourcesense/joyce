@@ -28,7 +28,7 @@ import java.util.stream.StreamSupport;
 @Service
 @Slf4j
 public class SchemaEngine implements ApplicationContextAware {
-	public static String METADATA = "$metadata";
+	public static final String METADATA = "$metadata";
 	private ObjectMapper mapper;
 	private JsonSchemaFactory factory;
 	private Map<String, TransormerHandler> handlers;

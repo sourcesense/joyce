@@ -1,12 +1,6 @@
 {
   "$schema": "https://nile.sourcesensce.com/v1/schema",
   "$metadata": {
-    "message_key": {
-      "$path": [
-        "nile://oracle/users/",
-        "$.id"
-      ]
-    },
     "uid": "uid",
     "collection": "users",
     "cassandra_schema": "short_users"
@@ -14,8 +8,8 @@
   "type": "object",
   "properties": {
     "uid": {
-      "type": ["string", "null"],
-      "$meta": "$.message_key"
+      "type": "string",
+      "$path": ["asd-", "$.id"]
     },
     "name": {
       "type": "string",
