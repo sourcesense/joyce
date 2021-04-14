@@ -1,5 +1,8 @@
 package com.sourcesense.nile.mongodbprojector.service;
 
+import com.fasterxml.jackson.core.type.TypeReference;
+import com.fasterxml.jackson.databind.ObjectMapper;
+import com.fasterxml.jackson.databind.node.ObjectNode;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.bson.Document;
@@ -25,22 +28,23 @@ public class MainlogConsumer {
     String COLLECTION_HEADER;
 
     private final MongoTemplate mongoTemplate;
+    private final ObjectMapper mapper;
 
     @KafkaListener(topics = "${nile.kafka.mainlog-topic:mainlog}")
     public void receive(
-            @Payload Map message,
+            @Payload ObjectNode message,
             @Header(KafkaHeaders.RECEIVED_MESSAGE_KEY) String key,
             @Headers Map<String, String> headers) {
         try {
-            if(headers.get(UID_HEADER) == null){
-                throw new Exception(String.format("Missing %s header", UID_HEADER));
-            }
 
             if(headers.get(COLLECTION_HEADER) == null){
                 throw new Exception(String.format("Missing %s header", COLLECTION_HEADER));
             }
-            Document doc = new Document(message);
-            doc.put("_id", message.get(headers.get(UID_HEADER)));
+
+
+            Document doc = new Document(mapper.convertValue(message, new TypeReference<>() {
+            }));
+            doc.put("_id", key);
             Document res = mongoTemplate.save(doc, headers.get(COLLECTION_HEADER));
 
         } catch (Exception e){
