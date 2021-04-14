@@ -18,8 +18,9 @@
 		<java.version>11</java.version>
     	<org.mapstruct.version>1.4.1.Final</org.mapstruct.version>
 		<org.springdoc.version>1.5.5</org.springdoc.version>
-		<nile.schema-engine.version>0.0.1-SNAPSHOT</nile.schema-engine.version>
 		<nile.common-core.version>0.0.1-SNAPSHOT</nile.common-core.version>
+		<nile.connector-core.version>0.0.1-SNAPSHOT</nile.connector-core.version>
+		<nile.schema-engine.version>0.0.1-SNAPSHOT</nile.schema-engine.version>
 	</properties>
 
 	<modules>

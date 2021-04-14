@@ -11,17 +11,7 @@ import java.util.List;
 
 public class PipePanic extends Exception {
 
-    //Todo: Definire lista di eventi
-
-    private final transient List<?> outputEvents;
-
-    public PipePanic(String msg, List<?> outputEvents) {
+    public PipePanic(String msg) {
         super(msg);
-
-        this.outputEvents = outputEvents;
-    }
-
-    public List<?> getOutputEvents() {
-        return outputEvents;
     }
 }
