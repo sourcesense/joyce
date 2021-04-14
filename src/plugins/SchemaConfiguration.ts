@@ -25,8 +25,13 @@ export class SchemaConfiguration {
   requestSchemas(): Promise<ResponsableSchema>[] | [] {
     const fetch = createFetch();
 
-    return this.sources.map((resource) =>
-      fetch(resource.source)
+    return this.sources.map((resource) => {
+      const finalFetchUrl =
+        resource.version !== "latest" && resource.version
+          ? `${resource.source}/version/${resource.version}`
+          : resource.source;
+      console.log(finalFetchUrl);
+      return fetch(resource.source)
         .then((r) => {
           if (!r.ok) {
             throw r;
@@ -43,7 +48,7 @@ export class SchemaConfiguration {
           const { statusText } = e;
           console.log(resource.label, statusText);
           return {};
-        })
-    );
+        });
+    });
   }
 }
