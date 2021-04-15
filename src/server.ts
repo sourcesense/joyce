@@ -54,6 +54,38 @@ function createServer(db) {
         schema
         // JSON.parse(fs.readFileSync(label, "utf8"))
       );
+      server.get<{ Params: { id: string } }>(
+        `/${tempSchema.collectionName}/:id`,
+        {
+          schema: {
+            params: {
+              type: "object",
+              properties: {
+                id: { type: "string" },
+              },
+            },
+            response: {
+              200: {
+                type: "object",
+                properties: tempSchema.getSchemaProperties(),
+              },
+            },
+          },
+        },
+        async function (req, res) {
+          const { id: entityID } = req.params;
+          try {
+            const collection = db.collection(
+              schema.schema.$metadata.collection
+            );
+            const entity = await collection.findOne({ _id: entityID });
+            res.status(200).send(entity);
+          } catch (errore) {
+            console.log(errore);
+            res.status(500).send({ code: 500, message: errore.message });
+          }
+        }
+      );
       server.get<{ Querystring: { page: number | null; size: number | null } }>(
         `/${tempSchema.collectionName}`,
         {
@@ -85,7 +117,7 @@ function createServer(db) {
               .toArray();
             res
               .status(200)
-              .header("x-schema-version", schema.version)
+              .header("x-nile-schema-version", schema.version)
               .send(docs);
           } catch (errore) {
             console.log(errore);
