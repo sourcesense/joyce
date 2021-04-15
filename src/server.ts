@@ -54,6 +54,13 @@ function createServer(db) {
         schema
         // JSON.parse(fs.readFileSync(label, "utf8"))
       );
+      /**
+       Per specificare le interfacce dei parametri di Fastify usa:
+        Querystring: {page:number:, size:number}
+        Params: {id:string}
+        Headers: {'x-nile':string}
+        Body: {veditu:string}
+       */
       server.get<{ Params: { id: string } }>(
         `/${tempSchema.collectionName}/:id`,
         {
