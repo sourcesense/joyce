@@ -7,6 +7,7 @@ import com.sourcesense.nile.core.dto.SchemaSave;
 import com.sourcesense.nile.core.dto.SchemaShort;
 import com.sourcesense.nile.core.errors.SchemaNotFoundException;
 import com.sourcesense.nile.core.mapper.SchemaMapper;
+import com.sourcesense.nile.core.model.NileSchemaMetadata;
 import com.sourcesense.nile.core.model.NileURI;
 import com.sourcesense.nile.core.model.SchemaEntity;
 
@@ -39,6 +40,7 @@ public class SchemaService {
 
 	public Schema save(SchemaSave schema) throws JsonProcessingException {
 		SchemaEntity entity = schemaMapper.toEntity(schema);
+		NileSchemaMetadata metadata = NileSchemaMetadata.create(schema.getSchema().get(SchemaEngine.METADATA));
 		String uid = getSchemaUid(schema.getName());
 		entity.setUid(uid);
 		// TODO: validate schema with schemaEngine

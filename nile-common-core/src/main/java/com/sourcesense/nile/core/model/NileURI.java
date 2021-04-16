@@ -72,7 +72,7 @@ public class NileURI {
     private static final String schema = "nile";
     private Type type;
     private Subtype subtype;
-    private String class_;
+    private String collection;
     private String id;
 
     private URI uri;
@@ -95,7 +95,7 @@ public class NileURI {
             throw new IllegalArgumentException(String.format("Missing class and id in URI %s", uri.getPath()));
         }
         this.subtype = Subtype.get(paths.get(0)).orElseThrow(() -> new IllegalArgumentException(String.format("Invalid subtype %s", paths.get(0))));
-        this.class_ = paths.get(1);
+        this.collection = paths.get(1);
         if (paths.size() > 2) {
             this.id = paths.get(2);
         }

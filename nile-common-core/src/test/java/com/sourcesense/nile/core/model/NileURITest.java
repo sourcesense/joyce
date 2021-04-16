@@ -5,8 +5,6 @@ import org.junit.jupiter.api.Test;
 
 import java.util.Optional;
 
-import static org.junit.jupiter.api.Assertions.*;
-
 class NileURITest {
 
     @Test
@@ -15,7 +13,7 @@ class NileURITest {
         Assertions.assertTrue(uri.isPresent());
         Assertions.assertEquals(NileURI.Type.SCHEMA, uri.get().getType());
         Assertions.assertEquals(NileURI.Subtype.MODEL, uri.get().getSubtype());
-        Assertions.assertEquals("pippo", uri.get().getClass_());
+        Assertions.assertEquals("pippo", uri.get().getCollection());
     }
 
     @Test
@@ -24,7 +22,7 @@ class NileURITest {
         Assertions.assertTrue(uri.isPresent());
         Assertions.assertEquals(NileURI.Type.CONTENT, uri.get().getType());
         Assertions.assertEquals(NileURI.Subtype.MODEL, uri.get().getSubtype());
-        Assertions.assertEquals("pippo", uri.get().getClass_());
+        Assertions.assertEquals("pippo", uri.get().getCollection());
         Assertions.assertEquals("2", uri.get().getId());
     }
 
