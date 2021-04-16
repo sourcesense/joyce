@@ -1,6 +1,7 @@
 {
   "$schema": "https://nile.sourcesensce.com/v1/schema",
   "$metadata": {
+    "subtype": "import",
     "uid": "uid",
     "collection": "users",
     "cassandra_schema": "short_users"
