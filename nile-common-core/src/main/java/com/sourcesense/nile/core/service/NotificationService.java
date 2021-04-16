@@ -2,6 +2,7 @@ package com.sourcesense.nile.core.service;
 
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
+import com.fasterxml.jackson.databind.node.ObjectNode;
 import com.sourcesense.nile.core.configuration.NotificationServiceProperties;
 import lombok.Builder;
 import lombok.Getter;
@@ -47,6 +48,15 @@ public class NotificationService {
     private final NotificationServiceProperties properties;
     private final ObjectMapper mapper;
     final private KafkaTemplate<String, JsonNode> kafkaTemplate;
+
+    public void ko(String uid, String event, String error){
+        ObjectNode meta = mapper.createObjectNode();
+        meta.put("error", error);
+        ko(uid, event, meta);
+    }
+    public void ok(String uid, String event){
+        ok(uid, event, null);
+    }
 
     public void ok(String uid, String event, JsonNode metadata){
         Notification notification = Notification.builder()
