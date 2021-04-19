@@ -7,10 +7,10 @@ export interface SchemaProperties {
   [key: string]: SchemaProperty;
 }
 export interface SchemaMetadata {
-  message_key: object;
   uid: string;
   collection: string;
   cassandra_schema: string;
+  subtype: string;
 }
 export interface Schema {
   $metadata: SchemaMetadata;

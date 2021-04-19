@@ -7,10 +7,11 @@ import {
   ResponsableSchema,
   SchemaConfiguration,
 } from "./plugins/SchemaConfiguration";
-const globaleQueryStringPagination = {
-  page: { type: "integer" },
-  size: { type: "integer" },
-};
+import {
+  MultipleEntitySchema,
+  SingleEntitySchema,
+} from "./plugins/PrepareFastifySchema";
+
 const SCHEMAS_SOURCE = process.env.SCHEMAS_SOURCE || "assets/schemas.json";
 const PRODUCTION_URL = process.env.BASE_URL || "https://<production-url>";
 const INTERNAL_URL = process.env.BASE_URL || "http://localhost:3000";
@@ -26,7 +27,11 @@ const requests = schemaConfiguration.requestSchemas();
 function createServer(db) {
   return Promise.all(requests).then((schemasList) => {
     const filteredSchemalist = schemasList.filter((e) => e.label);
-    const server = fastify();
+    const server = fastify({
+      logger: {
+        level: "info",
+      },
+    });
     server.register(require("fastify-cors"));
     server.register(require("fastify-oas"), {
       routePrefix: "/docs",
@@ -50,10 +55,7 @@ function createServer(db) {
       },
     });
     filteredSchemalist.map((schema: ResponsableSchema) => {
-      const tempSchema = new CustomeSchemaParser(
-        schema
-        // JSON.parse(fs.readFileSync(label, "utf8"))
-      );
+      const tempSchema = new CustomeSchemaParser(schema);
       /**
        Per specificare le interfacce dei parametri di Fastify usa:
         Querystring: {page:number:, size:number}
@@ -63,52 +65,32 @@ function createServer(db) {
        */
       server.get<{ Params: { id: string } }>(
         `/${tempSchema.collectionName}/:id`,
-        {
-          schema: {
-            params: {
-              type: "object",
-              properties: {
-                id: { type: "string" },
-              },
-            },
-            response: {
-              200: {
-                type: "object",
-                properties: tempSchema.getSchemaProperties(),
-              },
-            },
-          },
-        },
+        SingleEntitySchema(tempSchema),
         async function (req, res) {
           const { id: entityID } = req.params;
           try {
             const collection = db.collection(
               schema.schema.$metadata.collection
             );
-            const entity = await collection.findOne({ _id: entityID });
-            res.status(200).send(entity);
+            const _id = `nile://content/${schema.schema.$metadata.subtype}/${schema.schema.$metadata.collection}/${entityID}`;
+            const entity = await collection.findOne({ _id });
+
+            if (entity) {
+              req.log.info(`entity ${_id} found`);
+              res.status(200).send(entity);
+            } else {
+              req.log.info(`entity ${_id} not found`);
+              res.status(404).send();
+            }
           } catch (errore) {
-            console.log(errore);
+            req.log.error(errore);
             res.status(500).send({ code: 500, message: errore.message });
           }
         }
       );
       server.get<{ Querystring: { page: number | null; size: number | null } }>(
         `/${tempSchema.collectionName}`,
-        {
-          schema: {
-            querystring: globaleQueryStringPagination,
-            response: {
-              200: {
-                type: "array",
-                items: {
-                  type: "object",
-                  properties: tempSchema.getSchemaProperties(),
-                },
-              },
-            },
-          },
-        },
+        MultipleEntitySchema(tempSchema),
         async function (req, res) {
           const { page = 0, size = 10 } = req.query;
           try {
@@ -127,7 +109,7 @@ function createServer(db) {
               .header("x-nile-schema-version", schema.version)
               .send(docs);
           } catch (errore) {
-            console.log(errore);
+            req.log.error(errore);
             res.status(500).send(errore);
           }
         }

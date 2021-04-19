@@ -1,5 +1,11 @@
 # Nile API Rest
 
+Swagger endpoint
+
+```
+http://${INTERNAL_URL}:${port}/docs/index.html#/default
+```
+
 ## Variables available
 
 Folder variable where search for schema source's paths
@@ -20,13 +26,13 @@ Base url of the API on internal/local network
 INTERNAL_URL
 ```
 
-Endpoint to check healty of serverice. Default: *"/health"*
+Endpoint to check healty of serverice. Default: _"/health"_
 
 ```
 HEALTH_PATH
 ```
 
-Port where service is. Default: *3000*
+Port where service is. Default: _3000_
 
 ```
 PORT

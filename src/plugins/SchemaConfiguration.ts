@@ -39,6 +39,7 @@ export class SchemaConfiguration {
           return r.json();
         })
         .then((j) => {
+          console.log("-", resource.label, "schema Found");
           return {
             ...resource,
             schema: j.schema,
@@ -46,7 +47,7 @@ export class SchemaConfiguration {
         })
         .catch((e) => {
           const { statusText } = e;
-          console.log(resource.label, statusText);
+          console.log("*", resource.label, "schema", statusText);
           return {};
         });
     });
