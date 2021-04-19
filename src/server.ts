@@ -88,19 +88,28 @@ function createServer(db) {
           }
         }
       );
-      server.get<{ Querystring: { page: number | null; size: number | null } }>(
+      server.get<{
+        Querystring: {
+          page: number | null;
+          size: number | null;
+          orderBy: "asc" | "desc";
+          sortBy: string;
+        };
+      }>(
         `/${tempSchema.collectionName}`,
         MultipleEntitySchema(tempSchema),
         async function (req, res) {
-          const { page = 0, size = 10 } = req.query;
+          const { page = 0, size = 10, orderBy, sortBy, ...other } = req.query;
+
+          console.log("aaaaaaaa", other);
           try {
             const collection = db.collection(
               schema.schema.$metadata.collection
             );
             const docs = await collection
-              .find({})
+              .find(other || {})
               .project(tempSchema.getSchemaPropertiesMongoProjection()) //è un ottimizzazione. Di fatto fastify già elimina le proprietà non comprese nello schema dichiarato poche righe sopra
-              .sort({ _id: 1 })
+              .sort({ [sortBy || "id"]: orderBy === "asc" ? 1 : -1 })
               .limit(size)
               .skip(page * size)
               .toArray();

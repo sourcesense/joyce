@@ -1,9 +1,34 @@
 import { CustomeSchemaParser } from "./CustomSchemaParser";
 
-const globaleQueryStringPagination = {
+const globaleQueryStringPagination = (entitySchema) => ({
   page: { type: "integer" },
   size: { type: "integer" },
-};
+  ...entitySchema.getSchemaProperties(),
+  orderBy: {
+    default: "desc",
+    type: "string",
+    items: {
+      type: "string",
+      enum: ["asc", "desc"],
+    },
+    uniqueItems: true,
+    minItems: 1,
+  },
+  sortBy: {
+    type: "string",
+    enum: entitySchema.getSchemaToMongoProperties(),
+  },
+  /** ordinamento di multipli valori */
+  // sortBy: {
+  //   type: "array",
+  //   items: {
+  //     type: "string",
+  //     enum: entitySchema.getSchemaToMongoProperties(),
+  //   },
+  //   uniqueItems: true,
+  //   minItems: 1,
+  // },
+});
 
 export function SingleEntitySchema(entitySchema: CustomeSchemaParser): object {
   return {
@@ -29,7 +54,7 @@ export function MultipleEntitySchema(
 ): object {
   return {
     schema: {
-      querystring: globaleQueryStringPagination,
+      querystring: globaleQueryStringPagination(entitySchema),
       response: {
         200: {
           type: "array",
