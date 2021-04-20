@@ -1,6 +1,7 @@
 package com.sourcesense.nile.core.mapper;
 
 import com.fasterxml.jackson.core.JsonProcessingException;
+import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.sourcesense.nile.core.dto.Schema;
 import com.sourcesense.nile.core.dto.SchemaSave;
@@ -26,14 +27,17 @@ public abstract class SchemaMapper {
 	public abstract SchemaShort toDtoShort(SchemaEntity entity);
 
 	@Mapping(target = "schema", source = "dto")
+	@Mapping(target = "name", source = "metadata.name")
+	@Mapping(target = "description", source = "metadata.description")
+	@Mapping(target = "development", source = "metadata.development")
 	public abstract SchemaEntity toEntity(SchemaSave dto);
 
 	String schemaAsString(SchemaSave dto) throws JsonProcessingException {
-		return mapper.writeValueAsString(dto.getSchema());
+		return mapper.writeValueAsString(dto);
 	}
 
-	Map schemaAsMap(SchemaEntity entity) throws JsonProcessingException {
-		return mapper.readValue(entity.getSchema(), Map.class);
+	JsonNode schemaAsMap(SchemaEntity entity) throws JsonProcessingException {
+		return mapper.readValue(entity.getSchema(), JsonNode.class);
 	}
 
 }

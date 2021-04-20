@@ -50,9 +50,9 @@ public class SchemaEngineTest {
 		schemaEngine.registerHandler("path", jsonPathTransformerHandler);
 		schemaEngine.registerMetaSchema();
 		ProcessResult result = schemaEngine.process(schema, source);
-		Assertions.assertEquals("Leanne Graham", result.getJson().get("name"));
-		Assertions.assertEquals("foobar",  result.getJson().get("mail"));
-		Assertions.assertEquals("foobar", result.getJson().get("address"));
+		Assertions.assertEquals("Leanne Graham", result.getJson().get("name").asText());
+		Assertions.assertEquals("foobar",  result.getJson().get("mail").asText());
+		Assertions.assertEquals("foobar", result.getJson().get("address").asText());
 	}
 
 
@@ -69,9 +69,9 @@ public class SchemaEngineTest {
 		schemaEngine.registerHandler("$meta", jsonPathTransformerHandler);
 		schemaEngine.registerMetaSchema();
 		ProcessResult result = schemaEngine.process(schema, source);
-		Assertions.assertEquals("Leanne Graham", result.getJson().get("name"));
-		Assertions.assertEquals("foobar",  result.getJson().get("mail"));
-		Assertions.assertEquals("foobar", result.getJson().get("address"));
+		Assertions.assertEquals("Leanne Graham", result.getJson().get("name").asText());
+		Assertions.assertEquals("foobar",  result.getJson().get("mail").asText());
+		Assertions.assertEquals("foobar", result.getJson().get("address").asText());
 	}
 
 	@Test
@@ -93,6 +93,7 @@ public class SchemaEngineTest {
 		String schema = Files.readString(loadResource("schema/15.json"));
 		String source = Files.readString(loadResource("source/10.json"));
 		SchemaEngine schemaEngine = new SchemaEngine(props);
+
 		TransormerHandler handler = Mockito.mock(TransormerHandler.class);
 		Mockito.when(handler.process(eq(new TextNode("$.email")), any(), any()))
 				.thenReturn(new TextNode("mario"));
@@ -105,7 +106,7 @@ public class SchemaEngineTest {
 		schemaEngine.registerMetaSchema();
 		ProcessResult result = schemaEngine.process(schema, source);
 
-		Assertions.assertEquals("MARIO", result.getJson().get("name"));
+		Assertions.assertEquals("MARIO", result.getJson().get("name").asText());
 
 	}
 
@@ -121,8 +122,7 @@ public class SchemaEngineTest {
 		schemaEngine.registerMetaSchema();
 
 		ProcessResult result = schemaEngine.process(schema, source);
-		Assertions.assertEquals("users", result.getMetadata().get().get("collection"));
-		Assertions.assertEquals("bar", result.getMetadata().get().get("message_key"));
+		Assertions.assertEquals("users", result.getMetadata().get().get("collection").asText());
 	}
 
     @Test
