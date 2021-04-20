@@ -32,7 +32,7 @@ public class IngestionService {
 	final private NotificationService notificationEngine;
 	final private MainlogProducer mainlogProducer;
 
-	public JsonNode processSchema(Schema schema, JsonNode document) {
+	public JsonNode ingestDryRun(Schema schema, JsonNode document) {
 		ProcessResult node = schemaEngine.process(schema.getSchema(), document);
 
 		ObjectNode result = mapper.createObjectNode();

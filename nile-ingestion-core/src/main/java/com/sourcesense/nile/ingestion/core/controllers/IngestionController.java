@@ -11,7 +11,6 @@ import com.sourcesense.nile.core.service.SchemaService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.web.bind.annotation.RestController;
 
-import java.util.Map;
 import java.util.Optional;
 
 @RestController
@@ -47,6 +46,6 @@ public class IngestionController implements IngestionApi {
 		if(schema.isEmpty()){
 			throw new SchemaNotFoundException(String.format("Schema %s does not exists", schemaId));
 		}
-		return ingestionService.processSchema(schema.get(), document);
+		return ingestionService.ingestDryRun(schema.get(), document);
 	}
 }
