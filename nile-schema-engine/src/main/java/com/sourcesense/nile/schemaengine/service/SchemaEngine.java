@@ -11,7 +11,7 @@ import com.networknt.schema.*;
 import com.sourcesense.nile.schemaengine.NileMetaSchema;
 import com.sourcesense.nile.schemaengine.dto.ProcessResult;
 import com.sourcesense.nile.schemaengine.exceptions.HandlerBeanNameNotFound;
-import com.sourcesense.nile.schemaengine.exceptions.InvalidSchemaVersion;
+import com.sourcesense.nile.schemaengine.exceptions.InvalidSchemaException;
 import com.sourcesense.nile.schemaengine.exceptions.SchemaIsNotValidException;
 import com.sourcesense.nile.schemaengine.handlers.TransormerHandler;
 import lombok.extern.slf4j.Slf4j;
@@ -291,7 +291,7 @@ public class SchemaEngine implements ApplicationContextAware {
 				.collect(Collectors.toList());
 
 		if (missingFromNewSchema.size() > 0){
-			throw new InvalidSchemaVersion(String.format("New Schema is not valid some key were deleted %s", String.join(", ", missingFromNewSchema)));
+			throw new InvalidSchemaException(String.format("New Schema is not valid some key were deleted %s", String.join(", ", missingFromNewSchema)));
 		}
 
 		return newKeys.size() > prevkeys.size();

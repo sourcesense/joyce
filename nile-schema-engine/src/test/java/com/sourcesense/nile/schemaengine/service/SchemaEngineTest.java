@@ -1,12 +1,10 @@
 package com.sourcesense.nile.schemaengine.service;
 
-import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.node.TextNode;
 import com.sourcesense.nile.schemaengine.dto.ProcessResult;
-import com.sourcesense.nile.schemaengine.exceptions.InvalidSchemaVersion;
+import com.sourcesense.nile.schemaengine.exceptions.InvalidSchemaException;
 import com.sourcesense.nile.schemaengine.exceptions.SchemaIsNotValidException;
 import com.sourcesense.nile.schemaengine.handlers.TransormerHandler;
-import org.hamcrest.Matchers;
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
@@ -147,7 +145,7 @@ public class SchemaEngineTest {
 		String schema = Files.readString(loadResource("schema/12.json"));
 		String newSchema = Files.readString(loadResource("schema/13.json"));;
 		SchemaEngine schemaEngine = new SchemaEngine(props);
-		Assertions.assertThrows(InvalidSchemaVersion.class, () -> {
+		Assertions.assertThrows(InvalidSchemaException.class, () -> {
 			schemaEngine.hasBreakingChanges(schema, newSchema);
 		});
 
