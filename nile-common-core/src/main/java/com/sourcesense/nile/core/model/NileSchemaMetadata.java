@@ -1,5 +1,6 @@
 package com.sourcesense.nile.core.model;
 
+import com.fasterxml.jackson.annotation.JsonProperty;
 import com.fasterxml.jackson.databind.JsonNode;
 import com.sourcesense.nile.core.errors.InvalidMetadataException;
 import lombok.Getter;
@@ -20,8 +21,14 @@ public class NileSchemaMetadata {
     public static final String KEY_ROOT_COLLECTION = "root_collection";
 
     private NileURI.Subtype subtype;
+
+    @JsonProperty("uid")
     private String uidKey;
+
     private String collection;
+    private String name;
+    private String description;
+    private Boolean development;
     private JsonNode rootQuery;
     private String rootCollection;
 

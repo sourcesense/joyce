@@ -1,5 +1,7 @@
 package com.sourcesense.nile.core.model;
 
+import com.fasterxml.jackson.annotation.JsonProperty;
+import com.fasterxml.jackson.annotation.JsonValue;
 import lombok.Getter;
 
 import java.net.URI;
@@ -41,8 +43,9 @@ public class NileURI {
     }
 
     public enum Subtype {
-
+        @JsonProperty("import")
         IMPORT("import"),
+        @JsonProperty("model")
         MODEL("model");
 
         private final String value;
@@ -51,6 +54,7 @@ public class NileURI {
             this.value = value;
         }
 
+        @JsonValue
         public String getValue() {
             return value;
         }

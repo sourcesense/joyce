@@ -35,7 +35,7 @@ class SchemaServiceTest {
 			SchemaService service = new SchemaService(schemaEntityDao, schemaMapper, schemaEngine);
 			service.subtype = "import";
 			SchemaSave schemaNew = new SchemaSave();
-			schemaNew.setName("foobar");
+
 			SchemaEntity entityNew = new SchemaEntity();
 			entityNew.setName("foobar");
 			entityNew.setSchema("foo");

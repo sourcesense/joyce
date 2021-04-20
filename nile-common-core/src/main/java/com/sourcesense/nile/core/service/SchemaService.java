@@ -41,7 +41,7 @@ public class SchemaService {
 	public Schema save(SchemaSave schema) throws JsonProcessingException {
 		SchemaEntity entity = schemaMapper.toEntity(schema);
 
-		String uid = getSchemaUid(schema.getName());
+		String uid = getSchemaUid(entity.getName());
 		entity.setUid(uid);
 		// TODO: validate schema with schemaEngine
 		Optional<SchemaEntity> previous = schemaEntityDao.get(uid);

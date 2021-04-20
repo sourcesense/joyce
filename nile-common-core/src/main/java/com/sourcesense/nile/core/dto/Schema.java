@@ -3,8 +3,6 @@ package com.sourcesense.nile.core.dto;
 import com.fasterxml.jackson.databind.JsonNode;
 import lombok.Data;
 
-import java.util.Map;
-
 @Data
 public class Schema {
 	private String uid;
