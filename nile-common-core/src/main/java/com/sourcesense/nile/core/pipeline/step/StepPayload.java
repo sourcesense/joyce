@@ -27,4 +27,11 @@ public class StepPayload<R, L> {
             this.load = stepPayload.getLoad();
         }
     }
+
+    public <N> StepPayload<R, N> buildNextStepPayload(N processedLoad) {
+        return new StepPayload<>(
+                this.initialPayload,
+                processedLoad
+        );
+    }
 }

@@ -1,17 +1,19 @@
 package com.sourcesense.nile.connectorcore.pipeline.step;
 
+import com.sourcesense.nile.connectorcore.model.DataEntry;
 import com.sourcesense.nile.connectorcore.model.MappingInfo;
 import com.sourcesense.nile.connectorcore.model.ProcessableData;
 import com.sourcesense.nile.core.pipeline.Step;
 import com.sourcesense.nile.core.pipeline.step.AbstractStep;
 import com.sourcesense.nile.core.pipeline.step.StepPayload;
-import lombok.NoArgsConstructor;
+import lombok.RequiredArgsConstructor;
 
 import java.util.List;
 
-@NoArgsConstructor
-public abstract class ReadingStep<R extends MappingInfo, O extends ProcessableData>
-        extends AbstractStep<Void, List<R>>
-        implements Step<StepPayload<Void, Void>, StepPayload<List<R>, List<O>>> {
+
+@RequiredArgsConstructor
+public abstract class ExtractionStep<R extends MappingInfo, I extends ProcessableData>
+        extends AbstractStep<List<I>, List<DataEntry>>
+        implements Step<StepPayload<List<R>, List<I>>, StepPayload<List<R>, List<DataEntry>>> {
 
 }
