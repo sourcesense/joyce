@@ -49,6 +49,7 @@ public class MainlogProducer {
         ((ObjectNode) result.getJson()).put("_schema_version_", schema.getVersion());
         ((ObjectNode) result.getJson()).put("_schema_uid_", schema.getUid());
         ((ObjectNode) result.getJson()).put("_schema_name_", schema.getName());
+        ((ObjectNode) result.getJson()).put("_schema_development_", schema.getDevelopment());
 
         MessageBuilder<JsonNode> message = MessageBuilder
                 .withPayload(result.getJson())
