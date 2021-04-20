@@ -1,21 +1,4 @@
-export interface SchemaProperty {
-  required?: boolean;
-  type: string;
-  nullable?: boolean;
-}
-export interface SchemaProperties {
-  [key: string]: SchemaProperty;
-}
-export interface SchemaMetadata {
-  uid: string;
-  collection: string;
-  cassandra_schema: string;
-  subtype: string;
-}
-export interface Schema {
-  $metadata: SchemaMetadata;
-  properties: SchemaProperties;
-}
+import { Schema, SchemaProperties } from "../types";
 
 export class CustomeSchemaParser {
   readonly collectionName: string = "";

@@ -3,14 +3,12 @@ import healthHandler from "./modules/health/routes";
 import { CustomeSchemaParser } from "./plugins/CustomSchemaParser";
 import fs from "fs";
 // import path from "path";
-import {
-  ResponsableSchema,
-  SchemaConfiguration,
-} from "./plugins/SchemaConfiguration";
+import { SchemaConfiguration } from "./plugins/SchemaConfiguration";
 import {
   MultipleEntitySchema,
   SingleEntitySchema,
 } from "./plugins/PrepareFastifySchema";
+import { ResponsableSchema } from "./types";
 
 const SCHEMAS_SOURCE = process.env.SCHEMAS_SOURCE || "assets/schemas.json";
 const PRODUCTION_URL = process.env.BASE_URL || "https://<production-url>";

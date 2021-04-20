@@ -1,17 +1,6 @@
 import createFetch from "@vercel/fetch";
-import { SchemaMetadata, SchemaProperties } from "./CustomSchemaParser";
+import { ResponsableSchema, SchemaResources } from "../types";
 
-export interface SchemaResources {
-  [key: string]: Resource;
-}
-export interface Resource {
-  version: string;
-  source: string;
-}
-export interface ResponsableSchema extends Resource {
-  label: string;
-  schema: { $metadata: SchemaMetadata; properties: SchemaProperties };
-}
 export class SchemaConfiguration {
   readonly sources = [];
   constructor({ schemas }: { schemas: SchemaResources }) {
