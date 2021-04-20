@@ -62,7 +62,9 @@ function createServer(db) {
         Body: {veditu:string}
        */
       server.get<{ Params: { id: string } }>(
-        `/${tempSchema.collectionName}/:id`,
+        `${tempSchema.development ? "/development" : ""}/${
+          tempSchema.collectionName
+        }/:id`,
         SingleEntitySchema(tempSchema),
         async function (req, res) {
           const { id: entityID } = req.params;
@@ -94,7 +96,9 @@ function createServer(db) {
           sortBy: string;
         };
       }>(
-        `/${tempSchema.collectionName}`,
+        `${tempSchema.development ? "/development" : ""}/${
+          tempSchema.collectionName
+        }`,
         MultipleEntitySchema(tempSchema),
         async function (req, res) {
           const { page = 0, size = 10, orderBy, sortBy, ...other } = req.query;

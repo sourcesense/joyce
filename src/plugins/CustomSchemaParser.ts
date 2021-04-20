@@ -5,7 +5,9 @@ export class CustomeSchemaParser {
   readonly properties: SchemaProperties = {};
   readonly required: string[] = [];
   readonly nullable: string[] = [];
+  readonly development: boolean = false;
   constructor({ schema: { $metadata, properties } }: { schema: Schema }) {
+    this.development = $metadata.development || false;
     this.collectionName = $metadata?.collection;
     this.properties = properties;
   }

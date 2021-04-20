@@ -11,6 +11,7 @@ export interface SchemaMetadata {
   collection: string;
   cassandra_schema: string;
   subtype: string;
+  development?: boolean;
 }
 export interface Schema {
   $metadata: SchemaMetadata;
