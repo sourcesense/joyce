@@ -130,8 +130,48 @@ fabric.properties
 # virtual machine crash logs, see http://www.java.com/en/download/help/error_hotspot.xml
 hs_err_pid*
 
-# End of https://www.toptal.com/developers/gitignore/api/java,intellij
+target/
+!.mvn/wrapper/maven-wrapper.jar
+!**/src/main/**
+!**/src/test/**
+
+### STS ###
+.apt_generated
+.classpath
+.factorypath
 .project
+.settings
+.springBeans
+.sts4-cache
+
+### IntelliJ IDEA ###
+.idea
+*.iml
+*.ipr
+
+### NetBeans ###
+/nbproject/private/
+/nbbuild/
+/dist/
+/nbdist/
+/.nb-gradle/
+build/
+
+### VS Code ###
+.vscode/
+
+.mvn/
+.metadata/
+
+### macOS ###
+.DS_Store
+
+
+
+
+
+
+# End of https://www.toptal.com/developers/gitignore/api/java,intellij
 nile-connector-core/.classpath
 nile-connector-core/.factorypath
 nile-connector-core/.project
