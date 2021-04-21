@@ -131,6 +131,7 @@ public class SchemaEngineTest {
 		Boolean ret = schemaEngine.hasBreakingChanges(schema, newSchema);
 		Assertions.assertTrue(ret);
     }
+
 	@Test
 	void schemaWithChangingSourceOnAFieldShouldReturnFalse() throws URISyntaxException, IOException {
 		String schema = Files.readString(loadResource("schema/11.json"));
@@ -148,6 +149,6 @@ public class SchemaEngineTest {
 		Assertions.assertThrows(InvalidSchemaException.class, () -> {
 			schemaEngine.hasBreakingChanges(schema, newSchema);
 		});
-
 	}
+
 }

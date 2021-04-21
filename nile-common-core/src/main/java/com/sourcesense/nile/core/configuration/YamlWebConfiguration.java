@@ -21,7 +21,6 @@ public class YamlWebConfiguration implements WebMvcConfigurer {
 
     @Override
     public void extendMessageConverters(List<HttpMessageConverter<?>> converters) {
-
         converters.add(new YamlJackson2HttpMessageConverter());
     }
 }

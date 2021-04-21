@@ -1,0 +1,20 @@
+{
+  "id": 1,
+  "name": "Leanne Graham",
+  "complesso": {
+    "ancora": {
+      "stacippa": {
+        "ole": [
+          {
+            "nome": "Mario",
+            "id": 4
+          },
+          {
+            "nome": "Gianni",
+            "id": 5
+          }
+        ]
+      }
+    }
+  }
+}

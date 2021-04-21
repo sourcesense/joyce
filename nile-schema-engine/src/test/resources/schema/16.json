@@ -1,0 +1,30 @@
+{
+  "$schema": "https://nile.sourcesensce.com/v1/schema",
+  "$metadata": {
+    "name": "asd"
+  },
+  "type": "object",
+  "properties": {
+    "id": {
+      "type": "string",
+      "$path": "$.name"
+    },
+    "more-id": {
+      "type": "integer",
+      "$path": "$.id"
+    },
+    "utenti": {
+      "type": "array",
+      "$path": "$.complesso.ancora.stacippa.ole",
+      "items": {
+        "type": "object",
+        "properties": {
+          "name": {
+            "type": "string",
+            "$path": "$.nome"
+          }
+        }
+      }
+    }
+  }
+}

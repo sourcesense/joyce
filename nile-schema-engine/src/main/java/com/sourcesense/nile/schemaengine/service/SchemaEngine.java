@@ -129,9 +129,15 @@ public class SchemaEngine implements ApplicationContextAware {
 		if (schema.getNodeType().equals(JsonNodeType.OBJECT)){
 			// Apply custom handlers
 			Optional<JsonNode> transformed = this.applyHandlers(schema, sourceJsonNode, metadata);
-			transformed.ifPresent(jsonNode -> {
-				((ObjectNode)sourceJsonNode).set(key, jsonNode);
-			});
+			if(transformed.isPresent()){
+				ObjectNode node = mapper.createObjectNode();
+				node.set(key, transformed.get());
+				ObjectNode tempSchema = schema.deepCopy();
+				tempSchema.remove(handlers.keySet());
+
+				tempSchema.set("type", schema.get("type"));
+				return this.parse(key, tempSchema, node, metadata);
+			}
 
 			String type = Optional.ofNullable(schema.get("type")).orElse(new TextNode("string")).asText();
 			if(type.equals("object")){
