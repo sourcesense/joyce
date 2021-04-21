@@ -32,7 +32,9 @@ public class NileSchemaMetadata {
     private String name;
     private String description;
     private Boolean development;
+    @JsonProperty(KEY_ROOT_QUERY)
     private JsonNode rootQuery;
+    @JsonProperty(KEY_ROOT_COLLECTION)
     private String rootCollection;
 
     public static NileSchemaMetadata create(JsonNode schema) {
