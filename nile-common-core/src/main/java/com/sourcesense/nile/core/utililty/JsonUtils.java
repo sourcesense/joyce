@@ -1,4 +1,4 @@
-package com.sourcesense.nile.core;
+package com.sourcesense.nile.core.utililty;
 
 import com.fasterxml.jackson.databind.JsonNode;
 

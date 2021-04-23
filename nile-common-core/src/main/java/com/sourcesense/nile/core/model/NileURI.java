@@ -19,6 +19,8 @@ public class NileURI {
 
     public enum Type {
 
+        RAW("raw"),
+        INFO("info"),
         SCHEMA("schema"),
         CONTENT("content");
 
@@ -47,10 +49,15 @@ public class NileURI {
     }
 
     public enum Subtype {
+        //Data Types
         @JsonProperty("import")
         IMPORT("import"),
         @JsonProperty("model")
-        MODEL("model");
+        MODEL("model"),
+
+        //Connectors
+        @JsonProperty("ftp")
+        FTP("ftp");
 
         private final String value;
 

@@ -10,9 +10,25 @@
     <modelVersion>4.0.0</modelVersion>
     <groupId>com.sourcesense.nile</groupId>
     <artifactId>nile-connector-core</artifactId>
-    <version>0.0.1-SNAPSHOT</version>
-
+    <version>${nile.connector-core.version}</version>
     <dependencies>
+        <dependency>
+            <groupId>com.sourcesense.nile</groupId>
+            <artifactId>nile-common-core</artifactId>
+            <version>${nile.common-core.version}</version>
+        </dependency>
+
+        <dependency>
+            <groupId>org.springframework.boot</groupId>
+            <artifactId>spring-boot-starter-quartz</artifactId>
+        </dependency>
+
+        <dependency>
+            <groupId>io.reactivex.rxjava2</groupId>
+            <artifactId>rxjava</artifactId>
+            <version>2.2.21</version>
+        </dependency>
+
         <dependency>
             <groupId>org.springframework.boot</groupId>
             <artifactId>spring-boot-starter-test</artifactId>
