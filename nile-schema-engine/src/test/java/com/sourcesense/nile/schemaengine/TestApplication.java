@@ -16,7 +16,7 @@ public class TestApplication {
 
 	@Bean(name = "fooHandler")
 	TransormerHandler handler(){
-		TransormerHandler transormerHandler = (key, schema, sourceJsonNode,context) -> new TextNode("bar");
+		TransormerHandler transormerHandler = (key, schema, sourceJsonNode, metadata, context) -> new TextNode("bar");
 		return transormerHandler;
 	}
 }

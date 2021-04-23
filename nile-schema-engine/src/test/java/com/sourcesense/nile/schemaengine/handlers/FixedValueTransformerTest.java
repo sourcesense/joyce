@@ -21,10 +21,10 @@ public class FixedValueTransformerTest {
 		ObjectNode source = mapper.createObjectNode();
 		source.put("foo", "bar");
 		JsonNode value = new TextNode("asd");
-		JsonNode result = handler.process("test", value, source, Optional.empty());
+		JsonNode result = handler.process("test", value, source, Optional.empty(), Optional.empty());
 		Assertions.assertEquals("asd",result.asText());
 
-		JsonNode result2 = handler.process("test2", source, source, Optional.empty());
+		JsonNode result2 = handler.process("test2", source, source, Optional.empty(), Optional.empty());
 		Assertions.assertEquals("bar",result2.get("foo").asText());
 	}
 

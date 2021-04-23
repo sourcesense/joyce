@@ -25,7 +25,7 @@ public class JsonPathTransformerTest {
 		JsonPathTransformerHandler handler = getJsonPathTransformerHandler();
 		JsonNode source = getSourceJsonNode();
 		JsonNode value = new TextNode("$.email");
-		JsonNode result = handler.process("test", value, source, Optional.empty());
+		JsonNode result = handler.process("test", value, source, Optional.empty(), Optional.empty());
 		Assertions.assertEquals(result.asText(), "Sincere@april.biz");
 	}
 
@@ -35,7 +35,7 @@ public class JsonPathTransformerTest {
 		JsonPathTransformerHandler handler = getJsonPathTransformerHandler();
 		JsonNode source = getSourceJsonNode();
 		JsonNode value = new TextNode("$.concat($.address.city, $.address.street)");
-		JsonNode result = handler.process("test", value, source, Optional.empty());
+		JsonNode result = handler.process("test", value, source, Optional.empty(), Optional.empty());
 		Assertions.assertEquals("GwenboroughKulas Light", result.asText());
 	}
 
@@ -47,7 +47,7 @@ public class JsonPathTransformerTest {
 		value.add("$.address.city");
 		value.add(" - ");
 		value.add("$.address.street");
-		JsonNode result = handler.process("test",value, source, Optional.empty());
+		JsonNode result = handler.process("test",value, source, Optional.empty(), Optional.empty());
 		Assertions.assertEquals("Gwenborough - Kulas Light", result.asText());
 	}
 
