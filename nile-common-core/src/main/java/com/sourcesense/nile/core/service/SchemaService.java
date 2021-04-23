@@ -7,7 +7,6 @@ import com.sourcesense.nile.core.dto.SchemaSave;
 import com.sourcesense.nile.core.dto.SchemaShort;
 import com.sourcesense.nile.core.errors.SchemaNotFoundException;
 import com.sourcesense.nile.core.mapper.SchemaMapper;
-import com.sourcesense.nile.core.model.NileSchemaMetadata;
 import com.sourcesense.nile.core.model.NileURI;
 import com.sourcesense.nile.core.model.SchemaEntity;
 
@@ -34,18 +33,17 @@ public class SchemaService {
 	@Value("${nile.schema-service.subtype:import}")
 	String subtype;
 
-	private String getSchemaUid(String name){
-		NileURI uri = new NileURI(URI.create(String.format("nile://schema/%s/%s", subtype, name)));
-		return uri.toString();
+	private NileURI getSchemaUid(String name){
+		return new NileURI(URI.create(String.format("nile://schema/%s/%s", subtype, name)));
 	}
 
-	public Schema save(SchemaSave schema) throws JsonProcessingException {
+	public NileURI save(SchemaSave schema) throws JsonProcessingException {
 		SchemaEntity entity = schemaMapper.toEntity(schema);
 
-		String uid = getSchemaUid(entity.getName());
-		entity.setUid(uid);
+		NileURI uid = getSchemaUid(entity.getName());
+		entity.setUid(uid.toString());
 		// TODO: validate schema with schemaEngine
-		Optional<SchemaEntity> previous = schemaEntityDao.get(uid);
+		Optional<SchemaEntity> previous = schemaEntityDao.get(uid.toString());
 
 		if (previous.isPresent()){
 			if(entity.getDevelopment()){
@@ -73,8 +71,7 @@ public class SchemaService {
 		}
 
 		schemaEntityDao.save(entity);
-		Optional<SchemaEntity> saved = schemaEntityDao.get(uid); // TODO ??? move to DAO this logic??
-		return saved.map(schemaMapper::toDto).get();
+		return uid;
 	}
 
 	public List<SchemaShort> findAll() {
@@ -84,7 +81,7 @@ public class SchemaService {
 	}
 
     public Optional<Schema> findByName(String name) {
-			return schemaEntityDao.get(getSchemaUid(name)).map(schemaMapper::toDto);
+			return schemaEntityDao.get(getSchemaUid(name).toString()).map(schemaMapper::toDto);
     }
 
 	public Optional<Schema> findByNameAndVersion(String name, Integer version) {
@@ -97,7 +94,7 @@ public class SchemaService {
 	}
 
 	public void delete(String name) {
-		Optional<SchemaEntity> entity = schemaEntityDao.get(getSchemaUid(name));
+		Optional<SchemaEntity> entity = schemaEntityDao.get(getSchemaUid(name).toString());
 		if(entity.isEmpty()){
 			throw new SchemaNotFoundException(String.format("Schema [%s] does not exists", name));
 		}

@@ -3,6 +3,7 @@ package com.sourcesense.nile.core.model;
 import com.fasterxml.jackson.annotation.JsonProperty;
 import com.fasterxml.jackson.annotation.JsonValue;
 import com.fasterxml.jackson.databind.annotation.JsonDeserialize;
+import com.fasterxml.jackson.databind.annotation.JsonSerialize;
 import lombok.Getter;
 
 import java.net.URI;
@@ -13,6 +14,7 @@ import java.util.stream.Collectors;
 
 @Getter
 @JsonDeserialize(using = NileURIDeserializer.class)
+@JsonSerialize(using = NileURISerializer.class)
 public class NileURI {
 
     public enum Type {

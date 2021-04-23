@@ -10,6 +10,9 @@ import java.io.IOException;
 import java.util.Optional;
 
 public class NileURIDeserializer extends StdDeserializer<NileURI> {
+    protected NileURIDeserializer() {
+        this(null);
+    }
     protected NileURIDeserializer(Class<?> vc) {
         super(vc);
     }
@@ -17,7 +20,12 @@ public class NileURIDeserializer extends StdDeserializer<NileURI> {
     @Override
     public NileURI deserialize(JsonParser jsonParser, DeserializationContext deserializationContext) throws IOException, JsonProcessingException {
         JsonNode node = jsonParser.getCodec().readTree(jsonParser);
-        Optional<NileURI> uri = NileURI.createURI(node.asText());
+        Optional<NileURI> uri;
+        if (node.isObject()) {
+             uri = NileURI.createURI(node.get("uri").asText());
+        } else {
+            uri = NileURI.createURI(node.asText());
+        }
         if (uri.isEmpty()){
             throw new JsonProcessingException(String.format("uri: %s is not a nile uri", node.asText())){};
         }

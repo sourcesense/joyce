@@ -18,6 +18,8 @@ public class NileSchemaMetadata {
      */
     public static final String KEY_COLLECTION = "collection";
     public static final String KEY_UID = "uid";
+    public static final String KEY_NAME = "name";
+    public static final String KEY_DESCRIPTION = "description";
     public static final String KEY_SUBTYPE = "subtype";
     public static final String KEY_ROOT_QUERY = "root_query";
     public static final String KEY_ROOT_COLLECTION = "root_collection";
@@ -52,6 +54,15 @@ public class NileSchemaMetadata {
                 .orElseThrow(() -> new InvalidMetadataException(
                         String.format("Missing [%s] in metadata", KEY_UID))).asText());
 
+        metadata.setName(Optional.ofNullable(schema.get(KEY_NAME))
+                .orElseThrow(() -> new InvalidMetadataException(
+                        String.format("Missing [%s] in metadata", KEY_NAME))).asText());
+
+
+        Optional.ofNullable(schema.get(KEY_DESCRIPTION)).ifPresent(jsonNode -> {
+            metadata.setDescription(schema.get(KEY_DESCRIPTION).asText());
+        });
+
         metadata.setDevelopment(Optional.ofNullable(schema.get(KEY_DEVELOPMENT))
                 .orElse(new TextNode("false")).asBoolean());
 
@@ -61,6 +72,8 @@ public class NileSchemaMetadata {
 
         metadata.setSubtype(NileURI.Subtype.get(subtype).orElseThrow(() -> new InvalidMetadataException(
                 String.format("Invalid value for Type [%s]", subtype))));
+
+
 
         switch (metadata.getSubtype()){
             case MODEL:
