@@ -11,6 +11,7 @@ import com.sourcesense.nile.core.model.NileSchemaMetadata;
 import com.sourcesense.nile.core.model.NileURI;
 import com.sourcesense.nile.core.model.SchemaEntity;
 
+import com.sourcesense.nile.schemaengine.exceptions.InvalidSchemaException;
 import com.sourcesense.nile.schemaengine.service.SchemaEngine;
 import lombok.RequiredArgsConstructor;
 import org.springframework.beans.factory.annotation.Value;
@@ -50,9 +51,8 @@ public class SchemaService {
 			if(entity.getDevelopment()){
 				// If schema is in development mode we skip schema checks, but we make shure to not break previous version by stepping up the version
 				if (!previous.get().getDevelopment()){
-					previous.get().setUid(String.format("%s/%d", uid, previous.get().getVersion()));
-					schemaEntityDao.save(previous.get());
-					entity.setVersion(previous.get().getVersion()+1);
+
+					throw new InvalidSchemaException("Previous schema is not in development mode");
 				} else {
 					entity.setVersion(previous.get().getVersion());
 				}

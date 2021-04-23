@@ -179,3 +179,4 @@ nile-connector-core/.project
 nile-common-core/nile-common-core.iml
 nile-connector-core/nile-connector-core.iml
 nile-schema-engine/nile-schema-engine.iml
+nile-parent.iml

@@ -57,6 +57,17 @@ public class SchemaEngineIT {
 
 	}
 
+	@Test
+	public void schemaParsing16() throws IOException, URISyntaxException {
+		String schema = Files.readString(Path.of(resourceLoader.getResource("schema/16.json").getURI()));
+		String source = Files.readString(Path.of(resourceLoader.getResource("source/16.json").getURI()));
+		ProcessResult result = schemaEngine.process(schema, source);
+		Assertions.assertEquals("Leanne Graham", result.getJson().get("id").asText());
+		Assertions.assertEquals("1", result.getJson().get("more-id").asText());
+		Assertions.assertEquals("Mario", result.getJson().get("utenti").get(0).get("name").asText());
+
+	}
+
 	@SpringBootApplication
 	static class TestConfiguration {
 	}

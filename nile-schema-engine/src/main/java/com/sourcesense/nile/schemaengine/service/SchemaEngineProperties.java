@@ -8,15 +8,10 @@ import org.springframework.stereotype.Component;
 import java.util.HashMap;
 import java.util.Map;
 
-@ConfigurationProperties("nile.schemaengine")
+@ConfigurationProperties("nile.schema-engine")
 @Getter @Setter
 @Component
 public class SchemaEngineProperties {
-	/**
-	 * Load schema as yaml instead of json
-	 */
-	private Boolean yaml   = false;
-
 	/**
 	 * Map of handlers to load
 	 * the key is the key that you want to implement in the json-schema

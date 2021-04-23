@@ -30,9 +30,14 @@ public interface SchemaApi {
 	@ResponseStatus(code = HttpStatus.OK)
 	Schema getSchemaVersion(@PathVariable String name, @PathVariable Integer version);
 
-	@PostMapping
+	@PostMapping(consumes = "application/json")
 	@ResponseStatus(code = HttpStatus.CREATED)
-	Schema saveSchema(@RequestBody SchemaSave user) throws JsonProcessingException;
+	Schema saveSchemaJson(@RequestBody SchemaSave schema) throws JsonProcessingException;
+
+	@PostMapping(consumes = "application/x-yaml")
+	@ResponseStatus(code = HttpStatus.CREATED)
+	Schema saveSchemaYaml(@RequestBody SchemaSave schema) throws JsonProcessingException;
+
 
 	@DeleteMapping("/{name}")
 	@ResponseStatus(code = HttpStatus.NO_CONTENT)
