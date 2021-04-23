@@ -1,7 +1,7 @@
 package com.sourcesense.nile.core.pipeline.step;
 
 import com.sourcesense.nile.core.errors.PipePanic;
-import com.sourcesense.nile.core.utililty.TextUtil;
+import com.sourcesense.nile.core.utililty.TextUtils;
 import lombok.extern.log4j.Log4j2;
 import org.apache.commons.lang3.exception.ExceptionUtils;
 
@@ -22,7 +22,7 @@ public abstract class AbstractStep<R, L> {
      */
     protected PipePanic getUnrecoverableStateException(Exception exception) {
         log.error("Message: {}. Stack Trace: {}", exception.getMessage(), ExceptionUtils.getStackTrace(exception));
-        return new PipePanic("Message: '" + TextUtil.limitMessageSize(exception.getMessage()) + "'");
+        return new PipePanic("Message: '" + TextUtils.limitMessageSize(exception.getMessage()) + "'");
     }
 
     /**

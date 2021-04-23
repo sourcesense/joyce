@@ -1,5 +1,6 @@
 package com.sourcesense.nile.connectorcore.dao;
 
+import com.sourcesense.nile.connectorcore.configuration.DatabaseCollections;
 import com.sourcesense.nile.connectorcore.dto.DataInfo;
 import com.sourcesense.nile.connectorcore.repository.DataInfoMongoRepository;
 import lombok.RequiredArgsConstructor;
@@ -13,6 +14,7 @@ public abstract class MongodbConnectorDao<T extends DataInfo, R extends DataInfo
 
     protected final R dataInfoMongoRepository;
     protected final MongoTemplate mongoTemplate;
+    protected final DatabaseCollections databaseCollections;
 
     @Override
     public Optional<T> get(String id) {

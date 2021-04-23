@@ -1,6 +1,6 @@
 package com.sourcesense.nile.core.utililty;
 
-public class TextUtil {
+public class TextUtils {
 
     private static final Integer MAX_CHAR_LENGTH = 500;
 

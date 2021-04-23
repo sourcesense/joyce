@@ -1,18 +1,20 @@
 package com.sourcesense.nile.connectorcore.model;
 
 import com.fasterxml.jackson.databind.JsonNode;
-import com.sourcesense.nile.core.enumeration.Action;
+import com.sourcesense.nile.core.enumeration.IngestionAction;
 import lombok.AllArgsConstructor;
-import lombok.Builder;
 import lombok.Data;
+import lombok.NoArgsConstructor;
+import lombok.experimental.SuperBuilder;
 
 @Data
-@Builder
+@SuperBuilder
+@NoArgsConstructor
 @AllArgsConstructor
 public class DataEntry {
 
+    private String nileUri;
     private String schemaKey;
-    private String uid;
     private JsonNode data;
-    private Action action;
+    private IngestionAction action;
 }

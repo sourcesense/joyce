@@ -2,7 +2,6 @@ package com.sourcesense.nile.connectorcore.scheduling.job;
 
 import com.sourcesense.nile.connectorcore.model.MappingInfo;
 import com.sourcesense.nile.connectorcore.model.ProcessableData;
-import com.sourcesense.nile.connectorcore.pipeline.ConnectorPayload;
 import com.sourcesense.nile.connectorcore.pipeline.step.ExtractionStep;
 import com.sourcesense.nile.connectorcore.pipeline.step.ReadingStep;
 import com.sourcesense.nile.connectorcore.pipeline.step.StoringStep;
@@ -22,15 +21,14 @@ public abstract class ScanningJob<R extends MappingInfo, P extends ProcessableDa
 
     protected void executeJob(JobExecutionContext jobExecutionContext) {
         try {
-            StepPayload<Void, Void> emptyStepPayload = new StepPayload<>(new ConnectorPayload<>(), null);
-
             new Pipeline<>(readingStep)
                     .pipe(extractionStep)
                     .pipe(storingStep)
-                    .execute(emptyStepPayload);
+                    .execute(new StepPayload<>());
 
         } catch (PipePanic pipePanic) {
             //Todo: Gestire Eccezioni
+            throw new RuntimeException(pipePanic);
         }
     }
 }

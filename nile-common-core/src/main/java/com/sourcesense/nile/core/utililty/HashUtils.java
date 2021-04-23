@@ -5,7 +5,7 @@ import org.apache.commons.codec.digest.DigestUtils;
 import java.io.File;
 import java.io.FileInputStream;
 
-public class HashUtil {
+public class HashUtils {
 
     public static String getHash(File file) {
         try {

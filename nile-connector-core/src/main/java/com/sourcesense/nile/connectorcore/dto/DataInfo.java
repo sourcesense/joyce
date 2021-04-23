@@ -1,15 +1,21 @@
 package com.sourcesense.nile.connectorcore.dto;
 
+import lombok.AccessLevel;
 import lombok.Data;
 import lombok.NoArgsConstructor;
+import lombok.experimental.SuperBuilder;
 import org.springframework.data.annotation.Id;
 import org.springframework.data.mongodb.core.mapping.Document;
 
 import java.util.Date;
 
+
 @Data
-@Document
-@NoArgsConstructor
+@SuperBuilder
+@NoArgsConstructor(access = AccessLevel.PROTECTED)
+//Todo: capire perchè non riesce ad iniettarsi il bean
+//@Document("#{databaseCollections.getDataInfo()}")
+@Document("info")
 public abstract class DataInfo {
 
     @Id
