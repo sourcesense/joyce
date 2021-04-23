@@ -43,7 +43,7 @@ public class SchemaEngineTest {
 
 		SchemaEngine schemaEngine = new SchemaEngine(props);
 		TransormerHandler jsonPathTransformerHandler = Mockito.mock(TransormerHandler.class);
-		Mockito.when(jsonPathTransformerHandler.process(any(), any(), any()))
+		Mockito.when(jsonPathTransformerHandler.process(any(),any(), any(), any()))
 				.thenReturn(new TextNode("foobar"));
 		schemaEngine.registerHandler("path", jsonPathTransformerHandler);
 		schemaEngine.registerMetaSchema();
@@ -60,7 +60,7 @@ public class SchemaEngineTest {
 		String source = Files.readString(loadResource("source/10.json"));
 		SchemaEngine schemaEngine = new SchemaEngine(props);
 		TransormerHandler jsonPathTransformerHandler = Mockito.mock(TransormerHandler.class);
-		Mockito.when(jsonPathTransformerHandler.process(any(), any(), any()))
+		Mockito.when(jsonPathTransformerHandler.process(any(),any(), any(), any()))
 				.thenReturn(new TextNode("foobar"));
 		schemaEngine.registerHandler("$path", jsonPathTransformerHandler);
 		schemaEngine.registerHandler("$fixed", jsonPathTransformerHandler);
@@ -93,10 +93,10 @@ public class SchemaEngineTest {
 		SchemaEngine schemaEngine = new SchemaEngine(props);
 
 		TransormerHandler handler = Mockito.mock(TransormerHandler.class);
-		Mockito.when(handler.process(eq(new TextNode("$.email")), any(), any()))
+		Mockito.when(handler.process(any(),eq(new TextNode("$.email")), any(), any()))
 				.thenReturn(new TextNode("mario"));
 
-		Mockito.when(handler.process(eq(new TextNode("uppercase")), eq(new TextNode("mario")), any()))
+		Mockito.when(handler.process(any(),eq(new TextNode("uppercase")), eq(new TextNode("mario")), any()))
 				.thenReturn(new TextNode("MARIO"));
 
 		schemaEngine.registerHandler("$path", handler);
@@ -114,7 +114,7 @@ public class SchemaEngineTest {
 		String source = Files.readString(loadResource("source/10.json"));
 		SchemaEngine schemaEngine = new SchemaEngine(props);
 		TransormerHandler jsonPathTransformerHandler = Mockito.mock(TransormerHandler.class);
-		Mockito.when(jsonPathTransformerHandler.process(any(), any(), any()))
+		Mockito.when(jsonPathTransformerHandler.process(any(),any(), any(), any()))
 				.thenReturn(new TextNode("bar"));
 		schemaEngine.registerHandler("$path", jsonPathTransformerHandler);
 		schemaEngine.registerMetaSchema();

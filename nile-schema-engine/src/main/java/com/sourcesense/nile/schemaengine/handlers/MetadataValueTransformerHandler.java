@@ -15,11 +15,11 @@ public class MetadataValueTransformerHandler extends JsonPathTransformerHandler 
 	private final ObjectMapper mapper;
 
 	@Override
-	public JsonNode process(JsonNode value, JsonNode source, Optional<JsonNode> metadata) {
+	public JsonNode process(String key, JsonNode value, JsonNode source, Optional<JsonNode> metadata) {
 		JsonNode metadataAsSource = mapper.createObjectNode();
 		if (metadata.isPresent()) {
 			metadataAsSource = metadata.get();
 		}
-		return super.process(value, metadataAsSource, Optional.empty());
+		return super.process(key, value, metadataAsSource, Optional.empty());
 	}
 }

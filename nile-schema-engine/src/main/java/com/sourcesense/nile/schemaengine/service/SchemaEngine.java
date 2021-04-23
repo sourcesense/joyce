@@ -103,7 +103,7 @@ public class SchemaEngine implements ApplicationContextAware {
 		for (Iterator<Map.Entry<String, JsonNode>> it = metadataNode.get().fields(); it.hasNext(); ) {
 			Map.Entry<String, JsonNode> field = it.next();
 			if(field.getValue().getNodeType().equals(JsonNodeType.OBJECT)){
-				Optional<JsonNode> transformed = this.applyHandlers( field.getValue(), source, Optional.empty());
+				Optional<JsonNode> transformed = this.applyHandlers(null, field.getValue(), source, Optional.empty());
 				transformed.ifPresent(jsonNode -> {
 					metadataNode.get().set(field.getKey(), jsonNode);
 				});
@@ -128,7 +128,7 @@ public class SchemaEngine implements ApplicationContextAware {
 
 		if (schema.getNodeType().equals(JsonNodeType.OBJECT)){
 			// Apply custom handlers
-			Optional<JsonNode> transformed = this.applyHandlers(schema, sourceJsonNode, metadata);
+			Optional<JsonNode> transformed = this.applyHandlers(key, schema, sourceJsonNode, metadata);
 			if(transformed.isPresent()){
 				ObjectNode node = mapper.createObjectNode();
 				node.set(key, transformed.get());
@@ -183,11 +183,13 @@ public class SchemaEngine implements ApplicationContextAware {
 	/**
 	 * Apply registered handlers, it stops at the first encountered
 	 * TODO: find a way to choose which one is applied or apply all in a given order
+	 *
+	 * @param key
 	 * @param schema
 	 * @param sourceJsonNode
 	 * @return
 	 */
-	private Optional<JsonNode> applyHandlers(JsonNode schema, JsonNode sourceJsonNode, Optional<JsonNode> metadata) {
+	private Optional<JsonNode> applyHandlers(String key, JsonNode schema, JsonNode sourceJsonNode, Optional<JsonNode> metadata) {
 
 		if(sourceJsonNode.getNodeType() != JsonNodeType.OBJECT){
 			return Optional.empty();
@@ -206,7 +208,7 @@ public class SchemaEngine implements ApplicationContextAware {
 		JsonNode returnNode = sourceJsonNode.deepCopy();
 		for (String handlerKey : knownHandlerKeys){
 				TransormerHandler handler = this.handlers.get(handlerKey);
-				returnNode = handler.process(schema.get(handlerKey), returnNode, metadata);
+				returnNode = handler.process(key, schema.get(handlerKey), returnNode, metadata);
 
 		}
 		return Optional.ofNullable(returnNode);
