@@ -4,6 +4,7 @@ import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.databind.node.ObjectNode;
 import com.sourcesense.nile.core.dto.Schema;
+import com.sourcesense.nile.core.enumeration.NotificationEvent;
 import com.sourcesense.nile.core.model.NileURI;
 import com.sourcesense.nile.core.service.MainlogProducer;
 import com.sourcesense.nile.core.service.NotificationService;
@@ -13,14 +14,6 @@ import com.sourcesense.nile.schemaengine.service.SchemaEngine;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
-
-enum IngestionEvents {
-	INGESTION_SUCCEDED,
-	INGESTION_FAILED,
-	SCHEMA_PUBLISHED,
-	SCHEMA_PUBLISH_FAILED;
-
-}
 
 @Service
 @Slf4j
@@ -48,10 +41,10 @@ public class IngestionService {
 		try {
 			ProcessResult result = schemaEngine.process(schema.getSchema(), document, null);
 			NileURI uri = mainlogProducer.publishContent(schema, result);
-			notificationEngine.ok(uri.toString(), IngestionEvents.INGESTION_SUCCEDED.toString());
+			notificationEngine.ok(uri.toString(), NotificationEvent.INGESTION_SUCCEDED);
 			return true;
 		} catch (Exception e) {
-			notificationEngine.ko(schema.getUid(), IngestionEvents.INGESTION_FAILED.toString(), e.getMessage());
+			notificationEngine.ko(schema.getUid(), NotificationEvent.INGESTION_FAILED, e.getMessage());
 			throw new IngestionException(e.getMessage());
 		}
 
@@ -60,9 +53,9 @@ public class IngestionService {
 	public void publishSchema(Schema saved) {
 		try {
 			mainlogProducer.publishSchema(saved);
-			notificationEngine.ok(saved.getUid(), IngestionEvents.SCHEMA_PUBLISHED.toString());
+			notificationEngine.ok(saved.getUid(), NotificationEvent.SCHEMA_PUBLISHED);
 		} catch (Exception e) {
-			notificationEngine.ko(saved.getUid(), IngestionEvents.SCHEMA_PUBLISH_FAILED.toString(), e.getMessage());
+			notificationEngine.ko(saved.getUid(), NotificationEvent.SCHEMA_PUBLISH_FAILED, e.getMessage());
 			throw new IngestionException(e.getMessage());
 		}
 	}
