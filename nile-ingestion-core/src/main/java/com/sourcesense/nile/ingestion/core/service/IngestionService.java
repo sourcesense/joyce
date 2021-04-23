@@ -33,7 +33,7 @@ public class IngestionService {
 	final private MainlogProducer mainlogProducer;
 
 	public JsonNode ingestDryRun(Schema schema, JsonNode document) {
-		ProcessResult node = schemaEngine.process(schema.getSchema(), document);
+		ProcessResult node = schemaEngine.process(schema.getSchema(), document, null);
 
 		ObjectNode result = mapper.createObjectNode();
 		node.getMetadata().ifPresent(metadata -> {
@@ -44,9 +44,9 @@ public class IngestionService {
 		return result;
 	}
 
-	public boolean ingest(Schema schema, ObjectNode document) {
+	public boolean ingest(Schema schema, JsonNode document) {
 		try {
-			ProcessResult result = schemaEngine.process(schema.getSchema(), document);
+			ProcessResult result = schemaEngine.process(schema.getSchema(), document, null);
 			NileURI uri = mainlogProducer.publishContent(schema, result);
 			notificationEngine.ok(uri.toString(), IngestionEvents.INGESTION_SUCCEDED.toString());
 			return true;

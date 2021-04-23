@@ -6,6 +6,7 @@ import com.sourcesense.nile.core.dto.Schema;
 import com.sourcesense.nile.core.dto.SchemaSave;
 import com.sourcesense.nile.core.dto.SchemaShort;
 import com.sourcesense.nile.core.errors.SchemaNotFoundException;
+import com.sourcesense.nile.core.model.NileURI;
 import com.sourcesense.nile.core.service.SchemaService;
 import com.sourcesense.nile.ingestion.core.service.IngestionService;
 import lombok.RequiredArgsConstructor;
@@ -53,10 +54,23 @@ public class SchemaApiController implements SchemaApi {
 	}
 
 	@Override
-	public Schema saveSchema(SchemaSave schema) throws JsonProcessingException {
-		Schema saved = schemaService.save(schema);
-		ingestionService.publishSchema(saved);
-		return saved;
+	public NileURI saveSchemaJson(SchemaSave schema) throws JsonProcessingException {
+		return saveSchema(schema);
+	}
+
+	@Override
+	public NileURI saveSchemaYaml(SchemaSave schema) throws JsonProcessingException {
+		return saveSchema(schema);
+	}
+
+	public NileURI saveSchema(SchemaSave schema) throws JsonProcessingException {
+		NileURI uri = schemaService.save(schema);
+		Optional<Schema> saved = schemaService.findByName(uri.getCollection());
+		if (saved.isEmpty()){
+			throw new SchemaNotFoundException(String.format("Schema [%s] v%d does not exists", uri.getCollection()));
+		}
+		ingestionService.publishSchema(saved.get());
+		return uri;
 	}
 
 	@Override
