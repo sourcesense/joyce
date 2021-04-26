@@ -44,6 +44,10 @@ public class IngestionConsumer {
 			if(schema.isEmpty()){
 				throw new SchemaNotFoundException(String.format("Schema %s does not exists", headers.get(KafkaCustomHeaders.INGESTION_SCHEMA)));
 			}
+
+			// Setting root object id
+			message.put("_raw_uri_", messageKey);
+
 			//TODO: manage deletion using KafkaCustomHeaders.MESSAGE_ACTION
 			ingestionService.ingest(schema.get(), message);
 
