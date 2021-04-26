@@ -3,10 +3,7 @@ package com.sourcesense.nile.schemaengine.service;
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
-import com.fasterxml.jackson.databind.node.ArrayNode;
-import com.fasterxml.jackson.databind.node.JsonNodeType;
-import com.fasterxml.jackson.databind.node.ObjectNode;
-import com.fasterxml.jackson.databind.node.TextNode;
+import com.fasterxml.jackson.databind.node.*;
 import com.networknt.schema.*;
 import com.sourcesense.nile.schemaengine.NileMetaSchema;
 import com.sourcesense.nile.schemaengine.dto.ProcessResult;
@@ -23,6 +20,7 @@ import org.springframework.stereotype.Service;
 import javax.annotation.PostConstruct;
 import java.util.*;
 import java.util.stream.Collectors;
+import java.util.stream.Stream;
 import java.util.stream.StreamSupport;
 
 @Service
@@ -134,7 +132,12 @@ public class SchemaEngine implements ApplicationContextAware {
 					arrayNode.add(parsedItem);
 				}
 				return arrayNode;
+			} else if (type.equals("integer")){
+				return JsonNodeFactory.instance.numberNode(Integer.parseInt(sourceJsonNode.get(key).asText()));
+			} else if (type.equals("number")){
+				return JsonNodeFactory.instance.numberNode(Double.parseDouble(sourceJsonNode.get(key).asText()));
 			} else {
+				//TODO: handle other types and modification ie range and other limitations
 				return sourceJsonNode.get(key);
 			}
 		}
@@ -245,7 +248,6 @@ public class SchemaEngine implements ApplicationContextAware {
 		return new ProcessResult(result, metadata);
 	}
 
-
 	@Override
 	public void setApplicationContext(ApplicationContext applicationContext) throws BeansException {
 		this.applicationContext = applicationContext;
@@ -262,12 +264,12 @@ public class SchemaEngine implements ApplicationContextAware {
 		JsonNode newJson = mapper.readValue(newSchema, JsonNode.class);
 		List<String> newKeys = StreamSupport.stream(
 				Spliterators.spliteratorUnknownSize(newJson.get("properties").fields(), Spliterator.ORDERED), false)
-				.map(stringJsonNodeEntry -> stringJsonNodeEntry.getKey() + stringJsonNodeEntry.getValue().get("type").asText())
+				.flatMap(stringJsonNodeEntry -> getTypesList(stringJsonNodeEntry))
 				.collect(Collectors.toList());
 
 		List<String> prevkeys = StreamSupport.stream(
 				Spliterators.spliteratorUnknownSize(prevJson.get("properties").fields(), Spliterator.ORDERED), false)
-				.map(stringJsonNodeEntry -> stringJsonNodeEntry.getKey() + stringJsonNodeEntry.getValue().get("type").asText())
+				.flatMap(stringJsonNodeEntry -> getTypesList(stringJsonNodeEntry))
 				.collect(Collectors.toList());
 
 		List<String>missingFromNewSchema = prevkeys.stream()
@@ -280,4 +282,18 @@ public class SchemaEngine implements ApplicationContextAware {
 
 		return newKeys.size() > prevkeys.size();
 	}
+
+	private Stream<String> getTypesList(Map.Entry<String, JsonNode> stringJsonNodeEntry) {
+		List<String> list = new ArrayList<>();
+		if (stringJsonNodeEntry.getValue().get("type").getNodeType().equals(JsonNodeType.ARRAY)){
+			for (JsonNode node : stringJsonNodeEntry.getValue().get("type")){
+				list.add(stringJsonNodeEntry.getKey() +"-"+ node.asText());
+			}
+		} else {
+			list.add(stringJsonNodeEntry.getKey() +"-"+ stringJsonNodeEntry.getValue().get("type").asText());
+		}
+		return list.stream();
+	}
+
+
 }

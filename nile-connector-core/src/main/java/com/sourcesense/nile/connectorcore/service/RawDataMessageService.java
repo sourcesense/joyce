@@ -5,7 +5,7 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 import com.sourcesense.nile.connectorcore.model.DataEntry;
 import com.sourcesense.nile.core.service.KafkaMessageService;
 import com.sourcesense.nile.core.service.NotificationService;
-import com.sourcesense.nile.core.utililty.constant.CustomKafkaHeaders;
+import com.sourcesense.nile.core.utililty.constant.KafkaCustomHeaders;
 import lombok.extern.log4j.Log4j2;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.kafka.core.KafkaTemplate;
@@ -41,8 +41,8 @@ public class RawDataMessageService extends KafkaMessageService<JsonNode> {
                 .withPayload(entry.getData())
                 .setHeader(KafkaHeaders.TOPIC, ingestionTopic)
                 .setHeader(KafkaHeaders.MESSAGE_KEY, entry.getNileUri())
-                .setHeader(CustomKafkaHeaders.MESSAGE_ACTION, entry.getAction())
-                .setHeader(CustomKafkaHeaders.INGESTION_SCHEMA, entry.getSchemaKey())
+                .setHeader(KafkaCustomHeaders.MESSAGE_ACTION, entry.getAction())
+                .setHeader(KafkaCustomHeaders.INGESTION_SCHEMA, entry.getSchemaKey())
                 .build();
     }
 

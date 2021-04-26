@@ -42,7 +42,7 @@ public class SchemaService {
 
 		NileURI uid = getSchemaUid(entity.getName());
 		entity.setUid(uid.toString());
-		// TODO: validate schema with schemaEngine
+
 		Optional<SchemaEntity> previous = schemaEntityDao.get(uid.toString());
 
 		if (previous.isPresent()){

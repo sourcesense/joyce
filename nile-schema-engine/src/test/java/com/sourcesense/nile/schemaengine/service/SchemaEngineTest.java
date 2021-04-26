@@ -21,6 +21,7 @@ import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
 
+import static org.junit.jupiter.api.Assertions.assertDoesNotThrow;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.ArgumentMatchers.eq;
 
@@ -73,7 +74,7 @@ public class SchemaEngineTest {
 	}
 
 	@Test
-	void invalidSchemaShouldThrow() throws URISyntaxException, IOException {
+	void invalidSourceShouldThrow() throws URISyntaxException, IOException {
 		String schema = Files.readString(loadResource("schema/10.json"));
 		String source = Files.readString(loadResource("source/11.json"));
 		SchemaEngine schemaEngine = new SchemaEngine(props);
@@ -150,5 +151,14 @@ public class SchemaEngineTest {
 			schemaEngine.hasBreakingChanges(schema, newSchema);
 		});
 	}
+
+	@Test
+	void changingTypeExtendingTypesWithArrayShouldNotThroes() throws URISyntaxException, IOException {
+		String schema = Files.readString(loadResource("schema/12.json"));
+		String newSchema = Files.readString(loadResource("schema/17.json"));;
+		SchemaEngine schemaEngine = new SchemaEngine(props);
+		Assertions.assertTrue(schemaEngine.hasBreakingChanges(schema, newSchema));
+	}
+
 
 }

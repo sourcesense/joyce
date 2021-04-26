@@ -1,0 +1,27 @@
+{
+  "$schema": "https://nile.sourcesensce.com/v1/schema",
+  "$metadata": {
+    "message_key": "$.id"
+  },
+  "type": "object",
+  "properties": {
+    "name": {
+      "type": "string",
+      "required": true
+    },
+    "mail": {
+      "type": "string",
+      "required": true,
+      "$path": "$.email",
+      "deprecated": true
+    },
+    "email": {
+      "type": "string",
+      "required": true
+    },
+    "foo": {
+      "type": ["string", "null"],
+      "$foo": null
+    }
+  }
+}
