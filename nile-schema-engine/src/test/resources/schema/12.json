@@ -12,12 +12,7 @@
     "mail": {
       "type": "string",
       "required": true,
-      "$path": "$.email",
-      "deprecated": true
-    },
-    "email": {
-      "type": "string",
-      "required": true
+      "$path": "$.email"
     },
     "foo": {
       "type": "string",

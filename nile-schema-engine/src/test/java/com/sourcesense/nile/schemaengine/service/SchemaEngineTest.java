@@ -21,7 +21,6 @@ import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
 
-import static org.junit.jupiter.api.Assertions.assertDoesNotThrow;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.ArgumentMatchers.eq;
 
@@ -89,7 +88,7 @@ public class SchemaEngineTest {
 
 	@Test
 	void handlersShouldBeAppliedCascading() throws URISyntaxException, IOException {
-		String schema = Files.readString(loadResource("schema/15.json"));
+		String schema = Files.readString(loadResource("schema/20.json"));
 		String source = Files.readString(loadResource("source/10.json"));
 		SchemaEngine schemaEngine = new SchemaEngine(props);
 
@@ -125,27 +124,27 @@ public class SchemaEngineTest {
 	}
 
     @Test
-    void schemaWithVersionBreakingChangeShouldReturnTrue() throws URISyntaxException, IOException {
+    void addingFieldShouldNotBerakChanges() throws URISyntaxException, IOException {
 		String schema = Files.readString(loadResource("schema/11.json"));
 		String newSchema = Files.readString(loadResource("schema/12.json"));;
 		SchemaEngine schemaEngine = new SchemaEngine(props);
 		Boolean ret = schemaEngine.hasBreakingChanges(schema, newSchema);
-		Assertions.assertTrue(ret);
+		Assertions.assertFalse(ret);
     }
 
 	@Test
-	void schemaWithChangingSourceOnAFieldShouldReturnFalse() throws URISyntaxException, IOException {
-		String schema = Files.readString(loadResource("schema/11.json"));
-		String newSchema = Files.readString(loadResource("schema/14.json"));;
+	void deprecatingFieldShouldBreakCHanges() throws URISyntaxException, IOException {
+		String schema = Files.readString(loadResource("schema/12.json"));
+		String newSchema = Files.readString(loadResource("schema/13.json"));;
 		SchemaEngine schemaEngine = new SchemaEngine(props);
 		Boolean ret = schemaEngine.hasBreakingChanges(schema, newSchema);
-		Assertions.assertFalse(ret);
+		Assertions.assertTrue(ret);
 	}
 
 	@Test
-	void changingTypeWithoutRenamingShouldThrow() throws URISyntaxException, IOException {
-		String schema = Files.readString(loadResource("schema/12.json"));
-		String newSchema = Files.readString(loadResource("schema/13.json"));;
+	void changingTypeShouldThrow() throws URISyntaxException, IOException {
+		String schema = Files.readString(loadResource("schema/13.json"));
+		String newSchema = Files.readString(loadResource("schema/14.json"));;
 		SchemaEngine schemaEngine = new SchemaEngine(props);
 		Assertions.assertThrows(InvalidSchemaException.class, () -> {
 			schemaEngine.hasBreakingChanges(schema, newSchema);
@@ -153,11 +152,11 @@ public class SchemaEngineTest {
 	}
 
 	@Test
-	void changingTypeExtendingTypesWithArrayShouldNotThroes() throws URISyntaxException, IOException {
-		String schema = Files.readString(loadResource("schema/12.json"));
-		String newSchema = Files.readString(loadResource("schema/17.json"));;
+	void changingTypeExtendingTypesShouldNotThrowsAndDoNotBreaks() throws URISyntaxException, IOException {
+		String schema = Files.readString(loadResource("schema/14.json"));
+		String newSchema = Files.readString(loadResource("schema/15.json"));;
 		SchemaEngine schemaEngine = new SchemaEngine(props);
-		Assertions.assertTrue(schemaEngine.hasBreakingChanges(schema, newSchema));
+		Assertions.assertFalse(schemaEngine.hasBreakingChanges(schema, newSchema));
 	}
 
 

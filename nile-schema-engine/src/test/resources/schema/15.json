@@ -7,9 +7,17 @@
   "properties": {
     "name": {
       "type": "string",
+      "required": true
+    },
+    "mail": {
+      "type": "string",
       "required": true,
       "$path": "$.email",
-      "$transform": "uppercase"
+      "deprecated": true
+    },
+    "foo": {
+      "type": ["integer", "null"],
+      "$foo": null
     }
   }
 }

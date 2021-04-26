@@ -13,10 +13,6 @@
       "type": "string",
       "required": true,
       "$path": "$.email"
-    },
-    "foo": {
-      "type": "string",
-      "$foo": null
     }
   }
 }

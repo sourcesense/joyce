@@ -18,7 +18,6 @@ import java.io.IOException;
 import java.net.URISyntaxException;
 import java.nio.file.Files;
 import java.nio.file.Path;
-import java.util.Map;
 
 @SpringBootTest(classes = TestApplication.class)
 @ActiveProfiles({"default", "test"})
@@ -59,7 +58,7 @@ public class SchemaEngineIT {
 
 	@Test
 	public void schemaParsing16() throws IOException, URISyntaxException {
-		String schema = Files.readString(Path.of(resourceLoader.getResource("schema/16.json").getURI()));
+		String schema = Files.readString(Path.of(resourceLoader.getResource("schema/30.json").getURI()));
 		String source = Files.readString(Path.of(resourceLoader.getResource("source/16.json").getURI()));
 		ProcessResult result = schemaEngine.process(schema, source);
 		Assertions.assertEquals("Leanne Graham", result.getJson().get("id").asText());

@@ -12,10 +12,11 @@
     "mail": {
       "type": "string",
       "required": true,
-      "$path": "$.other.email"
+      "$path": "$.email",
+      "deprecated": true
     },
     "foo": {
-      "type": "string",
+      "type": "integer",
       "$foo": null
     }
   }

@@ -262,28 +262,41 @@ public class SchemaEngine implements ApplicationContextAware {
 	public Boolean hasBreakingChanges(String previousSchema, String newSchema) throws JsonProcessingException {
 		JsonNode prevJson = mapper.readValue(previousSchema, JsonNode.class);
 		JsonNode newJson = mapper.readValue(newSchema, JsonNode.class);
-		List<String> newKeys = StreamSupport.stream(
-				Spliterators.spliteratorUnknownSize(newJson.get("properties").fields(), Spliterator.ORDERED), false)
-				.flatMap(stringJsonNodeEntry -> getTypesList(stringJsonNodeEntry))
-				.collect(Collectors.toList());
+		Integer prevDeprecated = 0;
+		Integer newDeprecated = 0;
 
-		List<String> prevkeys = StreamSupport.stream(
-				Spliterators.spliteratorUnknownSize(prevJson.get("properties").fields(), Spliterator.ORDERED), false)
-				.flatMap(stringJsonNodeEntry -> getTypesList(stringJsonNodeEntry))
-				.collect(Collectors.toList());
+		List<String> newKeys = new ArrayList<>();
+		for (Iterator<Map.Entry<String, JsonNode>> it = newJson.get("properties").fields(); it.hasNext(); ) {
+			Map.Entry<String, JsonNode> prop = it.next();
+			if(prop.getValue().get("deprecated") != null &&  prop.getValue().get("deprecated").asBoolean()){
+				newDeprecated++;
+			}
+			List<String> propsList = getTypesList(prop);
+			newKeys.addAll(propsList);
+		}
 
-		List<String>missingFromNewSchema = prevkeys.stream()
+		List<String> prevKeys = new ArrayList<>();
+		for (Iterator<Map.Entry<String, JsonNode>> it = prevJson.get("properties").fields(); it.hasNext(); ) {
+			Map.Entry<String, JsonNode> prop = it.next();
+			if(prop.getValue().get("deprecated") != null &&  prop.getValue().get("deprecated").asBoolean()){
+				prevDeprecated++;
+			}
+			List<String> propsList = getTypesList(prop);
+			prevKeys.addAll(propsList);
+		}
+
+		List<String>missingFromNewSchema = prevKeys.stream()
 				.filter(s -> !newKeys.contains(s))
 				.collect(Collectors.toList());
 
 		if (missingFromNewSchema.size() > 0){
-			throw new InvalidSchemaException(String.format("New Schema is not valid some key were deleted %s", String.join(", ", missingFromNewSchema)));
+			throw new InvalidSchemaException(String.format("New Schema is not valid some key were deleted or type changed %s", String.join(", ", missingFromNewSchema)));
 		}
 
-		return newKeys.size() > prevkeys.size();
+		return newDeprecated > prevDeprecated;
 	}
 
-	private Stream<String> getTypesList(Map.Entry<String, JsonNode> stringJsonNodeEntry) {
+	private List<String> getTypesList(Map.Entry<String, JsonNode> stringJsonNodeEntry) {
 		List<String> list = new ArrayList<>();
 		if (stringJsonNodeEntry.getValue().get("type").getNodeType().equals(JsonNodeType.ARRAY)){
 			for (JsonNode node : stringJsonNodeEntry.getValue().get("type")){
@@ -292,7 +305,7 @@ public class SchemaEngine implements ApplicationContextAware {
 		} else {
 			list.add(stringJsonNodeEntry.getKey() +"-"+ stringJsonNodeEntry.getValue().get("type").asText());
 		}
-		return list.stream();
+		return list;
 	}
 
 

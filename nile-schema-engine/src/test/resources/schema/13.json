@@ -15,12 +15,8 @@
       "$path": "$.email",
       "deprecated": true
     },
-    "email": {
-      "type": "string",
-      "required": true
-    },
     "foo": {
-      "type": "integer",
+      "type": "string",
       "$foo": null
     }
   }
