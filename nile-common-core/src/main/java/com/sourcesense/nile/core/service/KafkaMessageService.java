@@ -23,7 +23,7 @@ public abstract class KafkaMessageService<T> {
 
     public abstract void handleMessageFailure(Message<T> message, Throwable throwable);
 
-    protected ListenableFuture<SendResult<String, T>> sendMessage(String messageKey, Message<T> message) {
+    protected ListenableFuture<SendResult<String, T>> sendMessage(String messageKey, Message<T> message, NotificationEvent successEvent, NotificationEvent failEvent) {
 
         ListenableFuture<SendResult<String, T>> future = kafkaTemplate.send(message);
         future.addCallback(new ListenableFutureCallback<>() {
@@ -33,7 +33,7 @@ public abstract class KafkaMessageService<T> {
                 handleMessageSuccess(message, result);
                 notificationService.ok(
                         messageKey,
-                        NotificationEvent.SEND_RAW_DATA_SUCCESS,
+                        successEvent,
                         formatRecordMetadata(result.getRecordMetadata()),
                         message
                 );
@@ -44,7 +44,7 @@ public abstract class KafkaMessageService<T> {
                 handleMessageFailure(message, throwable);
                 notificationService.ko(
                         messageKey,
-                        NotificationEvent.SEND_RAW_DATA_FAILED,
+                        failEvent,
                         throwable.getMessage(),
                         message
                 );

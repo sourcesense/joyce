@@ -1,34 +1,30 @@
 package com.sourcesense.nile.connectorcore.scheduling.job;
 
+import com.fasterxml.jackson.databind.JsonNode;
 import com.sourcesense.nile.connectorcore.model.MappingInfo;
 import com.sourcesense.nile.connectorcore.model.ProcessableData;
-import com.sourcesense.nile.connectorcore.pipeline.step.ExtractionStep;
-import com.sourcesense.nile.connectorcore.pipeline.step.ReadingStep;
-import com.sourcesense.nile.connectorcore.pipeline.step.StoringStep;
-import com.sourcesense.nile.core.errors.PipePanic;
-import com.sourcesense.nile.core.pipeline.Pipeline;
-import com.sourcesense.nile.core.pipeline.step.StepPayload;
+import com.sourcesense.nile.connectorcore.service.DataProcessingService;
+import io.reactivex.Observable;
 import lombok.RequiredArgsConstructor;
 import org.quartz.Job;
 import org.quartz.JobExecutionContext;
+import org.springframework.kafka.support.SendResult;
+
+import java.util.List;
+import java.util.stream.Collectors;
 
 @RequiredArgsConstructor
 public abstract class ScanningJob<R extends MappingInfo, P extends ProcessableData> implements Job {
 
-    protected final ReadingStep<R, P> readingStep;
-    protected final ExtractionStep<R, P> extractionStep;
-    protected final StoringStep<R> storingStep;
+    private final DataProcessingService<R, P> dataProcessingService;
 
-    protected void executeJob(JobExecutionContext jobExecutionContext) {
-        try {
-            new Pipeline<>(readingStep)
-                    .pipe(extractionStep)
-                    .pipe(storingStep)
-                    .execute(new StepPayload<>());
+    @Override
+    public void execute(JobExecutionContext jobExecutionContext) {
+        List<Observable<SendResult<String, JsonNode>>> messageObservables = dataProcessingService
+                .execute(jobExecutionContext).stream()
+                .map(Observable::fromFuture)
+                .collect(Collectors.toList());
 
-        } catch (PipePanic pipePanic) {
-            //Todo: Gestire Eccezioni
-            throw new RuntimeException(pipePanic);
-        }
+        Observable.concat(messageObservables).subscribe();
     }
 }
