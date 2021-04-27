@@ -4,6 +4,8 @@ import com.fasterxml.jackson.core.type.TypeReference;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.databind.node.ObjectNode;
 import com.sourcesense.nile.core.enumeration.IngestionAction;
+import com.sourcesense.nile.core.errors.InvalidNileUriException;
+import com.sourcesense.nile.core.model.NileURI;
 import com.sourcesense.nile.core.utililty.constant.KafkaCustomHeaders;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
@@ -20,6 +22,7 @@ import org.springframework.messaging.handler.annotation.Payload;
 import org.springframework.stereotype.Service;
 
 import java.util.Map;
+import java.util.Optional;
 
 @Slf4j
 @Service
@@ -47,6 +50,11 @@ public class MainlogConsumer {
 
             IngestionAction action = IngestionAction.valueOf(headers.getOrDefault(KafkaCustomHeaders.MESSAGE_ACTION, IngestionAction.INSERT.name()));
 
+            Optional<NileURI> uri = NileURI.createURI(key);
+            if(uri.isEmpty()){
+                throw new InvalidNileUriException(String.format("uri [%s] is not a Valid Nile Uri", key));
+            }
+
             if (action.equals(IngestionAction.INSERT)){
                 /**
                  * Insert document
@@ -60,7 +68,12 @@ public class MainlogConsumer {
                 /**
                  * Delete document
                  */
-                mongoTemplate.remove(new Query(Criteria.where("_id").is(key)), headers.get(COLLECTION_HEADER));
+                if (uri.get().getType().equals(NileURI.Type.CONTENT)){
+                    mongoTemplate.remove(new Query(Criteria.where("_id").is(key)), headers.get(COLLECTION_HEADER));
+                } else if (uri.get().getType().equals(NileURI.Type.RAW)){
+                    mongoTemplate.remove(new Query(Criteria.where("_metadata_.raw_uri").is(key)), headers.get(COLLECTION_HEADER));
+                }
+
             }
 
             //TODO send notfication of compelted action with notificationEngine
