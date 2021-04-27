@@ -6,6 +6,7 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.databind.node.ObjectNode;
 import com.sourcesense.nile.core.dto.Schema;
 import com.sourcesense.nile.core.enumeration.IngestionAction;
+import com.sourcesense.nile.core.enumeration.NotificationEvent;
 import com.sourcesense.nile.core.model.NileURI;
 import com.sourcesense.nile.core.utililty.constant.KafkaCustomHeaders;
 import lombok.extern.slf4j.Slf4j;
@@ -44,7 +45,7 @@ public class MainlogProducer extends KafkaMessageService<JsonNode> {
 
         setMetadataHeaders(metadata, message);
 
-        this.sendMessage(uri.toString(), message.build());
+        this.sendMessage(uri.toString(), message.build(), NotificationEvent.MAINLOG_PUBLISH_SUCCESS, NotificationEvent.MAINLOG_PUBLISH_FAILED);
         return uri;
     }
 
@@ -74,7 +75,7 @@ public class MainlogProducer extends KafkaMessageService<JsonNode> {
 
         setMetadataHeaders(metadata, message);
 
-        this.sendMessage(uri.toString(), message.build());
+        this.sendMessage(uri.toString(), message.build(), NotificationEvent.MAINLOG_PUBLISH_SUCCESS, NotificationEvent.MAINLOG_PUBLISH_FAILED);
         return uri;
     }
 
@@ -97,7 +98,7 @@ public class MainlogProducer extends KafkaMessageService<JsonNode> {
                 .setHeader(KafkaHeaders.MESSAGE_KEY, schema.getUid())
                 .setHeader(KafkaCustomHeaders.MESSAGE_ACTION, IngestionAction.INSERT.toString());
 
-        this.sendMessage(schema.getUid(), message.build());
+        this.sendMessage(schema.getUid(), message.build(), NotificationEvent.MAINLOG_PUBLISH_SUCCESS, NotificationEvent.MAINLOG_PUBLISH_FAILED);
     }
 
     //TODO: remove schema????
