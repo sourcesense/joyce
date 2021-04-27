@@ -27,7 +27,7 @@ public class ContextValueTransformerTest {
 
 
 		JsonNode value = new TextNode("$.foo");
-		JsonNode result = handler.process( value, source, Optional.of(metadataMap));
+		JsonNode result = handler.process(null,  value, source, Optional.of(metadataMap), Optional.empty());
 		Assertions.assertEquals("bar",result.asText());
 
 	}

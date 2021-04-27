@@ -10,7 +10,7 @@ import java.util.Optional;
 @Slf4j
 public class FixedValueTransformerHandler implements TransormerHandler{
 	@Override
-	public JsonNode process(JsonNode value, JsonNode source, Optional<JsonNode> context) {
+	public JsonNode process(String key, JsonNode value, JsonNode source, Optional<JsonNode> metadata, Optional<Object> context) {
 		return value;
 	}
 }

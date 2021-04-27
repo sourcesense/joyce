@@ -46,7 +46,7 @@ public class JsonPathTransformerHandler implements TransormerHandler {
 	}
 
 	@Override
-	public JsonNode process(JsonNode value, JsonNode source, Optional<JsonNode> metadata) {
+	public JsonNode process(String key, JsonNode value, JsonNode source, Optional<JsonNode> metadata, Optional<Object> context) {
 		if (value.getNodeType().equals(JsonNodeType.ARRAY)){
 			StringBuffer stringBuffer = new StringBuffer();
 			for (JsonNode jsonNode : ((ArrayNode) value)) {

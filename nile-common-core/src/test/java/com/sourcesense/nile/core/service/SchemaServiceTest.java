@@ -5,6 +5,7 @@ import com.sourcesense.nile.core.dao.SchemaDao;
 import com.sourcesense.nile.core.dto.Schema;
 import com.sourcesense.nile.core.dto.SchemaSave;
 import com.sourcesense.nile.core.mapper.SchemaMapper;
+import com.sourcesense.nile.core.model.NileURI;
 import com.sourcesense.nile.core.model.SchemaEntity;
 import com.sourcesense.nile.schemaengine.service.SchemaEngine;
 import org.junit.jupiter.api.Assertions;
@@ -66,8 +67,9 @@ class SchemaServiceTest {
 //			}));
 //			Mockito.verify(schemaEntityDao).save(entityNew);
 
-			Schema ret = service.save(schemaNew);
-			Assertions.assertEquals(2, ret.getVersion());
+			NileURI ret = service.save(schemaNew);
+			//TODO: fix this test
+			Assertions.assertEquals("nile://schema/import/foobar", ret.toString());
 
     }
 }

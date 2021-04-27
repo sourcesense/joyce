@@ -3,10 +3,7 @@ package com.sourcesense.nile.schemaengine.service;
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
-import com.fasterxml.jackson.databind.node.ArrayNode;
-import com.fasterxml.jackson.databind.node.JsonNodeType;
-import com.fasterxml.jackson.databind.node.ObjectNode;
-import com.fasterxml.jackson.databind.node.TextNode;
+import com.fasterxml.jackson.databind.node.*;
 import com.networknt.schema.*;
 import com.sourcesense.nile.schemaengine.NileMetaSchema;
 import com.sourcesense.nile.schemaengine.dto.ProcessResult;
@@ -23,6 +20,7 @@ import org.springframework.stereotype.Service;
 import javax.annotation.PostConstruct;
 import java.util.*;
 import java.util.stream.Collectors;
+import java.util.stream.Stream;
 import java.util.stream.StreamSupport;
 
 @Service
@@ -89,32 +87,6 @@ public class SchemaEngine implements ApplicationContextAware {
 
 
 	/**
-	 * Parse the context node applying the transsformers if presents
-	 * @param node
-	 * @param source
-	 * @return
-	 */
-	protected Optional<JsonNode> parseMetadata(JsonNode node, JsonNode source){
-		Optional<ObjectNode> metadataNode = Optional.ofNullable((ObjectNode)node.get(METADATA));
-		if(!metadataNode.isPresent()){
-			return Optional.empty();
-		}
-
-		for (Iterator<Map.Entry<String, JsonNode>> it = metadataNode.get().fields(); it.hasNext(); ) {
-			Map.Entry<String, JsonNode> field = it.next();
-			if(field.getValue().getNodeType().equals(JsonNodeType.OBJECT)){
-				Optional<JsonNode> transformed = this.applyHandlers( field.getValue(), source, Optional.empty());
-				transformed.ifPresent(jsonNode -> {
-					metadataNode.get().set(field.getKey(), jsonNode);
-				});
-
-			}
-		}
-
-		return Optional.of(metadataNode.get());
-	}
-
-	/**
 	 * Main Parse method, applies the transformer and navigate the schema calling parse recursively
 	 * Root key could be null
 	 * the schema is the json-schema definition
@@ -122,13 +94,14 @@ public class SchemaEngine implements ApplicationContextAware {
 	 * @param key
 	 * @param schema
 	 * @param sourceJsonNode
+	 * @param context
 	 * @return
 	 */
-	private JsonNode parse(String key, JsonNode schema, JsonNode sourceJsonNode, Optional<JsonNode> metadata) {
+	private JsonNode parse(String key, JsonNode schema, JsonNode sourceJsonNode, Optional<JsonNode> metadata, Optional<Object> context) {
 
 		if (schema.getNodeType().equals(JsonNodeType.OBJECT)){
 			// Apply custom handlers
-			Optional<JsonNode> transformed = this.applyHandlers(schema, sourceJsonNode, metadata);
+			Optional<JsonNode> transformed = this.applyHandlers(key, schema, sourceJsonNode, metadata, context);
 			if(transformed.isPresent()){
 				ObjectNode node = mapper.createObjectNode();
 				node.set(key, transformed.get());
@@ -136,7 +109,7 @@ public class SchemaEngine implements ApplicationContextAware {
 				tempSchema.remove(handlers.keySet());
 
 				tempSchema.set("type", schema.get("type"));
-				return this.parse(key, tempSchema, node, metadata);
+				return this.parse(key, tempSchema, node, metadata, context);
 			}
 
 			String type = Optional.ofNullable(schema.get("type")).orElse(new TextNode("string")).asText();
@@ -147,7 +120,7 @@ public class SchemaEngine implements ApplicationContextAware {
 					Iterator<Map.Entry<String, JsonNode>> iter = props.fields();
 					while (iter.hasNext()) {
 						Map.Entry<String, JsonNode> entry = iter.next();
-						JsonNode node = this.parse(entry.getKey(), entry.getValue(), sourceJsonNode, metadata);
+						JsonNode node = this.parse(entry.getKey(), entry.getValue(), sourceJsonNode, metadata, context);
 						objectNode.set(entry.getKey(), node);
 					}
 				}
@@ -155,11 +128,16 @@ public class SchemaEngine implements ApplicationContextAware {
 			} else if (type.equals("array")){
 				ArrayNode arrayNode = mapper.createArrayNode();
 				for (JsonNode item : sourceJsonNode.get(key)){
-					JsonNode parsedItem = this.parse(null, schema.get("items"), item, metadata);
+					JsonNode parsedItem = this.parse(null, schema.get("items"), item, metadata, context);
 					arrayNode.add(parsedItem);
 				}
 				return arrayNode;
+			} else if (type.equals("integer")){
+				return JsonNodeFactory.instance.numberNode(Integer.parseInt(sourceJsonNode.get(key).asText()));
+			} else if (type.equals("number")){
+				return JsonNodeFactory.instance.numberNode(Double.parseDouble(sourceJsonNode.get(key).asText()));
 			} else {
+				//TODO: handle other types and modification ie range and other limitations
 				return sourceJsonNode.get(key);
 			}
 		}
@@ -183,11 +161,14 @@ public class SchemaEngine implements ApplicationContextAware {
 	/**
 	 * Apply registered handlers, it stops at the first encountered
 	 * TODO: find a way to choose which one is applied or apply all in a given order
+	 *
+	 * @param key
 	 * @param schema
 	 * @param sourceJsonNode
+	 * @param context
 	 * @return
 	 */
-	private Optional<JsonNode> applyHandlers(JsonNode schema, JsonNode sourceJsonNode, Optional<JsonNode> metadata) {
+	private Optional<JsonNode> applyHandlers(String key, JsonNode schema, JsonNode sourceJsonNode, Optional<JsonNode> metadata, Optional<Object> context) {
 
 		if(sourceJsonNode.getNodeType() != JsonNodeType.OBJECT){
 			return Optional.empty();
@@ -206,7 +187,7 @@ public class SchemaEngine implements ApplicationContextAware {
 		JsonNode returnNode = sourceJsonNode.deepCopy();
 		for (String handlerKey : knownHandlerKeys){
 				TransormerHandler handler = this.handlers.get(handlerKey);
-				returnNode = handler.process(schema.get(handlerKey), returnNode, metadata);
+				returnNode = handler.process(key, schema.get(handlerKey), returnNode, metadata, context);
 
 		}
 		return Optional.ofNullable(returnNode);
@@ -224,7 +205,7 @@ public class SchemaEngine implements ApplicationContextAware {
 	public ProcessResult process(String jsonSchema, String sourceJson) throws JsonProcessingException {
 		JsonNode schemaJsonNode = mapper.readValue(jsonSchema, JsonNode.class);
 		JsonNode sourceJsonNode = mapper.readValue(sourceJson, JsonNode.class);
-		return process(schemaJsonNode, sourceJsonNode);
+		return process(schemaJsonNode, sourceJsonNode, null);
 	}
 
 	/**
@@ -238,13 +219,13 @@ public class SchemaEngine implements ApplicationContextAware {
 	public ProcessResult process(String jsonSchema, Map sourceJson) throws JsonProcessingException {
 		JsonNode schemaJsonNode = mapper.readValue(jsonSchema, JsonNode.class);
 		JsonNode sourceJsonNode = mapper.convertValue(sourceJson, JsonNode.class);
-		return process(schemaJsonNode, sourceJsonNode);
+		return process(schemaJsonNode, sourceJsonNode, null);
 	}
 
 	public ProcessResult process(Map jsonSchema, Map sourceJson) {
 		JsonNode schemaJsonNode = mapper.convertValue(jsonSchema, JsonNode.class);
 		JsonNode sourceJsonNode = mapper.convertValue(sourceJson, JsonNode.class);
-		return process(schemaJsonNode, sourceJsonNode);
+		return process(schemaJsonNode, sourceJsonNode, null);
 	}
 
 	/**
@@ -254,10 +235,10 @@ public class SchemaEngine implements ApplicationContextAware {
 	 * @param source
 	 * @return
 	 */
-	public ProcessResult process(JsonNode schema, JsonNode source) {
+	public ProcessResult process(JsonNode schema, JsonNode source, Object context) {
 		JsonSchema jsonSchema = factory.getSchema(schema);
-		Optional<JsonNode> metadata = parseMetadata(jsonSchema.getSchemaNode(), source);
-		JsonNode result = this.parse(null, jsonSchema.getSchemaNode(), source, metadata);
+		Optional<JsonNode> metadata = Optional.ofNullable(jsonSchema.getSchemaNode().get(METADATA));
+		JsonNode result = this.parse(null, jsonSchema.getSchemaNode(), source, metadata, Optional.ofNullable(context));
 
 		ValidationResult validation = jsonSchema.validateAndCollect(result);
 		if(validation.getValidationMessages().size() > 0){
@@ -266,7 +247,6 @@ public class SchemaEngine implements ApplicationContextAware {
 
 		return new ProcessResult(result, metadata);
 	}
-
 
 	@Override
 	public void setApplicationContext(ApplicationContext applicationContext) throws BeansException {
@@ -282,24 +262,51 @@ public class SchemaEngine implements ApplicationContextAware {
 	public Boolean hasBreakingChanges(String previousSchema, String newSchema) throws JsonProcessingException {
 		JsonNode prevJson = mapper.readValue(previousSchema, JsonNode.class);
 		JsonNode newJson = mapper.readValue(newSchema, JsonNode.class);
-		List<String> newKeys = StreamSupport.stream(
-				Spliterators.spliteratorUnknownSize(newJson.get("properties").fields(), Spliterator.ORDERED), false)
-				.map(stringJsonNodeEntry -> stringJsonNodeEntry.getKey() + stringJsonNodeEntry.getValue().get("type").asText())
-				.collect(Collectors.toList());
+		Integer prevDeprecated = 0;
+		Integer newDeprecated = 0;
 
-		List<String> prevkeys = StreamSupport.stream(
-				Spliterators.spliteratorUnknownSize(prevJson.get("properties").fields(), Spliterator.ORDERED), false)
-				.map(stringJsonNodeEntry -> stringJsonNodeEntry.getKey() + stringJsonNodeEntry.getValue().get("type").asText())
-				.collect(Collectors.toList());
+		List<String> newKeys = new ArrayList<>();
+		for (Iterator<Map.Entry<String, JsonNode>> it = newJson.get("properties").fields(); it.hasNext(); ) {
+			Map.Entry<String, JsonNode> prop = it.next();
+			if(prop.getValue().get("deprecated") != null &&  prop.getValue().get("deprecated").asBoolean()){
+				newDeprecated++;
+			}
+			List<String> propsList = getTypesList(prop);
+			newKeys.addAll(propsList);
+		}
 
-		List<String>missingFromNewSchema = prevkeys.stream()
+		List<String> prevKeys = new ArrayList<>();
+		for (Iterator<Map.Entry<String, JsonNode>> it = prevJson.get("properties").fields(); it.hasNext(); ) {
+			Map.Entry<String, JsonNode> prop = it.next();
+			if(prop.getValue().get("deprecated") != null &&  prop.getValue().get("deprecated").asBoolean()){
+				prevDeprecated++;
+			}
+			List<String> propsList = getTypesList(prop);
+			prevKeys.addAll(propsList);
+		}
+
+		List<String>missingFromNewSchema = prevKeys.stream()
 				.filter(s -> !newKeys.contains(s))
 				.collect(Collectors.toList());
 
 		if (missingFromNewSchema.size() > 0){
-			throw new InvalidSchemaException(String.format("New Schema is not valid some key were deleted %s", String.join(", ", missingFromNewSchema)));
+			throw new InvalidSchemaException(String.format("New Schema is not valid some key were deleted or type changed %s", String.join(", ", missingFromNewSchema)));
 		}
 
-		return newKeys.size() > prevkeys.size();
+		return newDeprecated > prevDeprecated;
 	}
+
+	private List<String> getTypesList(Map.Entry<String, JsonNode> stringJsonNodeEntry) {
+		List<String> list = new ArrayList<>();
+		if (stringJsonNodeEntry.getValue().get("type").getNodeType().equals(JsonNodeType.ARRAY)){
+			for (JsonNode node : stringJsonNodeEntry.getValue().get("type")){
+				list.add(stringJsonNodeEntry.getKey() +"-"+ node.asText());
+			}
+		} else {
+			list.add(stringJsonNodeEntry.getKey() +"-"+ stringJsonNodeEntry.getValue().get("type").asText());
+		}
+		return list;
+	}
+
+
 }

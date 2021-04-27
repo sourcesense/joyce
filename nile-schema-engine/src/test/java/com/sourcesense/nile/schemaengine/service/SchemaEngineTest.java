@@ -43,7 +43,7 @@ public class SchemaEngineTest {
 
 		SchemaEngine schemaEngine = new SchemaEngine(props);
 		TransormerHandler jsonPathTransformerHandler = Mockito.mock(TransormerHandler.class);
-		Mockito.when(jsonPathTransformerHandler.process(any(), any(), any()))
+		Mockito.when(jsonPathTransformerHandler.process(any(),any(), any(), any(),  any()))
 				.thenReturn(new TextNode("foobar"));
 		schemaEngine.registerHandler("path", jsonPathTransformerHandler);
 		schemaEngine.registerMetaSchema();
@@ -60,7 +60,7 @@ public class SchemaEngineTest {
 		String source = Files.readString(loadResource("source/10.json"));
 		SchemaEngine schemaEngine = new SchemaEngine(props);
 		TransormerHandler jsonPathTransformerHandler = Mockito.mock(TransormerHandler.class);
-		Mockito.when(jsonPathTransformerHandler.process(any(), any(), any()))
+		Mockito.when(jsonPathTransformerHandler.process(any(),any(), any(), any(),  any()))
 				.thenReturn(new TextNode("foobar"));
 		schemaEngine.registerHandler("$path", jsonPathTransformerHandler);
 		schemaEngine.registerHandler("$fixed", jsonPathTransformerHandler);
@@ -73,7 +73,7 @@ public class SchemaEngineTest {
 	}
 
 	@Test
-	void invalidSchemaShouldThrow() throws URISyntaxException, IOException {
+	void invalidSourceShouldThrow() throws URISyntaxException, IOException {
 		String schema = Files.readString(loadResource("schema/10.json"));
 		String source = Files.readString(loadResource("source/11.json"));
 		SchemaEngine schemaEngine = new SchemaEngine(props);
@@ -88,15 +88,15 @@ public class SchemaEngineTest {
 
 	@Test
 	void handlersShouldBeAppliedCascading() throws URISyntaxException, IOException {
-		String schema = Files.readString(loadResource("schema/15.json"));
+		String schema = Files.readString(loadResource("schema/20.json"));
 		String source = Files.readString(loadResource("source/10.json"));
 		SchemaEngine schemaEngine = new SchemaEngine(props);
 
 		TransormerHandler handler = Mockito.mock(TransormerHandler.class);
-		Mockito.when(handler.process(eq(new TextNode("$.email")), any(), any()))
+		Mockito.when(handler.process(any(),eq(new TextNode("$.email")), any(), any(),  any()))
 				.thenReturn(new TextNode("mario"));
 
-		Mockito.when(handler.process(eq(new TextNode("uppercase")), eq(new TextNode("mario")), any()))
+		Mockito.when(handler.process(any(),eq(new TextNode("uppercase")), eq(new TextNode("mario")), any(),  any()))
 				.thenReturn(new TextNode("MARIO"));
 
 		schemaEngine.registerHandler("$path", handler);
@@ -114,7 +114,7 @@ public class SchemaEngineTest {
 		String source = Files.readString(loadResource("source/10.json"));
 		SchemaEngine schemaEngine = new SchemaEngine(props);
 		TransormerHandler jsonPathTransformerHandler = Mockito.mock(TransormerHandler.class);
-		Mockito.when(jsonPathTransformerHandler.process(any(), any(), any()))
+		Mockito.when(jsonPathTransformerHandler.process(any(),any(), any(), any(),  any()))
 				.thenReturn(new TextNode("bar"));
 		schemaEngine.registerHandler("$path", jsonPathTransformerHandler);
 		schemaEngine.registerMetaSchema();
@@ -124,31 +124,40 @@ public class SchemaEngineTest {
 	}
 
     @Test
-    void schemaWithVersionBreakingChangeShouldReturnTrue() throws URISyntaxException, IOException {
+    void addingFieldShouldNotBerakChanges() throws URISyntaxException, IOException {
 		String schema = Files.readString(loadResource("schema/11.json"));
 		String newSchema = Files.readString(loadResource("schema/12.json"));;
 		SchemaEngine schemaEngine = new SchemaEngine(props);
 		Boolean ret = schemaEngine.hasBreakingChanges(schema, newSchema);
-		Assertions.assertTrue(ret);
+		Assertions.assertFalse(ret);
     }
 
 	@Test
-	void schemaWithChangingSourceOnAFieldShouldReturnFalse() throws URISyntaxException, IOException {
-		String schema = Files.readString(loadResource("schema/11.json"));
-		String newSchema = Files.readString(loadResource("schema/14.json"));;
+	void deprecatingFieldShouldBreakCHanges() throws URISyntaxException, IOException {
+		String schema = Files.readString(loadResource("schema/12.json"));
+		String newSchema = Files.readString(loadResource("schema/13.json"));;
 		SchemaEngine schemaEngine = new SchemaEngine(props);
 		Boolean ret = schemaEngine.hasBreakingChanges(schema, newSchema);
-		Assertions.assertFalse(ret);
+		Assertions.assertTrue(ret);
 	}
 
 	@Test
-	void changingTypeWithoutRenamingShouldThrow() throws URISyntaxException, IOException {
-		String schema = Files.readString(loadResource("schema/12.json"));
-		String newSchema = Files.readString(loadResource("schema/13.json"));;
+	void changingTypeShouldThrow() throws URISyntaxException, IOException {
+		String schema = Files.readString(loadResource("schema/13.json"));
+		String newSchema = Files.readString(loadResource("schema/14.json"));;
 		SchemaEngine schemaEngine = new SchemaEngine(props);
 		Assertions.assertThrows(InvalidSchemaException.class, () -> {
 			schemaEngine.hasBreakingChanges(schema, newSchema);
 		});
 	}
+
+	@Test
+	void changingTypeExtendingTypesShouldNotThrowsAndDoNotBreaks() throws URISyntaxException, IOException {
+		String schema = Files.readString(loadResource("schema/14.json"));
+		String newSchema = Files.readString(loadResource("schema/15.json"));;
+		SchemaEngine schemaEngine = new SchemaEngine(props);
+		Assertions.assertFalse(schemaEngine.hasBreakingChanges(schema, newSchema));
+	}
+
 
 }

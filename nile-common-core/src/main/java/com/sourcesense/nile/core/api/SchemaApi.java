@@ -4,6 +4,7 @@ import com.fasterxml.jackson.core.JsonProcessingException;
 import com.sourcesense.nile.core.dto.Schema;
 import com.sourcesense.nile.core.dto.SchemaSave;
 import com.sourcesense.nile.core.dto.SchemaShort;
+import com.sourcesense.nile.core.model.NileURI;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import org.springframework.http.HttpStatus;
 import org.springframework.web.bind.annotation.*;
@@ -32,11 +33,11 @@ public interface SchemaApi {
 
 	@PostMapping(consumes = "application/json")
 	@ResponseStatus(code = HttpStatus.CREATED)
-	Schema saveSchemaJson(@RequestBody SchemaSave schema) throws JsonProcessingException;
+    NileURI saveSchemaJson(@RequestBody SchemaSave schema) throws JsonProcessingException;
 
 	@PostMapping(consumes = "application/x-yaml")
 	@ResponseStatus(code = HttpStatus.CREATED)
-	Schema saveSchemaYaml(@RequestBody SchemaSave schema) throws JsonProcessingException;
+    NileURI saveSchemaYaml(@RequestBody SchemaSave schema) throws JsonProcessingException;
 
 
 	@DeleteMapping("/{name}")
