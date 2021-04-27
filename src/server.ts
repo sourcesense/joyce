@@ -9,6 +9,7 @@ import {
   SingleEntitySchema,
 } from "./plugins/PrepareFastifySchema";
 import { JRPCParams, ResponsableSchema } from "./types";
+const logger = require("pino")();
 
 const SCHEMAS_SOURCE = process.env.SCHEMAS_SOURCE || "assets/schemas.json";
 const PRODUCTION_URL = process.env.BASE_URL || "https://<production-url>";
@@ -21,7 +22,7 @@ const HEALTH_PATH = process.env.HEALTH_PATH || "/health";
 // );
 const schemaSources = fs.readFileSync(SCHEMAS_SOURCE, "utf8");
 const schemaConfiguration = new SchemaConfiguration(JSON.parse(schemaSources));
-const requests = schemaConfiguration.requestSchemas();
+const requests = schemaConfiguration.requestSchemas(logger);
 const NILE_API_KAFKA_COMMAND_TOPIC =
   process.env.NILE_API_KAFKA_COMMAND_TOPIC || "commands";
 
@@ -90,7 +91,7 @@ function createServer(db, producer) {
               jsonrpc: { type: "string", enum: ["2.0"] },
               method: { type: "string" },
               params: { type: "object", minProperties: 1 },
-              id: { type: "string" },
+              id: { type: "string", minLength: 1 },
             },
           },
           response: {
@@ -126,7 +127,7 @@ function createServer(db, producer) {
         const payload = {
           topic: NILE_API_KAFKA_COMMAND_TOPIC,
           messages: JSON.stringify(req.body),
-          key: NILE_API_KAFKA_COMMAND_TOPIC,
+          key: req.body.id,
         };
         producer.send([payload], function (err, data) {
           if (err) {

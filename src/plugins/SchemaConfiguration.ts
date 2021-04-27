@@ -11,7 +11,7 @@ export class SchemaConfiguration {
       });
     });
   }
-  requestSchemas(): Promise<ResponsableSchema>[] | [] {
+  requestSchemas(logger): Promise<ResponsableSchema>[] | [] {
     const fetch = createFetch();
 
     return this.sources.map((resource) => {
@@ -19,7 +19,7 @@ export class SchemaConfiguration {
         resource.version !== "latest" && resource.version
           ? `${resource.source}/version/${resource.version}`
           : resource.source;
-      console.log(finalFetchUrl);
+      logger.info(finalFetchUrl);
       return fetch(resource.source)
         .then((r) => {
           if (!r.ok) {
@@ -28,7 +28,7 @@ export class SchemaConfiguration {
           return r.json();
         })
         .then((j) => {
-          console.log("-", resource.label, "schema Found");
+          logger.info("-", resource.label, "schema Found");
           return {
             ...resource,
             schema: j.schema,
@@ -36,7 +36,7 @@ export class SchemaConfiguration {
         })
         .catch((e) => {
           const { statusText } = e;
-          console.log("*", resource.label, "schema", statusText);
+          logger.info("*", resource.label, "schema", statusText);
           return {};
         });
     });

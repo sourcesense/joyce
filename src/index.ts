@@ -21,7 +21,6 @@ MongoClient.connect(
     logger.info("Connected successfully to Mongo");
     producerKafka
       .then((producer) => {
-        console.log("creo il server");
         return createServer(client.db(), producer);
       })
       .then((server) => {
