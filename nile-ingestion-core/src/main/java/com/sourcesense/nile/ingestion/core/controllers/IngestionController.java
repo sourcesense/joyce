@@ -31,7 +31,7 @@ public class IngestionController implements IngestionApi {
 		if(schema.isEmpty()){
 			throw new SchemaNotFoundException(String.format("Schema %s does not exists", schemaId));
 		}
-		return ingestionService.ingest(schema.get(), document);
+		return ingestionService.ingest(schema.get(), document, null);
 	}
 
 	@Override
@@ -48,4 +48,15 @@ public class IngestionController implements IngestionApi {
 		}
 		return ingestionService.ingestDryRun(schema.get(), document);
 	}
+
+    @Override
+    public Boolean removeDocument(String schemaId, ObjectNode document) throws JsonProcessingException {
+			Optional<Schema> schema = schemaService.findByName(schemaId);
+
+			if(schema.isEmpty()){
+				throw new SchemaNotFoundException(String.format("Schema %s does not exists", schemaId));
+			}
+			ingestionService.removeDocument(schema.get(), document);
+			return true;
+    }
 }

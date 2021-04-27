@@ -21,4 +21,8 @@ public interface IngestionApi {
 	@PostMapping(value = "/{schemaId}/test", produces = "application/json; charset=utf-8")
 	@ResponseStatus(code = HttpStatus.OK)
 	JsonNode testDocumentIngestion(@PathVariable String schemaId, @RequestHeader(value = "X-Nile-SchemaVersion", required = false) Optional<Integer> schemaVersion, @RequestBody ObjectNode document ) throws JsonProcessingException;
+
+	@DeleteMapping(value = "/{schemaId}", produces = "application/json; charset=utf-8")
+	@ResponseStatus(code = HttpStatus.OK)
+	Boolean removeDocument(@PathVariable String schemaId, @RequestBody ObjectNode document ) throws JsonProcessingException;
 }

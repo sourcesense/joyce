@@ -2,6 +2,7 @@ package com.sourcesense.nile.ingestion.core.service;
 
 import com.fasterxml.jackson.databind.node.ObjectNode;
 import com.sourcesense.nile.core.dto.Schema;
+import com.sourcesense.nile.core.enumeration.IngestionAction;
 import com.sourcesense.nile.core.errors.InvalidNileUriException;
 import com.sourcesense.nile.core.model.NileURI;
 import com.sourcesense.nile.core.service.SchemaService;
@@ -45,11 +46,16 @@ public class IngestionConsumer {
 				throw new SchemaNotFoundException(String.format("Schema %s does not exists", headers.get(KafkaCustomHeaders.INGESTION_SCHEMA)));
 			}
 
-			// Setting root object id
-			message.put("_raw_uri_", messageKey);
+			IngestionAction action = IngestionAction.valueOf(headers.getOrDefault(KafkaCustomHeaders.MESSAGE_ACTION, IngestionAction.INSERT.name()));
+			switch (action){
+				case DELETE:
+					ingestionService.removeDocument(schema.get(), messageKey);
+					break;
+				case INSERT:
+					ingestionService.ingest(schema.get(), message, messageKey);
+					break;
+			}
 
-			//TODO: manage deletion using KafkaCustomHeaders.MESSAGE_ACTION
-			ingestionService.ingest(schema.get(), message);
 
 		} catch (Exception e) {
 			//TODO: forward event to notification engine
