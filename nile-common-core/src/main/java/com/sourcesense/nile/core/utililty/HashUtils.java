@@ -13,7 +13,7 @@ public class HashUtils {
 
         } catch (Exception exception) {
             //Todo eccezione bloccante
-            return null;
+            throw new RuntimeException(exception);
         }
     }
 
@@ -23,7 +23,7 @@ public class HashUtils {
 
         } catch (Exception exception) {
             //Todo eccezione bloccante
-            return null;
+            throw new RuntimeException(exception);
         }
     }
 }

@@ -3,6 +3,7 @@ package com.sourcesense.nile.connectorcore.service;
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.sourcesense.nile.connectorcore.model.DataEntry;
+import com.sourcesense.nile.core.enumeration.NotificationEvent;
 import com.sourcesense.nile.core.service.KafkaMessageService;
 import com.sourcesense.nile.core.service.NotificationService;
 import com.sourcesense.nile.core.utililty.constant.KafkaCustomHeaders;
@@ -24,16 +25,21 @@ public class RawDataMessageService extends KafkaMessageService<JsonNode> {
     private String ingestionTopic;
 
     public RawDataMessageService(
-            ObjectMapper mapper,
+            ObjectMapper jsonMapper,
             NotificationService notificationService,
             KafkaTemplate<String, JsonNode> kafkaTemplate) {
 
-        super(mapper, notificationService, kafkaTemplate);
+        super(jsonMapper, notificationService, kafkaTemplate);
     }
 
     public ListenableFuture<SendResult<String, JsonNode>> sendMessageToOutputTopic(DataEntry dataEntry) {
         Message<JsonNode> rawDataMessage = this.getRawDataMessage(dataEntry);
-        return this.sendMessage(dataEntry.getNileUri(), rawDataMessage);
+        return this.sendMessage(
+                dataEntry.getNileUri(),
+                rawDataMessage,
+                NotificationEvent.SEND_RAW_DATA_SUCCESS,
+                NotificationEvent.SEND_RAW_DATA_FAILED
+        );
     }
 
     private Message<JsonNode> getRawDataMessage(DataEntry entry) {

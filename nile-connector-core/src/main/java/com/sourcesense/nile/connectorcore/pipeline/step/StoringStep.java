@@ -20,6 +20,7 @@ import org.springframework.util.concurrent.ListenableFuture;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
+import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.Executor;
 import java.util.concurrent.Executors;
 import java.util.stream.Collectors;
@@ -28,26 +29,34 @@ import java.util.stream.Collectors;
 @Component
 @RequiredArgsConstructor
 public class StoringStep<R extends MappingInfo>
-        extends AbstractStep<DataEntry, List<SendResult<String, JsonNode>>>
-        implements Step<StepPayload<List<R>, List<DataEntry>>, StepPayload<List<R>, List<SendResult<String, JsonNode>>>> {
+        extends AbstractStep<DataEntry, List<CompletableFuture<SendResult<String, JsonNode>>>>
+        implements Step<StepPayload<List<R>, List<DataEntry>>, StepPayload<List<R>, List<CompletableFuture<SendResult<String, JsonNode>>>>> {
 
     private final RawDataMessageService rawDataMessageService;
 
     @Override
-    public StepPayload<List<R>, List<SendResult<String, JsonNode>>> process(StepPayload<List<R>, List<DataEntry>> input) throws PipePanic {
+    public StepPayload<List<R>, List<CompletableFuture<SendResult<String, JsonNode>>>> process(StepPayload<List<R>, List<DataEntry>> input) throws PipePanic {
 
-        List<SendResult<String, JsonNode>> sendResults = Collections.synchronizedList(new ArrayList<>());
-
-        List<Observable<SendResult<String, JsonNode>>> messageObservables = input.getLoad().stream()
+        List<CompletableFuture<SendResult<String, JsonNode>>> messageFutures = input.getLoad().stream()
                 .map(rawDataMessageService::sendMessageToOutputTopic)
                 .map(ListenableFuture::completable)
-                .map(Observable::fromFuture)
                 .collect(Collectors.toList());
 
-        Observable.concat(messageObservables)
-                .doOnNext(sendResults::add)
-                .subscribe();
+        return input.buildNextStepPayload(messageFutures);
+//                .map(Observable::fromFuture)
 
-        return input.buildNextStepPayload(sendResults);
+//        List<SendResult<String, JsonNode>> sendResults = Collections.synchronizedList(new ArrayList<>());
+//
+//        List<Observable<SendResult<String, JsonNode>>> messageObservables = input.getLoad().stream()
+//                .map(rawDataMessageService::sendMessageToOutputTopic)
+//                .map(ListenableFuture::completable)
+//                .map(Observable::fromFuture)
+//                .collect(Collectors.toList());
+//
+//        Observable.concat(messageObservables)
+//                .doOnNext(sendResults::add)
+//                .subscribe();
+
+//        return input.buildNextStepPayload(sendResults)z;
     }
 }

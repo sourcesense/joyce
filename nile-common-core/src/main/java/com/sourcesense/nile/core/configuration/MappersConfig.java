@@ -17,7 +17,6 @@ public class MappersConfig {
 
     @Bean
     @Primary
-    @Qualifier("mapper")
     ObjectMapper jsonMapper() {
         return new ObjectMapper();
     }

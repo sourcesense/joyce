@@ -15,5 +15,6 @@ public interface ConnectorDao<T extends DataInfo> {
     Optional<T> get(String id);
     List<T> getAll();
     T save(T dataInfo);
+    List<T> saveAll(List<T> dataInfos);
     void delete(T dataInfo);
 }

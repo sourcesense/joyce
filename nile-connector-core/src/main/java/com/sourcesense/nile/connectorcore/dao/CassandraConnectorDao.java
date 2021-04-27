@@ -25,6 +25,11 @@ public abstract class CassandraConnectorDao<T extends DataInfo> implements Conne
     }
 
     @Override
+    public List<T> saveAll(List<T> dataInfos) {
+        return null;
+    }
+
+    @Override
     public void delete(T dataInfo) {
 
     }

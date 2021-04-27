@@ -32,6 +32,11 @@ public abstract class MongodbConnectorDao<T extends DataInfo, R extends DataInfo
     }
 
     @Override
+    public List<T> saveAll(List<T> dataInfos) {
+        return dataInfoMongoRepository.saveAll(dataInfos);
+    }
+
+    @Override
     public void delete(T dataInfo) {
         dataInfoMongoRepository.delete(dataInfo);
     }
