@@ -8,12 +8,13 @@ import {
   MultipleEntitySchema,
   SingleEntitySchema,
 } from "./plugins/PrepareFastifySchema";
-import { ResponsableSchema } from "./types";
+import { JRPCParams, ResponsableSchema } from "./types";
 
 const SCHEMAS_SOURCE = process.env.SCHEMAS_SOURCE || "assets/schemas.json";
 const PRODUCTION_URL = process.env.BASE_URL || "https://<production-url>";
 const INTERNAL_URL = process.env.BASE_URL || "http://localhost:3000";
 const HEALTH_PATH = process.env.HEALTH_PATH || "/health";
+
 // const schemaSources = fs.readFileSync(
 //   path.join(__dirname, SCHEMAS_SOURCE),
 //   "utf8"
@@ -21,8 +22,34 @@ const HEALTH_PATH = process.env.HEALTH_PATH || "/health";
 const schemaSources = fs.readFileSync(SCHEMAS_SOURCE, "utf8");
 const schemaConfiguration = new SchemaConfiguration(JSON.parse(schemaSources));
 const requests = schemaConfiguration.requestSchemas();
+const NILE_API_KAFKA_COMMAND_TOPIC =
+  process.env.NILE_API_KAFKA_COMMAND_TOPIC || "commands";
 
-function createServer(db) {
+// producer.on("ready", function (v) {
+//   // payloads = [
+//   //   { topic: "topic1", messages: "hi" },
+//   //   { topic: "topic2", messages: ["hello", "world"] },
+//   // ];
+//   producer.send(
+//     [
+//       {
+//         topic: "commands",
+//         messages: "antani",
+//       },
+//     ],
+//     (err, data) => {
+//       if (err) {
+//         console.log("error", err);
+//       }
+//       console.log("ok", data);
+//     }
+//   );
+//   // producer.send(payloads, function (err, data) {
+//   //     console.log(data);
+//   // });
+// });
+
+function createServer(db, producer) {
   return Promise.all(requests).then((schemasList) => {
     const filteredSchemalist = schemasList.filter((e) => e.label);
     const server = fastify({
@@ -52,6 +79,65 @@ function createServer(db) {
         produces: ["application/json"],
       },
     });
+    server.post<{ Body: JRPCParams }>(
+      "/jrpc",
+      {
+        schema: {
+          body: {
+            type: "object",
+            required: ["jsonrpc", "method", "params", "id"],
+            properties: {
+              jsonrpc: { type: "string", enum: ["2.0"] },
+              method: { type: "string" },
+              params: { type: "object", minProperties: 1 },
+              id: { type: "string" },
+            },
+          },
+          response: {
+            200: { type: "string", enum: ["OK"] },
+            500: { type: "string", enum: ["KO"] },
+          },
+        },
+      },
+      async function (req, res) {
+        const params = req.body.params;
+        // if (
+        //   params &&
+        //   Object.keys(params).length === 0 &&
+        //   params.constructor === Object
+        // ) {
+        //   res.code(400).send({
+        //     error: {
+        //       validation: [
+        //         {
+        //           keyword: "required",
+        //           dataPath: ".jsonrpc",
+        //           schemaPath: "#/properties/jsonrpc/required",
+        //           params: {
+        //             missingProperty: "params",
+        //           },
+        //           message: "should not be empty",
+        //         },
+        //       ],
+        //       validationContext: "body",
+        //     },
+        //   });
+        // }
+        const payload = {
+          topic: NILE_API_KAFKA_COMMAND_TOPIC,
+          messages: JSON.stringify(req.body),
+          key: NILE_API_KAFKA_COMMAND_TOPIC,
+        };
+        producer.send([payload], function (err, data) {
+          if (err) {
+            res.status(500).send("KO");
+            return;
+          }
+          res.status(200).send("OK");
+          return;
+        });
+      }
+    );
     filteredSchemalist.map((schema: ResponsableSchema) => {
       const tempSchema = new CustomeSchemaParser(schema);
       /**

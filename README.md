@@ -43,3 +43,15 @@ Mongo URI
 ```
 MONGO_URI
 ```
+
+Kafka Host
+
+```
+NILE_API_KAFKA_BOOTSTRAPADDRESS
+```
+
+Jakfka commando topic. Default: _commands_
+
+```
+NILE_API_KAFKA_COMMAND_TOPIC
+```

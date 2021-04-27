@@ -14,7 +14,7 @@
     "rootDir": "src",
     "noImplicitAny": false,
     "lib": ["es6"],
-    "noUnusedLocals": true
+   // "noUnusedLocals": true
   },
   "include": ["src/**/*"],
   "exclude": [

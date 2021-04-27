@@ -28,3 +28,10 @@ export interface ResponsableSchema extends Resource {
   label: string;
   schema: { $metadata: SchemaMetadata; properties: SchemaProperties };
 }
+
+export interface JRPCParams {
+  jsonrpc: string;
+  method: string;
+  params: object;
+  id: string;
+}
