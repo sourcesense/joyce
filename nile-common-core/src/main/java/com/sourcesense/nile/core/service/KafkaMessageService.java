@@ -15,7 +15,7 @@ import org.springframework.util.concurrent.ListenableFutureCallback;
 @RequiredArgsConstructor
 public abstract class KafkaMessageService<T> {
 
-    private final ObjectMapper mapper;
+    protected final ObjectMapper mapper;
     private final NotificationService notificationService;
     private final KafkaTemplate<String, T> kafkaTemplate;
 

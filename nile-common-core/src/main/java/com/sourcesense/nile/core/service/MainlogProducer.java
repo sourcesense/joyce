@@ -1,74 +1,88 @@
 package com.sourcesense.nile.core.service;
 
+import com.fasterxml.jackson.core.JsonFactory;
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.databind.node.ObjectNode;
 import com.sourcesense.nile.core.dto.Schema;
-import com.sourcesense.nile.core.errors.InvalidMetadataException;
-import com.sourcesense.nile.core.model.NileSchemaMetadata;
+import com.sourcesense.nile.core.enumeration.IngestionAction;
 import com.sourcesense.nile.core.model.NileURI;
-import com.sourcesense.nile.schemaengine.dto.ProcessResult;
-import lombok.RequiredArgsConstructor;
+import com.sourcesense.nile.core.utililty.constant.KafkaCustomHeaders;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnProperty;
 import org.springframework.kafka.core.KafkaTemplate;
 import org.springframework.kafka.support.KafkaHeaders;
 import org.springframework.kafka.support.SendResult;
+import org.springframework.messaging.Message;
 import org.springframework.messaging.support.MessageBuilder;
 import org.springframework.stereotype.Service;
-import org.springframework.util.concurrent.ListenableFuture;
 
 import java.util.Iterator;
 import java.util.Map;
-import java.util.Optional;
 
 @Slf4j
 @ConditionalOnProperty(value = "nile.mainlog-producer.enabled", havingValue = "true")
 @Service
-@RequiredArgsConstructor
-public class MainlogProducer {
-    final private KafkaTemplate<String, JsonNode> kafkaTemplate;
+public class MainlogProducer extends KafkaMessageService<JsonNode> {
 
     @Value("${nile.kafka.mainlog-topic:mainlog}")
     String mainlogTopic;
 
-    public NileURI publishContent(Schema schema, ProcessResult result) {
+    public MainlogProducer(ObjectMapper mapper, NotificationService notificationService, KafkaTemplate<String, JsonNode> kafkaTemplate) {
+        super(mapper, notificationService, kafkaTemplate);
+    }
 
-        if (result.getMetadata().isEmpty()){
-            throw new InvalidMetadataException("Message has no metadata, cannot ingest document");
-        }
 
-        NileSchemaMetadata metadata = NileSchemaMetadata.create(result.getMetadata().get());
-
-        String uid = Optional.ofNullable(result.getJson().get(metadata.getUidKey())).orElseThrow(() -> new InvalidMetadataException(String.format("Missing [%s] key from document, cannot ingest document", metadata.getUidKey()))).asText();
-
-        NileURI key = NileURI.make(NileURI.Type.CONTENT, metadata.getSubtype(), metadata.getCollection(), uid);
-
-        // Set schema version
-        ((ObjectNode) result.getJson()).put("_schema_version_", schema.getVersion());
-        ((ObjectNode) result.getJson()).put("_schema_uid_", schema.getUid());
-        ((ObjectNode) result.getJson()).put("_schema_name_", schema.getName());
-        ((ObjectNode) result.getJson()).put("_schema_development_", schema.getDevelopment());
+    public NileURI removeContent(JsonNode metadata, NileURI uri){
 
         MessageBuilder<JsonNode> message = MessageBuilder
-                .withPayload(result.getJson())
+                .withPayload((JsonNode)mapper.createObjectNode())
                 .setHeader(KafkaHeaders.TOPIC, mainlogTopic)
-                .setHeader(KafkaHeaders.MESSAGE_KEY, key.toString());
+                .setHeader(KafkaCustomHeaders.MESSAGE_ACTION, IngestionAction.DELETE.toString())
+                .setHeader(KafkaHeaders.MESSAGE_KEY, uri.toString());
 
-        for (Iterator<Map.Entry<String, JsonNode>> it = result.getMetadata().get().fields(); it.hasNext(); ) {
+        setMetadataHeaders(metadata, message);
+
+        this.sendMessage(uri.toString(), message.build());
+        return uri;
+    }
+
+    /**
+     * Publish to main log a processed content
+     *
+     * @param schema
+     * @param metadata
+     * @param uri
+     * @param content
+     * @return
+     */
+    public NileURI publishContent(Schema schema, JsonNode metadata, NileURI uri, JsonNode content) {
+
+
+        // Set schema version
+        ((ObjectNode)content).put("_schema_version_", schema.getVersion());
+        ((ObjectNode)content).put("_schema_uid_", schema.getUid());
+        ((ObjectNode)content).put("_schema_name_", schema.getName());
+        ((ObjectNode)content).put("_schema_development_", schema.getDevelopment());
+
+        MessageBuilder<JsonNode> message = MessageBuilder
+                .withPayload(content)
+                .setHeader(KafkaHeaders.TOPIC, mainlogTopic)
+                .setHeader(KafkaCustomHeaders.MESSAGE_ACTION, IngestionAction.INSERT.toString())
+                .setHeader(KafkaHeaders.MESSAGE_KEY, uri.toString());
+
+        setMetadataHeaders(metadata, message);
+
+        this.sendMessage(uri.toString(), message.build());
+        return uri;
+    }
+
+    private void setMetadataHeaders(JsonNode metadata, MessageBuilder<JsonNode> message) {
+        for (Iterator<Map.Entry<String, JsonNode>> it = metadata.fields(); it.hasNext(); ) {
             Map.Entry<String, JsonNode> item = it.next();
             message.setHeader(String.format("X-Nile-%s", item.getKey()), item.getValue().asText());
         }
-
-        ListenableFuture<SendResult<String, JsonNode>> future = kafkaTemplate.send(message.build());
-
-        future.addCallback(stringMapSendResult -> {
-            log.debug("Correctly sent message with key: {} to kafka", key.toString());
-        }, throwable -> {
-            log.error("Unable to send message with key {} error: {}", key, throwable.getMessage());
-        });
-        return key;
     }
 
 
@@ -80,14 +94,21 @@ public class MainlogProducer {
         MessageBuilder<JsonNode> message = MessageBuilder
                 .withPayload(schema.getSchema())
                 .setHeader(KafkaHeaders.TOPIC, mainlogTopic)
-                .setHeader(KafkaHeaders.MESSAGE_KEY, schema.getUid());
-        ListenableFuture<SendResult<String, JsonNode>> future = kafkaTemplate.send(message.build());
+                .setHeader(KafkaHeaders.MESSAGE_KEY, schema.getUid())
+                .setHeader(KafkaCustomHeaders.MESSAGE_ACTION, IngestionAction.INSERT.toString());
 
-        future.addCallback(stringMapSendResult -> {
-            log.debug("Correctly sent message with key: {} to kafka");
+        this.sendMessage(schema.getUid(), message.build());
+    }
 
-        }, throwable -> {
-            log.error("Unable to send schema with key {} error: {}", schema.getUid(), throwable.getMessage());
-        });
+    //TODO: remove schema????
+
+    @Override
+    public void handleMessageSuccess(Message<JsonNode> message, SendResult<String, JsonNode> result) {
+        log.debug("Correctly sent message: {} to mainlog", message);
+    }
+
+    @Override
+    public void handleMessageFailure(Message<JsonNode> message, Throwable throwable) {
+        log.error("Unable to send message=[{}] due to : [{}]", message, throwable.getMessage());
     }
 }
