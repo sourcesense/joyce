@@ -20,6 +20,6 @@ nile:
     ingestion-topic: ingestion
   data:
     mongodb:
-      uri: mongodb://user:password@localhost:27017/ingestion
+      uri: mongodb://user:password@localhost:27017/nile
       database: ingestion
 
