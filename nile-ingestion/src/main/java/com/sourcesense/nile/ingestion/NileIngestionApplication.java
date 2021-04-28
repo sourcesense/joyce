@@ -1,4 +1,4 @@
-package com.sourcesense.nile.ingestion.ce;
+package com.sourcesense.nile.ingestion;
 
 import org.springframework.boot.SpringApplication;
 import org.springframework.boot.autoconfigure.SpringBootApplication;

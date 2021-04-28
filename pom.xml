@@ -9,10 +9,10 @@
 		<relativePath/> <!-- lookup parent from repository -->
 	</parent>
 	<groupId>com.sourcesense.nile</groupId>
-	<artifactId>nile-ingestion</artifactId>
+	<artifactId>nile-ingestion-parent</artifactId>
 	<version>0.0.1-SNAPSHOT</version>
   <packaging>pom</packaging>
-	<name>nile-ingestion</name>
+	<name>nile-ingestion-parent</name>
 	<description>Nile Ingestion Microservice</description>
 	<properties>
 		<java.version>11</java.version>
@@ -21,7 +21,7 @@
 	</properties>
 
 	<modules>
-    <module>nile-ingestion-ce</module>
+    <module>nile-ingestion</module>
     <module>nile-ingestion-core</module>
   </modules>
 	<dependencies>

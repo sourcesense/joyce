@@ -1,6 +1,6 @@
 version: "3.6"
 
 services:
-  ingestion-ce:
+  ingestion:
     build: .
-    image: "registry.sourcesense.com/nile/ingestion-ce:latest"
+    image: "registry.sourcesense.com/nile/ingestion:latest"

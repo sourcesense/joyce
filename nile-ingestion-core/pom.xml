@@ -9,7 +9,7 @@
 	</parent>
 
 	<groupId>com.sourcesense.nile</groupId>
-	<artifactId>ingestion-core</artifactId>
+	<artifactId>nile-ingestion-core</artifactId>
   <version>0.0.1-SNAPSHOT</version>
 	<name>nile-ingestion-core</name>
 	<description>Nile Ingestion Core</description>

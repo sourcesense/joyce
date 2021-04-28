@@ -4,20 +4,20 @@
 	<modelVersion>4.0.0</modelVersion>
 	<parent>
 		<groupId>com.sourcesense.nile</groupId>
-		<artifactId>nile-ingestion</artifactId>
+		<artifactId>nile-ingestion-parent</artifactId>
 		<version>0.0.1-SNAPSHOT</version>
 	</parent>
 
 	<groupId>com.sourcesense.nile</groupId>
-	<artifactId>nile-ingestion-ce</artifactId>
+	<artifactId>nile-ingestion</artifactId>
 	<version>0.0.1-SNAPSHOT</version>
-	<name>nile-ingestion-ce</name>
+	<name>nile-ingestion</name>
 	<description>Nile Ingestion Microservice</description>
 
 	<dependencies>
     <dependency>
       <groupId>com.sourcesense.nile</groupId>
-      <artifactId>ingestion-core</artifactId>
+      <artifactId>nile-ingestion-core</artifactId>
       <version>${nile.ingestion.core.version}</version>
     </dependency>
 		<dependency>

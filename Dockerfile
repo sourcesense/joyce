@@ -1,7 +1,7 @@
 FROM maven:3-jdk-11 as builder
 WORKDIR /app
 
-ARG JAR_FILE=nile-ingestion-ce/target/*.jar
+ARG JAR_FILE=nile-ingestion/target/*.jar
 COPY ${JAR_FILE} ./application.jar
 RUN java -Djarmode=layertools -jar /app/application.jar extract
 
