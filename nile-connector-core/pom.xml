@@ -10,7 +10,7 @@
     <modelVersion>4.0.0</modelVersion>
     <groupId>com.sourcesense.nile</groupId>
     <artifactId>nile-connector-core</artifactId>
-    <version>${nile.connector-core.version}</version>
+    <version>0.0.1-SNAPSHOT</version>
     <dependencies>
         <dependency>
             <groupId>com.sourcesense.nile</groupId>
