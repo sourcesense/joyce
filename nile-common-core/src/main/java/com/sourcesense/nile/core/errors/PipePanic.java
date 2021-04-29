@@ -1,6 +1,7 @@
 package com.sourcesense.nile.core.errors;
 
-import java.util.List;
+import com.sourcesense.nile.core.enumeration.NotificationEvent;
+import lombok.Getter;
 
 /**
  * DON'T PANIC
@@ -8,10 +9,17 @@ import java.util.List;
  * questa eccezione ha lo scopo di bloccare una pipeline in corso
  */
 
+@Getter
+public class PipePanic extends RuntimeException {
 
-public class PipePanic extends Exception {
+    private NotificationEvent event;
 
     public PipePanic(String msg) {
         super(msg);
+    }
+
+    public PipePanic(String msg, NotificationEvent event) {
+        super(msg);
+        this.event = event;
     }
 }

@@ -34,12 +34,7 @@ public class RawDataMessageService extends KafkaMessageService<JsonNode> {
 
     public ListenableFuture<SendResult<String, JsonNode>> sendMessageToOutputTopic(DataEntry dataEntry) {
         Message<JsonNode> rawDataMessage = this.getRawDataMessage(dataEntry);
-        return this.sendMessage(
-                dataEntry.getNileUri(),
-                rawDataMessage,
-                NotificationEvent.SEND_RAW_DATA_SUCCESS,
-                NotificationEvent.SEND_RAW_DATA_FAILED
-        );
+        return this.sendMessage(dataEntry.getNileUri(), rawDataMessage);
     }
 
     private Message<JsonNode> getRawDataMessage(DataEntry entry) {
@@ -62,5 +57,15 @@ public class RawDataMessageService extends KafkaMessageService<JsonNode> {
     @Override
     public void handleMessageFailure(Message<JsonNode> message, Throwable throwable) {
         log.error("Unable to send message=[{}] due to : [{}]", message, throwable.getMessage());
+    }
+
+    @Override
+    public NotificationEvent getSuccessEvent() {
+        return NotificationEvent.SEND_RAW_DATA_SUCCESS;
+    }
+
+    @Override
+    public NotificationEvent getFailureEvent() {
+        return NotificationEvent.SEND_RAW_DATA_FAILED;
     }
 }
