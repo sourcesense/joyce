@@ -1,4 +1,4 @@
-package com.sourcesense.nile.connectorcore.errors;
+package com.sourcesense.nile.core.exceptions.handler;
 
 import com.sourcesense.nile.core.exceptions.ProcessingException;
 import lombok.RequiredArgsConstructor;
@@ -14,6 +14,7 @@ public class JobExceptionHandler {
         CustomException customException = CustomException.getCustomException(exception);
         switch (customException) {
             case PROCESSING_EXCEPTION:
+            case NOTIFICATION_EXCEPTION:
                 exceptionHandler.handleNotificationException((ProcessingException) exception);
                 break;
             case MAPPING_VALIDATION_EXCEPTION:

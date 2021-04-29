@@ -1,7 +1,8 @@
-package com.sourcesense.nile.connectorcore.errors;
+package com.sourcesense.nile.core.exceptions.handler;
 
 import com.sourcesense.nile.core.exceptions.DataInfoNotFoundException;
 import com.sourcesense.nile.core.exceptions.MappingValidationException;
+import com.sourcesense.nile.core.exceptions.NotificationException;
 import com.sourcesense.nile.core.exceptions.ProcessingException;
 import lombok.Getter;
 import lombok.RequiredArgsConstructor;
@@ -16,6 +17,7 @@ public enum CustomException {
 
     MAPPING_VALIDATION_EXCEPTION(MappingValidationException.class),
     PROCESSING_EXCEPTION(ProcessingException.class),
+    NOTIFICATION_EXCEPTION(NotificationException.class),
     DATA_INFO_NOT_FOUND_EXCEPTION(DataInfoNotFoundException.class),
     EXCEPTION(Exception.class);
 
@@ -28,6 +30,7 @@ public enum CustomException {
                MAPPING_VALIDATION_EXCEPTION.exceptionClass, MAPPING_VALIDATION_EXCEPTION,
                DATA_INFO_NOT_FOUND_EXCEPTION.exceptionClass, DATA_INFO_NOT_FOUND_EXCEPTION,
                PROCESSING_EXCEPTION.exceptionClass, PROCESSING_EXCEPTION,
+               NOTIFICATION_EXCEPTION.exceptionClass, NOTIFICATION_EXCEPTION,
                EXCEPTION.exceptionClass, EXCEPTION
        );
     }
