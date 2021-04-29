@@ -16,14 +16,9 @@ public class NileSchemaMetadata {
     /**
      * key Constants
      */
-    public static final String KEY_COLLECTION = "collection";
-    public static final String KEY_UID = "uid";
-    public static final String KEY_NAME = "name";
-    public static final String KEY_DESCRIPTION = "description";
-    public static final String KEY_SUBTYPE = "subtype";
+
     public static final String KEY_ROOT_QUERY = "root_query";
     public static final String KEY_ROOT_COLLECTION = "root_collection";
-    public static final String KEY_DEVELOPMENT = "development";
 
     private NileURI.Subtype subtype;
 
@@ -33,60 +28,50 @@ public class NileSchemaMetadata {
     private String collection;
     private String name;
     private String description;
-    private Boolean development;
+    private Boolean development = false;
+
     @JsonProperty(KEY_ROOT_QUERY)
     private JsonNode rootQuery;
+
     @JsonProperty(KEY_ROOT_COLLECTION)
     private String rootCollection;
 
-    public static NileSchemaMetadata create(JsonNode schema) {
-        if (schema == null) {
-            throw new InvalidMetadataException("Missing metadata");
+    private NileURI parent;
+
+    public NileSchemaMetadata validate() throws InvalidMetadataException {
+        if(name == null){
+            throw new InvalidMetadataException("Missing [name] from metadata");
         }
 
-        NileSchemaMetadata metadata = new NileSchemaMetadata();
+        if(subtype == null){
+            throw new InvalidMetadataException("Missing [subtype] from metadata");
+        }
 
-        metadata.setCollection(Optional.ofNullable(schema.get(KEY_COLLECTION))
-                .orElseThrow(() -> new InvalidMetadataException(
-                        String.format("Missing [%s] in metadata", KEY_COLLECTION))).asText());
+        if(parent != null){
+          return this;
+        }
 
-        metadata.setUidKey(Optional.ofNullable(schema.get(KEY_UID))
-                .orElseThrow(() -> new InvalidMetadataException(
-                        String.format("Missing [%s] in metadata", KEY_UID))).asText());
+        if(uidKey == null){
+            throw new InvalidMetadataException("Missing [uid] from metadata");
+        }
 
-        metadata.setName(Optional.ofNullable(schema.get(KEY_NAME))
-                .orElseThrow(() -> new InvalidMetadataException(
-                        String.format("Missing [%s] in metadata", KEY_NAME))).asText());
+        if(collection == null){
+            throw new InvalidMetadataException("Missing [collection] from metadata");
+        }
 
-
-        Optional.ofNullable(schema.get(KEY_DESCRIPTION)).ifPresent(jsonNode -> {
-            metadata.setDescription(schema.get(KEY_DESCRIPTION).asText());
-        });
-
-        metadata.setDevelopment(Optional.ofNullable(schema.get(KEY_DEVELOPMENT))
-                .orElse(new TextNode("false")).asBoolean());
-
-        String subtype = Optional.ofNullable(schema.get(KEY_SUBTYPE))
-                .orElseThrow(() -> new InvalidMetadataException(
-                        String.format("Missing [%s] in metadata", KEY_SUBTYPE))).asText();
-
-        metadata.setSubtype(NileURI.Subtype.get(subtype).orElseThrow(() -> new InvalidMetadataException(
-                String.format("Invalid value for Type [%s]", subtype))));
-
-
-
-        switch (metadata.getSubtype()){
+        switch (subtype){
             case MODEL:
-                metadata.setRootQuery(Optional.ofNullable(schema.get(KEY_ROOT_QUERY))
-                        .orElseThrow(() -> new InvalidMetadataException(
-                                String.format("[%s] is mandatory for [%s] type", KEY_ROOT_QUERY, metadata.getSubtype().getValue()))));
-                metadata.setRootCollection(Optional.ofNullable(schema.get(KEY_ROOT_COLLECTION))
-                        .orElseThrow(() -> new InvalidMetadataException(
-                                String.format("[%s] is mandatory for [%s] type", KEY_ROOT_COLLECTION, metadata.getSubtype().getValue()))).asText());
+                if(rootCollection == null){
+                    throw new InvalidMetadataException("Missing [root_collection] from metadata");
+                }
+                if(rootQuery == null){
+                    throw new InvalidMetadataException("Missing [root_query] from metadata");
+                }
+                break;
             case IMPORT:
-                //TODO:
+                break;
         }
-
-        return metadata;
+        return this;
     }
+
 }

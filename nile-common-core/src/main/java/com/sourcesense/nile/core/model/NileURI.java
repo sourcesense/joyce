@@ -7,6 +7,8 @@ import com.fasterxml.jackson.databind.annotation.JsonSerialize;
 import lombok.Getter;
 
 import java.net.URI;
+import java.net.URLEncoder;
+import java.nio.charset.StandardCharsets;
 import java.util.*;
 import java.util.function.Predicate;
 import java.util.stream.Collectors;
@@ -92,12 +94,12 @@ public class NileURI {
 
     private URI uri;
 
-    public static NileURI make(Type type, Subtype subtype, String class_, String id) {
-        return new NileURI(URI.create(String.format("%s://%s/%s/%s/%s", schema, type.getValue(), subtype.getValue(), class_, id)));
+    public static NileURI make(Type type, Subtype subtype, String collection, String id) {
+        return new NileURI(URI.create(String.format("%s://%s/%s/%s/%s", schema, type.getValue(), subtype.getValue(), URLEncoder.encode(collection, StandardCharsets.UTF_8), URLEncoder.encode(id, StandardCharsets.UTF_8))));
     }
 
-    public static NileURI make(Type type, Subtype subtype, String class_) {
-        return new NileURI(URI.create(String.format("%s://%s/%s/%s", schema, type.getValue(), subtype.getValue(), class_)));
+    public static NileURI make(Type type, Subtype subtype, String collection) {
+        return new NileURI(URI.create(String.format("%s://%s/%s/%s", schema, type.getValue(), subtype.getValue(), URLEncoder.encode(collection, StandardCharsets.UTF_8))));
     }
 
     public NileURI(URI uri) {

@@ -17,21 +17,21 @@ public class CassandraSchemaDao implements SchemaDao {
 
 	@Override
 	public List<SchemaEntity> getAll() {
-		return null;
+		throw new RuntimeException("Unimplemented method");
 	}
 
 	@Override
 	public void save(SchemaEntity schemaEntity) {
-
+		throw new RuntimeException("Unimplemented method");
 	}
 
 	@Override
 	public void delete(SchemaEntity schemaEntity) {
-
+		throw new RuntimeException("Unimplemented method");
 	}
 
 	@Override
 	public List<SchemaEntity> getByName(String name) {
-		return null;
+		throw new RuntimeException("Unimplemented method");
 	}
 }

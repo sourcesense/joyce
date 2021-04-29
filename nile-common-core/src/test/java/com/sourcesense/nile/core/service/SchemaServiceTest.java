@@ -31,7 +31,7 @@ class SchemaServiceTest {
 		@Mock
 		SchemaEngine schemaEngine;
 
-    @Test
+//    @Test
     void breakingChangeSchemaShouldStepVersion() throws JsonProcessingException {
 			SchemaService service = new SchemaService(schemaEntityDao, schemaMapper, schemaEngine);
 			service.subtype = "import";

@@ -1,12 +1,12 @@
 package com.sourcesense.nile.core.service;
 
-import com.fasterxml.jackson.core.JsonFactory;
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.databind.node.ObjectNode;
 import com.sourcesense.nile.core.dto.Schema;
 import com.sourcesense.nile.core.enumeration.IngestionAction;
 import com.sourcesense.nile.core.enumeration.NotificationEvent;
+import com.sourcesense.nile.core.model.NileSchemaMetadata;
 import com.sourcesense.nile.core.model.NileURI;
 import com.sourcesense.nile.core.utililty.constant.KafkaCustomHeaders;
 import lombok.extern.slf4j.Slf4j;
@@ -18,9 +18,6 @@ import org.springframework.kafka.support.SendResult;
 import org.springframework.messaging.Message;
 import org.springframework.messaging.support.MessageBuilder;
 import org.springframework.stereotype.Service;
-
-import java.util.Iterator;
-import java.util.Map;
 
 @Slf4j
 @ConditionalOnProperty(value = "nile.mainlog-producer.enabled", havingValue = "true")
@@ -35,7 +32,7 @@ public class MainlogProducer extends KafkaMessageService<JsonNode> {
     }
 
 
-    public NileURI removeContent(JsonNode metadata, NileURI uri){
+    public NileURI removeContent(NileSchemaMetadata metadata, NileURI uri){
 
         MessageBuilder<JsonNode> message = MessageBuilder
                 .withPayload((JsonNode)mapper.createObjectNode())
@@ -59,7 +56,7 @@ public class MainlogProducer extends KafkaMessageService<JsonNode> {
      * @param rawUri
      * @return
      */
-    public NileURI publishContent(Schema schema, JsonNode metadata, NileURI uri, JsonNode content, String rawUri) {
+    public NileURI publishContent(Schema schema, NileSchemaMetadata metadata, NileURI uri, JsonNode content, String rawUri) {
 
         // Set schema version
         ObjectNode content_metadata = mapper.createObjectNode();
@@ -84,11 +81,11 @@ public class MainlogProducer extends KafkaMessageService<JsonNode> {
         return uri;
     }
 
-    private void setMetadataHeaders(JsonNode metadata, MessageBuilder<JsonNode> message) {
-        for (Iterator<Map.Entry<String, JsonNode>> it = metadata.fields(); it.hasNext(); ) {
-            Map.Entry<String, JsonNode> item = it.next();
-            message.setHeader(String.format("X-Nile-%s", item.getKey()), item.getValue().asText());
-        }
+    private void setMetadataHeaders(NileSchemaMetadata metadata, MessageBuilder<JsonNode> message) {
+        message.setHeader(KafkaCustomHeaders.COLLECTION, metadata.getCollection());
+        message.setHeader(KafkaCustomHeaders.SCHEMA, metadata.getName());
+        message.setHeader(KafkaCustomHeaders.PARENT, metadata.getParent().toString());
+        message.setHeader(KafkaCustomHeaders.SUBTYPE, metadata.getSubtype().toString());
     }
 
 

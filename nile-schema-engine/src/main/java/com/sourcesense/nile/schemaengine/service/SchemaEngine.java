@@ -240,13 +240,25 @@ public class SchemaEngine implements ApplicationContextAware {
 		Optional<JsonNode> metadata = Optional.ofNullable(jsonSchema.getSchemaNode().get(METADATA));
 		JsonNode result = this.parse(null, jsonSchema.getSchemaNode(), source, metadata, Optional.ofNullable(context));
 
-		ValidationResult validation = jsonSchema.validateAndCollect(result);
-		if(validation.getValidationMessages().size() > 0){
-			throw new SchemaIsNotValidException(validation);
-		}
+		validate(schema, result);
 
 		return new ProcessResult(result, metadata);
 	}
+
+	/**
+	 * Validate a document against a json schema
+	 * throws if it is not valid
+	 * @param schema
+	 * @param content
+	 */
+	public void validate(JsonNode schema, JsonNode content) {
+		JsonSchema jsonSchema = factory.getSchema(schema);
+		ValidationResult validation = jsonSchema.validateAndCollect(content);
+		if(validation.getValidationMessages().size() > 0){
+			throw new SchemaIsNotValidException(validation);
+		}
+	}
+
 
 	@Override
 	public void setApplicationContext(ApplicationContext applicationContext) throws BeansException {
