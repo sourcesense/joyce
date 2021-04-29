@@ -2,7 +2,8 @@ package com.sourcesense.nile.ingestion.core.errors;
 
 import com.jayway.jsonpath.PathNotFoundException;
 import com.sourcesense.nile.core.dto.ApiError;
-import com.sourcesense.nile.core.errors.SchemaNotFoundException;
+import com.sourcesense.nile.core.exceptions.InvalidMetadataException;
+import com.sourcesense.nile.core.exceptions.SchemaNotFoundException;
 import com.sourcesense.nile.schemaengine.exceptions.InvalidSchemaException;
 import com.sourcesense.nile.schemaengine.exceptions.SchemaIsNotValidException;
 import org.apache.kafka.common.KafkaException;
@@ -20,6 +21,13 @@ public class CustomExceptionHandler {
 	@ResponseStatus(HttpStatus.BAD_REQUEST)
 	@ResponseBody
 	public ApiError handler(InvalidSchemaException exception, WebRequest request) {
+		return new ApiError(exception.getMessage(), exception.getClass().getCanonicalName());
+	}
+
+	@ExceptionHandler(value = InvalidMetadataException.class)
+	@ResponseStatus(HttpStatus.BAD_REQUEST)
+	@ResponseBody
+	public ApiError handler(InvalidMetadataException exception, WebRequest request) {
 		return new ApiError(exception.getMessage(), exception.getClass().getCanonicalName());
 	}
 

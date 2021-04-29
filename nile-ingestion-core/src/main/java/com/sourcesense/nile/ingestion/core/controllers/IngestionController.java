@@ -5,7 +5,7 @@ import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.node.ObjectNode;
 import com.sourcesense.nile.ingestion.core.api.IngestionApi;
 import com.sourcesense.nile.core.dto.Schema;
-import com.sourcesense.nile.core.errors.SchemaNotFoundException;
+import com.sourcesense.nile.core.exceptions.SchemaNotFoundException;
 import com.sourcesense.nile.ingestion.core.service.IngestionService;
 import com.sourcesense.nile.core.service.SchemaService;
 import lombok.RequiredArgsConstructor;
