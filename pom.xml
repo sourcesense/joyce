@@ -24,7 +24,17 @@
     <module>nile-ingestion</module>
     <module>nile-ingestion-core</module>
   </modules>
-	<dependencies>
+
+  <repositories>
+    <repository>
+      <id>github</id>
+      <name>GitHub Packages</name>
+      <url>https://maven.pkg.github.com/sourcesense/nile-parent</url>
+    </repository>
+  </repositories>
+
+
+  <dependencies>
 		<dependency>
 			<groupId>org.projectlombok</groupId>
 			<artifactId>lombok</artifactId>
