@@ -11,11 +11,11 @@
 	<groupId>com.sourcesense.nile</groupId>
 	<artifactId>nile-schema-engine</artifactId>
 	<version>0.0.1-SNAPSHOT</version>
+
 	<name>nile-schema-engine</name>
 	<description>Nile Schema Engine Library</description>
-	<properties>
-		<java.version>11</java.version>
-	</properties>
+
+
 	<dependencies>
         <dependency>
           <groupId>org.springframework.boot</groupId>

@@ -1,12 +1,11 @@
 package com.sourcesense.nile.connectorcore.errors;
 
-import com.sourcesense.nile.core.errors.NotificationException;
+import com.sourcesense.nile.core.exceptions.NotificationException;
 import com.sourcesense.nile.core.service.NotificationService;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.log4j.Log4j2;
 import org.apache.commons.lang3.StringUtils;
 import org.apache.commons.lang3.exception.ExceptionUtils;
-import org.springframework.context.annotation.Primary;
 import org.springframework.stereotype.Component;
 
 import java.util.Objects;

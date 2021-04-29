@@ -1,3 +1,19 @@
+/*
+ *  Copyright 2021 Sourcesense Spa
+ *
+ * Licensed under the Apache License, Version 2.0 (the "License");
+ * you may not use this file except in compliance with the License.
+ * You may obtain a copy of the License at
+ *
+ *     http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
+ */
+
 package com.sourcesense.nile.core.service;
 
 import com.fasterxml.jackson.core.JsonProcessingException;
@@ -5,7 +21,7 @@ import com.sourcesense.nile.core.dao.SchemaDao;
 import com.sourcesense.nile.core.dto.Schema;
 import com.sourcesense.nile.core.dto.SchemaSave;
 import com.sourcesense.nile.core.dto.SchemaShort;
-import com.sourcesense.nile.core.errors.SchemaNotFoundException;
+import com.sourcesense.nile.core.exceptions.SchemaNotFoundException;
 import com.sourcesense.nile.core.mapper.SchemaMapper;
 import com.sourcesense.nile.core.model.NileURI;
 import com.sourcesense.nile.core.model.SchemaEntity;
@@ -42,14 +58,27 @@ public class SchemaService {
 
 		NileURI uid = getSchemaUid(entity.getName());
 		entity.setUid(uid.toString());
-		// TODO: validate schema with schemaEngine
+
+		// Validate schema
+		schema.getMetadata().validate();
+
+		// If schema has a parent it must exists
+		if(schema.getMetadata().getParent() != null){
+			Optional<SchemaEntity> parent = schemaEntityDao.get(schema.getMetadata().getParent().toString());
+			if (parent.isEmpty()){
+				throw new InvalidSchemaException(String.format("Parent schema [%s] does not exists", schema.getMetadata().getParent()));
+			}
+		}
+
 		Optional<SchemaEntity> previous = schemaEntityDao.get(uid.toString());
 
 		if (previous.isPresent()){
 			if(entity.getDevelopment()){
-				// If schema is in development mode we skip schema checks, but we make shure to not break previous version by stepping up the version
+				/**
+				 * If schema is in development mode we skip schema checks,
+				 * but we block if previous schema is not in dev mode
+ 				 */
 				if (!previous.get().getDevelopment()){
-
 					throw new InvalidSchemaException("Previous schema is not in development mode");
 				} else {
 					entity.setVersion(previous.get().getVersion());
@@ -109,4 +138,7 @@ public class SchemaService {
 	}
 
 
+	public Optional<Schema> get(String schemaUid) {
+		return schemaEntityDao.get(schemaUid).map(schemaMapper::toDto);
+	}
 }

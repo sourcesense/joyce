@@ -1,4 +1,4 @@
-package com.sourcesense.nile.core.errors;
+package com.sourcesense.nile.core.exceptions;
 
 import lombok.Getter;
 

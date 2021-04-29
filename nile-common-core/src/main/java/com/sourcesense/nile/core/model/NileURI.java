@@ -1,3 +1,19 @@
+/*
+ *  Copyright 2021 Sourcesense Spa
+ *
+ * Licensed under the Apache License, Version 2.0 (the "License");
+ * you may not use this file except in compliance with the License.
+ * You may obtain a copy of the License at
+ *
+ *     http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
+ */
+
 package com.sourcesense.nile.core.model;
 
 import com.fasterxml.jackson.annotation.JsonProperty;
@@ -7,21 +23,37 @@ import com.fasterxml.jackson.databind.annotation.JsonSerialize;
 import lombok.Getter;
 
 import java.net.URI;
+import java.net.URLEncoder;
+import java.nio.charset.StandardCharsets;
 import java.util.*;
 import java.util.function.Predicate;
 import java.util.stream.Collectors;
 
-
+/**
+ * This uri is a unique identifier of content that get passed around topics.
+ * It has a semantic that determines the nature of the content it identifies.
+ *
+ * nile://TYPE/SUBTYPE/COLLECTION/ID
+ */
 @Getter
 @JsonDeserialize(using = NileURIDeserializer.class)
 @JsonSerialize(using = NileURISerializer.class)
 public class NileURI {
 
     public enum Type {
-
+        /**
+         * This type of content is the id given by The connectors to content they produce
+         */
         RAW("raw"),
-        INFO("info"),
+
+        /**
+         * This is the type that identifies Schema objects
+         */
         SCHEMA("schema"),
+
+        /**
+         * This is content that has been transformed
+         */
         CONTENT("content");
 
         private final String value;
@@ -48,16 +80,33 @@ public class NileURI {
 
     }
 
+    /**
+     * Marks the secondary type of messages
+     */
     public enum Subtype {
-        //Data Types
+        /**
+         * Content or schema produced by the import/ingestion phase
+         */
         @JsonProperty("import")
         IMPORT("import"),
+
+        /**
+         * Content or schema produced by the the schema engine (EE only)
+         */
         @JsonProperty("model")
         MODEL("model"),
 
-        //Connectors
-        @JsonProperty("ftp")
-        FTP("ftp");
+        /**
+         * Content produced by CSV connector
+         */
+        @JsonProperty("csv")
+        CSV("csv"),
+
+        /**
+         * Content produced by other sources
+         */
+        @JsonProperty("other")
+        OTHER("other");
 
         private final String value;
 
@@ -92,14 +141,18 @@ public class NileURI {
 
     private URI uri;
 
-    public static NileURI make(Type type, Subtype subtype, String class_, String id) {
-        return new NileURI(URI.create(String.format("%s://%s/%s/%s/%s", schema, type.getValue(), subtype.getValue(), class_, id)));
+    public static NileURI make(Type type, Subtype subtype, String collection, String id) {
+        return new NileURI(URI.create(String.format("%s://%s/%s/%s/%s", schema, type.getValue(), subtype.getValue(), URLEncoder.encode(collection, StandardCharsets.UTF_8), URLEncoder.encode(id, StandardCharsets.UTF_8))));
     }
 
-    public static NileURI make(Type type, Subtype subtype, String class_) {
-        return new NileURI(URI.create(String.format("%s://%s/%s/%s", schema, type.getValue(), subtype.getValue(), class_)));
+    public static NileURI make(Type type, Subtype subtype, String collection) {
+        return new NileURI(URI.create(String.format("%s://%s/%s/%s", schema, type.getValue(), subtype.getValue(), URLEncoder.encode(collection, StandardCharsets.UTF_8))));
     }
 
+    /**
+     * Main constructor, throws if something is wrong in the uri composition
+     * @param uri
+     */
     public NileURI(URI uri) {
         this.uri = uri;
         this.type = Type.get(uri.getHost()).orElseThrow(() -> new IllegalArgumentException(String.format("Invalid type %s", uri.getHost())));
@@ -116,6 +169,12 @@ public class NileURI {
         }
     }
 
+    /**
+     * Static creator handler, returns an optional doesn't throws
+     *
+     * @param uriString
+     * @return
+     */
     public static Optional<NileURI> createURI(String uriString) {
         try {
             URI uri = new URI(uriString);

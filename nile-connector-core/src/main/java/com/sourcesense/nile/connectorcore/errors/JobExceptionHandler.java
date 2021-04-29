@@ -1,6 +1,6 @@
 package com.sourcesense.nile.connectorcore.errors;
 
-import com.sourcesense.nile.core.errors.ProcessingException;
+import com.sourcesense.nile.core.exceptions.ProcessingException;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Component;
 

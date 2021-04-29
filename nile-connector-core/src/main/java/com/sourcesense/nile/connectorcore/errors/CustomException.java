@@ -1,8 +1,8 @@
 package com.sourcesense.nile.connectorcore.errors;
 
-import com.sourcesense.nile.core.errors.DataInfoNotFoundException;
-import com.sourcesense.nile.core.errors.MappingValidationException;
-import com.sourcesense.nile.core.errors.ProcessingException;
+import com.sourcesense.nile.core.exceptions.DataInfoNotFoundException;
+import com.sourcesense.nile.core.exceptions.MappingValidationException;
+import com.sourcesense.nile.core.exceptions.ProcessingException;
 import lombok.Getter;
 import lombok.RequiredArgsConstructor;
 

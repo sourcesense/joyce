@@ -14,17 +14,10 @@
  * limitations under the License.
  */
 
-package com.sourcesense.nile.core.dto;
+package com.sourcesense.nile.core.exceptions;
 
-import com.fasterxml.jackson.databind.JsonNode;
-import lombok.Data;
-
-@Data
-public class Schema {
-	private String uid;
-	private Integer version;
-	private String name;
-	private String description;
-	private Boolean development;
-	private JsonNode schema;
+public class InvalidMetadataException extends RuntimeException {
+	public InvalidMetadataException(String s) {
+		super(s);
+	}
 }

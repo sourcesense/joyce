@@ -1,3 +1,19 @@
+/*
+ *  Copyright 2021 Sourcesense Spa
+ *
+ * Licensed under the Apache License, Version 2.0 (the "License");
+ * you may not use this file except in compliance with the License.
+ * You may obtain a copy of the License at
+ *
+ *     http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
+ */
+
 package com.sourcesense.nile.schemaengine.service;
 
 import com.fasterxml.jackson.core.JsonProcessingException;
@@ -159,8 +175,7 @@ public class SchemaEngine implements ApplicationContextAware {
 
 
 	/**
-	 * Apply registered handlers, it stops at the first encountered
-	 * TODO: find a way to choose which one is applied or apply all in a given order
+	 * Apply registered handlers in cascade sing output from the first as input to the following
 	 *
 	 * @param key
 	 * @param schema
@@ -240,13 +255,25 @@ public class SchemaEngine implements ApplicationContextAware {
 		Optional<JsonNode> metadata = Optional.ofNullable(jsonSchema.getSchemaNode().get(METADATA));
 		JsonNode result = this.parse(null, jsonSchema.getSchemaNode(), source, metadata, Optional.ofNullable(context));
 
-		ValidationResult validation = jsonSchema.validateAndCollect(result);
-		if(validation.getValidationMessages().size() > 0){
-			throw new SchemaIsNotValidException(validation);
-		}
+		validate(schema, result);
 
 		return new ProcessResult(result, metadata);
 	}
+
+	/**
+	 * Validate a document against a json schema
+	 * throws if it is not valid
+	 * @param schema
+	 * @param content
+	 */
+	public void validate(JsonNode schema, JsonNode content) {
+		JsonSchema jsonSchema = factory.getSchema(schema);
+		ValidationResult validation = jsonSchema.validateAndCollect(content);
+		if(validation.getValidationMessages().size() > 0){
+			throw new SchemaIsNotValidException(validation);
+		}
+	}
+
 
 	@Override
 	public void setApplicationContext(ApplicationContext applicationContext) throws BeansException {
