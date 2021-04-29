@@ -6,7 +6,7 @@ import com.sourcesense.nile.connectorcore.model.DataEntry;
 import com.sourcesense.nile.core.enumeration.NotificationEvent;
 import com.sourcesense.nile.core.service.KafkaMessageService;
 import com.sourcesense.nile.core.service.NotificationService;
-import com.sourcesense.nile.core.utililty.constant.KafkaCustomHeaders;
+import com.sourcesense.nile.core.enumeration.KafkaCustomHeaders;
 import lombok.extern.log4j.Log4j2;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.kafka.core.KafkaTemplate;

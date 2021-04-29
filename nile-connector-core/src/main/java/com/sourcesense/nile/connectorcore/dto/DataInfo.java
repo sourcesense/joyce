@@ -13,7 +13,7 @@ import java.util.Date;
 @Data
 @SuperBuilder
 @NoArgsConstructor(access = AccessLevel.PROTECTED)
-//Todo: capire perchè non riesce ad iniettarsi il bean
+//TODO: get bean
 //@Document("#{databaseCollections.getDataInfo()}")
 @Document("info")
 public abstract class DataInfo {

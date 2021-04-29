@@ -2,7 +2,6 @@ package com.sourcesense.nile.core.dto;
 
 import lombok.Data;
 
-
 @Data
 public class SchemaShort {
 	private String uid;

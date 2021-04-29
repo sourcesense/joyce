@@ -159,8 +159,7 @@ public class SchemaEngine implements ApplicationContextAware {
 
 
 	/**
-	 * Apply registered handlers, it stops at the first encountered
-	 * TODO: find a way to choose which one is applied or apply all in a given order
+	 * Apply registered handlers in cascade sing output from the first as input to the following
 	 *
 	 * @param key
 	 * @param schema

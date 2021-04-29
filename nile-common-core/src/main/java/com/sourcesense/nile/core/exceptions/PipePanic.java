@@ -1,6 +1,4 @@
-package com.sourcesense.nile.core.errors;
-
-import java.util.List;
+package com.sourcesense.nile.core.exceptions;
 
 /**
  * DON'T PANIC

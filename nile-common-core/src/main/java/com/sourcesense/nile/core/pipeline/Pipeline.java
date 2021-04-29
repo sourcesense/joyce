@@ -1,6 +1,6 @@
 package com.sourcesense.nile.core.pipeline;
 
-import com.sourcesense.nile.core.errors.PipePanic;
+import com.sourcesense.nile.core.exceptions.PipePanic;
 
 public class Pipeline<I, O> {
 

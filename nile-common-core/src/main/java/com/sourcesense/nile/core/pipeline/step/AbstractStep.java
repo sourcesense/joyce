@@ -1,6 +1,6 @@
 package com.sourcesense.nile.core.pipeline.step;
 
-import com.sourcesense.nile.core.errors.PipePanic;
+import com.sourcesense.nile.core.exceptions.PipePanic;
 import com.sourcesense.nile.core.utililty.TextUtils;
 import lombok.extern.log4j.Log4j2;
 import org.apache.commons.lang3.exception.ExceptionUtils;
@@ -14,10 +14,9 @@ public abstract class AbstractStep<R, L> {
     }
 
     /**
-     * metodo di utilità che torna un'eccezione di tipo PipePanic. Questa eccezione è stata prevista per bloccare
-     * la pipeline corrente
+     * Utility method to create a PipePanic blocking error
      *
-     * @param exception Eccezione bloccante
+     * @param exception Blocking Exception
      * @return PipePanic
      */
     protected PipePanic getUnrecoverableStateException(Exception exception) {
@@ -26,7 +25,7 @@ public abstract class AbstractStep<R, L> {
     }
 
     /**
-     * metodo di utilità per copiare i campi comuni tra 2 step (la parte variabile è semplicemente il "load")
+     * Utility method to copy common fields between two steps
      *
      * @param input Current pipeline step input
      * @param output Current pipeline step output

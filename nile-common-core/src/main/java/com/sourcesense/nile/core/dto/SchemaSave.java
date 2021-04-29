@@ -6,7 +6,6 @@ import com.sourcesense.nile.core.model.NileSchemaMetadata;
 import lombok.Data;
 
 import java.util.List;
-import java.util.Map;
 
 @Data
 public class SchemaSave {

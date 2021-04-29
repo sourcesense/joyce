@@ -6,7 +6,7 @@ import com.sourcesense.nile.connectorcore.model.ProcessableData;
 import com.sourcesense.nile.connectorcore.pipeline.step.ExtractionStep;
 import com.sourcesense.nile.connectorcore.pipeline.step.ReadingStep;
 import com.sourcesense.nile.connectorcore.pipeline.step.StoringStep;
-import com.sourcesense.nile.core.errors.PipePanic;
+import com.sourcesense.nile.core.exceptions.PipePanic;
 import com.sourcesense.nile.core.pipeline.Pipeline;
 import com.sourcesense.nile.core.pipeline.step.StepPayload;
 import com.sourcesense.nile.core.service.NotificationService;
@@ -37,7 +37,7 @@ public class DataProcessingService<R extends MappingInfo, P extends ProcessableD
                     .getLoad();
 
         } catch (PipePanic pipePanic) {
-            //Todo: Gestire Eccezioni
+            //Todo: handle properly exceptions
             throw new RuntimeException(pipePanic);
 //            notificationService.ko("", pipePanic.getEvent(), pipePanic.getMessage());
         }

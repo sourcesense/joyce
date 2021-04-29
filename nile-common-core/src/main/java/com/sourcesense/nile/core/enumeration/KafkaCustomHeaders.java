@@ -1,4 +1,4 @@
-package com.sourcesense.nile.core.utililty.constant;
+package com.sourcesense.nile.core.enumeration;
 
 public class KafkaCustomHeaders {
 

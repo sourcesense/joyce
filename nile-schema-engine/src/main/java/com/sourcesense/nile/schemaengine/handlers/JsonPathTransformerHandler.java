@@ -49,7 +49,7 @@ public class JsonPathTransformerHandler implements TransormerHandler {
 	public JsonNode process(String key, JsonNode value, JsonNode source, Optional<JsonNode> metadata, Optional<Object> context) {
 		if (value.getNodeType().equals(JsonNodeType.ARRAY)){
 			StringBuffer stringBuffer = new StringBuffer();
-			for (JsonNode jsonNode : ((ArrayNode) value)) {
+			for (JsonNode jsonNode : value) {
 				if(jsonNode.getNodeType().equals(JsonNodeType.STRING)){
 					if(jsonNode.asText().startsWith("$")){
 						JsonNode resolvedPath = this.read(source, jsonNode.asText());

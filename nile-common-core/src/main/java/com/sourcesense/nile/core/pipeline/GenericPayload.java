@@ -8,6 +8,5 @@ import java.io.Serializable;
 @NoArgsConstructor(access = AccessLevel.PROTECTED)
 @AllArgsConstructor(access = AccessLevel.PROTECTED)
 public abstract class GenericPayload<T> implements Serializable {
-
     protected T data;
 }

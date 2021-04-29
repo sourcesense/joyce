@@ -13,17 +13,31 @@ import java.util.*;
 import java.util.function.Predicate;
 import java.util.stream.Collectors;
 
-
+/**
+ * This uri is a unique identifier of content that get passed around topics.
+ * It has a semantic that determines the nature of the content it identifies.
+ *
+ * nile://TYPE/SUBTYPE/COLLECTION/ID
+ */
 @Getter
 @JsonDeserialize(using = NileURIDeserializer.class)
 @JsonSerialize(using = NileURISerializer.class)
 public class NileURI {
 
     public enum Type {
-
+        /**
+         * This type of content is the id given by The connectors to content they produce
+         */
         RAW("raw"),
-        INFO("info"),
+
+        /**
+         * This is the type that identifies Schema objects
+         */
         SCHEMA("schema"),
+
+        /**
+         * This is content that has been transformed
+         */
         CONTENT("content");
 
         private final String value;
@@ -50,16 +64,33 @@ public class NileURI {
 
     }
 
+    /**
+     * Marks the secondary type of messages
+     */
     public enum Subtype {
-        //Data Types
+        /**
+         * Content or schema produced by the import/ingestion phase
+         */
         @JsonProperty("import")
         IMPORT("import"),
+
+        /**
+         * Content or schema produced by the the schema engine (EE only)
+         */
         @JsonProperty("model")
         MODEL("model"),
 
-        //Connectors
-        @JsonProperty("ftp")
-        FTP("ftp");
+        /**
+         * Content produced by CSV connector
+         */
+        @JsonProperty("csv")
+        CSV("csv"),
+
+        /**
+         * Content produced by other sources
+         */
+        @JsonProperty("other")
+        OTHER("other");
 
         private final String value;
 
@@ -102,6 +133,10 @@ public class NileURI {
         return new NileURI(URI.create(String.format("%s://%s/%s/%s", schema, type.getValue(), subtype.getValue(), URLEncoder.encode(collection, StandardCharsets.UTF_8))));
     }
 
+    /**
+     * Main constructor, throws if something is wrong in the uri composition
+     * @param uri
+     */
     public NileURI(URI uri) {
         this.uri = uri;
         this.type = Type.get(uri.getHost()).orElseThrow(() -> new IllegalArgumentException(String.format("Invalid type %s", uri.getHost())));
@@ -118,6 +153,12 @@ public class NileURI {
         }
     }
 
+    /**
+     * Static creator handler, returns an optional doesn't throws
+     *
+     * @param uriString
+     * @return
+     */
     public static Optional<NileURI> createURI(String uriString) {
         try {
             URI uri = new URI(uriString);

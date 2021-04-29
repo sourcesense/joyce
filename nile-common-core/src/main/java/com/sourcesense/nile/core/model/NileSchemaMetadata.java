@@ -2,13 +2,9 @@ package com.sourcesense.nile.core.model;
 
 import com.fasterxml.jackson.annotation.JsonProperty;
 import com.fasterxml.jackson.databind.JsonNode;
-import com.fasterxml.jackson.databind.node.BooleanNode;
-import com.fasterxml.jackson.databind.node.TextNode;
-import com.sourcesense.nile.core.errors.InvalidMetadataException;
+import com.sourcesense.nile.core.exceptions.InvalidMetadataException;
 import lombok.Getter;
 import lombok.Setter;
-
-import java.util.Optional;
 
 @Getter
 @Setter
@@ -16,15 +12,15 @@ public class NileSchemaMetadata {
     /**
      * key Constants
      */
-
     public static final String KEY_ROOT_QUERY = "root_query";
     public static final String KEY_ROOT_COLLECTION = "root_collection";
 
-    private NileURI.Subtype subtype;
+
 
     @JsonProperty("uid")
     private String uidKey;
 
+    private NileURI.Subtype subtype;
     private String collection;
     private String name;
     private String description;
@@ -38,6 +34,14 @@ public class NileSchemaMetadata {
 
     private NileURI parent;
 
+
+    /**
+     * Validate the object, some keys are required or not given a subtype
+     * throws if it fails to validate
+     *
+     * @return
+     * @throws InvalidMetadataException
+     */
     public NileSchemaMetadata validate() throws InvalidMetadataException {
         if(name == null){
             throw new InvalidMetadataException("Missing [name] from metadata");

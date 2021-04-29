@@ -12,7 +12,6 @@ public class HashUtils {
             return DigestUtils.sha256Hex(new FileInputStream(file));
 
         } catch (Exception exception) {
-            //Todo eccezione bloccante
             throw new RuntimeException(exception);
         }
     }
@@ -20,9 +19,7 @@ public class HashUtils {
     public static String getHash(String string) {
         try {
             return DigestUtils.sha256Hex(string);
-
         } catch (Exception exception) {
-            //Todo eccezione bloccante
             throw new RuntimeException(exception);
         }
     }
