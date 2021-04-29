@@ -23,17 +23,18 @@ import com.sourcesense.nile.connectorcore.pipeline.step.ExtractionStep;
 import com.sourcesense.nile.connectorcore.pipeline.step.ReadingStep;
 import com.sourcesense.nile.connectorcore.pipeline.step.StoringStep;
 import com.sourcesense.nile.core.exceptions.PipePanic;
+import com.sourcesense.nile.core.exceptions.ProcessingException;
 import com.sourcesense.nile.core.pipeline.Pipeline;
 import com.sourcesense.nile.core.pipeline.step.StepPayload;
-import com.sourcesense.nile.core.service.NotificationService;
 import lombok.RequiredArgsConstructor;
-import org.quartz.JobExecutionContext;
+import lombok.extern.log4j.Log4j2;
 import org.springframework.kafka.support.SendResult;
 import org.springframework.stereotype.Service;
 
 import java.util.List;
 import java.util.concurrent.CompletableFuture;
 
+@Log4j2
 @Service
 @RequiredArgsConstructor
 public class DataProcessingService<R extends MappingInfo, P extends ProcessableData> {
@@ -42,9 +43,7 @@ public class DataProcessingService<R extends MappingInfo, P extends ProcessableD
     private final ExtractionStep<R, P> extractionStep;
     private final StoringStep<R> storingStep;
 
-    private final NotificationService notificationService;
-
-    public List<CompletableFuture<SendResult<String, JsonNode>>> execute(JobExecutionContext jobExecutionContext) {
+    public List<CompletableFuture<SendResult<String, JsonNode>>> execute() {
         try {
             return new Pipeline<>(readingStep)
                     .pipe(extractionStep)
@@ -53,9 +52,10 @@ public class DataProcessingService<R extends MappingInfo, P extends ProcessableD
                     .getLoad();
 
         } catch (PipePanic pipePanic) {
-            //Todo: handle properly exceptions
-            throw new RuntimeException(pipePanic);
-//            notificationService.ko("", pipePanic.getEvent(), pipePanic.getMessage());
+            throw ProcessingException.builder()
+                    .message(pipePanic.getMessage())
+                    .event(pipePanic.getEvent())
+                    .build();
         }
     }
 }
