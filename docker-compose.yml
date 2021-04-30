@@ -1,15 +1,7 @@
 version: "2"
 
 services:
-  # mongodb:
-  #   image: "bitnami/mongodb:latest"
-  #   environment:
-  #     - MONGODB_USERNAME=my_user
-  #     - MONGODB_PASSWORD=password123
-  #     - MONGODB_DATABASE=my_database
-  #   ports:
-  #     - "27017:27017"
-  myapp:
+  mongodb-rest:
     build: ./
     environment:
       - MONGO_URI=mongodb://my_user:password123@mongodb:27017/my_database
@@ -20,4 +12,4 @@ services:
       - ./assets/:/assets/
     # depends_on:
     #   - "mongodb"
-    image: registry.sourcesense.com/nile/api-rest:latest
+    image: sourcesense/nile-mongodb-rest:latest

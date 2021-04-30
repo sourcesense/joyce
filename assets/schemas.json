@@ -1,12 +1,5 @@
 {
     "schemas": {
-        "fattura": {
-            "source": "http://localhost:8080/api/schema/test-fattura"
-        },
-        "mazzinga": {
-            "version": "1",
-            "source": "http://localhost:8080/api/schema/test-mazzinga"
-        },
         "user": {
             "version": "1",
             "source": "http://localhost:8080/api/schema/user"
