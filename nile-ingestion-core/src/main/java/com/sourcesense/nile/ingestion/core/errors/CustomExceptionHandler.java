@@ -1,3 +1,19 @@
+/*
+ * Copyright 2021 Sourcesense Spa
+ *
+ * Licensed under the Apache License, Version 2.0 (the "License");
+ * you may not use this file except in compliance with the License.
+ * You may obtain a copy of the License at
+ *
+ *     http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
+ */
+
 package com.sourcesense.nile.ingestion.core.errors;
 
 import com.jayway.jsonpath.PathNotFoundException;
@@ -34,14 +50,14 @@ public class CustomExceptionHandler {
 	@ExceptionHandler(value = PathNotFoundException.class)
 	@ResponseStatus(HttpStatus.INTERNAL_SERVER_ERROR)
 	@ResponseBody
-	public ApiError jsonPathNotFound(PathNotFoundException exception, WebRequest request) {
+	public ApiError handler(PathNotFoundException exception, WebRequest request) {
 		return new ApiError(exception.getMessage(), exception.getClass().getCanonicalName());
 	}
 
 	@ExceptionHandler(value = KafkaException.class)
 	@ResponseStatus(HttpStatus.INTERNAL_SERVER_ERROR)
 	@ResponseBody
-	public ApiError kafkaException(KafkaException exception, WebRequest request) {
+	public ApiError handler(KafkaException exception, WebRequest request) {
 		return new ApiError(exception.getMessage(), exception.getClass().getCanonicalName());
 	}
 
@@ -55,7 +71,7 @@ public class CustomExceptionHandler {
 	@ExceptionHandler(value = SchemaNotFoundException.class)
 	@ResponseStatus(HttpStatus.NOT_FOUND)
 	@ResponseBody
-	public ApiError schemaNotFound(SchemaNotFoundException exception, WebRequest request) {
+	public ApiError handler(SchemaNotFoundException exception, WebRequest request) {
 		return new ApiError(exception.getMessage(), exception.getClass().getCanonicalName());
 	}
 
