@@ -3,7 +3,7 @@ package com.sourcesense.nile.sink.mongodb;
 import org.springframework.boot.SpringApplication;
 import org.springframework.boot.autoconfigure.SpringBootApplication;
 
-@SpringBootApplication(scanBasePackages = {"com.sourcesense.nile.mongodbprojector", "com.sourcesense.nile.core.configuration"})
+@SpringBootApplication(scanBasePackages = {"com.sourcesense.nile"})
 public class MongodbSinkApplication {
 
 	public static void main(String[] args) {

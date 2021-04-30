@@ -8,10 +8,16 @@ nile:
   kafka:
     mainlog-topic: mainlog
     bootstrapAddress: kafka:9092
+    producer:
+      enabled: true
     consumer:
       groupId: nile-mongodb-projector-local
       enabled: true
+  notification-service:
+    enabled: true
+    topic: notifications
+    source: MongodbSink
   data:
     mongodb:
-      uri: mongodb://user:password@localhost:27017/ingestion
-      database: ingestion
+      uri: mongodb://user:password@localhost:27017/nile
+      database: nile

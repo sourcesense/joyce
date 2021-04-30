@@ -3,10 +3,13 @@ package com.sourcesense.nile.sink.mongodb.service;
 import com.fasterxml.jackson.core.type.TypeReference;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.databind.node.ObjectNode;
+import com.mongodb.client.result.DeleteResult;
 import com.sourcesense.nile.core.enumeration.IngestionAction;
 import com.sourcesense.nile.core.enumeration.KafkaCustomHeaders;
+import com.sourcesense.nile.core.enumeration.NotificationEvent;
 import com.sourcesense.nile.core.exceptions.InvalidNileUriException;
 import com.sourcesense.nile.core.model.NileURI;
+import com.sourcesense.nile.core.service.NotificationService;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.bson.Document;
@@ -30,6 +33,7 @@ public class MainlogConsumer {
 
     private final MongoTemplate mongoTemplate;
     private final ObjectMapper mapper;
+    private final NotificationService notificationService;
 
     @KafkaListener(topics = "${nile.kafka.mainlog-topic:mainlog}")
     public void receive(
@@ -57,23 +61,33 @@ public class MainlogConsumer {
                 }));
                 doc.put("_id", key);
                 Document res = mongoTemplate.save(doc, collection);
-
+                if (!res.isEmpty()){
+                    notificationService.ok(key, NotificationEvent.SINK_MONGODB_STORED);
+                } else {
+                    notificationService.ko(key, NotificationEvent.SINK_MONGODB_FAILED, "Document is empty");
+                }
             } else if (action.equals(IngestionAction.DELETE)){
                 /**
                  * Delete document
                  */
-                if (uri.get().getType().equals(NileURI.Type.CONTENT)){
-                    mongoTemplate.remove(new Query(Criteria.where("_id").is(key)), collection);
-                } else if (uri.get().getType().equals(NileURI.Type.RAW)){
-                    mongoTemplate.remove(new Query(Criteria.where("_metadata_.raw_uri").is(key)), collection);
+                DeleteResult response;
+                if (uri.get().getType().equals(NileURI.Type.RAW)){
+                    response = mongoTemplate.remove(new Query(Criteria.where("_metadata_.raw_uri").is(key)), collection);
+                } else { // if (uri.get().getType().equals(NileURI.Type.CONTENT)
+                    response = mongoTemplate.remove(new Query(Criteria.where("_id").is(key)), collection);
+                }
+
+                if (response.getDeletedCount() > 0){
+                    notificationService.ok(key, NotificationEvent.SINK_MONGODB_DELETED);
+                } else {
+                    notificationService.ko(key, NotificationEvent.SINK_MONGODB_FAILED, "No Document was deleted");
                 }
 
             }
 
-            //TODO send notfication of compelted action with notificationEngine
         } catch (Exception e){
             log.error("Cannot save message with key: {} cause: {}", key, e.getMessage());
-            //TODO: integrate notificationEngine
+            notificationService.ko(key, NotificationEvent.SINK_MONGODB_FAILED, e.getMessage());
         }
 
     }
