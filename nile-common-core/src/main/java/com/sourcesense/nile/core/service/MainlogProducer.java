@@ -99,7 +99,9 @@ public class MainlogProducer extends KafkaMessageService<JsonNode> {
     private void setMetadataHeaders(NileSchemaMetadata metadata, MessageBuilder<JsonNode> message) {
         message.setHeader(KafkaCustomHeaders.COLLECTION, metadata.getCollection());
         message.setHeader(KafkaCustomHeaders.SCHEMA, metadata.getName());
-        message.setHeader(KafkaCustomHeaders.PARENT, metadata.getParent().toString());
+        if (metadata.getParent() != null) {
+            message.setHeader(KafkaCustomHeaders.PARENT, metadata.getParent().toString());
+        }
         message.setHeader(KafkaCustomHeaders.SUBTYPE, metadata.getSubtype().toString());
     }
 
