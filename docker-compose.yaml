@@ -1,6 +1,6 @@
 version: "3.6"
 
 services:
-  mongodbprojector:
+  mongodb-sink:
     build: .
-    image: "registry.sourcesense.com/nile/mongodb-projector:latest"
+    image: "sourcesense/nile-mongodb-sink:latest"

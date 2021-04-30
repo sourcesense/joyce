@@ -6,38 +6,36 @@
 		<groupId>com.sourcesense.nile</groupId>
 		<artifactId>nile-parent</artifactId>
 		<version>1.0.0-SNAPSHOT</version>
-		<relativePath/> <!-- lookup parent from repository -->
 	</parent>
-	<groupId>com.sourcesense.nile</groupId>
-	<artifactId>mongodb-projector</artifactId>
-	<version>0.0.1-SNAPSHOT</version>
-	<name>mongodb-projector</name>
-	<description>Nile Mongodb Projector</description>
-	<properties>
-		<java.version>11</java.version>
-		<spring-native.version>0.9.1</spring-native.version>
-	</properties>
-	<dependencies>
 
+	<name>mongodb-sink</name>
+	<description>Nile Mongodb Sink</description>
+	<artifactId>nile-mongodb-sink</artifactId>
+	<version>0.0.1-SNAPSHOT</version>
+
+	<organization>
+		<name>Sourcesense</name>
+		<url>https://sourcesense.com</url>
+	</organization>
+
+	<distributionManagement>
+		<repository>
+			<id>github</id>
+			<name>GitHub OWNER Apache Maven Packages</name>
+			<url>https://maven.pkg.github.com/sourcesense/nile-mongodb-sink</url>
+		</repository>
+	</distributionManagement>
+
+	<dependencies>
 		<dependency>
 			<groupId>org.springframework.boot</groupId>
 			<artifactId>spring-boot-starter-actuator</artifactId>
-		</dependency>
-		<dependency>
-			<groupId>org.springframework.kafka</groupId>
-			<artifactId>spring-kafka</artifactId>
 		</dependency>
 		<dependency>
 			<groupId>com.sourcesense.nile</groupId>
 			<artifactId>nile-common-core</artifactId>
 			<version>${nile.common-core.version}</version>
 		</dependency>
-		<dependency>
-			<groupId>org.projectlombok</groupId>
-			<artifactId>lombok</artifactId>
-			<optional>true</optional>
-		</dependency>
-
 		<dependency>
 			<groupId>org.springframework.boot</groupId>
 			<artifactId>spring-boot-starter-test</artifactId>

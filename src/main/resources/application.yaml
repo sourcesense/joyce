@@ -11,10 +11,6 @@ nile:
     consumer:
       groupId: nile-mongodb-projector-local
       enabled: true
-  projection:
-    headers:
-      uid: X-Nile-uid
-      collection: X-Nile-collection
   data:
     mongodb:
       uri: mongodb://user:password@localhost:27017/ingestion

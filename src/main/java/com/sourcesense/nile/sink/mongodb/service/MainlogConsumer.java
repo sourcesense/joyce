@@ -1,16 +1,15 @@
-package com.sourcesense.nile.mongodbprojector.service;
+package com.sourcesense.nile.sink.mongodb.service;
 
 import com.fasterxml.jackson.core.type.TypeReference;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.databind.node.ObjectNode;
 import com.sourcesense.nile.core.enumeration.IngestionAction;
-import com.sourcesense.nile.core.errors.InvalidNileUriException;
+import com.sourcesense.nile.core.enumeration.KafkaCustomHeaders;
+import com.sourcesense.nile.core.exceptions.InvalidNileUriException;
 import com.sourcesense.nile.core.model.NileURI;
-import com.sourcesense.nile.core.utililty.constant.KafkaCustomHeaders;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.bson.Document;
-import org.springframework.beans.factory.annotation.Value;
 import org.springframework.data.mongodb.core.MongoTemplate;
 import org.springframework.data.mongodb.core.query.Criteria;
 import org.springframework.data.mongodb.core.query.Query;
@@ -28,11 +27,6 @@ import java.util.Optional;
 @Service
 @RequiredArgsConstructor
 public class MainlogConsumer {
-    @Value("${nile.projection.headers.uid}")
-    String UID_HEADER;
-
-    @Value("${nile.projection.headers.collection}")
-    String COLLECTION_HEADER;
 
     private final MongoTemplate mongoTemplate;
     private final ObjectMapper mapper;
@@ -44,10 +38,10 @@ public class MainlogConsumer {
             @Headers Map<String, String> headers) {
         try {
 
-            if(headers.get(COLLECTION_HEADER) == null){
-                throw new Exception(String.format("Missing %s header", COLLECTION_HEADER));
+            if(headers.get(KafkaCustomHeaders.COLLECTION) == null){
+                throw new Exception(String.format("Missing %s header", KafkaCustomHeaders.COLLECTION));
             }
-
+            String collection = headers.get(KafkaCustomHeaders.COLLECTION);
             IngestionAction action = IngestionAction.valueOf(headers.getOrDefault(KafkaCustomHeaders.MESSAGE_ACTION, IngestionAction.INSERT.name()));
 
             Optional<NileURI> uri = NileURI.createURI(key);
@@ -62,16 +56,16 @@ public class MainlogConsumer {
                 Document doc = new Document(mapper.convertValue(message, new TypeReference<>() {
                 }));
                 doc.put("_id", key);
-                Document res = mongoTemplate.save(doc, headers.get(COLLECTION_HEADER));
+                Document res = mongoTemplate.save(doc, collection);
 
             } else if (action.equals(IngestionAction.DELETE)){
                 /**
                  * Delete document
                  */
                 if (uri.get().getType().equals(NileURI.Type.CONTENT)){
-                    mongoTemplate.remove(new Query(Criteria.where("_id").is(key)), headers.get(COLLECTION_HEADER));
+                    mongoTemplate.remove(new Query(Criteria.where("_id").is(key)), collection);
                 } else if (uri.get().getType().equals(NileURI.Type.RAW)){
-                    mongoTemplate.remove(new Query(Criteria.where("_metadata_.raw_uri").is(key)), headers.get(COLLECTION_HEADER));
+                    mongoTemplate.remove(new Query(Criteria.where("_metadata_.raw_uri").is(key)), collection);
                 }
 
             }
