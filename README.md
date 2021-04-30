@@ -1,5 +1,7 @@
 # Nile API Rest
 
+[![Publish Snapshot](https://github.com/sourcesense/nile-mongodb-rest/actions/workflows/master.yaml/badge.svg)](https://github.com/sourcesense/nile-mongodb-rest/actions/workflows/master.yaml)
+
 Swagger endpoint
 
 ```
