@@ -18,13 +18,13 @@
 		<url>https://sourcesense.com</url>
 	</organization>
 
-	<distributionManagement>
+	<repositories>
 		<repository>
 			<id>github</id>
-			<name>GitHub OWNER Apache Maven Packages</name>
-			<url>https://maven.pkg.github.com/sourcesense/nile-mongodb-sink</url>
+			<name>GitHub Packages</name>
+			<url>https://maven.pkg.github.com/sourcesense/nile-parent</url>
 		</repository>
-	</distributionManagement>
+	</repositories>
 
 	<dependencies>
 		<dependency>
