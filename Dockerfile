@@ -11,4 +11,7 @@ COPY --from=builder /app/dependencies/ ./
 COPY --from=builder /app/spring-boot-loader/ ./
 COPY --from=builder /app/snapshot-dependencies/ ./
 COPY --from=builder /app/application/ ./
+
+EXPOSE 6651
+
 ENTRYPOINT ["java", "org.springframework.boot.loader.JarLauncher"]

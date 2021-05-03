@@ -24,7 +24,7 @@ import com.sourcesense.nile.core.model.NileURI;
 import com.sourcesense.nile.core.service.SchemaService;
 import com.sourcesense.nile.core.exceptions.SchemaNotFoundException;
 import com.sourcesense.nile.core.enumeration.KafkaCustomHeaders;
-import com.sourcesense.nile.importcore.errors.ImportException;
+import com.sourcesense.nile.importcore.exception.ImportException;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.kafka.annotation.KafkaListener;

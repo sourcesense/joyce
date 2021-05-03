@@ -14,7 +14,7 @@
  * limitations under the License.
  */
 
-package com.sourcesense.nile.importcore.errors;
+package com.sourcesense.nile.importcore.exception;
 
 public class MissingMetadataException extends RuntimeException {
 	public MissingMetadataException(String s) {
