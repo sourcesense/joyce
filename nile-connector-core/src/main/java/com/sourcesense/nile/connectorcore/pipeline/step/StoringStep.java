@@ -52,20 +52,5 @@ public class StoringStep<R extends MappingInfo>
                 .collect(Collectors.toList());
 
         return input.buildNextStepPayload(messageFutures);
-//                .map(Observable::fromFuture)
-
-//        List<SendResult<String, JsonNode>> sendResults = Collections.synchronizedList(new ArrayList<>());
-//
-//        List<Observable<SendResult<String, JsonNode>>> messageObservables = input.getLoad().stream()
-//                .map(rawDataMessageService::sendMessageToOutputTopic)
-//                .map(ListenableFuture::completable)
-//                .map(Observable::fromFuture)
-//                .collect(Collectors.toList());
-//
-//        Observable.concat(messageObservables)
-//                .doOnNext(sendResults::add)
-//                .subscribe();
-
-//        return input.buildNextStepPayload(sendResults)z;
     }
 }

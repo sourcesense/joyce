@@ -57,7 +57,7 @@ public class MainlogProducer extends KafkaMessageService<JsonNode> {
 
         setMetadataHeaders(metadata, message);
 
-        this.sendMessage(uri.toString(), message.build(), NotificationEvent.MAINLOG_PUBLISH_SUCCESS, NotificationEvent.MAINLOG_PUBLISH_FAILED);
+        this.sendMessage(uri.toString(), message.build());
         return uri;
     }
 
@@ -92,7 +92,7 @@ public class MainlogProducer extends KafkaMessageService<JsonNode> {
 
         setMetadataHeaders(metadata, message);
 
-        this.sendMessage(uri.toString(), message.build(), NotificationEvent.MAINLOG_PUBLISH_SUCCESS, NotificationEvent.MAINLOG_PUBLISH_FAILED);
+        this.sendMessage(uri.toString(), message.build());
         return uri;
     }
 
@@ -117,7 +117,7 @@ public class MainlogProducer extends KafkaMessageService<JsonNode> {
                 .setHeader(KafkaHeaders.MESSAGE_KEY, schema.getUid())
                 .setHeader(KafkaCustomHeaders.MESSAGE_ACTION, ImportAction.INSERT.toString());
 
-        this.sendMessage(schema.getUid(), message.build(), NotificationEvent.MAINLOG_PUBLISH_SUCCESS, NotificationEvent.MAINLOG_PUBLISH_FAILED);
+        this.sendMessage(schema.getUid(), message.build());
     }
 
     //TODO: remove schema????
@@ -130,5 +130,15 @@ public class MainlogProducer extends KafkaMessageService<JsonNode> {
     @Override
     public void handleMessageFailure(Message<JsonNode> message, Throwable throwable) {
         log.error("Unable to send message=[{}] due to : [{}]", message, throwable.getMessage());
+    }
+
+    @Override
+    public NotificationEvent getSuccessEvent() {
+        return NotificationEvent.MAINLOG_PUBLISH_SUCCESS;
+    }
+
+    @Override
+    public NotificationEvent getFailureEvent() {
+        return NotificationEvent.MAINLOG_PUBLISH_FAILED;
     }
 }
