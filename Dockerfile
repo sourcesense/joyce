@@ -11,7 +11,7 @@ RUN        npm ci && npm run build
 # Non root user
 USER       node
 ENV        NODE_ENV="production"
-EXPOSE     8080
+EXPOSE     6650
 
 # Running port is configured through API_PORT env variable
 ENTRYPOINT ["node"]

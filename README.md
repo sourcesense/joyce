@@ -34,7 +34,7 @@ Endpoint to check healty of serverice. Default: _"/health"_
 HEALTH_PATH
 ```
 
-Port where service is. Default: _3000_
+Port where service is. Default: _6650_
 
 ```
 PORT

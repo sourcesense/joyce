@@ -7,9 +7,7 @@ services:
       - MONGO_URI=mongodb://my_user:password123@mongodb:27017/my_database
       - SCHEMAS_SOURCE=/assets/schemas.json
     ports:
-      - "3000:3000"
+      - "6650:6650"
     volumes:
       - ./assets/:/assets/
-    # depends_on:
-    #   - "mongodb"
     image: sourcesense/nile-mongodb-rest:latest
