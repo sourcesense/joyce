@@ -1,5 +1,0 @@
-openapi: 3.0.3
-info:
-  title: Nile Ingestion API
-  description: API per i servizi di lettura per le esigenze vecchie su  lima nuovo
-  version: 1.0.0

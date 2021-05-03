@@ -1,6 +1,6 @@
 version: "3.6"
 
 services:
-  ingestion:
+  import-gateway:
     build: .
-    image: "registry.sourcesense.com/nile/ingestion:latest"
+    image: "sourcesense/import-gateway:latest"

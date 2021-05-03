@@ -1,0 +1,27 @@
+server:
+  port: 6651
+nile:
+  schema-service:
+    enabled: true
+    database: mongodb
+    subtype: import
+  notification-service:
+    enabled: true
+    topic: notifications
+    source: ImportGateway
+  mainlog-producer:
+    enabled: true
+  kafka:
+    bootstrapAddress: kafka:9092
+    consumer:
+      groupId: nile-import-consumer-local
+      enabled: true
+    producer:
+      enabled: true
+    mainlog-topic: mainlog
+    import-topic: import
+  data:
+    mongodb:
+      uri: mongodb://user:password@localhost:27017/nile
+      database: nile
+
