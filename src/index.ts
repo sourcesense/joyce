@@ -3,7 +3,7 @@ import MongoClient from "mongodb";
 import { FastifyInstance } from "fastify";
 import KafkaProducerPromise from "./plugins/KafkaClient";
 const logger = require("pino")();
-const PORT = process.env.PORT || "3000";
+const PORT = process.env.PORT || "6650";
 const mongoURI =
   process.env.MONGO_URI || "mongodb://user:password@localhost:27017/ingestion";
 
