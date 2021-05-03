@@ -30,10 +30,10 @@ import org.springframework.data.mongodb.core.MongoTemplate;
 @ConditionalOnProperty(value = "nile.data.mongodb.uri")
 @Configuration
 public class MongoConfig  {
-	@Value("${nile.data.mongodb.uri:mongodb://localhost:27017/ingestion}")
+	@Value("${nile.data.mongodb.uri:mongodb://localhost:27017/nile}")
 	String mongoUri;
 
-	@Value("${nile.data.mongodb.database:ingestion}")
+	@Value("${nile.data.mongodb.database:nile}")
 	String database;
 
 	@Bean

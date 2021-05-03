@@ -16,7 +16,7 @@
 
 package com.sourcesense.nile.connectorcore.model;
 
-import com.sourcesense.nile.core.enumeration.IngestionAction;
+import com.sourcesense.nile.core.enumeration.ImportAction;
 import lombok.AccessLevel;
 import lombok.AllArgsConstructor;
 import lombok.Data;
@@ -30,6 +30,6 @@ import lombok.experimental.SuperBuilder;
 @AllArgsConstructor(access = AccessLevel.PROTECTED)
 public abstract class ProcessableData {
 
-    protected IngestionAction action;
+    protected ImportAction action;
     protected String schemaKey;
 }

@@ -85,7 +85,7 @@ public class NileURI {
      */
     public enum Subtype {
         /**
-         * Content or schema produced by the import/ingestion phase
+         * Content or schema produced by the import phase
          */
         @JsonProperty("import")
         IMPORT("import"),

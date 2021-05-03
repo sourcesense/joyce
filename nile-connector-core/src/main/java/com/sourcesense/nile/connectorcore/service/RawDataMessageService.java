@@ -37,8 +37,8 @@ import org.springframework.util.concurrent.ListenableFuture;
 @Service
 public class RawDataMessageService extends KafkaMessageService<JsonNode> {
 
-    @Value("${nile.kafka.ingestion-topic}")
-    private String ingestionTopic;
+    @Value("${nile.kafka.import-topic}")
+    private String importTopic;
 
     public RawDataMessageService(
             ObjectMapper jsonMapper,
@@ -61,10 +61,10 @@ public class RawDataMessageService extends KafkaMessageService<JsonNode> {
     private Message<JsonNode> getRawDataMessage(DataEntry entry) {
         return MessageBuilder
                 .withPayload(entry.getData())
-                .setHeader(KafkaHeaders.TOPIC, ingestionTopic)
+                .setHeader(KafkaHeaders.TOPIC, importTopic)
                 .setHeader(KafkaHeaders.MESSAGE_KEY, entry.getNileUri())
                 .setHeader(KafkaCustomHeaders.MESSAGE_ACTION, entry.getAction().toString())
-                .setHeader(KafkaCustomHeaders.INGESTION_SCHEMA, entry.getSchemaKey())
+                .setHeader(KafkaCustomHeaders.IMPORT_SCHEMA, entry.getSchemaKey())
                 .build();
     }
 
