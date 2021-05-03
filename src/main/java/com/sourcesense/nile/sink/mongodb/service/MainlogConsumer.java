@@ -4,7 +4,7 @@ import com.fasterxml.jackson.core.type.TypeReference;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.databind.node.ObjectNode;
 import com.mongodb.client.result.DeleteResult;
-import com.sourcesense.nile.core.enumeration.IngestionAction;
+import com.sourcesense.nile.core.enumeration.ImportAction;
 import com.sourcesense.nile.core.enumeration.KafkaCustomHeaders;
 import com.sourcesense.nile.core.enumeration.NotificationEvent;
 import com.sourcesense.nile.core.exceptions.InvalidNileUriException;
@@ -46,14 +46,14 @@ public class MainlogConsumer {
                 throw new Exception(String.format("Missing %s header", KafkaCustomHeaders.COLLECTION));
             }
             String collection = headers.get(KafkaCustomHeaders.COLLECTION);
-            IngestionAction action = IngestionAction.valueOf(headers.getOrDefault(KafkaCustomHeaders.MESSAGE_ACTION, IngestionAction.INSERT.name()));
+            ImportAction action = ImportAction.valueOf(headers.getOrDefault(KafkaCustomHeaders.MESSAGE_ACTION, ImportAction.INSERT.name()));
 
             Optional<NileURI> uri = NileURI.createURI(key);
             if(uri.isEmpty()){
                 throw new InvalidNileUriException(String.format("uri [%s] is not a Valid Nile Uri", key));
             }
 
-            if (action.equals(IngestionAction.INSERT)){
+            if (action.equals(ImportAction.INSERT)){
                 /**
                  * Insert document
                  */
@@ -66,7 +66,7 @@ public class MainlogConsumer {
                 } else {
                     notificationService.ko(key, NotificationEvent.SINK_MONGODB_FAILED, "Document is empty");
                 }
-            } else if (action.equals(IngestionAction.DELETE)){
+            } else if (action.equals(ImportAction.DELETE)){
                 /**
                  * Delete document
                  */
