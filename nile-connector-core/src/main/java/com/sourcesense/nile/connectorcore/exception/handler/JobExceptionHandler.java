@@ -1,6 +1,9 @@
-package com.sourcesense.nile.core.exceptions.handler;
+package com.sourcesense.nile.connectorcore.exception.handler;
 
-import com.sourcesense.nile.core.exceptions.ProcessingException;
+import com.sourcesense.nile.core.exception.NotificationException;
+import com.sourcesense.nile.core.exception.ProcessingException;
+import com.sourcesense.nile.core.exception.handler.CustomException;
+import com.sourcesense.nile.core.exception.handler.CustomExceptionHandler;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Component;
 
@@ -15,7 +18,7 @@ public class JobExceptionHandler {
         switch (customException) {
             case PROCESSING_EXCEPTION:
             case NOTIFICATION_EXCEPTION:
-                exceptionHandler.handleNotificationException((ProcessingException) exception);
+                exceptionHandler.handleNotificationException((NotificationException) exception);
                 break;
             case MAPPING_VALIDATION_EXCEPTION:
             case DATA_INFO_NOT_FOUND_EXCEPTION:

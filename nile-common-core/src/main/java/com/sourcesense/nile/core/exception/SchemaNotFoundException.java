@@ -14,11 +14,10 @@
  * limitations under the License.
  */
 
-package com.sourcesense.nile.core.exceptions;
+package com.sourcesense.nile.core.exception;
 
-public class InvalidNileUriException extends RuntimeException {
-    public InvalidNileUriException(String s) {
-        super(s);
-    }
+public class SchemaNotFoundException extends RuntimeException {
+	public SchemaNotFoundException(String message){
+		super(message);
+	}
 }
-

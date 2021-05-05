@@ -17,7 +17,7 @@
 package com.sourcesense.nile.core.pipeline;
 
 
-import com.sourcesense.nile.core.exceptions.PipePanic;
+import com.sourcesense.nile.core.exception.PipePanic;
 
 @FunctionalInterface
 public interface Step<I, O> {

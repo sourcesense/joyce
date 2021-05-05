@@ -20,7 +20,7 @@ import com.fasterxml.jackson.databind.JsonNode;
 import com.sourcesense.nile.connectorcore.model.DataEntry;
 import com.sourcesense.nile.connectorcore.model.MappingInfo;
 import com.sourcesense.nile.connectorcore.service.RawDataMessageService;
-import com.sourcesense.nile.core.exceptions.PipePanic;
+import com.sourcesense.nile.core.exception.PipePanic;
 import com.sourcesense.nile.core.pipeline.Step;
 import com.sourcesense.nile.core.pipeline.step.AbstractStep;
 import com.sourcesense.nile.core.pipeline.step.StepPayload;

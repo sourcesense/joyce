@@ -1,9 +1,10 @@
-package com.sourcesense.nile.core.exceptions.handler;
+package com.sourcesense.nile.connectorcore.exception.handler;
 
 import com.sourcesense.nile.core.dto.ApiError;
-import com.sourcesense.nile.core.exceptions.DataInfoNotFoundException;
-import com.sourcesense.nile.core.exceptions.MappingValidationException;
-import com.sourcesense.nile.core.exceptions.ProcessingException;
+import com.sourcesense.nile.core.exception.DataInfoNotFoundException;
+import com.sourcesense.nile.core.exception.MappingValidationException;
+import com.sourcesense.nile.core.exception.ProcessingException;
+import com.sourcesense.nile.core.exception.handler.CustomExceptionHandler;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
