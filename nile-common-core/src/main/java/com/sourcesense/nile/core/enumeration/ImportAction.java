@@ -16,7 +16,7 @@
 
 package com.sourcesense.nile.core.enumeration;
 
-public enum IngestionAction {
+public enum ImportAction {
     INSERT,
     DELETE;
 }

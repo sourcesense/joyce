@@ -20,7 +20,7 @@ import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.databind.node.ObjectNode;
 import com.sourcesense.nile.core.dto.Schema;
-import com.sourcesense.nile.core.enumeration.IngestionAction;
+import com.sourcesense.nile.core.enumeration.ImportAction;
 import com.sourcesense.nile.core.enumeration.KafkaCustomHeaders;
 import com.sourcesense.nile.core.enumeration.NotificationEvent;
 import com.sourcesense.nile.core.model.NileSchemaMetadata;
@@ -52,7 +52,7 @@ public class MainlogProducer extends KafkaMessageService<JsonNode> {
         MessageBuilder<JsonNode> message = MessageBuilder
                 .withPayload((JsonNode)mapper.createObjectNode())
                 .setHeader(KafkaHeaders.TOPIC, mainlogTopic)
-                .setHeader(KafkaCustomHeaders.MESSAGE_ACTION, IngestionAction.DELETE.toString())
+                .setHeader(KafkaCustomHeaders.MESSAGE_ACTION, ImportAction.DELETE.toString())
                 .setHeader(KafkaHeaders.MESSAGE_KEY, uri.toString());
 
         setMetadataHeaders(metadata, message);
@@ -87,7 +87,7 @@ public class MainlogProducer extends KafkaMessageService<JsonNode> {
         MessageBuilder<JsonNode> message = MessageBuilder
                 .withPayload(content)
                 .setHeader(KafkaHeaders.TOPIC, mainlogTopic)
-                .setHeader(KafkaCustomHeaders.MESSAGE_ACTION, IngestionAction.INSERT.toString())
+                .setHeader(KafkaCustomHeaders.MESSAGE_ACTION, ImportAction.INSERT.toString())
                 .setHeader(KafkaHeaders.MESSAGE_KEY, uri.toString());
 
         setMetadataHeaders(metadata, message);
@@ -99,7 +99,9 @@ public class MainlogProducer extends KafkaMessageService<JsonNode> {
     private void setMetadataHeaders(NileSchemaMetadata metadata, MessageBuilder<JsonNode> message) {
         message.setHeader(KafkaCustomHeaders.COLLECTION, metadata.getCollection());
         message.setHeader(KafkaCustomHeaders.SCHEMA, metadata.getName());
-        message.setHeader(KafkaCustomHeaders.PARENT, metadata.getParent().toString());
+        if (metadata.getParent() != null) {
+            message.setHeader(KafkaCustomHeaders.PARENT, metadata.getParent().toString());
+        }
         message.setHeader(KafkaCustomHeaders.SUBTYPE, metadata.getSubtype().toString());
     }
 
@@ -113,7 +115,7 @@ public class MainlogProducer extends KafkaMessageService<JsonNode> {
                 .withPayload(schema.getSchema())
                 .setHeader(KafkaHeaders.TOPIC, mainlogTopic)
                 .setHeader(KafkaHeaders.MESSAGE_KEY, schema.getUid())
-                .setHeader(KafkaCustomHeaders.MESSAGE_ACTION, IngestionAction.INSERT.toString());
+                .setHeader(KafkaCustomHeaders.MESSAGE_ACTION, ImportAction.INSERT.toString());
 
         this.sendMessage(schema.getUid(), message.build());
     }

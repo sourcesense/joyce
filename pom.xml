@@ -12,6 +12,7 @@
 	<artifactId>nile-parent</artifactId>
 	<version>1.0.0-SNAPSHOT</version>
   	<packaging>pom</packaging>
+
 	<name>nile-parent</name>
 	<description>Nile Parent Project</description>
 

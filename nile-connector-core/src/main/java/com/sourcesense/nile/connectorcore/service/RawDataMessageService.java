@@ -59,7 +59,7 @@ public class RawDataMessageService extends KafkaMessageService<JsonNode> {
                 .setHeader(KafkaHeaders.TOPIC, importTopic)
                 .setHeader(KafkaHeaders.MESSAGE_KEY, entry.getNileUri())
                 .setHeader(KafkaCustomHeaders.MESSAGE_ACTION, entry.getAction().toString())
-                .setHeader(KafkaCustomHeaders.INGESTION_SCHEMA, entry.getSchemaKey())
+                .setHeader(KafkaCustomHeaders.IMPORT_SCHEMA, entry.getSchemaKey())
                 .build();
     }
 

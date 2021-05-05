@@ -30,5 +30,10 @@ public enum NotificationEvent {
 
     EXTRACT_CSV_ROW_FAILED,
     READ_CSV_HEADER_FAILED,
-    READ_CSV_ROW_FAILED
+    READ_CSV_ROW_FAILED,
+
+    // Sink Events
+    SINK_MONGODB_STORED,
+    SINK_MONGODB_FAILED,
+    SINK_MONGODB_DELETED;
 }
