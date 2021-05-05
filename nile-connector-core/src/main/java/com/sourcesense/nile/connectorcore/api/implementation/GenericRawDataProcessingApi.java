@@ -4,14 +4,12 @@ import com.sourcesense.nile.connectorcore.api.RawDataProcessingApi;
 import com.sourcesense.nile.connectorcore.model.MappingInfo;
 import com.sourcesense.nile.connectorcore.model.ProcessableData;
 import com.sourcesense.nile.connectorcore.model.response.ProcessingApiResponse;
-import com.sourcesense.nile.connectorcore.model.response.ProcessingApiResponseRow;
 import com.sourcesense.nile.connectorcore.service.DataProcessingService;
 import lombok.RequiredArgsConstructor;
+import org.apache.kafka.clients.producer.RecordMetadata;
 import org.springframework.kafka.support.SendResult;
 
-import java.util.List;
 import java.util.concurrent.CompletableFuture;
-import java.util.stream.Collectors;
 
 
 @RequiredArgsConstructor
@@ -21,15 +19,12 @@ public abstract class GenericRawDataProcessingApi<R extends MappingInfo, P exten
 
     @Override
     public ProcessingApiResponse process() {
-        List<ProcessingApiResponseRow> rows = dataProcessingService.execute().stream()
+        Long processedRowCount = dataProcessingService.execute().stream()
                 .map(CompletableFuture::join)
-                .map(SendResult::getProducerRecord)
-                .map(record -> ProcessingApiResponseRow.builder()
-                        .nileUri(record.key())
-                        .content(record.value())
-                        .build())
-                .collect(Collectors.toList());
+                .map(SendResult::getRecordMetadata)
+                .filter(RecordMetadata::hasOffset)
+                .count();
 
-        return new ProcessingApiResponse(rows);
+        return new ProcessingApiResponse(processedRowCount);
     }
 }
