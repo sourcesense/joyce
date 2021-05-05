@@ -17,15 +17,15 @@
 package com.sourcesense.nile.connectorcore.configuration;
 
 import lombok.Getter;
-import lombok.Setter;
-import org.springframework.boot.context.properties.ConfigurationProperties;
-import org.springframework.context.annotation.Configuration;
+import org.springframework.beans.factory.annotation.Value;
+import org.springframework.core.annotation.Order;
+import org.springframework.stereotype.Component;
 
+@Component
 @Getter
-@Setter
-@Configuration
-@ConfigurationProperties(prefix = "nile.data.collection")
+@Order(1)
 public class DatabaseCollections {
 
+    @Value("${nile.data.collection.data-info}")
     private String dataInfo;
 }
