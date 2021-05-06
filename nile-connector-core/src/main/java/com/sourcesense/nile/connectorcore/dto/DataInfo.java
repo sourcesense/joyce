@@ -23,14 +23,16 @@ import lombok.experimental.SuperBuilder;
 import org.springframework.data.annotation.Id;
 import org.springframework.data.mongodb.core.mapping.Document;
 
+import java.io.Serializable;
 import java.util.Date;
 
 @Data
 @SuperBuilder
 @NoArgsConstructor(access = AccessLevel.PROTECTED)
 @Document(collection = "#{T(com.sourcesense.nile.connectorcore.configuration.DatabaseCollections).getDataInfo()}")
-public abstract class DataInfo {
+public abstract class DataInfo implements Serializable {
 
+    private static final long serialVersionUID = 8071709882740413262L;
     @Id
     protected String _id;
     protected Integer version = 0;
