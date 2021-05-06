@@ -20,7 +20,6 @@ import lombok.AccessLevel;
 import lombok.Data;
 import lombok.NoArgsConstructor;
 import lombok.experimental.SuperBuilder;
-import org.springframework.context.annotation.DependsOn;
 import org.springframework.data.annotation.Id;
 import org.springframework.data.mongodb.core.mapping.Document;
 
@@ -29,10 +28,7 @@ import java.util.Date;
 @Data
 @SuperBuilder
 @NoArgsConstructor(access = AccessLevel.PROTECTED)
-@DependsOn({"databaseCollections"})
-//TODO: verificare perchè non va
-//@Document(collection = "#{@databaseCollections.getDataInfo()}")
-@Document(collection = "info")
+@Document(collection = "#{T(com.sourcesense.nile.connectorcore.configuration.DatabaseCollections).getDataInfo()}")
 public abstract class DataInfo {
 
     @Id
