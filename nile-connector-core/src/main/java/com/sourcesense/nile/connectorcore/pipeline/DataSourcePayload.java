@@ -26,9 +26,9 @@ import lombok.NoArgsConstructor;
 @Builder
 @NoArgsConstructor
 @EqualsAndHashCode(callSuper = true)
-public class ConnectorPayload<T> extends GenericPayload<T> {
+public class DataSourcePayload<T> extends GenericPayload<T> {
 
-    public ConnectorPayload(T data) {
+    public DataSourcePayload(T data) {
         super(data);
     }
 }
