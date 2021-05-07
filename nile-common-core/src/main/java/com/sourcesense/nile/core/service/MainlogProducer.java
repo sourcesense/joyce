@@ -75,7 +75,6 @@ public class MainlogProducer extends KafkaMessageService<JsonNode> {
 
         // Set schema version
         ObjectNode content_metadata = mapper.createObjectNode();
-        content_metadata.put("schema_version", schema.getVersion());
         content_metadata.put("schema_uid", schema.getUid());
         content_metadata.put("schema_name", schema.getName());
         content_metadata.put("schema_development", schema.getDevelopment());

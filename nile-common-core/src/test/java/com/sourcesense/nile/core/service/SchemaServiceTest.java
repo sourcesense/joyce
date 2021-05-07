@@ -24,7 +24,6 @@ import com.sourcesense.nile.core.model.NileURI;
 import com.sourcesense.nile.core.model.SchemaEntity;
 import com.sourcesense.nile.schemaengine.service.SchemaEngine;
 import org.junit.jupiter.api.Assertions;
-import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.Mock;
 import org.mockito.Mockito;
@@ -69,7 +68,7 @@ class SchemaServiceTest {
 		SchemaSave schema = mapper.readValue(schemaRaw, SchemaSave.class);
 		SchemaService service = new SchemaService(schemaEntityDao, schemaMapper, schemaEngine);
 
-		Mockito.when(schemaEngine.hasBreakingChanges(any(), any())).thenReturn(true);
+		Mockito.when(schemaEngine.checkForBreakingChanges(any(), any())).thenReturn(true);
 
 //		Mockito.when(schemaMapper.toEntity(schema)).thenReturn(entityNew);
 		SchemaEntity entity = mock(SchemaEntity.class);

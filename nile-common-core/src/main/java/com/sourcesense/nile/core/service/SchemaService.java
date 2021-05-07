@@ -73,30 +73,17 @@ public class SchemaService {
 		Optional<SchemaEntity> previous = schemaEntityDao.get(uid.toString());
 
 		if (previous.isPresent()){
-			if(entity.getDevelopment()){
-				/**
-				 * If schema is in development mode we skip schema checks,
-				 * but we block if previous schema is not in dev mode
- 				 */
-				if (!previous.get().getDevelopment()){
+			/**
+			 * If schema is in development mode we skip schema checks,
+			 * but we block if previous schema is not in dev mode
+			 */
+			if(entity.getDevelopment() && !previous.get().getDevelopment()){
 					throw new InvalidSchemaException("Previous schema is not in development mode");
-				} else {
-					entity.setVersion(previous.get().getVersion());
-				}
-			} else {
-				Boolean breakingChanges = schemaEngine.hasBreakingChanges(previous.get().getSchema(), entity.getSchema());
-				if (breakingChanges){
-					previous.get().setUid(String.format("%s/%d", uid, previous.get().getVersion()));
-					schemaEntityDao.save(previous.get());
-					entity.setVersion(previous.get().getVersion()+1);
-				} else {
-					entity.setVersion(previous.get().getVersion());
-				}
 			}
 
-		} else {
-			// First version of the schema
-			entity.setVersion(1);
+			if (!entity.getDevelopment()) {
+				schemaEngine.checkForBreakingChanges(previous.get().getSchema(), entity.getSchema());
+			}
 		}
 
 		schemaEntityDao.save(entity);
@@ -113,15 +100,6 @@ public class SchemaService {
 			return schemaEntityDao.get(getSchemaUid(name).toString()).map(schemaMapper::toDto);
     }
 
-	public Optional<Schema> findByNameAndVersion(String name, Integer version) {
-		//TODO: make a specific method on dao to optimize ???
-		List<SchemaEntity> versions = schemaEntityDao.getByName(name);
-		return versions.stream()
-				.filter(schemaEntity -> schemaEntity.getVersion() == version)
-				.map(schemaMapper::toDto)
-				.findFirst();
-	}
-
 	public void delete(String name) {
 		Optional<SchemaEntity> entity = schemaEntityDao.get(getSchemaUid(name).toString());
 		if(entity.isEmpty()){
@@ -129,14 +107,6 @@ public class SchemaService {
 		}
 		schemaEntityDao.delete(entity.get());
 	}
-
-	public List<SchemaShort> getAllVersions(String name) {
-		List<SchemaEntity> versions = schemaEntityDao.getByName(name);
-		return versions.stream()
-				.map(schemaMapper::toDtoShort)
-				.collect(Collectors.toList());
-	}
-
 
 	public Optional<Schema> get(String schemaUid) {
 		return schemaEntityDao.get(schemaUid).map(schemaMapper::toDto);

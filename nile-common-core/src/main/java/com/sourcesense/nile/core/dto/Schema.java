@@ -22,7 +22,6 @@ import lombok.Data;
 @Data
 public class Schema {
 	private String uid;
-	private Integer version;
 	private String name;
 	private String description;
 	private Boolean development;
