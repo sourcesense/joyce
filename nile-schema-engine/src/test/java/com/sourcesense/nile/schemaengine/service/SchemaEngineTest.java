@@ -144,7 +144,7 @@ public class SchemaEngineTest {
 		String schema = Files.readString(loadResource("schema/11.json"));
 		String newSchema = Files.readString(loadResource("schema/12.json"));;
 		SchemaEngine schemaEngine = new SchemaEngine(props);
-		Boolean ret = schemaEngine.hasBreakingChanges(schema, newSchema);
+		Boolean ret = schemaEngine.checkForBreakingChanges(schema, newSchema);
 		Assertions.assertFalse(ret);
     }
 
@@ -153,7 +153,7 @@ public class SchemaEngineTest {
 		String schema = Files.readString(loadResource("schema/12.json"));
 		String newSchema = Files.readString(loadResource("schema/13.json"));;
 		SchemaEngine schemaEngine = new SchemaEngine(props);
-		Boolean ret = schemaEngine.hasBreakingChanges(schema, newSchema);
+		Boolean ret = schemaEngine.checkForBreakingChanges(schema, newSchema);
 		Assertions.assertTrue(ret);
 	}
 
@@ -163,7 +163,7 @@ public class SchemaEngineTest {
 		String newSchema = Files.readString(loadResource("schema/14.json"));;
 		SchemaEngine schemaEngine = new SchemaEngine(props);
 		Assertions.assertThrows(InvalidSchemaException.class, () -> {
-			schemaEngine.hasBreakingChanges(schema, newSchema);
+			schemaEngine.checkForBreakingChanges(schema, newSchema);
 		});
 	}
 
@@ -172,7 +172,7 @@ public class SchemaEngineTest {
 		String schema = Files.readString(loadResource("schema/14.json"));
 		String newSchema = Files.readString(loadResource("schema/15.json"));;
 		SchemaEngine schemaEngine = new SchemaEngine(props);
-		Assertions.assertFalse(schemaEngine.hasBreakingChanges(schema, newSchema));
+		Assertions.assertFalse(schemaEngine.checkForBreakingChanges(schema, newSchema));
 	}
 
 

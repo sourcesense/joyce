@@ -286,7 +286,9 @@ public class SchemaEngine implements ApplicationContextAware {
 	 * @param newSchema
 	 * @return
 	 */
-	public Boolean hasBreakingChanges(String previousSchema, String newSchema) throws JsonProcessingException {
+	public Boolean checkForBreakingChanges(String previousSchema, String newSchema) throws JsonProcessingException {
+
+		//TODO: enrich tests for required fields
 		JsonNode prevJson = mapper.readValue(previousSchema, JsonNode.class);
 		JsonNode newJson = mapper.readValue(newSchema, JsonNode.class);
 		Integer prevDeprecated = 0;

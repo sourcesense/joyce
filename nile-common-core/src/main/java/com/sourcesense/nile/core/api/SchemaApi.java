@@ -39,14 +39,6 @@ public interface SchemaApi {
 	@ResponseStatus(code = HttpStatus.OK)
 	Schema getSchema(@PathVariable String name);
 
-	@GetMapping(value = "/{name}/version", produces = "application/json; charset=utf-8")
-	@ResponseStatus(code = HttpStatus.OK)
-	List<SchemaShort> getSchemaWithVersions(@PathVariable String name);
-
-	@GetMapping(value = "/{name}/version/{version}", produces = "application/json; charset=utf-8")
-	@ResponseStatus(code = HttpStatus.OK)
-	Schema getSchemaVersion(@PathVariable String name, @PathVariable Integer version);
-
 	@PostMapping(consumes = "application/json")
 	@ResponseStatus(code = HttpStatus.CREATED)
     NileURI saveSchemaJson(@RequestBody SchemaSave schema) throws JsonProcessingException;

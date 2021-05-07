@@ -25,7 +25,6 @@ import org.springframework.data.mongodb.core.mapping.Document;
 public class SchemaEntity {
 	@Id
 	private String uid;
-	private Integer version;
 	private String name;
 	private String description;
 	private String schema;
