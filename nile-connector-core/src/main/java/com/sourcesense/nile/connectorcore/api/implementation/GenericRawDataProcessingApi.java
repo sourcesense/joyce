@@ -1,7 +1,8 @@
 package com.sourcesense.nile.connectorcore.api.implementation;
 
 import com.sourcesense.nile.connectorcore.api.RawDataProcessingApi;
-import com.sourcesense.nile.connectorcore.model.MappingInfo;
+import com.sourcesense.nile.connectorcore.dto.DataInfo;
+import com.sourcesense.nile.connectorcore.dto.ProcessablePayload;
 import com.sourcesense.nile.connectorcore.model.ProcessableData;
 import com.sourcesense.nile.connectorcore.model.response.ProcessingApiResponse;
 import com.sourcesense.nile.connectorcore.service.DataProcessingService;
@@ -13,9 +14,9 @@ import java.util.concurrent.CompletableFuture;
 
 
 @RequiredArgsConstructor
-public abstract class GenericRawDataProcessingApi<R extends MappingInfo, P extends ProcessableData> implements RawDataProcessingApi {
+public abstract class GenericRawDataProcessingApi<I extends DataInfo, D extends ProcessableData> implements RawDataProcessingApi {
 
-    private final DataProcessingService<R, P> dataProcessingService;
+    private final DataProcessingService<I, D> dataProcessingService;
 
     @Override
     public ProcessingApiResponse process() {

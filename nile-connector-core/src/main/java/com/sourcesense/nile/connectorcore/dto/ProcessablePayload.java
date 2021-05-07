@@ -1,16 +1,20 @@
 package com.sourcesense.nile.connectorcore.dto;
 
-import com.sourcesense.nile.connectorcore.model.ProcessableData;
+import lombok.AllArgsConstructor;
+import lombok.Builder;
 import lombok.Data;
-import lombok.experimental.SuperBuilder;
+import lombok.NoArgsConstructor;
 
 import java.util.List;
 
-@SuperBuilder
 @Data
-public class ProcessablePayload<T extends DataInfo, R extends ProcessableData> {
+@Builder
+@NoArgsConstructor
+@AllArgsConstructor
+public class ProcessablePayload<I extends DataInfo, L> {
 
-    private List<T> dataInfoList;
-    private List<R> processableDataList;
+    protected List<I> dataInfoList;
+    protected List<L> stepLoadList;
 
 }
+

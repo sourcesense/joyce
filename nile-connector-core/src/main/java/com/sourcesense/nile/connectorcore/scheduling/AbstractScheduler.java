@@ -29,7 +29,7 @@ public abstract class AbstractScheduler {
 
     protected static final String REPEAT_SCAN = "repeatScan";
 
-    protected JobDetail scanningJob(String job, Class<? extends ScanningJob<? extends MappingInfo, ? extends ProcessableData>> clazz) {
+    protected <T extends Job> JobDetail scanningJob(String job, Class<T> clazz) {
         return JobBuilder.newJob(clazz)
                 .withIdentity(job)
                 .build();
