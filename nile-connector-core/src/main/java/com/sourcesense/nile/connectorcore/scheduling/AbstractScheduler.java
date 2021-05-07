@@ -16,9 +16,6 @@
 
 package com.sourcesense.nile.connectorcore.scheduling;
 
-import com.sourcesense.nile.connectorcore.model.MappingInfo;
-import com.sourcesense.nile.connectorcore.model.ProcessableData;
-import com.sourcesense.nile.connectorcore.scheduling.job.ScanningJob;
 import org.quartz.*;
 import org.springframework.beans.factory.annotation.Value;
 

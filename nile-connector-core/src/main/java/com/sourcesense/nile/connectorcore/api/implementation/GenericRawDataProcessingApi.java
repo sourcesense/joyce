@@ -1,10 +1,9 @@
 package com.sourcesense.nile.connectorcore.api.implementation;
 
 import com.sourcesense.nile.connectorcore.api.RawDataProcessingApi;
-import com.sourcesense.nile.connectorcore.dto.DataInfo;
-import com.sourcesense.nile.connectorcore.dto.ProcessablePayload;
-import com.sourcesense.nile.connectorcore.model.ProcessableData;
-import com.sourcesense.nile.connectorcore.model.response.ProcessingApiResponse;
+import com.sourcesense.nile.connectorcore.model.DataInfo;
+import com.sourcesense.nile.connectorcore.dto.ProcessableData;
+import com.sourcesense.nile.connectorcore.dto.ProcessingApiResponse;
 import com.sourcesense.nile.connectorcore.service.DataProcessingService;
 import lombok.RequiredArgsConstructor;
 import org.apache.kafka.clients.producer.RecordMetadata;

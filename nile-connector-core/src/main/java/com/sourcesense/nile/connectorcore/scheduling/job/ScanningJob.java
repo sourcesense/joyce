@@ -17,10 +17,9 @@
 package com.sourcesense.nile.connectorcore.scheduling.job;
 
 import com.fasterxml.jackson.databind.JsonNode;
-import com.sourcesense.nile.connectorcore.dto.DataInfo;
-import com.sourcesense.nile.connectorcore.dto.ProcessablePayload;
+import com.sourcesense.nile.connectorcore.model.DataInfo;
 import com.sourcesense.nile.connectorcore.exception.handler.JobExceptionHandler;
-import com.sourcesense.nile.connectorcore.model.ProcessableData;
+import com.sourcesense.nile.connectorcore.dto.ProcessableData;
 import com.sourcesense.nile.connectorcore.service.DataProcessingService;
 import io.reactivex.Observable;
 import lombok.RequiredArgsConstructor;

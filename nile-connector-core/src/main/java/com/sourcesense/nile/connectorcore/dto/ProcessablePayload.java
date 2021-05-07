@@ -1,5 +1,6 @@
 package com.sourcesense.nile.connectorcore.dto;
 
+import com.sourcesense.nile.connectorcore.model.DataInfo;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Data;

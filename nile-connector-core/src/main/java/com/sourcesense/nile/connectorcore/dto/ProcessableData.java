@@ -14,23 +14,22 @@
  * limitations under the License.
  */
 
-package com.sourcesense.nile.connectorcore.model;
+package com.sourcesense.nile.connectorcore.dto;
 
-import com.fasterxml.jackson.databind.JsonNode;
 import com.sourcesense.nile.core.enumeration.ImportAction;
+import lombok.AccessLevel;
 import lombok.AllArgsConstructor;
 import lombok.Data;
 import lombok.NoArgsConstructor;
 import lombok.experimental.SuperBuilder;
 
+
 @Data
 @SuperBuilder
-@NoArgsConstructor
-@AllArgsConstructor
-public class DataEntry {
+@NoArgsConstructor(access = AccessLevel.PROTECTED)
+@AllArgsConstructor(access = AccessLevel.PROTECTED)
+public abstract class ProcessableData {
 
-    private String nileUri;
-    private String schemaKey;
-    private JsonNode data;
-    private ImportAction action;
+    protected ImportAction action;
+    protected String schemaKey;
 }

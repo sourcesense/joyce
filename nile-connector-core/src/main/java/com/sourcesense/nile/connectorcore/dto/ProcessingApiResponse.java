@@ -1,4 +1,4 @@
-package com.sourcesense.nile.connectorcore.model.response;
+package com.sourcesense.nile.connectorcore.dto;
 
 import lombok.AllArgsConstructor;
 import lombok.Builder;

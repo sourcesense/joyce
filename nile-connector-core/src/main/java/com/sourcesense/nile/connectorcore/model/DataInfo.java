@@ -14,7 +14,7 @@
  * limitations under the License.
  */
 
-package com.sourcesense.nile.connectorcore.dto;
+package com.sourcesense.nile.connectorcore.model;
 
 import lombok.AccessLevel;
 import lombok.Data;

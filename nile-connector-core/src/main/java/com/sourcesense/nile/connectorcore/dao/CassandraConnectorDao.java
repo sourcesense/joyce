@@ -16,7 +16,7 @@
 
 package com.sourcesense.nile.connectorcore.dao;
 
-import com.sourcesense.nile.connectorcore.dto.DataInfo;
+import com.sourcesense.nile.connectorcore.model.DataInfo;
 import lombok.RequiredArgsConstructor;
 
 import java.util.List;

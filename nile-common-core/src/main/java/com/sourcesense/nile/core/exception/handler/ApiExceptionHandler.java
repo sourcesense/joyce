@@ -1,4 +1,4 @@
-package com.sourcesense.nile.connectorcore.exception.handler;
+package com.sourcesense.nile.core.exception.handler;
 
 import com.sourcesense.nile.core.dto.ApiError;
 import com.sourcesense.nile.core.exception.DataInfoNotFoundException;

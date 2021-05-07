@@ -18,9 +18,9 @@ package com.sourcesense.nile.connectorcore.pipeline.step;
 
 import com.fasterxml.jackson.databind.JsonNode;
 import com.sourcesense.nile.connectorcore.dao.ConnectorDao;
-import com.sourcesense.nile.connectorcore.dto.DataInfo;
+import com.sourcesense.nile.connectorcore.model.DataInfo;
 import com.sourcesense.nile.connectorcore.dto.ProcessablePayload;
-import com.sourcesense.nile.connectorcore.model.DataEntry;
+import com.sourcesense.nile.connectorcore.dto.DataEntry;
 import com.sourcesense.nile.connectorcore.service.RawDataMessageService;
 import com.sourcesense.nile.core.exception.PipePanic;
 import com.sourcesense.nile.core.pipeline.Step;

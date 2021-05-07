@@ -1,6 +1,6 @@
 package com.sourcesense.nile.connectorcore.api;
 
-import com.sourcesense.nile.connectorcore.dto.DataInfo;
+import com.sourcesense.nile.connectorcore.model.DataInfo;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import org.springframework.http.HttpStatus;
 import org.springframework.web.bind.annotation.*;

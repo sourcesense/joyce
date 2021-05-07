@@ -17,9 +17,8 @@
 package com.sourcesense.nile.connectorcore.service;
 
 import com.fasterxml.jackson.databind.JsonNode;
-import com.sourcesense.nile.connectorcore.dto.DataInfo;
-import com.sourcesense.nile.connectorcore.dto.ProcessablePayload;
-import com.sourcesense.nile.connectorcore.model.ProcessableData;
+import com.sourcesense.nile.connectorcore.model.DataInfo;
+import com.sourcesense.nile.connectorcore.dto.ProcessableData;
 import com.sourcesense.nile.connectorcore.pipeline.step.ExtractionStep;
 import com.sourcesense.nile.connectorcore.pipeline.step.ReadingStep;
 import com.sourcesense.nile.connectorcore.pipeline.step.StoringStep;
