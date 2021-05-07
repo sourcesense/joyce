@@ -35,13 +35,8 @@ public class ImportController implements ImportApi {
 	final private SchemaService schemaService;
 
 	@Override
-	public Boolean importDocument(String schemaId, Optional<Integer> schemaVersion, ObjectNode document) {
-		Optional<Schema> schema;
-		if (schemaVersion.isPresent()){
-			schema = schemaService.findByNameAndVersion(schemaId, schemaVersion.get());
-		} else {
-			schema = schemaService.findByName(schemaId);
-		}
+	public Boolean importDocument(String schemaId, ObjectNode document) {
+		Optional<Schema> schema = schemaService.findByName(schemaId);
 
 		if(schema.isEmpty()){
 			throw new SchemaNotFoundException(String.format("Schema %s does not exists", schemaId));
@@ -50,13 +45,8 @@ public class ImportController implements ImportApi {
 	}
 
 	@Override
-	public JsonNode importDryRun(String schemaId, Optional<Integer> schemaVersion, ObjectNode document) {
-		Optional<Schema> schema;
-		if (schemaVersion.isPresent()){
-			schema = schemaService.findByNameAndVersion(schemaId, schemaVersion.get());
-		} else {
-			schema = schemaService.findByName(schemaId);
-		}
+	public JsonNode importDryRun(String schemaId,  ObjectNode document) {
+		Optional<Schema> schema = schemaService.findByName(schemaId);
 
 		if(schema.isEmpty()){
 			throw new SchemaNotFoundException(String.format("Schema %s does not exists", schemaId));

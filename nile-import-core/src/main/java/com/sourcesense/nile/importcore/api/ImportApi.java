@@ -31,11 +31,11 @@ import java.util.Optional;
 public interface ImportApi {
 	@PostMapping(value = "/{schemaId}", produces = "application/json; charset=utf-8")
 	@ResponseStatus(code = HttpStatus.OK)
-	Boolean importDocument(@PathVariable String schemaId, @RequestHeader(value = "X-Nile-SchemaVersion", required = false) Optional<Integer> schemaVersion, @RequestBody ObjectNode document ) throws JsonProcessingException;
+	Boolean importDocument(@PathVariable String schemaId, @RequestBody ObjectNode document ) throws JsonProcessingException;
 
 	@PostMapping(value = "/{schemaId}/test", produces = "application/json; charset=utf-8")
 	@ResponseStatus(code = HttpStatus.OK)
-	JsonNode importDryRun(@PathVariable String schemaId, @RequestHeader(value = "X-Nile-SchemaVersion", required = false) Optional<Integer> schemaVersion, @RequestBody ObjectNode document ) throws JsonProcessingException;
+	JsonNode importDryRun(@PathVariable String schemaId, @RequestBody ObjectNode document ) throws JsonProcessingException;
 
 	@DeleteMapping(value = "/{schemaId}", produces = "application/json; charset=utf-8")
 	@ResponseStatus(code = HttpStatus.OK)
