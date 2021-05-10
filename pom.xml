@@ -20,9 +20,10 @@
 		<java.version>11</java.version>
     	<org.mapstruct.version>1.4.1.Final</org.mapstruct.version>
 		<org.springdoc.version>1.5.5</org.springdoc.version>
-		<nile.common-core.version>0.0.1-SNAPSHOT</nile.common-core.version>
+		<nile.common-core.version>0.1.0-SNAPSHOT</nile.common-core.version>
 		<nile.connector-core.version>0.0.1-SNAPSHOT</nile.connector-core.version>
 		<nile.schema-engine.version>0.0.1-SNAPSHOT</nile.schema-engine.version>
+		<ksqldb.version>0.17.0</ksqldb.version>
 	</properties>
 
 	<modules>
@@ -52,6 +53,59 @@
 			<url>https://maven.pkg.github.com/sourcesense/nile-parent</url>
 		</repository>
 	</distributionManagement>
+
+	<repositories>
+		<repository>
+			<id>ksqlDB</id>
+			<name>ksqlDB</name>
+			<url>https://ksqldb-maven.s3.amazonaws.com/maven/</url>
+		</repository>
+		<repository>
+			<id>confluent</id>
+			<name>Confluent</name>
+			<url>https://jenkins-confluent-packages-beta-maven.s3.amazonaws.com/6.2.0-beta210310224144-cp8/1/maven/</url>
+		</repository>
+	</repositories>
+
+	<dependencyManagement>
+		<dependencies>
+			<dependency>
+				<groupId>com.sourcesense.nile</groupId>
+				<artifactId>nile-common-core</artifactId>
+				<version>${nile.common-core.version}</version>
+			</dependency>
+			<dependency>
+				<groupId>com.sourcesense.nile</groupId>
+				<artifactId>nile-schema-engine</artifactId>
+				<version>${nile.schema-engine.version}</version>
+			</dependency>
+			<dependency>
+				<groupId>org.mapstruct</groupId>
+				<artifactId>mapstruct</artifactId>
+				<version>${org.mapstruct.version}</version>
+			</dependency>
+			<dependency>
+				<groupId>org.springdoc</groupId>
+				<artifactId>springdoc-openapi-ui</artifactId>
+				<version>${org.springdoc.version}</version>
+			</dependency>
+			<dependency>
+				<groupId>io.confluent.ksql</groupId>
+				<artifactId>ksqldb-api-client</artifactId>
+				<version>${ksqldb.version}</version>
+				<exclusions>
+					<exclusion>
+						<groupId>org.slf4j</groupId>
+						<artifactId>slf4j-api</artifactId>
+					</exclusion>
+					<exclusion>
+						<groupId>org.slf4j</groupId>
+						<artifactId>slf4j-log4j12</artifactId>
+					</exclusion>
+				</exclusions>
+			</dependency>
+		</dependencies>
+	</dependencyManagement>
 
 	<dependencies>
 		<dependency>

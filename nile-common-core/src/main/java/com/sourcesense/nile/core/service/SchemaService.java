@@ -17,6 +17,7 @@
 package com.sourcesense.nile.core.service;
 
 import com.fasterxml.jackson.core.JsonProcessingException;
+import com.sourcesense.nile.core.configuration.SchemaServiceProperties;
 import com.sourcesense.nile.core.dao.SchemaDao;
 import com.sourcesense.nile.core.dto.Schema;
 import com.sourcesense.nile.core.dto.SchemaSave;
@@ -45,12 +46,11 @@ public class SchemaService {
 	private final SchemaDao schemaEntityDao;
 	private final SchemaMapper schemaMapper;
 	private final SchemaEngine schemaEngine;
+	private final SchemaServiceProperties properties;
 
-	@Value("${nile.schema-service.subtype:import}")
-	String subtype;
 
 	private NileURI getSchemaUid(String name){
-		return new NileURI(URI.create(String.format("nile://schema/%s/%s", subtype, name)));
+		return new NileURI(URI.create(String.format("nile://schema/%s/%s", properties.getSubtype(), name)));
 	}
 
 	public NileURI save(SchemaSave schema) throws JsonProcessingException {

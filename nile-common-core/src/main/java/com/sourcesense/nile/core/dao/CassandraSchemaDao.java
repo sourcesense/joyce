@@ -46,8 +46,4 @@ public class CassandraSchemaDao implements SchemaDao {
 		throw new RuntimeException("Unimplemented method");
 	}
 
-	@Override
-	public List<SchemaEntity> getByName(String name) {
-		throw new RuntimeException("Unimplemented method");
-	}
 }

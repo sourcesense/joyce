@@ -17,6 +17,7 @@
 package com.sourcesense.nile.core.service;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
+import com.sourcesense.nile.core.configuration.SchemaServiceProperties;
 import com.sourcesense.nile.core.dao.SchemaDao;
 import com.sourcesense.nile.core.dto.SchemaSave;
 import com.sourcesense.nile.core.mapper.SchemaMapper;
@@ -59,27 +60,4 @@ class SchemaServiceTest {
 		return Paths.get(res.toURI());
 	}
 
-//    @Test
-// TODO: implement this test logic changed
-    void breakingChangeSchemaShouldStepVersion() throws Exception {
-		String schemaRaw = Files.readString(loadResource("schema.json"));
-		ObjectMapper mapper = new ObjectMapper();
-
-		SchemaSave schema = mapper.readValue(schemaRaw, SchemaSave.class);
-		SchemaService service = new SchemaService(schemaEntityDao, schemaMapper, schemaEngine);
-
-		Mockito.when(schemaEngine.checkForBreakingChanges(any(), any())).thenReturn(true);
-
-//		Mockito.when(schemaMapper.toEntity(schema)).thenReturn(entityNew);
-		SchemaEntity entity = mock(SchemaEntity.class);
-
-		Mockito.when(schemaEntityDao.get("nile://schema/import/foobar"))
-				.thenReturn(Optional.of(entity));
-
-
-		NileURI ret = service.save(schema);
-
-		Assertions.assertEquals("nile://schema/import/foobar", ret.toString());
-
-    }
 }

@@ -58,10 +58,4 @@ public class MongodbSchemaDao implements SchemaDao {
 		mongoTemplate.remove(schemaEntity);
 	}
 
-	@Override
-	public List<SchemaEntity> getByName(String name) {
-		Query query = Query.query(Criteria.where("name").is(name));
-		List<SchemaEntity> schemas = mongoTemplate.find(query, SchemaEntity.class);
-		return schemas;
-	}
 }

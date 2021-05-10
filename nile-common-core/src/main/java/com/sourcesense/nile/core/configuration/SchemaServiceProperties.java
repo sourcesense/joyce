@@ -1,5 +1,5 @@
 /*
- *  Copyright 2021 Sourcesense Spa
+ * Copyright 2021 Sourcesense Spa
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -14,21 +14,19 @@
  * limitations under the License.
  */
 
-package com.sourcesense.nile.core.dao;
+package com.sourcesense.nile.core.configuration;
 
-import com.sourcesense.nile.core.model.SchemaEntity;
+import lombok.Getter;
+import lombok.Setter;
+import org.springframework.boot.context.properties.ConfigurationProperties;
+import org.springframework.stereotype.Component;
 
-import java.util.List;
-import java.util.Optional;
-
-public interface SchemaDao {
-
-	Optional<SchemaEntity> get(String id);
-
-	List<SchemaEntity> getAll();
-
-	void save(SchemaEntity t);
-
-	void delete(SchemaEntity t);
-
+@Getter
+@Setter
+@Component
+@ConfigurationProperties("nile.schema-service")
+public class SchemaServiceProperties {
+    Boolean enabled = false;
+    String database = "kafka";
+    String subtype = "import";
 }
