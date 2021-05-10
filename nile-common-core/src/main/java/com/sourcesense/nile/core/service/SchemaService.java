@@ -32,6 +32,8 @@ import com.sourcesense.nile.schemaengine.service.SchemaEngine;
 import lombok.RequiredArgsConstructor;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnProperty;
+import org.springframework.cache.annotation.CacheEvict;
+import org.springframework.cache.annotation.Cacheable;
 import org.springframework.stereotype.Service;
 
 import java.net.URI;
@@ -53,10 +55,11 @@ public class SchemaService {
 		return new NileURI(URI.create(String.format("nile://schema/%s/%s", properties.getSubtype(), name)));
 	}
 
+	@CacheEvict(cacheNames = "schemas", allEntries=true)
 	public NileURI save(SchemaSave schema) throws JsonProcessingException {
 		SchemaEntity entity = schemaMapper.toEntity(schema);
 
-		NileURI uid = getSchemaUid(entity.getName());
+		NileURI uid = getSchemaUid(entity.getMetadata().getName());
 		entity.setUid(uid.toString());
 
 		// Validate schema
@@ -77,11 +80,11 @@ public class SchemaService {
 			 * If schema is in development mode we skip schema checks,
 			 * but we block if previous schema is not in dev mode
 			 */
-			if(entity.getDevelopment() && !previous.get().getDevelopment()){
+			if(entity.getMetadata().getDevelopment() && !previous.get().getMetadata().getDevelopment()){
 					throw new InvalidSchemaException("Previous schema is not in development mode");
 			}
 
-			if (!entity.getDevelopment()) {
+			if (!entity.getMetadata().getDevelopment()) {
 				schemaEngine.checkForBreakingChanges(previous.get().getSchema(), entity.getSchema());
 			}
 		}
@@ -90,16 +93,19 @@ public class SchemaService {
 		return uid;
 	}
 
+	@Cacheable("schemas")
 	public List<SchemaShort> findAll() {
 		return schemaEntityDao.getAll().stream()
 				.map(schemaMapper::toDtoShort)
 				.collect(Collectors.toList());
 	}
 
+	@Cacheable("schemas")
     public Optional<Schema> findByName(String name) {
 			return schemaEntityDao.get(getSchemaUid(name).toString()).map(schemaMapper::toDto);
     }
 
+	@CacheEvict("schemas")
 	public void delete(String name) {
 		Optional<SchemaEntity> entity = schemaEntityDao.get(getSchemaUid(name).toString());
 		if(entity.isEmpty()){
@@ -108,6 +114,7 @@ public class SchemaService {
 		schemaEntityDao.delete(entity.get());
 	}
 
+	@Cacheable("schemas")
 	public Optional<Schema> get(String schemaUid) {
 		return schemaEntityDao.get(schemaUid).map(schemaMapper::toDto);
 	}

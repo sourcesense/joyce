@@ -16,17 +16,27 @@
 
 package com.sourcesense.nile.core.model;
 
+import com.fasterxml.jackson.annotation.JsonProperty;
+import com.fasterxml.jackson.databind.JsonNode;
 import lombok.Data;
 import org.springframework.data.annotation.Id;
-import org.springframework.data.mongodb.core.mapping.Document;
 
-@Document
+import java.util.List;
+
+
 @Data
 public class SchemaEntity {
 	@Id
 	private String uid;
-	private String name;
-	private String description;
+
+	@JsonProperty("$schema")
 	private String schema;
-	private Boolean development = false;
+
+	@JsonProperty("$metadata")
+	private NileSchemaMetadata metadata;
+
+	private String type;
+	private List<String> required;
+
+	private JsonNode properties;
 }

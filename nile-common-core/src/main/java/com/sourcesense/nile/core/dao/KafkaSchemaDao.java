@@ -20,7 +20,6 @@ import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.sourcesense.nile.core.configuration.KsqlDBConfig;
 import com.sourcesense.nile.core.configuration.SchemaServiceProperties;
-import com.sourcesense.nile.core.dto.SchemaSave;
 import com.sourcesense.nile.core.model.SchemaEntity;
 import io.confluent.ksql.api.client.BatchedQueryResult;
 import io.confluent.ksql.api.client.Client;
@@ -32,10 +31,10 @@ import org.springframework.boot.autoconfigure.condition.ConditionalOnProperty;
 import org.springframework.stereotype.Component;
 
 import javax.annotation.PostConstruct;
+import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
 import java.util.concurrent.ExecutionException;
-import java.util.stream.Collectors;
 
 @Slf4j
 @RequiredArgsConstructor
@@ -74,7 +73,7 @@ public class KafkaSchemaDao implements SchemaDao {
                         "   );", STREAM_NAME, KsqlDBConfig.SCHEMA_TOPIC);
         ksql.executeStatement(createStream).get();
         String createMaterializedView = String.format(
-            "CREATE TABLE %s AS SELECT * FROM %s WHERE subtype = '%s';", getSchemaTableName(), TABLE_NAME, schemaServiceProperties.getSubtype());
+            "CREATE TABLE IF NOT EXISTS  %s AS SELECT * FROM %s WHERE subtype = '%s';", getSchemaTableName(), TABLE_NAME, schemaServiceProperties.getSubtype());
         ksql.executeStatement(createMaterializedView).get();
     }
 
@@ -84,16 +83,16 @@ public class KafkaSchemaDao implements SchemaDao {
 
     @Override
     public Optional<SchemaEntity> get(String id) {
-        String query = String.format("SELECT value FROM %s WHERE uid = '%s';", getSchemaTableName(), id);
+        String query = String.format("SELECT uid, value FROM %s WHERE uid = '%s';", getSchemaTableName(), id);
         BatchedQueryResult result = ksql.executeQuery(query);
         // Wait for query result
         try {
             List<Row> resultRows = result.get();
             if (resultRows.size() > 0){
-                Row res = resultRows.get(0);
-                String schemaString = res.getString("VALUE");
-                SchemaSave schema = mapper.readValue(schemaString, SchemaSave.class);
-                return Optional.empty();
+                Row row = resultRows.get(0);
+                SchemaEntity schema = mapper.readValue(row.getString("VALUE"), SchemaEntity.class);
+                schema.setUid(row.getString("UID"));
+                return Optional.of(schema);
             }
         } catch (InterruptedException | ExecutionException | JsonProcessingException e) {
             log.error("Cannot retrieve schema {} error: {}", id, e.getMessage());
@@ -104,30 +103,34 @@ public class KafkaSchemaDao implements SchemaDao {
 
     @Override
     public List<SchemaEntity> getAll() {
-        String query = String.format("SELECT value FROM %s ;", getSchemaTableName());
+        String query = String.format("SELECT uid, value FROM %s ;", getSchemaTableName());
         try {
             List<Row> result = ksql.executeQuery(query).get();
-            return result.stream()
-                    .map(row -> row.getString("VALUE"))
-                    .map(s -> mapper.readValue(s, SchemaSave.class))
-                    .collect(Collectors.toList());
+            List<SchemaEntity> entities = new ArrayList<>();
+            for (Row row : result){
+                try {
+                    SchemaEntity schema = mapper.readValue(row.getString("VALUE"), SchemaEntity.class);
+                    schema.setUid(row.getString("UID"));
+                    entities.add(schema);
+                } catch (JsonProcessingException e) {
+                    log.error("Wrong value {}", e.getMessage());
+                }
+            }
+            return entities;
         } catch (InterruptedException | ExecutionException e) {
             throw new RuntimeException(e.getMessage());
         }
-
-
     }
 
     @Override
     public void save(SchemaEntity schemaEntity) {
-        KsqlObject row = new KsqlObject()
-                .put("uid", schemaEntity.getUid())
-                .put("subtype", schemaServiceProperties.getSubtype())
-                .put("value", schemaEntity.getSchema());
-
         try {
+            KsqlObject row = new KsqlObject()
+                    .put("uid", schemaEntity.getUid())
+                    .put("subtype", schemaServiceProperties.getSubtype())
+                    .put("value", mapper.writeValueAsString(schemaEntity));
             ksql.insertInto(STREAM_NAME, row).get();
-        } catch (InterruptedException | ExecutionException e) {
+        } catch (InterruptedException | ExecutionException | JsonProcessingException e) {
             throw new RuntimeException(e.getMessage());
         }
     }

@@ -36,22 +36,20 @@ public abstract class SchemaMapper {
 	ObjectMapper mapper;
 
 	@Mapping(target = "schema", source = "entity")
-	public abstract Schema toDto(SchemaEntity entity);
-
-	public abstract SchemaShort toDtoShort(SchemaEntity entity);
-
-	@Mapping(target = "schema", source = "dto")
 	@Mapping(target = "name", source = "metadata.name")
 	@Mapping(target = "description", source = "metadata.description")
 	@Mapping(target = "development", source = "metadata.development")
+	public abstract Schema toDto(SchemaEntity entity);
+
+	@Mapping(target = "name", source = "metadata.name")
+	@Mapping(target = "description", source = "metadata.description")
+	@Mapping(target = "development", source = "metadata.development")
+	public abstract SchemaShort toDtoShort(SchemaEntity entity);
+
 	public abstract SchemaEntity toEntity(SchemaSave dto);
 
-	String schemaAsString(SchemaSave dto) throws JsonProcessingException {
-		return mapper.writeValueAsString(dto);
-	}
-
 	JsonNode schemaAsMap(SchemaEntity entity) throws JsonProcessingException {
-		return mapper.readValue(entity.getSchema(), JsonNode.class);
+		return mapper.convertValue(entity, JsonNode.class);
 	}
 
 }
