@@ -1,4 +1,4 @@
-package com.sourcesense.nile.core.exceptions;
+package com.sourcesense.nile.core.exception;
 
 import com.sourcesense.nile.core.enumeration.NotificationEvent;
 import lombok.Builder;

@@ -54,17 +54,6 @@ public class MappersConfig {
     }
 
     @Bean
-    CsvMapper arrayWrappingCsvMapper() {
-        return new CsvMapper()
-                .enable(CsvParser.Feature.TRIM_SPACES)
-                .enable(CsvParser.Feature.ALLOW_COMMENTS)
-                .enable(CsvParser.Feature.ALLOW_TRAILING_COMMA)
-                .enable(CsvParser.Feature.INSERT_NULLS_FOR_MISSING_COLUMNS)
-                .enable(CsvParser.Feature.SKIP_EMPTY_LINES)
-                .enable(CsvParser.Feature.WRAP_AS_ARRAY);
-    }
-
-    @Bean
     YAMLMapper yamlMapper() {
         YAMLMapper yamlMapper = new YAMLMapper();
         yamlMapper.disable(YAMLGenerator.Feature.SPLIT_LINES);

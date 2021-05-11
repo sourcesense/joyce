@@ -16,16 +16,20 @@
 
 package com.sourcesense.nile.connectorcore.configuration;
 
-import lombok.Getter;
-import lombok.Setter;
-import org.springframework.boot.context.properties.ConfigurationProperties;
-import org.springframework.context.annotation.Configuration;
+import org.springframework.beans.factory.annotation.Value;
+import org.springframework.stereotype.Component;
 
-@Getter
-@Setter
-@Configuration
-@ConfigurationProperties(prefix = "nile.data.collection")
+@Component
 public class DatabaseCollections {
 
-    private String dataInfo;
+    private static String dataInfo;
+
+    public static String getDataInfo() {
+        return dataInfo;
+    }
+
+    @Value("${nile.data.collection.data-info}")
+    public void setDataInfo(String collectionNameVariable) {
+        dataInfo = collectionNameVariable;
+    }
 }

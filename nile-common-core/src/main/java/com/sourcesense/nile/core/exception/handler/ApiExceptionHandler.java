@@ -1,8 +1,8 @@
-package com.sourcesense.nile.core.exceptions.handler;
+package com.sourcesense.nile.core.exception.handler;
 
 import com.jayway.jsonpath.PathNotFoundException;
 import com.sourcesense.nile.core.dto.ApiError;
-import com.sourcesense.nile.core.exceptions.*;
+import com.sourcesense.nile.core.exception.*;
 import com.sourcesense.nile.schemaengine.exceptions.InvalidSchemaException;
 import com.sourcesense.nile.schemaengine.exceptions.SchemaIsNotValidException;
 import lombok.RequiredArgsConstructor;

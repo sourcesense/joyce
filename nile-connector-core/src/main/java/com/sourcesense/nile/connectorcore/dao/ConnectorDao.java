@@ -16,10 +16,7 @@
 
 package com.sourcesense.nile.connectorcore.dao;
 
-import com.sourcesense.nile.connectorcore.dto.DataInfo;
-import lombok.Data;
-import org.springframework.boot.context.properties.ConfigurationProperties;
-import org.springframework.context.annotation.Configuration;
+import com.sourcesense.nile.connectorcore.model.DataInfo;
 
 import java.util.List;
 import java.util.Optional;

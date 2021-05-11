@@ -16,7 +16,7 @@
 
 package com.sourcesense.nile.core.pipeline.step;
 
-import com.sourcesense.nile.core.exceptions.PipePanic;
+import com.sourcesense.nile.core.exception.PipePanic;
 import com.sourcesense.nile.core.utililty.TextUtils;
 import lombok.extern.log4j.Log4j2;
 import org.apache.commons.lang3.exception.ExceptionUtils;

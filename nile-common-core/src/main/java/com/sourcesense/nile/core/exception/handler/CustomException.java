@@ -1,9 +1,9 @@
-package com.sourcesense.nile.core.exceptions.handler;
+package com.sourcesense.nile.core.exception.handler;
 
-import com.sourcesense.nile.core.exceptions.DataInfoNotFoundException;
-import com.sourcesense.nile.core.exceptions.MappingValidationException;
-import com.sourcesense.nile.core.exceptions.NotificationException;
-import com.sourcesense.nile.core.exceptions.ProcessingException;
+import com.sourcesense.nile.core.exception.DataInfoNotFoundException;
+import com.sourcesense.nile.core.exception.MappingValidationException;
+import com.sourcesense.nile.core.exception.NotificationException;
+import com.sourcesense.nile.core.exception.ProcessingException;
 import lombok.Getter;
 import lombok.RequiredArgsConstructor;
 
@@ -35,7 +35,7 @@ public enum CustomException {
        );
     }
 
-    static <E extends Exception> CustomException getCustomException(E exception) {
+    public static <E extends Exception> CustomException getCustomException(E exception) {
         return Optional.of(customExceptionSelector)
                 .filter(selector -> Objects.nonNull(exception))
                 .map(selector -> selector.get(exception.getClass()))

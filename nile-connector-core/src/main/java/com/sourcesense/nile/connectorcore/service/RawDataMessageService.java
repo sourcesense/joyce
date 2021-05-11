@@ -18,7 +18,7 @@ package com.sourcesense.nile.connectorcore.service;
 
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
-import com.sourcesense.nile.connectorcore.model.DataEntry;
+import com.sourcesense.nile.connectorcore.dto.DataEntry;
 import com.sourcesense.nile.core.enumeration.NotificationEvent;
 import com.sourcesense.nile.core.service.KafkaMessageService;
 import com.sourcesense.nile.core.service.NotificationService;

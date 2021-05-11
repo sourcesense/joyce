@@ -18,7 +18,7 @@ package com.sourcesense.nile.core.model;
 
 import com.fasterxml.jackson.annotation.JsonProperty;
 import com.fasterxml.jackson.databind.JsonNode;
-import com.sourcesense.nile.core.exceptions.InvalidMetadataException;
+import com.sourcesense.nile.core.exception.InvalidMetadataException;
 import lombok.Getter;
 import lombok.Setter;
 

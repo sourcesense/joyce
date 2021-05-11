@@ -17,7 +17,7 @@
 package com.sourcesense.nile.connectorcore.dao;
 
 import com.sourcesense.nile.connectorcore.configuration.DatabaseCollections;
-import com.sourcesense.nile.connectorcore.dto.DataInfo;
+import com.sourcesense.nile.connectorcore.model.DataInfo;
 import com.sourcesense.nile.connectorcore.repository.DataInfoMongoRepository;
 import lombok.RequiredArgsConstructor;
 import org.springframework.data.mongodb.core.MongoTemplate;
