@@ -21,7 +21,7 @@ import com.sourcesense.nile.core.api.SchemaApi;
 import com.sourcesense.nile.core.dto.Schema;
 import com.sourcesense.nile.core.dto.SchemaSave;
 import com.sourcesense.nile.core.dto.SchemaShort;
-import com.sourcesense.nile.core.exceptions.SchemaNotFoundException;
+import com.sourcesense.nile.core.exception.SchemaNotFoundException;
 import com.sourcesense.nile.core.model.NileURI;
 import com.sourcesense.nile.core.service.SchemaService;
 import com.sourcesense.nile.importcore.service.ImportService;

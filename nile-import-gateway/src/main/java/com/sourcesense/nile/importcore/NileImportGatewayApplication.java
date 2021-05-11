@@ -18,8 +18,10 @@ package com.sourcesense.nile.importcore;
 
 import org.springframework.boot.SpringApplication;
 import org.springframework.boot.autoconfigure.SpringBootApplication;
+import org.springframework.cache.annotation.EnableCaching;
 
 @SpringBootApplication(scanBasePackages = "com.sourcesense.nile")
+@EnableCaching
 public class NileImportGatewayApplication {
 
 	public static void main(String[] args) {

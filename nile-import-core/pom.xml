@@ -18,7 +18,6 @@
     <dependency>
       <groupId>com.sourcesense.nile</groupId>
       <artifactId>nile-common-core</artifactId>
-      <version>${nile.common-core.version}</version>
     </dependency>
 
 		<dependency>

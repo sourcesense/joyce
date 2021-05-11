@@ -3,7 +3,7 @@ server:
 nile:
   schema-service:
     enabled: true
-    database: mongodb
+    database: kafka
     subtype: import
   notification-service:
     enabled: true
@@ -11,6 +11,9 @@ nile:
     source: ImportGateway
   mainlog-producer:
     enabled: true
+  ksqldb:
+    host: localhost
+    port: 8088
   kafka:
     bootstrapAddress: kafka:9092
     consumer:
@@ -20,8 +23,4 @@ nile:
       enabled: true
     mainlog-topic: mainlog
     import-topic: import
-  data:
-    mongodb:
-      uri: mongodb://user:password@localhost:27017/nile
-      database: nile
 
