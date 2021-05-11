@@ -17,10 +17,10 @@
 package com.sourcesense.nile.connectorcore.scheduling.job;
 
 import com.fasterxml.jackson.databind.JsonNode;
-import com.sourcesense.nile.connectorcore.model.MappingInfo;
-import com.sourcesense.nile.connectorcore.model.ProcessableData;
+import com.sourcesense.nile.connectorcore.model.DataInfo;
+import com.sourcesense.nile.connectorcore.exception.handler.JobExceptionHandler;
+import com.sourcesense.nile.connectorcore.dto.ProcessableData;
 import com.sourcesense.nile.connectorcore.service.DataProcessingService;
-import com.sourcesense.nile.core.exceptions.handler.JobExceptionHandler;
 import io.reactivex.Observable;
 import lombok.RequiredArgsConstructor;
 import org.quartz.Job;
@@ -31,10 +31,11 @@ import java.util.List;
 import java.util.stream.Collectors;
 
 @RequiredArgsConstructor
-public abstract class ScanningJob<R extends MappingInfo, P extends ProcessableData> implements Job {
+public abstract class ScanningJob<I extends DataInfo, D extends ProcessableData>
+        implements Job {
 
     private final JobExceptionHandler jobExceptionHandler;
-    private final DataProcessingService<R, P> dataProcessingService;
+    private final DataProcessingService<I, D> dataProcessingService;
 
     @Override
     public void execute(JobExecutionContext jobExecutionContext) {

@@ -14,20 +14,21 @@
  * limitations under the License.
  */
 
-package com.sourcesense.nile.connectorcore.model;
+package com.sourcesense.nile.connectorcore.pipeline;
 
-import lombok.AccessLevel;
-import lombok.AllArgsConstructor;
+import com.sourcesense.nile.core.pipeline.GenericPayload;
+import lombok.Builder;
 import lombok.Data;
+import lombok.EqualsAndHashCode;
 import lombok.NoArgsConstructor;
-import lombok.experimental.SuperBuilder;
 
 @Data
-@SuperBuilder
-@NoArgsConstructor(access = AccessLevel.PROTECTED)
-@AllArgsConstructor(access = AccessLevel.PROTECTED)
-public abstract class MappingInfo {
+@Builder
+@NoArgsConstructor
+@EqualsAndHashCode(callSuper = true)
+public class DataSourcePayload<T> extends GenericPayload<T> {
 
-    protected String schemaKey;
-
+    public DataSourcePayload(T data) {
+        super(data);
+    }
 }

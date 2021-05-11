@@ -14,10 +14,22 @@
  * limitations under the License.
  */
 
-package com.sourcesense.nile.core.exceptions;
+package com.sourcesense.nile.connectorcore.dto;
 
-public class SchemaNotFoundException extends RuntimeException {
-	public SchemaNotFoundException(String message){
-		super(message);
-	}
+import com.sourcesense.nile.core.enumeration.ImportAction;
+import lombok.AccessLevel;
+import lombok.AllArgsConstructor;
+import lombok.Data;
+import lombok.NoArgsConstructor;
+import lombok.experimental.SuperBuilder;
+
+
+@Data
+@SuperBuilder
+@NoArgsConstructor(access = AccessLevel.PROTECTED)
+@AllArgsConstructor(access = AccessLevel.PROTECTED)
+public abstract class ProcessableData {
+
+    protected ImportAction action;
+    protected String schemaKey;
 }

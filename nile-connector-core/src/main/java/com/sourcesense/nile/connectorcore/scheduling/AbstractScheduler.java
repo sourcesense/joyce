@@ -16,9 +16,6 @@
 
 package com.sourcesense.nile.connectorcore.scheduling;
 
-import com.sourcesense.nile.connectorcore.model.MappingInfo;
-import com.sourcesense.nile.connectorcore.model.ProcessableData;
-import com.sourcesense.nile.connectorcore.scheduling.job.ScanningJob;
 import org.quartz.*;
 import org.springframework.beans.factory.annotation.Value;
 
@@ -29,7 +26,7 @@ public abstract class AbstractScheduler {
 
     protected static final String REPEAT_SCAN = "repeatScan";
 
-    protected JobDetail scanningJob(String job, Class<? extends ScanningJob<? extends MappingInfo, ? extends ProcessableData>> clazz) {
+    protected <T extends Job> JobDetail scanningJob(String job, Class<T> clazz) {
         return JobBuilder.newJob(clazz)
                 .withIdentity(job)
                 .build();

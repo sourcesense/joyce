@@ -2,8 +2,8 @@ package com.sourcesense.nile.connectorcore.api.implementation;
 
 import com.sourcesense.nile.connectorcore.api.DataInfoApi;
 import com.sourcesense.nile.connectorcore.dao.ConnectorDao;
-import com.sourcesense.nile.connectorcore.dto.DataInfo;
-import com.sourcesense.nile.core.exceptions.DataInfoNotFoundException;
+import com.sourcesense.nile.connectorcore.model.DataInfo;
+import com.sourcesense.nile.core.exception.DataInfoNotFoundException;
 import lombok.RequiredArgsConstructor;
 
 import java.util.List;

@@ -1,6 +1,6 @@
-package com.sourcesense.nile.core.exceptions.handler;
+package com.sourcesense.nile.core.exception.handler;
 
-import com.sourcesense.nile.core.exceptions.NotificationException;
+import com.sourcesense.nile.core.exception.NotificationException;
 import com.sourcesense.nile.core.service.NotificationService;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.log4j.Log4j2;
