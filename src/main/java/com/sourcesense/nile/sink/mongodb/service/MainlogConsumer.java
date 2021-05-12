@@ -7,7 +7,7 @@ import com.mongodb.client.result.DeleteResult;
 import com.sourcesense.nile.core.enumeration.ImportAction;
 import com.sourcesense.nile.core.enumeration.KafkaCustomHeaders;
 import com.sourcesense.nile.core.enumeration.NotificationEvent;
-import com.sourcesense.nile.core.exceptions.InvalidNileUriException;
+import com.sourcesense.nile.core.exception.InvalidNileUriException;
 import com.sourcesense.nile.core.model.NileURI;
 import com.sourcesense.nile.core.service.NotificationService;
 import lombok.RequiredArgsConstructor;
