@@ -32,7 +32,7 @@ import org.springframework.kafka.core.KafkaAdmin;
 import java.util.HashMap;
 import java.util.Map;
 
-@ConditionalOnProperty(value = "nile.schema-service.database", havingValue = "kafka")
+@ConditionalOnProperty(value = "nile.schema-service.enabled", havingValue = "true")
 @Configuration
 @EnableKafka
 public class KsqlDBConfig {
