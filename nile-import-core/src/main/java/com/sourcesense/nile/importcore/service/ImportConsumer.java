@@ -16,6 +16,7 @@
 
 package com.sourcesense.nile.importcore.service;
 
+import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.databind.node.ObjectNode;
 import com.sourcesense.nile.core.dto.Schema;
 import com.sourcesense.nile.core.enumeration.ImportAction;
@@ -24,6 +25,7 @@ import com.sourcesense.nile.core.model.NileURI;
 import com.sourcesense.nile.core.service.SchemaService;
 import com.sourcesense.nile.core.exception.SchemaNotFoundException;
 import com.sourcesense.nile.core.enumeration.KafkaCustomHeaders;
+import com.sourcesense.nile.importcore.dto.ConnectKeyPayload;
 import com.sourcesense.nile.importcore.exception.ImportException;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
@@ -43,26 +45,42 @@ import java.util.Optional;
 public class ImportConsumer {
 	final private ImportService importService;
 	final private SchemaService schemaService;
+	final private ObjectMapper mapper;
+
 	@KafkaListener(topics = "${nile.kafka.import-topic:import}")
 	public void consumeMessage(@Payload ObjectNode message,
 														 @Header(KafkaHeaders.RECEIVED_MESSAGE_KEY) String messageKey,
 															@Headers Map<String, String> headers) {
 		try {
+			Optional<NileURI> uri = Optional.empty();
 
-			if(headers.get(KafkaCustomHeaders.IMPORT_SCHEMA) == null){
-				throw new ImportException(String.format("Missing %s header in message", KafkaCustomHeaders.IMPORT_SCHEMA));
+			// If we have the header we're receiving messages from a nile connector
+			if(headers.get(KafkaCustomHeaders.IMPORT_SCHEMA) != null){
+				uri = NileURI.createURI(headers.get(KafkaCustomHeaders.IMPORT_SCHEMA));
+
+			// else We espect to have a key in json format in the format of ConnectKeyPayload and derive from that the information we need.
+			// It's the case of using plain kafka connect
+			} else {
+				ConnectKeyPayload key = mapper.readValue(messageKey, ConnectKeyPayload.class);
+				if (key.getSchema() == null){
+					throw new ImportException("Missing [schema] from key");
+				}
+				uri = NileURI.createURI(key.getSchema());
+				messageKey = NileURI.make(NileURI.Type.RAW, NileURI.Subtype.OTHER, key.getSource(), key.getUid()).toString();
 			}
-			Optional<NileURI> uri = NileURI.createURI(headers.get(KafkaCustomHeaders.IMPORT_SCHEMA));
+
 			if (uri.isEmpty() || !uri.get().getSubtype().equals(NileURI.Subtype.IMPORT)){
 				throw new InvalidNileUriException(String.format("Schema %s is not a valid schema uri", headers.get(KafkaCustomHeaders.IMPORT_SCHEMA)));
 			}
 
 			Optional<Schema> schema = schemaService.findByName(uri.get().getCollection());
 			if(schema.isEmpty()){
-				throw new SchemaNotFoundException(String.format("Schema %s does not exists", headers.get(KafkaCustomHeaders.IMPORT_SCHEMA)));
+				throw new SchemaNotFoundException(String.format("Schema %s does not exists", uri.toString()));
 			}
 
+			//TODO: understand how to deal with deletion with kafka connect ingested content
 			ImportAction action = ImportAction.valueOf(headers.getOrDefault(KafkaCustomHeaders.MESSAGE_ACTION, ImportAction.INSERT.name()));
+
 			switch (action){
 				case DELETE:
 					importService.removeDocument(schema.get(), messageKey);
