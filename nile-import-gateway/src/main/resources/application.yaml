@@ -11,7 +11,7 @@ nile:
     source: ImportGateway
   mainlog-producer:
     enabled: true
-  ksqldb:
+  ksql:
     host: localhost
     port: 8088
   kafka:
