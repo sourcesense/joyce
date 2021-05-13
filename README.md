@@ -68,8 +68,3 @@ docker build .
 # or
 docker-compose build
 ```
-
-## Contributing
-
-- Report Bug using Github issue using the template
-- Send Pull request uding the template
