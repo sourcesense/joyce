@@ -33,6 +33,7 @@ import com.sourcesense.nile.importcore.dto.ConnectKeyPayload;
 import com.sourcesense.nile.importcore.exception.ImportException;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import org.apache.commons.lang3.StringUtils;
 import org.springframework.kafka.annotation.KafkaListener;
 import org.springframework.kafka.support.KafkaHeaders;
 import org.springframework.messaging.handler.annotation.Header;
@@ -57,10 +58,10 @@ public class ImportConsumer {
 			@Headers Map<String, String> headers) {
 		try {
 
-			NileURI computedURI = computeUri(messageKey, headers);
-			String computedMessageKey = computeMessageKey(messageKey, headers);
-			Schema schema = computeSchema(computedURI, headers);
-			processDocument(message, computedMessageKey, headers, schema);
+			NileURI computedSchemaURI = computeSchemaUri(messageKey, headers);
+			NileURI computeRawURI = computeRawURI(messageKey, headers);
+			Schema schema = computeSchema(computedSchemaURI);
+			processDocument(message, computeRawURI, headers, schema);
 
 		} catch (Exception e) {
 			customExceptionHandler.handleNotificationException(new NotificationException(
@@ -69,13 +70,21 @@ public class ImportConsumer {
 		}
 	}
 
-	private NileURI computeUri(String messageKey, Map<String, String> headers) throws JsonProcessingException {
+	/**
+	 * @param messageKey the key associated with the consumed kafka message
+	 * @param headers    headers associated with the consumed kafka message. Obtaining the schema value from the headers
+	 *                   will be suppressed in future releases and only the message key value will be used to calculate
+	 *                   the NileURI
+	 * @return Returns a NileURI calculated starting from the schema value present in the message key or in the headers.
+	 * @throws JsonProcessingException
+	 */
+	private NileURI computeSchemaUri(String messageKey, Map<String, String> headers) throws JsonProcessingException {
 
 		Optional<NileURI> uri;
 
 		// If we have the header we're receiving messages from a nile connector
 		if (headers.get(KafkaCustomHeaders.IMPORT_SCHEMA) != null) {
-			uri =  NileURI.createURI(headers.get(KafkaCustomHeaders.IMPORT_SCHEMA));
+			uri = NileURI.createURI(headers.get(KafkaCustomHeaders.IMPORT_SCHEMA));
 
 			// else We espect to have a key in json format in the format of ConnectKeyPayload and derive from that the
 			// information we need.
@@ -92,35 +101,36 @@ public class ImportConsumer {
 
 	}
 
-	private String computeMessageKey(String messageKey, Map<String, String> headers) throws JsonProcessingException {
+	private NileURI computeRawURI(String messageKey, Map<String, String> headers) throws JsonProcessingException {
 		if (headers.get(KafkaCustomHeaders.IMPORT_SCHEMA) == null) {
 
 			ConnectKeyPayload key = mapper.readValue(messageKey, ConnectKeyPayload.class);
 			checkValidKey(key);
-			return NileURI.make(NileURI.Type.RAW, NileURI.Subtype.OTHER, key.getSource(), key.getUid()).toString();
+			return NileURI.make(NileURI.Type.RAW, NileURI.Subtype.OTHER, key.getSource(), key.getUid());
 		}
 
-		return messageKey;
+		return NileURI.createURI(messageKey)
+				.orElseThrow(() -> new InvalidNileUriException(String.format("Uri [%s] is not a valid Nile Uri", messageKey)));
 
 	}
 
-	private Schema computeSchema(NileURI uri, Map<String, String> headers) {
+	private Schema computeSchema(NileURI uri) {
 
 		return schemaService.findByName(uri.getCollection())
 				.orElseThrow(() -> new SchemaNotFoundException(String.format("Schema %s does not exists", uri.toString())));
 	}
 
-	private void processDocument(ObjectNode message, String messageKey, Map<String, String> headers, Schema schema) {
+	private void processDocument(ObjectNode message, NileURI rawURI, Map<String, String> headers, Schema schema) {
 		//TODO: understand how to deal with deletion with kafka connect ingested content
 		ImportAction action = ImportAction
 				.valueOf(headers.getOrDefault(KafkaCustomHeaders.MESSAGE_ACTION, ImportAction.INSERT.name()));
 
 		switch (action) {
 		case DELETE:
-			importService.removeDocument(schema, messageKey);
+			importService.removeDocument(schema, rawURI);
 			break;
 		case INSERT:
-			importService.processImport(schema, message, messageKey);
+			importService.processImport(schema, message, rawURI);
 			break;
 		}
 	}
@@ -128,8 +138,15 @@ public class ImportConsumer {
 	/**************** UTILITY METHODS *******************/
 
 	private void checkValidKey(ConnectKeyPayload key) {
-		if (key.getSchema() == null) {
+
+		if (StringUtils.isEmpty(key.getSchema())) {
 			throw new ImportException("Missing [schema] from key");
+		}
+		if (StringUtils.isEmpty(key.getSource())) {
+			throw new ImportException("Missing [source] from key");
+		}
+		if (StringUtils.isEmpty(key.getUid())) {
+			throw new ImportException("Missing [uid] from key");
 		}
 	}
 
