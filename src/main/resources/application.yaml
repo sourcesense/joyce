@@ -1,9 +1,6 @@
 spring:
   main:
     web-application-type: none
-  profiles:
-    active:
-      - mongodb
 nile:
   kafka:
     mainlog-topic: mainlog
