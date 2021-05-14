@@ -18,7 +18,6 @@
     <dependency>
       <groupId>com.sourcesense.nile</groupId>
       <artifactId>nile-import-core</artifactId>
-      <version>${nile.import.core.version}</version>
     </dependency>
 		<dependency>
 			<groupId>org.springframework.boot</groupId>

@@ -14,11 +14,6 @@
   <packaging>pom</packaging>
 	<name>nile-import-parent</name>
 	<description>Nile Import Gateway Microservice</description>
-	<properties>
-		<java.version>11</java.version>
-    <nile.import.schema.version>0.0.1-SNAPSHOT</nile.import.schema.version>
-    <nile.import.core.version>0.0.1-SNAPSHOT</nile.import.core.version>
-	</properties>
 
 	<modules>
     <module>nile-import-core</module>
@@ -32,36 +27,5 @@
       <url>https://maven.pkg.github.com/sourcesense/nile-parent</url>
     </repository>
   </repositories>
-
-
-  <dependencies>
-		<dependency>
-			<groupId>org.projectlombok</groupId>
-			<artifactId>lombok</artifactId>
-			<optional>true</optional>
-		</dependency>
-
-    <!-- dipendenze per i test -->
-    <dependency>
-      <groupId>org.junit.jupiter</groupId>
-      <artifactId>junit-jupiter-engine</artifactId>
-      <version>5.6.2</version>
-      <scope>test</scope>
-    </dependency>
-    <dependency>
-      <groupId>org.mockito</groupId>
-      <artifactId>mockito-core</artifactId>
-      <version>3.3.3</version>
-      <scope>test</scope>
-    </dependency>
-    <dependency>
-      <groupId>org.mockito</groupId>
-      <artifactId>mockito-junit-jupiter</artifactId>
-      <version>3.3.3</version>
-      <scope>test</scope>
-    </dependency>
-
-	</dependencies>
-
 
 </project>
