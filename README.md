@@ -1,5 +1,7 @@
 # Nile Kafka Connect
 
+[![Docker Image](https://github.com/sourcesense/nile-kafka-connect/actions/workflows/master.yaml/badge.svg)](https://github.com/sourcesense/nile-kafka-connect/actions/workflows/master.yaml)
+
 Nile Kafka Connect it's [Kafka Connect](https://docs.confluent.io/platform/current/connect/index.html) with some connectors already installed:
 
 - confluentinc/kafka-connect-jdbc
