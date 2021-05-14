@@ -74,6 +74,8 @@ public class KafkaSchemaDao implements SchemaDao {
         ksql.executeStatement(createStream).get();
         String createMaterializedView = String.format(
             "CREATE TABLE IF NOT EXISTS  %s AS SELECT * FROM %s WHERE subtype = '%s';", getSchemaTableName(), TABLE_NAME, schemaServiceProperties.getSubtype());
+        //TODO: see what they responds here https://github.com/confluentinc/ksql/issues/7503
+        ksql.executeStatement(String.format("DROP TABLE %s;", getSchemaTableName())).get();
         ksql.executeStatement(createMaterializedView).get();
     }
 
