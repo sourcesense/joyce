@@ -130,7 +130,7 @@
 			<artifactId>spring-kafka</artifactId>
 		</dependency>
 		<!-- dipendenze per i test -->
-		<dependency>
+<!--		<dependency>
 		  <groupId>org.junit.jupiter</groupId>
 		  <artifactId>junit-jupiter-engine</artifactId>
 		  <version>5.6.2</version>
@@ -147,7 +147,7 @@
 		  <artifactId>mockito-junit-jupiter</artifactId>
 		  <version>3.3.3</version>
 		  <scope>test</scope>
-		</dependency>
+		</dependency>-->
 
 	</dependencies>
 

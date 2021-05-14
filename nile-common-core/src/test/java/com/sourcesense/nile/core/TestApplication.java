@@ -24,7 +24,7 @@ import org.springframework.boot.autoconfigure.SpringBootApplication;
 import org.springframework.boot.autoconfigure.data.cassandra.CassandraDataAutoConfiguration;
 import org.springframework.context.annotation.Bean;
 
-@SpringBootApplication(scanBasePackages = "com.sourcesense.nile", exclude={CassandraDataAutoConfiguration.class})
+@SpringBootApplication(scanBasePackages = "com.sourcesense.nile")
 public class TestApplication {
 
 	@Bean

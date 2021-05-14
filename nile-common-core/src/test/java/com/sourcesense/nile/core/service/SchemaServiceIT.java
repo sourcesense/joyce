@@ -17,7 +17,6 @@
 package com.sourcesense.nile.core.service;
 
 import com.sourcesense.nile.core.TestApplication;
-import com.sourcesense.nile.core.dao.MongodbSchemaDao;
 import com.sourcesense.nile.core.dao.SchemaDao;
 import org.assertj.core.api.Assertions;
 import org.junit.jupiter.api.Test;

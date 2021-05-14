@@ -71,7 +71,7 @@ public class MainlogProducer extends KafkaMessageService<JsonNode> {
      * @param rawUri
      * @return
      */
-    public NileURI publishContent(Schema schema, NileSchemaMetadata metadata, NileURI uri, JsonNode content, String rawUri) {
+    public NileURI publishContent(Schema schema, NileSchemaMetadata metadata, NileURI uri, JsonNode content, NileURI rawUri) {
 
         // Set schema version
         ObjectNode content_metadata = mapper.createObjectNode();
@@ -79,7 +79,7 @@ public class MainlogProducer extends KafkaMessageService<JsonNode> {
         content_metadata.put("schema_name", schema.getName());
         content_metadata.put("schema_development", schema.getDevelopment());
         if (rawUri != null){
-            content_metadata.put("raw_uri", rawUri);
+            content_metadata.put("raw_uri", rawUri.toString());
         }
         ((ObjectNode)content).set("_metadata_", content_metadata);
 
