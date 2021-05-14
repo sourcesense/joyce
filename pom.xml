@@ -18,12 +18,16 @@
 
 	<properties>
 		<java.version>11</java.version>
-    	<org.mapstruct.version>1.4.1.Final</org.mapstruct.version>
-		<org.springdoc.version>1.5.5</org.springdoc.version>
 		<nile.common-core.version>0.1.0-SNAPSHOT</nile.common-core.version>
 		<nile.connector-core.version>0.0.1-SNAPSHOT</nile.connector-core.version>
 		<nile.schema-engine.version>0.0.1-SNAPSHOT</nile.schema-engine.version>
+		<org.mapstruct.version>1.4.1.Final</org.mapstruct.version>
+		<org.springdoc.version>1.5.5</org.springdoc.version>
 		<ksqldb.version>0.17.0</ksqldb.version>
+		<com.jayway.jsonpath.version>2.5.0</com.jayway.jsonpath.version>
+		<com.networknt.version>1.0.50</com.networknt.version>
+		<commons-codec.version>1.11</commons-codec.version>
+		<io.reactivex.rxjava2.version>2.2.21</io.reactivex.rxjava2.version>
 	</properties>
 
 	<modules>
@@ -76,6 +80,11 @@
 			</dependency>
 			<dependency>
 				<groupId>com.sourcesense.nile</groupId>
+				<artifactId>nile-connector-core</artifactId>
+				<version>${nile.connector-core.version}</version>
+			</dependency>
+			<dependency>
+				<groupId>com.sourcesense.nile</groupId>
 				<artifactId>nile-schema-engine</artifactId>
 				<version>${nile.schema-engine.version}</version>
 			</dependency>
@@ -104,52 +113,29 @@
 					</exclusion>
 				</exclusions>
 			</dependency>
+			<dependency>
+				<groupId>com.jayway.jsonpath</groupId>
+				<artifactId>json-path</artifactId>
+				<version>${com.jayway.jsonpath.version}</version>
+			</dependency>
+			<dependency>
+				<groupId>com.networknt</groupId>
+				<artifactId>json-schema-validator</artifactId>
+				<version>${com.networknt.version}</version>
+			</dependency>
+			<dependency>
+				<groupId>commons-codec</groupId>
+				<artifactId>commons-codec</artifactId>
+				<version>${commons-codec.version}</version>
+			</dependency>
+			<dependency>
+				<groupId>io.reactivex.rxjava2</groupId>
+				<artifactId>rxjava</artifactId>
+				<version>${io.reactivex.rxjava2.version}</version>
+			</dependency>
 		</dependencies>
 	</dependencyManagement>
 
-	<dependencies>
-		<dependency>
-			<groupId>com.fasterxml.jackson.core</groupId>
-			<artifactId>jackson-databind</artifactId>
-		</dependency>
-		<dependency>
-			<groupId>com.fasterxml.jackson.dataformat</groupId>
-			<artifactId>jackson-dataformat-csv</artifactId>
-		</dependency>
-		<dependency>
-			<groupId>com.fasterxml.jackson.dataformat</groupId>
-			<artifactId>jackson-dataformat-yaml</artifactId>
-		</dependency>
-		<dependency>
-			<groupId>org.projectlombok</groupId>
-			<artifactId>lombok</artifactId>
-			<optional>true</optional>
-		</dependency>
-		<dependency>
-			<groupId>org.springframework.kafka</groupId>
-			<artifactId>spring-kafka</artifactId>
-		</dependency>
-		<!-- dipendenze per i test -->
-<!--		<dependency>
-		  <groupId>org.junit.jupiter</groupId>
-		  <artifactId>junit-jupiter-engine</artifactId>
-		  <version>5.6.2</version>
-		  <scope>test</scope>
-		</dependency>
-		<dependency>
-		  <groupId>org.mockito</groupId>
-		  <artifactId>mockito-core</artifactId>
-		  <version>3.3.3</version>
-		  <scope>test</scope>
-		</dependency>
-		<dependency>
-		  <groupId>org.mockito</groupId>
-		  <artifactId>mockito-junit-jupiter</artifactId>
-		  <version>3.3.3</version>
-		  <scope>test</scope>
-		</dependency>-->
-
-	</dependencies>
 
 
 </project>
