@@ -68,6 +68,14 @@ public class ImportService {
 	}
 
 
+	private NileSchemaMetadata computeMetadata(Schema schema) {
+		return Optional.ofNullable(schema)
+				.map(Schema::getSchema)
+				.map(s -> s.get(SchemaEngine.METADATA))
+				.map(metadataNode -> mapper.convertValue(metadataNode, NileSchemaMetadata.class))
+				.orElseThrow(() -> new InvalidMetadataException("Schema has no metadata"));
+	}
+
 	/**
 	 * Process a docuemnt with the schema specified and processImport it on mainlog topic
 	 * @param schema
@@ -75,47 +83,55 @@ public class ImportService {
 	 * @param rawUri
 	 * @return
 	 */
-	public boolean processImport(Schema schema, JsonNode document, String rawUri) {
-		try {
+	public boolean processImport(Schema schema, JsonNode document, NileURI rawUri) {
 
+			NileSchemaMetadata metadata = computeMetadata(schema);
 			ProcessResult result = schemaEngine.process(schema.getSchema(), document, null);
 
-			if (result.getMetadata().isEmpty()){
-				throw new InvalidMetadataException("Message has no metadata, cannot processImport document");
-			}
-
-			NileSchemaMetadata metadata = mapper.convertValue(result.getMetadata().get(), NileSchemaMetadata.class);
-
-			/**
-			 * If schema has a parent we validate with the parent
-			 * and change some metadata with metadata from the parent
-			 */
-			if (metadata.getParent() != null){
-				Optional<Schema> parent = schemaService.get(metadata.getParent().toString());
-				if (parent.isEmpty()){
-					throw new InvalidSchemaException(String.format("Parent schema [%s] does not exists", metadata.getParent()));
-				}
-
-				schemaEngine.validate(parent.get().getSchema(), result.getJson());
-
-				NileSchemaMetadata parentMetadata = mapper.convertValue(parent.get().getSchema().get(SchemaEngine.METADATA), NileSchemaMetadata.class);
+			computeParentMetadata(metadata, result, true).ifPresent(parentMetadata ->{
 				metadata.setUidKey(parentMetadata.getUidKey());
 				metadata.setCollection(parentMetadata.getCollection());
+			});
 
+			NileURI contentURI = computeContentURI(metadata, result);
+
+			NileURI publishedContentURI = mainlogProducer.publishContent(schema, metadata, contentURI, result.getJson(), rawUri);
+
+			return true;
+
+
+	}
+
+	private NileURI computeContentURI(NileSchemaMetadata metadata, ProcessResult result) {
+		String uid = Optional.ofNullable(result.getJson().get(metadata.getUidKey())).orElseThrow(
+				() -> new InvalidMetadataException(
+						String.format("Missing [%s] key from document, cannot processImport document", metadata.getUidKey())))
+				.asText();
+
+		return NileURI.make(NileURI.Type.CONTENT, metadata.getSubtype(), metadata.getCollection(), uid);
+	}
+
+	private Optional<NileSchemaMetadata> computeParentMetadata(NileSchemaMetadata metadata, ProcessResult result, boolean validate) {
+		/*
+		 * If schema has a parent we validate with the parent
+		 * and change some metadata with metadata from the parent
+		 */
+		if (metadata.getParent() != null) {
+			Optional<Schema> parent = schemaService.get(metadata.getParent().toString());
+			if (parent.isEmpty()) {
+				throw new InvalidSchemaException(String.format("Parent schema [%s] does not exists", metadata.getParent()));
 			}
 
-			String uid = Optional.ofNullable(result.getJson().get(metadata.getUidKey())).orElseThrow(() -> new InvalidMetadataException(String.format("Missing [%s] key from document, cannot processImport document", metadata.getUidKey()))).asText();
+			if(validate){
+				schemaEngine.validate(parent.get().getSchema(), result.getJson());
+			}
 
-			NileURI key = NileURI.make(NileURI.Type.CONTENT, metadata.getSubtype(), metadata.getCollection(), uid);
+			return Optional
+					.of(mapper.convertValue(parent.get().getSchema().get(SchemaEngine.METADATA), NileSchemaMetadata.class));
 
-			NileURI uri = mainlogProducer.publishContent(schema, metadata, key, result.getJson(), rawUri);
-			notificationEngine.ok(uri.toString(), NotificationEvent.MAINLOG_PUBLISH_SUCCESS);
-			return true;
-		} catch (Exception e) {
-			notificationEngine.ko(schema.getUid(), NotificationEvent.MAINLOG_PUBLISH_FAILED, e.getMessage());
-			throw new ImportException(e.getMessage());
 		}
 
+		return Optional.empty();
 	}
 
 	/**
@@ -134,34 +150,18 @@ public class ImportService {
 	}
 
 	public void removeDocument(Schema schema, ObjectNode document) {
+
+		NileSchemaMetadata metadata = computeMetadata(schema);
+
 		ProcessResult result = schemaEngine.process(schema.getSchema(), document, null);
 
-		if (result.getMetadata().isEmpty()){
-			throw new InvalidMetadataException("Message has no metadata, cannot remove document");
-		}
-
-		NileSchemaMetadata metadata = mapper.convertValue(result.getMetadata().get(), NileSchemaMetadata.class);
-
-		/**
-		 * If schema has a parent we validate with the parent
-		 * and change some metadata with metadata from the parent
-		 */
-		if (metadata.getParent() != null){
-			Optional<Schema> parent = schemaService.get(metadata.getParent().toString());
-			if (parent.isEmpty()){
-				throw new InvalidSchemaException(String.format("Parent schema [%s] does not exists", metadata.getParent()));
-			}
-
-			NileSchemaMetadata parentMetadata = mapper.convertValue(parent.get().getSchema().get(SchemaEngine.METADATA), NileSchemaMetadata.class);
+		computeParentMetadata(metadata, result, false).ifPresent(parentMetadata ->{
 			metadata.setUidKey(parentMetadata.getUidKey());
 			metadata.setCollection(parentMetadata.getCollection());
+		});
 
-		} // TODO: extract  a method to avoid code duplication
-
-		String uid = Optional.ofNullable(result.getJson().get(metadata.getUidKey())).orElseThrow(() -> new InvalidMetadataException(String.format("Missing [%s] key from document, cannot processImport document", metadata.getUidKey()))).asText();
-
-		NileURI uri = NileURI.make(NileURI.Type.CONTENT, metadata.getSubtype(), metadata.getCollection(), uid);
-		mainlogProducer.removeContent(metadata, uri);
+		NileURI contentURI = computeContentURI(metadata, result);
+		mainlogProducer.removeContent(metadata, contentURI);
 	}
 
 	/**
@@ -169,16 +169,13 @@ public class ImportService {
 	 * @param schema
 	 * @param rawUri
 	 */
-	public void removeDocument(Schema schema, String rawUri) {
+	public void removeDocument(Schema schema, NileURI rawUri) {
 		JsonNode metadataNode = schema.getSchema().get(SchemaEngine.METADATA);
 		if (metadataNode == null){
 			throw new InvalidMetadataException("Schema has no metadata, cannot remove document");
 		}
-		Optional<NileURI> uri = NileURI.createURI(rawUri);
-		if(uri.isEmpty()){
-			throw new InvalidNileUriException(String.format("Uri [%s] is not a valid Nile Uri", rawUri));
-		}
+
 		NileSchemaMetadata metadata = mapper.convertValue(metadataNode, NileSchemaMetadata.class);
-		mainlogProducer.removeContent(metadata, uri.get());
+		mainlogProducer.removeContent(metadata, rawUri);
 	}
 }
