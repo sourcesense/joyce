@@ -5,12 +5,10 @@
 	<parent>
 		<groupId>com.sourcesense.nile</groupId>
 		<artifactId>nile-import-parent</artifactId>
-		<version>0.0.1-SNAPSHOT</version>
+		<version>${revision}</version>
 	</parent>
 
-	<groupId>com.sourcesense.nile</groupId>
-	<artifactId>nile-import-core</artifactId>
-  <version>0.0.1-SNAPSHOT</version>
+  <artifactId>nile-import-core</artifactId>
 	<name>nile-import-core</name>
 	<description>Nile Import Core</description>
 

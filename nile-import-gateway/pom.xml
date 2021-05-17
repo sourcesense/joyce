@@ -5,12 +5,10 @@
 	<parent>
 		<groupId>com.sourcesense.nile</groupId>
 		<artifactId>nile-import-parent</artifactId>
-		<version>0.0.1-SNAPSHOT</version>
+		<version>${revision}</version>
 	</parent>
 
-	<groupId>com.sourcesense.nile</groupId>
-	<artifactId>nile-import-gateway</artifactId>
-	<version>0.0.1-SNAPSHOT</version>
+  <artifactId>nile-import-gateway</artifactId>
 	<name>nile-import-gateway</name>
 	<description>Nile Import Microservice</description>
 
@@ -18,6 +16,7 @@
     <dependency>
       <groupId>com.sourcesense.nile</groupId>
       <artifactId>nile-import-core</artifactId>
+      <version>${project.version}</version>
     </dependency>
 		<dependency>
 			<groupId>org.springframework.boot</groupId>
