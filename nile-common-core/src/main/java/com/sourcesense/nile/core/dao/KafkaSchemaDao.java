@@ -28,9 +28,9 @@ import io.confluent.ksql.api.client.Row;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnProperty;
+import org.springframework.context.annotation.DependsOn;
 import org.springframework.stereotype.Component;
 
-import javax.annotation.PostConstruct;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
@@ -40,6 +40,7 @@ import java.util.concurrent.ExecutionException;
 @RequiredArgsConstructor
 @ConditionalOnProperty(value = "nile.schema-service.database", havingValue = "kafka")
 @Component
+@DependsOn({"schemaTopic"})
 public class KafkaSchemaDao implements SchemaDao {
 
     private final Client ksql;
@@ -49,34 +50,41 @@ public class KafkaSchemaDao implements SchemaDao {
     private static final String TABLE_NAME = "NILE_SCHEMA_TABLE";
     private static final String STREAM_NAME = "NILE_SCHEMA_STREAM";
 
+    private static Boolean initialized = false;
 
-    @PostConstruct
-    void init() throws ExecutionException, InterruptedException {
-        String createTable = String.format(
-                "CREATE TABLE IF NOT EXISTS %s (\n" +
-                "     uid VARCHAR PRIMARY KEY,\n" +
-                "     value VARCHAR\n," +
-                "     subtype VARCHAR\n" +
-                "   ) WITH (\n" +
-                "     KAFKA_TOPIC = '%s', \n" +
-                "     VALUE_FORMAT = 'JSON'\n" +
-                "   );", TABLE_NAME, KsqlDBConfig.SCHEMA_TOPIC);
-        ksql.executeStatement(createTable).get();
-        String createStream = String.format(
-                "CREATE STREAM IF NOT EXISTS %s (\n" +
-                        "     uid VARCHAR KEY,\n" +
-                        "     value VARCHAR\n," +
-                        "     subtype VARCHAR\n" +
-                        "   ) WITH (\n" +
-                        "     KAFKA_TOPIC = '%s', \n" +
-                        "     VALUE_FORMAT = 'JSON'\n" +
-                        "   );", STREAM_NAME, KsqlDBConfig.SCHEMA_TOPIC);
-        ksql.executeStatement(createStream).get();
-        String createMaterializedView = String.format(
-            "CREATE TABLE IF NOT EXISTS  %s AS SELECT * FROM %s WHERE subtype = '%s';", getSchemaTableName(), TABLE_NAME, schemaServiceProperties.getSubtype());
-        //TODO: see what they responds here https://github.com/confluentinc/ksql/issues/7503
-        ksql.executeStatement(String.format("DROP TABLE %s;", getSchemaTableName())).get();
-        ksql.executeStatement(createMaterializedView).get();
+
+    void init() {
+        try {
+            String createTable = String.format(
+                    "CREATE TABLE IF NOT EXISTS %s (\n" +
+                            "     uid VARCHAR PRIMARY KEY,\n" +
+                            "     value VARCHAR\n," +
+                            "     subtype VARCHAR\n" +
+                            "   ) WITH (\n" +
+                            "     KAFKA_TOPIC = '%s', \n" +
+                            "     VALUE_FORMAT = 'JSON'\n" +
+                            "   );", TABLE_NAME, KsqlDBConfig.SCHEMA_TOPIC);
+            ksql.executeStatement(createTable).get();
+            String createStream = String.format(
+                    "CREATE STREAM IF NOT EXISTS %s (\n" +
+                            "     uid VARCHAR KEY,\n" +
+                            "     value VARCHAR\n," +
+                            "     subtype VARCHAR\n" +
+                            "   ) WITH (\n" +
+                            "     KAFKA_TOPIC = '%s', \n" +
+                            "     VALUE_FORMAT = 'JSON'\n" +
+                            "   );", STREAM_NAME, KsqlDBConfig.SCHEMA_TOPIC);
+            ksql.executeStatement(createStream).get();
+            String createMaterializedView = String.format(
+                    "CREATE TABLE IF NOT EXISTS  %s AS SELECT * FROM %s WHERE subtype = '%s';", getSchemaTableName(), TABLE_NAME, schemaServiceProperties.getSubtype());
+            //TODO: see what they responds here https://github.com/confluentinc/ksql/issues/7503
+            ksql.executeStatement(String.format("DROP TABLE IF EXISTS %s;", getSchemaTableName())).get();
+            ksql.executeStatement(createMaterializedView).get();
+            initialized = true;
+        } catch (Exception e){
+            throw new RuntimeException(e.getMessage());
+        }
+
     }
 
     private String getSchemaTableName() {
@@ -85,6 +93,9 @@ public class KafkaSchemaDao implements SchemaDao {
 
     @Override
     public Optional<SchemaEntity> get(String id) {
+        if(!initialized){ //TODO: clever way to do it, as post construct doesn't work cause we could have not created the backing topic
+            this.init();
+        }
         String query = String.format("SELECT uid, value FROM %s WHERE uid = '%s';", getSchemaTableName(), id);
         BatchedQueryResult result = ksql.executeQuery(query);
         // Wait for query result
@@ -105,6 +116,9 @@ public class KafkaSchemaDao implements SchemaDao {
 
     @Override
     public List<SchemaEntity> getAll() {
+        if(!initialized){
+            this.init();
+        }
         String query = String.format("SELECT uid, value FROM %s ;", getSchemaTableName());
         try {
             List<Row> result = ksql.executeQuery(query).get();
@@ -126,6 +140,9 @@ public class KafkaSchemaDao implements SchemaDao {
 
     @Override
     public void save(SchemaEntity schemaEntity) {
+        if(!initialized){
+            this.init();
+        }
         try {
             KsqlObject row = new KsqlObject()
                     .put("uid", schemaEntity.getUid())
@@ -139,6 +156,8 @@ public class KafkaSchemaDao implements SchemaDao {
 
     @Override
     public void delete(SchemaEntity t) {
-
+        if(!initialized){
+            this.init();
+        }
     }
 }

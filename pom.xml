@@ -10,18 +10,19 @@
 	</parent>
 	<groupId>com.sourcesense.nile</groupId>
 	<artifactId>nile-parent</artifactId>
-	<version>1.0.0-SNAPSHOT</version>
+	<version>${revision}</version>
   	<packaging>pom</packaging>
 
 	<name>nile-parent</name>
 	<description>Nile Parent Project</description>
 
 	<properties>
+		<revision>1.0.0-SNAPSHOT</revision>
 		<java.version>11</java.version>
-		<nile.common-core.version>0.1.0-SNAPSHOT</nile.common-core.version>
+		<nile.common-core.version>${revision}</nile.common-core.version>
+		<nile.connector-core.version>${revision}</nile.connector-core.version>
+		<nile.schema-engine.version>${revision}</nile.schema-engine.version>
 		<nile.import.core.version>0.0.1-SNAPSHOT</nile.import.core.version>
-		<nile.connector-core.version>0.0.1-SNAPSHOT</nile.connector-core.version>
-		<nile.schema-engine.version>0.0.1-SNAPSHOT</nile.schema-engine.version>
 		<org.mapstruct.version>1.4.1.Final</org.mapstruct.version>
 		<org.springdoc.version>1.5.5</org.springdoc.version>
 		<ksqldb.version>0.17.0</ksqldb.version>

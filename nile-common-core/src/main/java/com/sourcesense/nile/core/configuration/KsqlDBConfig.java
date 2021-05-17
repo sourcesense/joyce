@@ -55,7 +55,7 @@ public class KsqlDBConfig {
         return new KafkaAdmin(configs);
     }
 
-    @Bean
+    @Bean(value = "schemaTopic")
     public NewTopic topicBackingSchemasTable() {
         return TopicBuilder.name(SCHEMA_TOPIC)
                 .partitions(6)
