@@ -9,6 +9,7 @@ FROM adoptopenjdk:11-jre-hotspot
 WORKDIR /app
 COPY --from=builder /app/dependencies/ ./
 COPY --from=builder /app/spring-boot-loader/ ./
+RUN true
 COPY --from=builder /app/snapshot-dependencies/ ./
 COPY --from=builder /app/application/ ./
 
