@@ -8,9 +8,11 @@ RUN java -Djarmode=layertools -jar /app/application.jar extract
 FROM adoptopenjdk:11-jre-hotspot
 WORKDIR /app
 COPY --from=builder /app/dependencies/ ./
+RUN true
 COPY --from=builder /app/spring-boot-loader/ ./
 RUN true
 COPY --from=builder /app/snapshot-dependencies/ ./
+RUN true
 COPY --from=builder /app/application/ ./
 
 EXPOSE 6651
