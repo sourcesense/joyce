@@ -5,7 +5,7 @@
 	<parent>
 		<groupId>com.sourcesense.nile</groupId>
 		<artifactId>nile-parent</artifactId>
-		<version>1.0.2-develop</version>
+		<version>1.0.3-develop</version>
 <!--		<relativePath/> &lt;!&ndash; lookup parent from repository &ndash;&gt;-->
 	</parent>
   <artifactId>nile-import-parent</artifactId>
