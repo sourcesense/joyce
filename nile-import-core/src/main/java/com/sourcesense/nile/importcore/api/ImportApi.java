@@ -24,8 +24,6 @@ import io.swagger.v3.oas.annotations.tags.Tag;
 import org.springframework.http.HttpStatus;
 import org.springframework.web.bind.annotation.*;
 
-import java.util.Optional;
-
 @RequestMapping( value = "/api/import")
 @Tag(name = "Nile Import API", description = "Nile Import API")
 public interface ImportApi {

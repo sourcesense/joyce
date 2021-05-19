@@ -1,5 +1,10 @@
 server:
   port: 6651
+
+springdoc:
+  swagger-ui:
+    path: /docs
+    disable-swagger-default-url: true
 nile:
   schema-service:
     enabled: true
