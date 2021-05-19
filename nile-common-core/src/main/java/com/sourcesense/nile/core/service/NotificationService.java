@@ -37,7 +37,8 @@ import org.springframework.stereotype.Service;
 class Notification {
     private String source;
     private NotificationEvent event;
-    private String uid;
+    private String rawUri;
+    private String contentUri;
     private Boolean success;
     private JsonNode metadata;
     private JsonNode content;
@@ -48,7 +49,8 @@ class Notification {
         return "Notification{" +
                 "source='" + source + '\'' +
                 ", event='" + event + '\'' +
-                ", uid='" + uid + '\'' +
+                ", rawUri='" + rawUri + '\'' +
+                ", contentUri" + contentUri + '\'' +
                 ", success=" + success +
                 ", metadata=" + metadata +
                 '}';
@@ -65,54 +67,62 @@ public class NotificationService {
     private final NotificationServiceProperties properties;
     final private KafkaTemplate<String, JsonNode> kafkaTemplate;
 
-    public void ok(String uid, NotificationEvent event){
-        this.sendNotification(uid, event, null, null, true);
+    public void ok(String rawUri, String contentUri, NotificationEvent event) {
+        this.sendNotification(rawUri, contentUri, event, null, null, true);
     }
 
-    public <T> void ok(String uid, NotificationEvent event, T metadata){
-        this.sendNotification(uid, event, metadata, null, true);
+    public <T> void ok(String rawUri, String contentUri, NotificationEvent event, T metadata) {
+        this.sendNotification(rawUri, contentUri, event, metadata, null, true);
     }
 
-    public <T> void ok(String uid, NotificationEvent event, T metadata, T payload){
-        this.sendNotification(uid, event, metadata, payload, true);
+    public <T> void ok(String rawUri, String contentUri, NotificationEvent event, T metadata, T payload) {
+        this.sendNotification(rawUri, contentUri, event, metadata, payload, true);
     }
 
-    public void ko(String uid, NotificationEvent event, String error){
+    public void ko(String rawUri, String contentUri, NotificationEvent event, String error) {
         ObjectNode meta = mapper.createObjectNode();
         meta.put("error", error);
-        this.sendNotification(uid, event, meta, null, false);
+        this.sendNotification(rawUri, contentUri, event, meta, null, false);
     }
 
-    public <T> void ko(String uid, NotificationEvent event, T metadata){
-        this.sendNotification(uid, event, metadata, null, false);
+    public <T> void ko(String rawUri, String contentUri, NotificationEvent event, T metadata) {
+        this.sendNotification(rawUri, contentUri, event, metadata, null, false);
     }
 
-    public <T> void ko(String uid, NotificationEvent event, T metadata, T payload){
-        this.sendNotification(uid, event, metadata, payload, false);
+    public <T> void ko(String rawUri, String contentUri, NotificationEvent event, T metadata, T payload) {
+        this.sendNotification(rawUri, contentUri, event, metadata, payload, false);
     }
 
-    private  <T> void sendNotification(String uid, NotificationEvent event, T metadata, T payload, boolean success){
-        Notification notification = Notification.builder()
+    private <T> void sendNotification(
+            String rawUri,
+            String contentUri,
+            NotificationEvent event,
+            T metadata,
+            T payload,
+            boolean success) {
+
+        this.sendNotification(Notification.builder()
                 .success(success)
-                .uid(uid)
+                .rawUri(rawUri)
+                .contentUri(contentUri)
                 .event(event)
                 .source(properties.getSource())
                 .metadata(mapper.valueToTree(metadata))
                 .content(mapper.valueToTree(payload))
-                .build();
-        this.sendNotification(notification);
+                .build()
+        );
     }
 
-    private void sendNotification(Notification notification){
+    private void sendNotification(Notification notification) {
         Message<JsonNode> message = MessageBuilder
                 .withPayload(mapper.convertValue(notification, JsonNode.class))
                 .setHeader(KafkaHeaders.TOPIC, properties.getTopic())
-                .setHeader(KafkaHeaders.MESSAGE_KEY, notification.getUid())
+                .setHeader(KafkaHeaders.MESSAGE_KEY, notification.getRawUri())
                 .build();
-        kafkaTemplate.send(message).addCallback(stringMapSendResult -> {
-            log.debug("Sent notification message: {}", notification.toString());
-        }, throwable -> {
-            log.error(throwable.getMessage());
-        });
+
+        kafkaTemplate.send(message).addCallback(
+                stringMapSendResult -> log.debug("Sent notification message: {}", notification.toString()),
+                throwable -> log.error(throwable.getMessage())
+        );
     }
 }

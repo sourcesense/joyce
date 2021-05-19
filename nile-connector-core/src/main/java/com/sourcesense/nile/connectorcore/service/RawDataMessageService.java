@@ -19,11 +19,10 @@ package com.sourcesense.nile.connectorcore.service;
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.sourcesense.nile.connectorcore.dto.DataEntry;
-import com.sourcesense.nile.core.enumeration.NotificationEvent;
-import com.sourcesense.nile.core.service.KafkaMessageService;
-import com.sourcesense.nile.core.service.NotificationService;
 import com.sourcesense.nile.core.enumeration.KafkaCustomHeaders;
+import com.sourcesense.nile.core.service.KafkaMessageService;
 import lombok.extern.log4j.Log4j2;
+import org.apache.commons.lang3.StringUtils;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.kafka.core.KafkaTemplate;
 import org.springframework.kafka.support.KafkaHeaders;
@@ -42,15 +41,14 @@ public class RawDataMessageService extends KafkaMessageService<JsonNode> {
 
     public RawDataMessageService(
             ObjectMapper jsonMapper,
-            NotificationService notificationService,
             KafkaTemplate<String, JsonNode> kafkaTemplate) {
 
-        super(jsonMapper, notificationService, kafkaTemplate);
+        super(jsonMapper, kafkaTemplate);
     }
 
     public ListenableFuture<SendResult<String, JsonNode>> sendMessageToOutputTopic(DataEntry dataEntry) {
         Message<JsonNode> rawDataMessage = this.getRawDataMessage(dataEntry);
-        return this.sendMessage(dataEntry.getNileUri(), rawDataMessage);
+        return this.sendMessage(dataEntry.getNileUri(), StringUtils.EMPTY, rawDataMessage);
     }
 
     private Message<JsonNode> getRawDataMessage(DataEntry entry) {
@@ -64,24 +62,14 @@ public class RawDataMessageService extends KafkaMessageService<JsonNode> {
     }
 
     @Override
-    public void handleMessageSuccess(Message<JsonNode> message, SendResult<String, JsonNode> result) {
+    public void handleMessageSuccess(Message<JsonNode> message, SendResult<String, JsonNode> result, String rawUri, String contentUri, JsonNode eventPayload, JsonNode eventMetadata) {
         if (log.isDebugEnabled()) {
             log.debug("Sent message=[{}] with offset=[{}]", message, result.getRecordMetadata().offset());
         }
     }
 
     @Override
-    public void handleMessageFailure(Message<JsonNode> message, Throwable throwable) {
+    public void handleMessageFailure(Message<JsonNode> message, Throwable throwable, String rawUri, String contentUri, JsonNode eventPayload, JsonNode eventMetadata) {
         log.error("Unable to send message=[{}] due to : [{}]", message, throwable.getMessage());
-    }
-
-    @Override
-    public NotificationEvent getSuccessEvent() {
-        return NotificationEvent.SEND_RAW_DATA_SUCCESS;
-    }
-
-    @Override
-    public NotificationEvent getFailureEvent() {
-        return NotificationEvent.SEND_RAW_DATA_FAILED;
     }
 }

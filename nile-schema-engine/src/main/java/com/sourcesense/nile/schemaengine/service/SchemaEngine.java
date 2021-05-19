@@ -22,7 +22,6 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.databind.node.*;
 import com.networknt.schema.*;
 import com.sourcesense.nile.schemaengine.NileMetaSchema;
-import com.sourcesense.nile.schemaengine.dto.ProcessResult;
 import com.sourcesense.nile.schemaengine.exceptions.HandlerBeanNameNotFound;
 import com.sourcesense.nile.schemaengine.exceptions.InvalidSchemaException;
 import com.sourcesense.nile.schemaengine.exceptions.SchemaIsNotValidException;
@@ -36,7 +35,6 @@ import org.springframework.stereotype.Service;
 import javax.annotation.PostConstruct;
 import java.util.*;
 import java.util.stream.Collectors;
-import java.util.stream.Stream;
 import java.util.stream.StreamSupport;
 
 @Service
@@ -217,7 +215,7 @@ public class SchemaEngine implements ApplicationContextAware {
 	 * @param sourceJson
 	 * @return
 	 */
-	public ProcessResult process(String jsonSchema, String sourceJson) throws JsonProcessingException {
+	public JsonNode process(String jsonSchema, String sourceJson) throws JsonProcessingException {
 		JsonNode schemaJsonNode = mapper.readValue(jsonSchema, JsonNode.class);
 		JsonNode sourceJsonNode = mapper.readValue(sourceJson, JsonNode.class);
 		return process(schemaJsonNode, sourceJsonNode, null);
@@ -231,13 +229,13 @@ public class SchemaEngine implements ApplicationContextAware {
 	 * @return
 	 * @throws JsonProcessingException
 	 */
-	public ProcessResult process(String jsonSchema, Map sourceJson) throws JsonProcessingException {
+	public JsonNode process(String jsonSchema, Map sourceJson) throws JsonProcessingException {
 		JsonNode schemaJsonNode = mapper.readValue(jsonSchema, JsonNode.class);
 		JsonNode sourceJsonNode = mapper.convertValue(sourceJson, JsonNode.class);
 		return process(schemaJsonNode, sourceJsonNode, null);
 	}
 
-	public ProcessResult process(Map jsonSchema, Map sourceJson) {
+	public JsonNode process(Map jsonSchema, Map sourceJson) {
 		JsonNode schemaJsonNode = mapper.convertValue(jsonSchema, JsonNode.class);
 		JsonNode sourceJsonNode = mapper.convertValue(sourceJson, JsonNode.class);
 		return process(schemaJsonNode, sourceJsonNode, null);
@@ -250,14 +248,14 @@ public class SchemaEngine implements ApplicationContextAware {
 	 * @param source
 	 * @return
 	 */
-	public ProcessResult process(JsonNode schema, JsonNode source, Object context) {
+	public JsonNode process(JsonNode schema, JsonNode source, Object context) {
 		JsonSchema jsonSchema = factory.getSchema(schema);
 		Optional<JsonNode> metadata = Optional.ofNullable(jsonSchema.getSchemaNode().get(METADATA));
 		JsonNode result = this.parse(null, jsonSchema.getSchemaNode(), source, metadata, Optional.ofNullable(context));
 
 		validate(schema, result);
 
-		return new ProcessResult(result, metadata);
+		return result;
 	}
 
 	/**

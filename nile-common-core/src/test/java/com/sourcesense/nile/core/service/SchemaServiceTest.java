@@ -16,32 +16,19 @@
 
 package com.sourcesense.nile.core.service;
 
-import com.fasterxml.jackson.databind.ObjectMapper;
-import com.sourcesense.nile.core.configuration.SchemaServiceProperties;
 import com.sourcesense.nile.core.dao.SchemaDao;
-import com.sourcesense.nile.core.dto.SchemaSave;
 import com.sourcesense.nile.core.mapper.SchemaMapper;
-import com.sourcesense.nile.core.model.NileURI;
-import com.sourcesense.nile.core.model.SchemaEntity;
 import com.sourcesense.nile.schemaengine.service.SchemaEngine;
-import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.Mock;
-import org.mockito.Mockito;
 import org.mockito.junit.jupiter.MockitoExtension;
 import org.mockito.junit.jupiter.MockitoSettings;
 import org.mockito.quality.Strictness;
 
 import java.net.URISyntaxException;
 import java.net.URL;
-import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
-import java.util.Optional;
-
-import static org.mockito.ArgumentMatchers.any;
-import static org.mockito.Mockito.mock;
-import static org.mockito.Mockito.verify;
 
 @ExtendWith(MockitoExtension.class)
 @MockitoSettings(strictness = Strictness.LENIENT)

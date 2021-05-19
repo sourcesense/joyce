@@ -8,14 +8,11 @@ import com.sourcesense.nile.schemaengine.exceptions.SchemaIsNotValidException;
 import lombok.RequiredArgsConstructor;
 import org.apache.kafka.common.KafkaException;
 import org.springframework.http.HttpStatus;
-import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.ControllerAdvice;
 import org.springframework.web.bind.annotation.ExceptionHandler;
 import org.springframework.web.bind.annotation.ResponseBody;
 import org.springframework.web.bind.annotation.ResponseStatus;
 import org.springframework.web.context.request.WebRequest;
-
-import java.util.Objects;
 
 
 @RequiredArgsConstructor
@@ -30,74 +27,85 @@ public class ApiExceptionHandler {
 
     private final CustomExceptionHandler exceptionHandler;
 
-    @ExceptionHandler(value = InvalidSchemaException.class)
-    @ResponseStatus(HttpStatus.BAD_REQUEST)
     @ResponseBody
+    @ResponseStatus(HttpStatus.BAD_REQUEST)
+    @ExceptionHandler(InvalidSchemaException.class)
     public ApiError handler(InvalidSchemaException exception, WebRequest request) {
-        return new ApiError(exception.getMessage(), exception.getClass().getCanonicalName());
+        return this.logExceptionAndComputeErrorResponse(exception);
     }
 
-    @ExceptionHandler(value = InvalidMetadataException.class)
+    @ResponseBody
     @ResponseStatus(HttpStatus.BAD_REQUEST)
-    @ResponseBody
+    @ExceptionHandler(InvalidMetadataException.class)
     public ApiError handler(InvalidMetadataException exception, WebRequest request) {
-        return new ApiError(exception.getMessage(), exception.getClass().getCanonicalName());
+        return this.logExceptionAndComputeErrorResponse(exception);
     }
 
-    @ExceptionHandler(value = PathNotFoundException.class)
-    @ResponseStatus(HttpStatus.INTERNAL_SERVER_ERROR)
     @ResponseBody
+    @ResponseStatus(HttpStatus.INTERNAL_SERVER_ERROR)
+    @ExceptionHandler(PathNotFoundException.class)
     public ApiError handler(PathNotFoundException exception, WebRequest request) {
-        return new ApiError(exception.getMessage(), exception.getClass().getCanonicalName());
+        return this.logExceptionAndComputeErrorResponse(exception);
     }
 
-    @ExceptionHandler(value = KafkaException.class)
-    @ResponseStatus(HttpStatus.INTERNAL_SERVER_ERROR)
     @ResponseBody
+    @ExceptionHandler(KafkaException.class)
+    @ResponseStatus(HttpStatus.INTERNAL_SERVER_ERROR)
     public ApiError handler(KafkaException exception, WebRequest request) {
-        return new ApiError(exception.getMessage(), exception.getClass().getCanonicalName());
+        return this.logExceptionAndComputeErrorResponse(exception);
     }
 
-    @ExceptionHandler(value = SchemaNotFoundException.class)
+    @ResponseBody
     @ResponseStatus(HttpStatus.NOT_FOUND)
-    @ResponseBody
+    @ExceptionHandler(SchemaNotFoundException.class)
     public ApiError handler(SchemaNotFoundException exception, WebRequest request) {
-        return new ApiError(exception.getMessage(), exception.getClass().getCanonicalName());
+        return this.logExceptionAndComputeErrorResponse(exception);
     }
 
-    @ExceptionHandler(value = SchemaIsNotValidException.class)
-    @ResponseStatus(HttpStatus.INTERNAL_SERVER_ERROR)
     @ResponseBody
+    @ResponseStatus(HttpStatus.INTERNAL_SERVER_ERROR)
+    @ExceptionHandler(SchemaIsNotValidException.class)
     public ApiError handler(SchemaIsNotValidException exception, WebRequest request) {
-        return new ApiError(exception.getMessage(), exception.getClass().getCanonicalName());
+        return this.logExceptionAndComputeErrorResponse(exception);
     }
 
+    @ResponseBody
+    @ResponseStatus(HttpStatus.INTERNAL_SERVER_ERROR)
     @ExceptionHandler(MappingValidationException.class)
-    ResponseEntity<ApiError> mappingValidationException(MappingValidationException exception) {
-        exceptionHandler.handleException(exception);
-        return this.getErrorResponse(exception.getMessage(), exception.getHttpStatus());
+    ApiError mappingValidationException(MappingValidationException exception) {
+        return this.logExceptionAndComputeErrorResponse(exception);
     }
 
+    @ResponseBody
+    @ResponseStatus(HttpStatus.NOT_FOUND)
     @ExceptionHandler(DataInfoNotFoundException.class)
-    ResponseEntity<ApiError> dataInfoNotFoundException(DataInfoNotFoundException exception) {
-        exceptionHandler.handleException(exception);
-        return this.getErrorResponse(exception.getMessage(), HttpStatus.NOT_FOUND);
+    ApiError dataInfoNotFoundException(DataInfoNotFoundException exception) {
+        return this.logExceptionAndComputeErrorResponse(exception);
     }
 
+    @ResponseBody
+    @ResponseStatus(HttpStatus.INTERNAL_SERVER_ERROR)
     @ExceptionHandler(ProcessingException.class)
-    ResponseEntity<ApiError> processingException(ProcessingException exception) {
-        exceptionHandler.handleNotificationException(exception);
-        return this.getErrorResponse(exception.getMessage(), exception.getHttpStatus());
+    ApiError processingException(ProcessingException exception) {
+        return this.logExceptionAndComputeErrorResponse(exception);
     }
 
+    @ResponseBody
+    @ResponseStatus(HttpStatus.INTERNAL_SERVER_ERROR)
     @ExceptionHandler(Exception.class)
-    ResponseEntity<ApiError> exception(Exception exception) {
-        exceptionHandler.handleException(exception);
-        return this.getErrorResponse(exception.getMessage(), HttpStatus.INTERNAL_SERVER_ERROR);
+    ApiError exception(Exception exception) {
+        return this.logExceptionAndComputeErrorResponse(exception);
     }
 
-    private ResponseEntity<ApiError> getErrorResponse(String message, HttpStatus httpStatus) {
-        HttpStatus status = Objects.nonNull(httpStatus) ? httpStatus : HttpStatus.INTERNAL_SERVER_ERROR;
-        return ResponseEntity.status(status).body(new ApiError(message, status.name()));
+    private ApiError logExceptionAndComputeErrorResponse(Exception exception) {
+        exceptionHandler.handleException(exception);
+        return this.computeErrorResponse(exception);
+    }
+
+    private ApiError computeErrorResponse(Exception exception) {
+        return ApiError.builder()
+                .message(exception.getMessage())
+                .error(exception.getClass().getCanonicalName())
+                .build();
     }
 }

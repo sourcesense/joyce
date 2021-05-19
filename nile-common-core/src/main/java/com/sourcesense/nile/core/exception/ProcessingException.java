@@ -1,26 +1,24 @@
 package com.sourcesense.nile.core.exception;
 
 import com.sourcesense.nile.core.enumeration.NotificationEvent;
-import lombok.Builder;
 import lombok.Getter;
+import lombok.experimental.SuperBuilder;
 import org.springframework.http.HttpStatus;
 
+//Todo: da cambiare
 @Getter
 public class ProcessingException extends NotificationException{
 
-    private HttpStatus httpStatus = HttpStatus.INTERNAL_SERVER_ERROR;
+    private final HttpStatus httpStatus;
 
-    public ProcessingException(String message) {
-        super(message);
-    }
-
-    @Builder
     public ProcessingException(
             String message,
+            String rawUri,
+            String contentUri,
             NotificationEvent event,
             HttpStatus httpStatus) {
 
-        super(message, event);
+        super(message, rawUri, contentUri, event);
         this.httpStatus = httpStatus;
     }
 }

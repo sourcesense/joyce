@@ -1,19 +1,26 @@
 package com.sourcesense.nile.core.exception;
 
 import com.sourcesense.nile.core.enumeration.NotificationEvent;
+import lombok.Builder;
 import lombok.Getter;
 
 @Getter
 public class NotificationException extends RuntimeException{
 
-    protected NotificationEvent event;
+    protected final String rawUri;
+    protected final String contentUri;
+    protected final NotificationEvent event;
 
-    public NotificationException(String message) {
-        super(message);
-    }
+    @Builder
+    public NotificationException(
+            String message,
+            String rawUri,
+            String contentUri,
+            NotificationEvent event) {
 
-    public NotificationException(String message, NotificationEvent event) {
         super(message);
+        this.rawUri = rawUri;
+        this.contentUri = contentUri;
         this.event = event;
     }
 }

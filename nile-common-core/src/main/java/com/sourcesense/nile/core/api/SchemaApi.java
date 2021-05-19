@@ -47,7 +47,6 @@ public interface SchemaApi {
 	@ResponseStatus(code = HttpStatus.CREATED)
     NileURI saveSchemaYaml(@RequestBody SchemaSave schema) throws JsonProcessingException;
 
-
 	@DeleteMapping("/{name}")
 	@ResponseStatus(code = HttpStatus.NO_CONTENT)
 	void deleteSchema(@PathVariable String name);

@@ -18,8 +18,6 @@ public class JobExceptionHandler {
         switch (customException) {
             case PROCESSING_EXCEPTION:
             case NOTIFICATION_EXCEPTION:
-                exceptionHandler.handleNotificationException((NotificationException) exception);
-                break;
             case MAPPING_VALIDATION_EXCEPTION:
             case DATA_INFO_NOT_FOUND_EXCEPTION:
             case EXCEPTION:

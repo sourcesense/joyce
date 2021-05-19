@@ -19,6 +19,7 @@ package com.sourcesense.nile.core.service;
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.databind.node.ObjectNode;
+import com.sourcesense.nile.core.annotation.*;
 import com.sourcesense.nile.core.dto.Schema;
 import com.sourcesense.nile.core.enumeration.ImportAction;
 import com.sourcesense.nile.core.enumeration.KafkaCustomHeaders;
@@ -43,56 +44,73 @@ public class MainlogProducer extends KafkaMessageService<JsonNode> {
     @Value("${nile.kafka.mainlog-topic:mainlog}")
     String mainlogTopic;
 
-    public MainlogProducer(ObjectMapper mapper, NotificationService notificationService, KafkaTemplate<String, JsonNode> kafkaTemplate) {
-        super(mapper, notificationService, kafkaTemplate);
+    public MainlogProducer(
+            ObjectMapper mapper,
+            KafkaTemplate<String, JsonNode> kafkaTemplate) {
+
+        super(mapper, kafkaTemplate);
     }
 
-    public NileURI removeContent(NileSchemaMetadata metadata, NileURI uri){
+    public NileURI removeContent(NileURI rawUri, NileSchemaMetadata metadata) {
+        return this.sendRemovalMessage(rawUri, rawUri, metadata);
+    }
+
+    public NileURI removeContent(NileURI rawUri, NileURI contentUri, NileSchemaMetadata metadata) {
+        return this.sendRemovalMessage(rawUri, contentUri, metadata);
+    }
+
+    public NileURI sendRemovalMessage(NileURI rawUri, NileURI contentUri, NileSchemaMetadata metadata) {
 
         MessageBuilder<JsonNode> message = MessageBuilder
-                .withPayload((JsonNode)mapper.createObjectNode())
+                .withPayload((JsonNode) mapper.createObjectNode())
                 .setHeader(KafkaHeaders.TOPIC, mainlogTopic)
+                .setHeader(KafkaHeaders.MESSAGE_KEY, contentUri.toString())
                 .setHeader(KafkaCustomHeaders.MESSAGE_ACTION, ImportAction.DELETE.toString())
-                .setHeader(KafkaHeaders.MESSAGE_KEY, uri.toString());
+                .setHeader(KafkaCustomHeaders.RAW_URI, rawUri.toString());
 
         setMetadataHeaders(metadata, message);
 
-        this.sendMessage(uri.toString(), message.build());
-        return uri;
+        this.sendMessage(rawUri.toString(), contentUri.toString(), message.build());
+        return contentUri;
     }
 
     /**
      * Publish to main log a processed content
      *
      * @param schema
-     * @param metadata
-     * @param uri
-     * @param content
      * @param rawUri
+     * @param contentUri
+     * @param content
+     * @param metadata
      * @return
      */
-    public NileURI publishContent(Schema schema, NileSchemaMetadata metadata, NileURI uri, JsonNode content, NileURI rawUri) {
+    public NileURI publishContent(
+            Schema schema,
+            NileURI contentUri,
+            NileURI rawUri,
+            JsonNode content,
+            NileSchemaMetadata metadata) {
 
         // Set schema version
         ObjectNode content_metadata = mapper.createObjectNode();
         content_metadata.put("schema_uid", schema.getUid());
         content_metadata.put("schema_name", schema.getName());
         content_metadata.put("schema_development", schema.getDevelopment());
-        if (rawUri != null){
+        if (rawUri != null) {
             content_metadata.put("raw_uri", rawUri.toString());
         }
-        ((ObjectNode)content).set("_metadata_", content_metadata);
+        ((ObjectNode) content).set("_metadata_", content_metadata);
 
         MessageBuilder<JsonNode> message = MessageBuilder
                 .withPayload(content)
                 .setHeader(KafkaHeaders.TOPIC, mainlogTopic)
                 .setHeader(KafkaCustomHeaders.MESSAGE_ACTION, ImportAction.INSERT.toString())
-                .setHeader(KafkaHeaders.MESSAGE_KEY, uri.toString());
+                .setHeader(KafkaHeaders.MESSAGE_KEY, contentUri.toString());
 
         setMetadataHeaders(metadata, message);
 
-        this.sendMessage(uri.toString(), message.build());
-        return uri;
+        this.sendMessage(rawUri.toString(), contentUri.toString(), message.build());
+        return contentUri;
     }
 
     private void setMetadataHeaders(NileSchemaMetadata metadata, MessageBuilder<JsonNode> message) {
@@ -107,6 +125,7 @@ public class MainlogProducer extends KafkaMessageService<JsonNode> {
 
     /**
      * Publish Schema on main log topic
+     *
      * @param schema
      */
     public void publishSchema(Schema schema) {
@@ -116,28 +135,34 @@ public class MainlogProducer extends KafkaMessageService<JsonNode> {
                 .setHeader(KafkaHeaders.MESSAGE_KEY, schema.getUid())
                 .setHeader(KafkaCustomHeaders.MESSAGE_ACTION, ImportAction.INSERT.toString());
 
-        this.sendMessage(schema.getUid(), message.build());
+        this.sendMessage(schema.getUid(), schema.getUid(), message.build());
     }
 
     //TODO: remove schema????
 
     @Override
-    public void handleMessageSuccess(Message<JsonNode> message, SendResult<String, JsonNode> result) {
+    @Notify(successEvent = NotificationEvent.MAINLOG_PUBLISH_SUCCESS)
+    public void handleMessageSuccess(
+            Message<JsonNode> message,
+            SendResult<String, JsonNode> result,
+            @RawUri String rawUri,
+            @ContentUri String contentUri,
+            @EventPayload JsonNode eventPayload,
+            @EventMetadata JsonNode eventMetadata) {
+
         log.debug("Correctly sent message: {} to mainlog", message);
     }
 
     @Override
-    public void handleMessageFailure(Message<JsonNode> message, Throwable throwable) {
+    @Notify(failureEvent = NotificationEvent.MAINLOG_PUBLISH_FAILED)
+    public void handleMessageFailure(
+            Message<JsonNode> message,
+            Throwable throwable,
+            @RawUri String rawUri,
+            @ContentUri String contentUri,
+            @EventPayload JsonNode eventPayload,
+            @EventMetadata JsonNode eventMetadata) {
+
         log.error("Unable to send message=[{}] due to : [{}]", message, throwable.getMessage());
-    }
-
-    @Override
-    public NotificationEvent getSuccessEvent() {
-        return NotificationEvent.MAINLOG_PUBLISH_SUCCESS;
-    }
-
-    @Override
-    public NotificationEvent getFailureEvent() {
-        return NotificationEvent.MAINLOG_PUBLISH_FAILED;
     }
 }

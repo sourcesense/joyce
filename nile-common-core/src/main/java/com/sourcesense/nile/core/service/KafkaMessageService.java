@@ -18,7 +18,6 @@ package com.sourcesense.nile.core.service;
 
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
-import com.sourcesense.nile.core.enumeration.NotificationEvent;
 import lombok.RequiredArgsConstructor;
 import org.apache.kafka.clients.producer.RecordMetadata;
 import org.springframework.kafka.core.KafkaTemplate;
@@ -31,38 +30,55 @@ import org.springframework.util.concurrent.ListenableFutureCallback;
 public abstract class KafkaMessageService<T> {
 
     protected final ObjectMapper mapper;
-    private final NotificationService notificationService;
     private final KafkaTemplate<String, T> kafkaTemplate;
 
-    public abstract void handleMessageSuccess(Message<T> message, SendResult<String, T> result);
-    public abstract void handleMessageFailure(Message<T> message, Throwable throwable);
-    public abstract NotificationEvent getSuccessEvent();
-    public abstract NotificationEvent getFailureEvent();
+    public abstract void handleMessageSuccess(
+            Message<T> message,
+            SendResult<String, T> result,
+            String rawUri,
+            String contentUri,
+            T eventPayload,
+            JsonNode eventMetadata
+    );
 
-    protected ListenableFuture<SendResult<String, T>> sendMessage(String messageKey, Message<T> message) {
+    public abstract void handleMessageFailure(
+            Message<T> message,
+            Throwable throwable,
+            String rawUri,
+            String contentUri,
+            T eventPayload,
+            JsonNode eventMetadata);
+
+    protected ListenableFuture<SendResult<String, T>> sendMessage(String rawUri, String contentUri, Message<T> message) {
+        return this.sendMessageToTopic(rawUri, contentUri, message);
+    }
+
+    protected ListenableFuture<SendResult<String, T>> sendMessageToTopic(String rawUri, String contentUri, Message<T> message) {
 
         ListenableFuture<SendResult<String, T>> future = kafkaTemplate.send(message);
         future.addCallback(new ListenableFutureCallback<>() {
 
             @Override
             public void onSuccess(SendResult<String, T> result) {
-                handleMessageSuccess(message, result);
-                notificationService.ok(
-                        messageKey,
-                        getSuccessEvent(),
-                        formatRecordMetadata(result.getRecordMetadata()),
-                        message
+                handleMessageSuccess(
+                        message,
+                        result,
+                        rawUri,
+                        contentUri,
+                        message.getPayload(),
+                        formatRecordMetadata(result.getRecordMetadata())
                 );
             }
 
             @Override
             public void onFailure(Throwable throwable) {
-                handleMessageFailure(message, throwable);
-                notificationService.ko(
-                        messageKey,
-                        getFailureEvent(),
-                        throwable.getMessage(),
-                        message
+                handleMessageFailure(
+                        message,
+                        throwable,
+                        rawUri,
+                        contentUri,
+                        message.getPayload(),
+                        formatError(throwable.getMessage())
                 );
             }
         });
@@ -70,11 +86,16 @@ public abstract class KafkaMessageService<T> {
         return future;
     }
 
-    private JsonNode formatRecordMetadata(RecordMetadata recordMetadata) {
+    protected JsonNode formatRecordMetadata(RecordMetadata recordMetadata) {
         return mapper.createObjectNode()
                 .put("topic", recordMetadata.topic())
                 .put("partition", recordMetadata.partition())
                 .put("offset", recordMetadata.offset())
                 .put("timestamp", recordMetadata.timestamp());
+    }
+
+    protected JsonNode formatError(String error) {
+        return mapper.createObjectNode()
+                .put("error", error);
     }
 }
