@@ -180,3 +180,7 @@ nile-common-core/nile-common-core.iml
 nile-connector-core/nile-connector-core.iml
 nile-schema-engine/nile-schema-engine.iml
 nile-parent.iml
+nile-common-core/.flattened-pom.xml
+nile-connector-core/.flattened-pom.xml
+nile-schema-engine/.flattened-pom.xml
+.flattened-pom.xml

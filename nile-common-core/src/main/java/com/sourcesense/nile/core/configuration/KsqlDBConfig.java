@@ -36,7 +36,7 @@ import java.util.Map;
 @Configuration
 @EnableKafka
 public class KsqlDBConfig {
-    public static String SCHEMA_TOPIC = "nile-schema";
+
 
     @Value("${nile.ksql.host:localhost}")
     String host;
@@ -53,15 +53,6 @@ public class KsqlDBConfig {
         Map<String, Object> configs = new HashMap<>();
         configs.put(AdminClientConfig.BOOTSTRAP_SERVERS_CONFIG, bootstrapAddress);
         return new KafkaAdmin(configs);
-    }
-
-    @Bean(value = "schemaTopic")
-    public NewTopic topicBackingSchemasTable() {
-        return TopicBuilder.name(SCHEMA_TOPIC)
-                .partitions(6)
-                .replicas(1) //TODO: externalize in configs
-                .config(TopicConfig.CLEANUP_POLICY_CONFIG, TopicConfig.CLEANUP_POLICY_COMPACT)
-                .build();
     }
 
     @Bean(destroyMethod = "close")
