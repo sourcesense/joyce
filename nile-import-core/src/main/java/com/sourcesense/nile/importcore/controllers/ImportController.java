@@ -19,7 +19,6 @@ package com.sourcesense.nile.importcore.controllers;
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.node.ObjectNode;
 import com.sourcesense.nile.core.dto.Schema;
-import com.sourcesense.nile.core.enumeration.ImportAction;
 import com.sourcesense.nile.core.exception.SchemaNotFoundException;
 import com.sourcesense.nile.core.model.NileURI;
 import com.sourcesense.nile.core.service.SchemaService;
@@ -42,7 +41,7 @@ public class ImportController implements ImportApi {
 	@Override
 	public Boolean importDocument(String schemaId, ObjectNode document) {
 		return importService.processImport(
-				this.computeRawUri(ImportAction.INSERT),
+				this.computeRawUri(),
 				document,
 				this.fetchSchema(schemaId)
 		);
@@ -56,17 +55,17 @@ public class ImportController implements ImportApi {
 	@Override
 	public Boolean removeDocument(String schemaId, ObjectNode document) {
 		importService.removeDocument(
-				this.computeRawUri(ImportAction.DELETE),
+				this.computeRawUri(),
 				document,
 				this.fetchSchema(schemaId)
 		);
 		return true;
 	}
 
-	private NileURI computeRawUri(ImportAction action) {
+	private NileURI computeRawUri() {
 		String uuid = UUID.randomUUID().toString().substring(0, 8);
 		String timestamp = new Date().toInstant().toString();
-		String uid = action.toString() + "-" + uuid + "-" + timestamp;
+		String uid = uuid + "-" + timestamp;
 		return NileURI.make(NileURI.Type.RAW, NileURI.Subtype.OTHER, "rest", uid);
 	}
 

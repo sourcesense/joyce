@@ -121,7 +121,10 @@ public class ImportConsumer {
 	}
 
 	@Notify(failureEvent = NotificationEvent.RAW_URI_GENERATION_FAILED)
-	private NileURI computeRawURI(String messageKey, Map<String, String> headers) throws JsonProcessingException {
+	private NileURI computeRawURI(
+			@RawUri String messageKey,
+			Map<String, String> headers) throws JsonProcessingException {
+
 		if (headers.get(KafkaCustomHeaders.IMPORT_SCHEMA) == null) {
 
 			ConnectKeyPayload key = mapper.readValue(messageKey, ConnectKeyPayload.class);
@@ -134,7 +137,9 @@ public class ImportConsumer {
 
 	}
 
-	private Schema computeSchema(NileURI uri) {
+	@Notify(failureEvent = NotificationEvent.IMPORT_SCHEMA_CREATION_FAILED)
+	private Schema computeSchema(
+			@RawUri NileURI uri) {
 
 		return schemaService.findByName(uri.getCollection())
 				.orElseThrow(() -> new SchemaNotFoundException(String.format("Schema %s does not exists", uri.toString())));
