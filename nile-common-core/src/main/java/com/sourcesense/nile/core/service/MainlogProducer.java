@@ -43,12 +43,15 @@ public class MainlogProducer extends KafkaMessageService<JsonNode> {
 
     @Value("${nile.kafka.mainlog-topic:mainlog}")
     String mainlogTopic;
+    private final NotificationService notificationService;
 
     public MainlogProducer(
             ObjectMapper mapper,
-            KafkaTemplate<String, JsonNode> kafkaTemplate) {
+            KafkaTemplate<String, JsonNode> kafkaTemplate,
+            NotificationService notificationService) {
 
         super(mapper, kafkaTemplate);
+        this.notificationService = notificationService;
     }
 
     public NileURI removeContent(NileURI rawUri, NileSchemaMetadata metadata) {
@@ -86,8 +89,8 @@ public class MainlogProducer extends KafkaMessageService<JsonNode> {
      */
     public NileURI publishContent(
             Schema schema,
-            NileURI contentUri,
             NileURI rawUri,
+            NileURI contentUri,
             JsonNode content,
             NileSchemaMetadata metadata) {
 
@@ -141,28 +144,41 @@ public class MainlogProducer extends KafkaMessageService<JsonNode> {
     //TODO: remove schema????
 
     @Override
-    @Notify(successEvent = NotificationEvent.MAINLOG_PUBLISH_SUCCESS)
     public void handleMessageSuccess(
             Message<JsonNode> message,
             SendResult<String, JsonNode> result,
-            @RawUri String rawUri,
-            @ContentUri String contentUri,
-            @EventPayload JsonNode eventPayload,
-            @EventMetadata JsonNode eventMetadata) {
+            String rawUri,
+            String contentUri,
+            JsonNode eventPayload,
+            JsonNode eventMetadata) {
 
         log.debug("Correctly sent message: {} to mainlog", message);
+        notificationService.ok(
+                rawUri,
+                contentUri,
+                NotificationEvent.MAINLOG_PUBLISH_SUCCESS,
+                eventPayload,
+                eventMetadata
+        );
     }
 
     @Override
-    @Notify(failureEvent = NotificationEvent.MAINLOG_PUBLISH_FAILED)
     public void handleMessageFailure(
             Message<JsonNode> message,
             Throwable throwable,
-            @RawUri String rawUri,
-            @ContentUri String contentUri,
-            @EventPayload JsonNode eventPayload,
-            @EventMetadata JsonNode eventMetadata) {
+            String rawUri,
+            String contentUri,
+            JsonNode eventPayload,
+            JsonNode eventMetadata) {
 
         log.error("Unable to send message=[{}] due to : [{}]", message, throwable.getMessage());
+        notificationService.ko(
+                rawUri,
+                contentUri,
+                NotificationEvent.MAINLOG_PUBLISH_SUCCESS,
+                eventPayload,
+                eventMetadata
+        );
     }
+
 }

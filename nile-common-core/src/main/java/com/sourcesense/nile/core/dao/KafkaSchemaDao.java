@@ -31,6 +31,7 @@ import org.springframework.boot.autoconfigure.condition.ConditionalOnProperty;
 import org.springframework.context.annotation.DependsOn;
 import org.springframework.stereotype.Component;
 
+import javax.annotation.PostConstruct;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
@@ -52,7 +53,7 @@ public class KafkaSchemaDao implements SchemaDao {
 
     private static Boolean initialized = false;
 
-
+    @PostConstruct
     void init() {
         try {
             String createTable = String.format(
@@ -93,9 +94,9 @@ public class KafkaSchemaDao implements SchemaDao {
 
     @Override
     public Optional<SchemaEntity> get(String id) {
-        if(!initialized){ //TODO: clever way to do it, as post construct doesn't work cause we could have not created the backing topic
-            this.init();
-        }
+//        if(!initialized){ //TODO: clever way to do it, as post construct doesn't work cause we could have not created the backing topic
+//            this.init();
+//        }
         String query = String.format("SELECT uid, value FROM %s WHERE uid = '%s';", getSchemaTableName(), id);
         BatchedQueryResult result = ksql.executeQuery(query);
         // Wait for query result
@@ -116,9 +117,9 @@ public class KafkaSchemaDao implements SchemaDao {
 
     @Override
     public List<SchemaEntity> getAll() {
-        if(!initialized){
-            this.init();
-        }
+//        if(!initialized){
+//            this.init();
+//        }
         String query = String.format("SELECT uid, value FROM %s ;", getSchemaTableName());
         try {
             List<Row> result = ksql.executeQuery(query).get();
@@ -140,9 +141,9 @@ public class KafkaSchemaDao implements SchemaDao {
 
     @Override
     public void save(SchemaEntity schemaEntity) {
-        if(!initialized){
-            this.init();
-        }
+//        if(!initialized){
+//            this.init();
+//        }
         try {
             KsqlObject row = new KsqlObject()
                     .put("uid", schemaEntity.getUid())
@@ -156,8 +157,8 @@ public class KafkaSchemaDao implements SchemaDao {
 
     @Override
     public void delete(SchemaEntity t) {
-        if(!initialized){
-            this.init();
-        }
+//        if(!initialized){
+//            this.init();
+//        }
     }
 }

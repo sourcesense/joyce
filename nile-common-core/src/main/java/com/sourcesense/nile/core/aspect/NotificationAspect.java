@@ -5,8 +5,10 @@ import com.fasterxml.jackson.databind.node.JsonNodeFactory;
 import com.fasterxml.jackson.databind.node.ObjectNode;
 import com.sourcesense.nile.core.annotation.*;
 import com.sourcesense.nile.core.enumeration.NotificationEvent;
+import com.sourcesense.nile.core.exception.NotifiedException;
 import com.sourcesense.nile.core.service.NotificationService;
 import lombok.RequiredArgsConstructor;
+import lombok.SneakyThrows;
 import org.aspectj.lang.ProceedingJoinPoint;
 import org.aspectj.lang.annotation.Around;
 import org.aspectj.lang.annotation.Aspect;
@@ -57,10 +59,12 @@ public class NotificationAspect implements MethodAspect {
             return result;
 
         } catch (Throwable exception) {
-            this.computeNotificationEvent(method, Notify::failureEvent).ifPresent(
-                    failureEvent -> notificationService.ko(rawUri, contentUri, failureEvent, eventPayload, eventMetadata)
-            );
-
+            if (!NotifiedException.class.equals(exception.getClass())) {
+                this.computeNotificationEvent(method, Notify::failureEvent).ifPresent(
+                        failureEvent -> notificationService.ko(rawUri, contentUri, failureEvent, eventPayload, eventMetadata)
+                );
+                throw new NotifiedException(exception);
+            }
             throw new RuntimeException(exception);
         }
     }
