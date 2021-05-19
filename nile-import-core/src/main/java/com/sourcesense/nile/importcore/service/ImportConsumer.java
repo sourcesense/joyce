@@ -19,16 +19,17 @@ package com.sourcesense.nile.importcore.service;
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.databind.node.ObjectNode;
+import com.sourcesense.nile.core.annotation.Notify;
+import com.sourcesense.nile.core.annotation.RawUri;
 import com.sourcesense.nile.core.dto.Schema;
 import com.sourcesense.nile.core.enumeration.ImportAction;
+import com.sourcesense.nile.core.enumeration.KafkaCustomHeaders;
 import com.sourcesense.nile.core.enumeration.NotificationEvent;
 import com.sourcesense.nile.core.exception.InvalidNileUriException;
-import com.sourcesense.nile.core.exception.NotificationException;
+import com.sourcesense.nile.core.exception.SchemaNotFoundException;
 import com.sourcesense.nile.core.exception.handler.CustomExceptionHandler;
 import com.sourcesense.nile.core.model.NileURI;
 import com.sourcesense.nile.core.service.SchemaService;
-import com.sourcesense.nile.core.exception.SchemaNotFoundException;
-import com.sourcesense.nile.core.enumeration.KafkaCustomHeaders;
 import com.sourcesense.nile.importcore.dto.ConnectKeyPayload;
 import com.sourcesense.nile.importcore.exception.ImportException;
 import lombok.RequiredArgsConstructor;
@@ -48,27 +49,38 @@ import java.util.Optional;
 @Service
 @RequiredArgsConstructor
 public class ImportConsumer {
+
+	final private ObjectMapper mapper;
 	final private ImportService importService;
 	final private SchemaService schemaService;
 	final private CustomExceptionHandler customExceptionHandler;
-	final private ObjectMapper mapper;
+
 
 	@KafkaListener(topics = "${nile.kafka.import-topic:import}")
-	public void consumeMessage(@Payload ObjectNode message, @Header(KafkaHeaders.RECEIVED_MESSAGE_KEY) String messageKey,
+	public void consumeMessage(
+			@Payload ObjectNode message,
+			@Header(KafkaHeaders.RECEIVED_MESSAGE_KEY) String messageKey,
 			@Headers Map<String, String> headers) {
+
 		try {
+			this.processDocument(message, messageKey, headers);
 
-			NileURI computedSchemaURI = computeSchemaUri(messageKey, headers);
-			NileURI computeRawURI = computeRawURI(messageKey, headers);
-			Schema schema = computeSchema(computedSchemaURI);
-			processDocument(message, computeRawURI, headers, schema);
-
-		} catch (Exception e) {
-			customExceptionHandler.handleNotificationException(new NotificationException(
-					String.format("Cannot processImport message with key: %s error: %s", messageKey, e.getMessage()),
-					NotificationEvent.RAW_DATA_IMPORT_FAILED));
+		} catch (Exception exception) {
+			customExceptionHandler.handleException(exception);
 		}
 	}
+
+	private void processDocument(
+			ObjectNode message,
+			String messageKey,
+			Map<String, String> headers) throws JsonProcessingException {
+
+		NileURI computedRawURI = computeRawURI(messageKey, headers);
+		NileURI computedSchemaURI = computeValidSchemaUri(messageKey, headers, computedRawURI);
+		Schema schema = computeSchema(computedSchemaURI);
+		processDocument(message, computedRawURI, headers, schema);
+	}
+
 
 	/**
 	 * @param messageKey the key associated with the consumed kafka message
@@ -78,13 +90,25 @@ public class ImportConsumer {
 	 * @return Returns a NileURI calculated starting from the schema value present in the message key or in the headers.
 	 * @throws JsonProcessingException
 	 */
-	private NileURI computeSchemaUri(String messageKey, Map<String, String> headers) throws JsonProcessingException {
+	@Notify(failureEvent = NotificationEvent.IMPORT_SCHEMA_CREATION_FAILED)
+	private NileURI computeValidSchemaUri(
+			String messageKey,
+			Map<String, String> headers,
+			@RawUri NileURI rawUri) throws JsonProcessingException {
 
-		Optional<NileURI> uri;
+		return this.computeSchemaUri(messageKey, headers)
+				.filter(nileURI -> NileURI.Subtype.IMPORT.equals(nileURI.getSubtype()))
+				.orElseThrow(
+						() -> new InvalidNileUriException(
+								String.format("Schema %s is not a valid schema uri", headers.get(KafkaCustomHeaders.IMPORT_SCHEMA))
+						)
+				);
+	}
 
+	private Optional<NileURI> computeSchemaUri(String messageKey, Map<String, String> headers) throws JsonProcessingException {
 		// If we have the header we're receiving messages from a nile connector
 		if (headers.get(KafkaCustomHeaders.IMPORT_SCHEMA) != null) {
-			uri = NileURI.createURI(headers.get(KafkaCustomHeaders.IMPORT_SCHEMA));
+			return NileURI.createURI(headers.get(KafkaCustomHeaders.IMPORT_SCHEMA));
 
 			// else We espect to have a key in json format in the format of ConnectKeyPayload and derive from that the
 			// information we need.
@@ -92,15 +116,11 @@ public class ImportConsumer {
 		} else {
 			ConnectKeyPayload key = mapper.readValue(messageKey, ConnectKeyPayload.class);
 			checkValidKey(key);
-			uri = NileURI.createURI(key.getSchema());
+			return NileURI.createURI(key.getSchema());
 		}
-
-		return uri.filter(nileURI -> nileURI.getSubtype().equals(NileURI.Subtype.IMPORT)).orElseThrow(
-				() -> new InvalidNileUriException(
-						String.format("Schema %s is not a valid schema uri", headers.get(KafkaCustomHeaders.IMPORT_SCHEMA))));
-
 	}
 
+	@Notify(failureEvent = NotificationEvent.RAW_URI_GENERATION_FAILED)
 	private NileURI computeRawURI(String messageKey, Map<String, String> headers) throws JsonProcessingException {
 		if (headers.get(KafkaCustomHeaders.IMPORT_SCHEMA) == null) {
 
@@ -122,16 +142,18 @@ public class ImportConsumer {
 
 	private void processDocument(ObjectNode message, NileURI rawURI, Map<String, String> headers, Schema schema) {
 		//TODO: understand how to deal with deletion with kafka connect ingested content
-		ImportAction action = ImportAction
-				.valueOf(headers.getOrDefault(KafkaCustomHeaders.MESSAGE_ACTION, ImportAction.INSERT.name()));
+		ImportAction action = ImportAction.valueOf(headers.getOrDefault(
+				KafkaCustomHeaders.MESSAGE_ACTION,
+				ImportAction.INSERT.name())
+		);
 
 		switch (action) {
-		case DELETE:
-			importService.removeDocument(schema, rawURI);
-			break;
-		case INSERT:
-			importService.processImport(schema, message, rawURI);
-			break;
+			case DELETE:
+				importService.removeDocument(rawURI, schema);
+				break;
+			case INSERT:
+				importService.processImport(rawURI, message, schema);
+				break;
 		}
 	}
 

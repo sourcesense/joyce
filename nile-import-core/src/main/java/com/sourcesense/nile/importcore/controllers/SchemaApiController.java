@@ -29,13 +29,12 @@ import lombok.RequiredArgsConstructor;
 import org.springframework.web.bind.annotation.RestController;
 
 import java.util.List;
-import java.util.Optional;
 
 @RestController
 @RequiredArgsConstructor
 public class SchemaApiController implements SchemaApi {
+
 	final protected SchemaService schemaService;
-	final protected ImportService importService;
 
 	@Override
 	public List<SchemaShort> getAllSchema() {
@@ -44,11 +43,7 @@ public class SchemaApiController implements SchemaApi {
 
 	@Override
 	public Schema getSchema(String name) {
-		Optional<Schema> schema = schemaService.findByName(name);
-		if (schema.isEmpty()){
-			throw new SchemaNotFoundException(String.format("Schema [%s] does not exists", name));
-		}
-		return schema.get();
+		return this.getValidatedSchema(name);
 	}
 
 	@Override
@@ -63,17 +58,19 @@ public class SchemaApiController implements SchemaApi {
 
 	public NileURI saveSchema(SchemaSave schema) throws JsonProcessingException {
 		NileURI uri = schemaService.save(schema);
-		Optional<Schema> saved = schemaService.findByName(uri.getCollection());
-		if (saved.isEmpty()){
-			throw new SchemaNotFoundException(String.format("Schema [%s] v%d does not exists", uri.getCollection()));
-		}
-		importService.publishSchema(saved.get());
+		this.getValidatedSchema(uri.getCollection());
 		return uri;
 	}
 
 	@Override
 	public void deleteSchema(String id) {
-		// TODO: publish schema deletion to mainlog
 		schemaService.delete(id);
+	}
+
+	private Schema getValidatedSchema(String name) {
+		return schemaService.findByName(name)
+				.orElseThrow(
+						() -> new SchemaNotFoundException(String.format("Schema [%s] does not exists", name))
+				);
 	}
 }
