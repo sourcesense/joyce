@@ -10,7 +10,6 @@ import com.sourcesense.nile.core.exception.handler.CustomExceptionHandler;
 import com.sourcesense.nile.core.service.SchemaService;
 import com.sourcesense.nile.importcore.service.ImportConsumer;
 import com.sourcesense.nile.importcore.service.ImportService;
-import org.apache.commons.lang3.StringUtils;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;

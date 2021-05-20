@@ -70,7 +70,7 @@ public class ImportService {
 		});
 
 		NileURI contentURI = computeContentURI(result, metadata);
-		NileURI publishedContentURI = mainlogProducer.publishContent(schema, rawUri, contentURI, result, metadata);
+	  mainlogProducer.publishContent(schema, rawUri, contentURI, result, metadata);
 
 		return true;
 	}
