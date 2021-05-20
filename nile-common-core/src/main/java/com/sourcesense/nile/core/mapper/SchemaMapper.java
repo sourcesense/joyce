@@ -32,8 +32,8 @@ import org.springframework.stereotype.Component;
 @Mapper
 @Component
 public abstract class SchemaMapper {
-	@Autowired
-	ObjectMapper mapper;
+
+	ObjectMapper mapper = new ObjectMapper();
 
 	@Mapping(target = "schema", source = "entity")
 	@Mapping(target = "name", source = "metadata.name")
