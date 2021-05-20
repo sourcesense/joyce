@@ -2,6 +2,7 @@ FROM confluentinc/cp-kafka-connect-base:6.1.1
 
 RUN confluent-hub install --no-prompt confluentinc/kafka-connect-jdbc:10.1.0
 RUN confluent-hub install --no-prompt confluentinc/kafka-connect-jira:latest
+RUN confluent-hub install --no-prompt jcustenborder/kafka-connect-spooldir:latest
 
 RUN mkdir -p /usr/share/java/camel
 RUN wget https://repo1.maven.org/maven2/org/apache/camel/kafkaconnector/camel-file-kafka-connector/0.7.0/camel-file-kafka-connector-0.7.0-package.tar.gz -O /usr/share/java/camel/camel-file-kafka-connector-0.7.0-package.tar.gz
