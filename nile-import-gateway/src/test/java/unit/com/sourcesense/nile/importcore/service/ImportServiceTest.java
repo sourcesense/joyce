@@ -2,12 +2,9 @@ package unit.com.sourcesense.nile.importcore.service;
 
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
-import com.fasterxml.jackson.databind.node.ObjectNode;
 import com.sourcesense.nile.core.dto.Schema;
 import com.sourcesense.nile.core.exception.InvalidMetadataException;
-import com.sourcesense.nile.core.mapper.SchemaMapperImpl;
 import com.sourcesense.nile.core.model.NileURI;
-import com.sourcesense.nile.core.model.SchemaEntity;
 import com.sourcesense.nile.core.service.MainlogProducer;
 import com.sourcesense.nile.core.service.SchemaService;
 import com.sourcesense.nile.importcore.service.ImportService;
@@ -18,23 +15,24 @@ import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
-import org.mockito.ArgumentMatchers;
 
 import static org.mockito.ArgumentMatchers.any;
 
 import org.mockito.Mock;
 import org.mockito.Mockito;
 import org.mockito.junit.jupiter.MockitoExtension;
-import org.springframework.test.util.ReflectionTestUtils;
 
 import java.io.IOException;
 import java.io.InputStream;
 import java.util.Map;
+import java.util.Optional;
 
 @ExtendWith(MockitoExtension.class)
 class ImportServiceTest {
-	private static final String TEST_SCHEMA_JSON = "test-schema.json";
+	private static final String TEST_SCHEMA_JSON_USER = "test-schema-user.json";
+	private static final String TEST_SCHEMA_JSON_ENANCHED_USER = "test-schema-enhanced-user.json";
 	private static final String TEST_USER_JSON = "test-user.json";
+
 	// Mocked components
 	@Mock
 	private SchemaEngine schemaEngine;
@@ -60,7 +58,7 @@ class ImportServiceTest {
 	void shouldProcessImportWhenTheInputDataIsCorrect() throws IOException {
 
 		// mocking and stubbing data for test execution
-		Schema schema = computeSchema();
+		Schema schema = computeSchema(TEST_SCHEMA_JSON_USER);
 		NileURI rawURI = NileURI.createURI(MESSAGE_KEY).orElseThrow();
 		Mockito.when(schemaEngine.process(any(), any(), any()))
 				.thenReturn(objectMapper.valueToTree(Map.of("code", "1337")));
@@ -85,7 +83,7 @@ class ImportServiceTest {
 	@Test
 	void ShouldThrowSchemaIsNotValidExceptionIfSchemaIsNotValidated() throws IOException {
 		// mocking and stubbing data for test execution
-		Schema schema = computeSchema();
+		Schema schema = computeSchema(TEST_SCHEMA_JSON_USER);
 		Mockito.when( schemaEngine.process(any(),any(),any())).thenThrow(SchemaIsNotValidException.class);
 
 		// asserts
@@ -95,19 +93,31 @@ class ImportServiceTest {
 	@Test
 	void ShouldThrowInvalidSchemaExceptionIfSchemaHasParentButParentSchemaIsNotAlreadyPresentInDb() throws IOException {
 		// mocking and stubbing data for test execution
-		Schema schema = computeSchema();
-		((ObjectNode)schema.getSchema().get("$metadata")).put("parent", "nile://schema/import/user");
+		Schema schema = computeSchema(TEST_SCHEMA_JSON_ENANCHED_USER);
 
 		// asserts
 		Assertions
 				.assertThrows(InvalidSchemaException.class, () -> importService.processImport(null, null, schema));
 	}
+	@Test
+	void ShouldProcessImportIfSchemaHasParentAndParentSchemaIsAlreadyPresentInDb() throws IOException {
+		// mocking and stubbing data for test execution
+		Schema schema = computeSchema(TEST_SCHEMA_JSON_ENANCHED_USER);
+		NileURI rawURI = NileURI.createURI(MESSAGE_KEY).orElseThrow();
+		Mockito.when(schemaEngine.process(any(), any(), any()))
+				.thenReturn(objectMapper.valueToTree(Map.of("code", "1337")));
+		Mockito.when(schemaService.get(any())).thenReturn(Optional.of(computeSchema(TEST_SCHEMA_JSON_USER)));
+
+		// asserts
+		Assertions
+				.assertTrue(importService.processImport(null, null, schema));
+	}
 
 
 
 	/* UTILITY METHODS */
-	private Schema computeSchema() throws IOException {
-		return objectMapper.readValue(computeJsonFromResource(TEST_SCHEMA_JSON),
+	private Schema computeSchema(String jsonSchemaName) throws IOException {
+		return objectMapper.readValue(computeJsonFromResource(jsonSchemaName),
 				Schema.class);
 	}
 
