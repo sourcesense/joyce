@@ -27,7 +27,7 @@ import com.sourcesense.nile.core.enumeration.NotificationEvent;
 import com.sourcesense.nile.core.exception.InvalidMetadataException;
 import com.sourcesense.nile.core.model.NileSchemaMetadata;
 import com.sourcesense.nile.core.model.NileURI;
-import com.sourcesense.nile.core.service.MainlogProducer;
+import com.sourcesense.nile.core.service.ContentProducer;
 import com.sourcesense.nile.core.service.SchemaService;
 import com.sourcesense.nile.schemaengine.exceptions.InvalidSchemaException;
 import com.sourcesense.nile.schemaengine.service.SchemaEngine;
@@ -45,17 +45,17 @@ public class ImportService {
 	final private ObjectMapper mapper;
 	final private SchemaEngine schemaEngine;
 	final private SchemaService schemaService;
-	final private MainlogProducer mainlogProducer;
+	final private ContentProducer contentProducer;
 
 	/**
-	 * Process a document with the schema specified and processImport it on mainlog topic
+	 * Process a document with the schema specified and processImport it on nile_content topic
 	 *
 	 * @param schema
 	 * @param document
 	 * @param rawUri
 	 * @return
 	 */
-	@Notify(failureEvent = NotificationEvent.RAW_DATA_INSERT_FAILED)
+	@Notify(failureEvent = NotificationEvent.IMPORT_INSERT_FAILED)
 	public boolean processImport(
 			@RawUri NileURI rawUri,
 			@EventPayload JsonNode document,
@@ -70,12 +70,12 @@ public class ImportService {
 		});
 
 		NileURI contentURI = computeContentURI(result, metadata);
-	  mainlogProducer.publishContent(schema, rawUri, contentURI, result, metadata);
+	  contentProducer.publishContent(schema, rawUri, contentURI, result, metadata);
 
 		return true;
 	}
 
-	@Notify(failureEvent = NotificationEvent.RAW_DATA_REMOVAL_FAILED)
+	@Notify(failureEvent = NotificationEvent.IMPORT_REMOVE_FAILED)
 	public void removeDocument(
 			@RawUri NileURI rawUri,
 			@EventPayload ObjectNode document,
@@ -92,16 +92,16 @@ public class ImportService {
 
 		NileURI contentURI = computeContentURI(result, metadata);
 
-		mainlogProducer.removeContent(rawUri, contentURI, metadata);
+		contentProducer.removeContent(rawUri, contentURI, metadata);
 	}
 
 	/**
-	 * Publish on mainlog the removal of a docuemnt
+	 * Publish on nile_content topic the removal of a docuemnt
 	 *
 	 * @param schema
 	 * @param rawUri
 	 */
-	@Notify(failureEvent = NotificationEvent.RAW_DATA_REMOVAL_FAILED)
+	@Notify(failureEvent = NotificationEvent.IMPORT_REMOVE_FAILED)
 	public void removeDocument(
 			@RawUri NileURI rawUri,
 			Schema schema) {
@@ -112,7 +112,7 @@ public class ImportService {
 		}
 
 		NileSchemaMetadata metadata = mapper.convertValue(metadataNode, NileSchemaMetadata.class);
-		mainlogProducer.removeContent(rawUri, metadata);
+		contentProducer.removeContent(rawUri, metadata);
 	}
 
 	/**

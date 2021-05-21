@@ -64,9 +64,9 @@ public class ImportController implements ImportApi {
 	}
 
 	private NileURI computeRawUri() {
-		String uuid = UUID.randomUUID().toString().substring(0, 8);
-		String timestamp = new Date().toInstant().toString();
-		String uid = uuid + "-" + timestamp;
+		String uuid = UUID.randomUUID().toString().substring(0, 6);
+		long timestamp = new Date().toInstant().toEpochMilli();
+		String uid = String.format("%d-%s", timestamp, uuid);
 		return NileURI.make(NileURI.Type.RAW, NileURI.Subtype.OTHER, "rest", uid);
 	}
 

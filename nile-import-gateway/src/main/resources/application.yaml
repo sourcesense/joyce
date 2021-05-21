@@ -12,9 +12,9 @@ nile:
     subtype: import
   notification-service:
     enabled: true
-    topic: notifications
+    topic: nile_notification
     source: ImportGateway
-  mainlog-producer:
+  content-producer:
     enabled: true
   ksql:
     host: localhost
@@ -26,6 +26,6 @@ nile:
       enabled: true
     producer:
       enabled: true
-    mainlog-topic: mainlog
-    import-topic: import
+    import-topic: nile_import
+    content-topic: nile_content
 

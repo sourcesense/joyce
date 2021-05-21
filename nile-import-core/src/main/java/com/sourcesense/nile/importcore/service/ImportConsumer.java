@@ -90,7 +90,7 @@ public class ImportConsumer {
 	 * @return Returns a NileURI calculated starting from the schema value present in the message key or in the headers.
 	 * @throws JsonProcessingException
 	 */
-	@Notify(failureEvent = NotificationEvent.IMPORT_SCHEMA_CREATION_FAILED)
+	@Notify(failureEvent = NotificationEvent.IMPORT_FAILED_INVALID_SCHEMA)
 	private NileURI computeValidSchemaUri(
 			String messageKey,
 			Map<String, String> headers,
@@ -120,7 +120,7 @@ public class ImportConsumer {
 		}
 	}
 
-	@Notify(failureEvent = NotificationEvent.RAW_URI_GENERATION_FAILED)
+	@Notify(failureEvent = NotificationEvent.IMPORT_FAILED_INVALID_MESSAGE_KEY)
 	private NileURI computeRawURI(
 			@RawUri String messageKey,
 			Map<String, String> headers) throws JsonProcessingException {
@@ -137,7 +137,7 @@ public class ImportConsumer {
 
 	}
 
-	@Notify(failureEvent = NotificationEvent.IMPORT_SCHEMA_CREATION_FAILED)
+	@Notify(failureEvent = NotificationEvent.IMPORT_FAILED_INVALID_SCHEMA)
 	private Schema computeSchema(
 			@RawUri NileURI uri) {
 

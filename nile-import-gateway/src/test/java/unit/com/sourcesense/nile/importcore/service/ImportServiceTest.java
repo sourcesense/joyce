@@ -5,7 +5,7 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 import com.sourcesense.nile.core.dto.Schema;
 import com.sourcesense.nile.core.exception.InvalidMetadataException;
 import com.sourcesense.nile.core.model.NileURI;
-import com.sourcesense.nile.core.service.MainlogProducer;
+import com.sourcesense.nile.core.service.ContentProducer;
 import com.sourcesense.nile.core.service.SchemaService;
 import com.sourcesense.nile.importcore.service.ImportService;
 import com.sourcesense.nile.schemaengine.exceptions.InvalidSchemaException;
@@ -39,7 +39,7 @@ class ImportServiceTest {
 	@Mock
 	private SchemaService schemaService;
 	@Mock
-	private MainlogProducer mainlogProducer;
+	private ContentProducer contentProducer;
 
 	private final ObjectMapper objectMapper = new ObjectMapper();
 
@@ -51,7 +51,7 @@ class ImportServiceTest {
 
 	@BeforeEach
 	void init() {
-		importService = new ImportService(objectMapper, schemaEngine, schemaService, mainlogProducer);
+		importService = new ImportService(objectMapper, schemaEngine, schemaService, contentProducer);
 	}
 
 	@Test
