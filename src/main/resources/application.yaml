@@ -2,8 +2,11 @@ spring:
   main:
     web-application-type: none
 nile:
+  ksql:
+    host: localhost
+    port: 8088
   kafka:
-    mainlog-topic: mainlog
+    content-topic: nile_content
     bootstrapAddress: kafka:9092
     producer:
       enabled: true
@@ -12,8 +15,8 @@ nile:
       enabled: true
   notification-service:
     enabled: true
-    topic: notifications
     source: MongodbSink
+    topic: nile_notification
   data:
     mongodb:
       uri: mongodb://user:password@localhost:27017/nile
