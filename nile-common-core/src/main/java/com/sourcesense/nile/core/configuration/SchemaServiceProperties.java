@@ -29,4 +29,7 @@ public class SchemaServiceProperties {
     Boolean enabled = false;
     String database = "kafka";
     String subtype = "import";
+    String topic = "nile_schema";
+    Integer partitions = 10;
+    Integer replicas = 1;
 }

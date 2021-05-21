@@ -19,7 +19,6 @@ package com.sourcesense.nile.core.service;
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.databind.node.ObjectNode;
-import com.sourcesense.nile.core.annotation.*;
 import com.sourcesense.nile.core.dto.Schema;
 import com.sourcesense.nile.core.enumeration.ImportAction;
 import com.sourcesense.nile.core.enumeration.KafkaCustomHeaders;
@@ -37,15 +36,15 @@ import org.springframework.messaging.support.MessageBuilder;
 import org.springframework.stereotype.Service;
 
 @Slf4j
-@ConditionalOnProperty(value = "nile.mainlog-producer.enabled", havingValue = "true")
+@ConditionalOnProperty(value = "nile.content-producer.enabled", havingValue = "true")
 @Service
-public class MainlogProducer extends KafkaMessageService<JsonNode> {
+public class ContentProducer extends KafkaMessageService<JsonNode> {
 
-    @Value("${nile.kafka.mainlog-topic:mainlog}")
-    String mainlogTopic;
+    @Value("${nile.kafka.content-topic:nile_content}")
+    String contentTopic;
     private final NotificationService notificationService;
 
-    public MainlogProducer(
+    public ContentProducer(
             ObjectMapper mapper,
             KafkaTemplate<String, JsonNode> kafkaTemplate,
             NotificationService notificationService) {
@@ -66,7 +65,7 @@ public class MainlogProducer extends KafkaMessageService<JsonNode> {
 
         MessageBuilder<JsonNode> message = MessageBuilder
                 .withPayload((JsonNode) mapper.createObjectNode())
-                .setHeader(KafkaHeaders.TOPIC, mainlogTopic)
+                .setHeader(KafkaHeaders.TOPIC, contentTopic)
                 .setHeader(KafkaHeaders.MESSAGE_KEY, contentUri.toString())
                 .setHeader(KafkaCustomHeaders.MESSAGE_ACTION, ImportAction.DELETE.toString())
                 .setHeader(KafkaCustomHeaders.RAW_URI, rawUri.toString());
@@ -106,7 +105,7 @@ public class MainlogProducer extends KafkaMessageService<JsonNode> {
 
         MessageBuilder<JsonNode> message = MessageBuilder
                 .withPayload(content)
-                .setHeader(KafkaHeaders.TOPIC, mainlogTopic)
+                .setHeader(KafkaHeaders.TOPIC, contentTopic)
                 .setHeader(KafkaCustomHeaders.MESSAGE_ACTION, ImportAction.INSERT.toString())
                 .setHeader(KafkaHeaders.MESSAGE_KEY, contentUri.toString());
 
@@ -134,7 +133,7 @@ public class MainlogProducer extends KafkaMessageService<JsonNode> {
     public void publishSchema(Schema schema) {
         MessageBuilder<JsonNode> message = MessageBuilder
                 .withPayload(schema.getSchema())
-                .setHeader(KafkaHeaders.TOPIC, mainlogTopic)
+                .setHeader(KafkaHeaders.TOPIC, contentTopic)
                 .setHeader(KafkaHeaders.MESSAGE_KEY, schema.getUid())
                 .setHeader(KafkaCustomHeaders.MESSAGE_ACTION, ImportAction.INSERT.toString());
 
@@ -152,11 +151,11 @@ public class MainlogProducer extends KafkaMessageService<JsonNode> {
             JsonNode eventPayload,
             JsonNode eventMetadata) {
 
-        log.debug("Correctly sent message: {} to mainlog", message);
+        log.debug("Correctly sent message: {} to content topic", message);
         notificationService.ok(
                 rawUri,
                 contentUri,
-                NotificationEvent.MAINLOG_PUBLISH_SUCCESS,
+                NotificationEvent.CONTENT_PUBLISHED,
                 eventPayload,
                 eventMetadata
         );
@@ -175,7 +174,7 @@ public class MainlogProducer extends KafkaMessageService<JsonNode> {
         notificationService.ko(
                 rawUri,
                 contentUri,
-                NotificationEvent.MAINLOG_PUBLISH_SUCCESS,
+                NotificationEvent.CONTENT_PUBLISH_FAILED,
                 eventPayload,
                 eventMetadata
         );

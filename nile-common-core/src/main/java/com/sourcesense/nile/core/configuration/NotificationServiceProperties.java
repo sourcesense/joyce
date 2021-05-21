@@ -35,7 +35,12 @@ public class NotificationServiceProperties {
     /**
      * Notification topic
      */
-    private String topic;
+    private String topic = "nile_notification";
+
+    /**
+     * Notification topic partitions
+     */
+    private Integer partitions = 10;
 
     /**
      * Notification Source, the software object that generated the notification

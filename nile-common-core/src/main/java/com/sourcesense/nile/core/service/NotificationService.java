@@ -21,6 +21,7 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.databind.node.ObjectNode;
 import com.sourcesense.nile.core.configuration.NotificationServiceProperties;
 import com.sourcesense.nile.core.enumeration.NotificationEvent;
+import io.confluent.ksql.api.client.Client;
 import lombok.Builder;
 import lombok.Getter;
 import lombok.RequiredArgsConstructor;
@@ -31,6 +32,11 @@ import org.springframework.kafka.support.KafkaHeaders;
 import org.springframework.messaging.Message;
 import org.springframework.messaging.support.MessageBuilder;
 import org.springframework.stereotype.Service;
+
+import javax.annotation.PostConstruct;
+import java.util.Date;
+import java.util.UUID;
+import java.util.concurrent.ExecutionException;
 
 @Builder
 @Getter
@@ -66,6 +72,27 @@ public class NotificationService {
     private final ObjectMapper mapper;
     private final NotificationServiceProperties properties;
     final private KafkaTemplate<String, JsonNode> kafkaTemplate;
+    private final Client ksql;
+
+    @PostConstruct
+    void init() throws ExecutionException, InterruptedException {
+        String createTable = String.format(
+                "CREATE TABLE IF NOT EXISTS NILE_NOTIFICATION (\n" +
+                        "     id VARCHAR PRIMARY KEY,\n" +
+                        "     source VARCHAR\n," +
+                        "     event VARCHAR\n," +
+                        "     rawUri VARCHAR\n," +
+                        "     contentUri VARCHAR\n," +
+                        "     success BOOLEAN\n," +
+                        "     metadata VARCHAR\n," +
+                        "     content VARCHAR\n" +
+                        "   ) WITH (\n" +
+                        "     KAFKA_TOPIC = '%s', \n" +
+                        "     PARTITIONS = %d, \n" +
+                        "     VALUE_FORMAT = 'JSON'\n" +
+                        "   );", properties.getTopic(), properties.getPartitions());
+        ksql.executeStatement(createTable).get();
+    }
 
     public void ok(String rawUri, String contentUri, NotificationEvent event) {
         this.sendNotification(rawUri, contentUri, event, null, null, true);
@@ -114,10 +141,13 @@ public class NotificationService {
     }
 
     private void sendNotification(Notification notification) {
+        String uuid = UUID.randomUUID().toString().substring(0, 6);
+        long timestamp = new Date().toInstant().toEpochMilli();
+        String notificationKey = String.format("%d-%s", timestamp, uuid);
         Message<JsonNode> message = MessageBuilder
                 .withPayload(mapper.convertValue(notification, JsonNode.class))
                 .setHeader(KafkaHeaders.TOPIC, properties.getTopic())
-                .setHeader(KafkaHeaders.MESSAGE_KEY, notification.getRawUri())
+                .setHeader(KafkaHeaders.MESSAGE_KEY, notificationKey)
                 .build();
 
         kafkaTemplate.send(message).addCallback(
