@@ -14,7 +14,7 @@
  * limitations under the License.
  */
 
-package com.sourcesense.nile.importcore.controllers;
+package com.sourcesense.nile.importcore.controller;
 
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.sourcesense.nile.core.api.SchemaApi;
@@ -24,7 +24,6 @@ import com.sourcesense.nile.core.dto.SchemaShort;
 import com.sourcesense.nile.core.exception.SchemaNotFoundException;
 import com.sourcesense.nile.core.model.NileURI;
 import com.sourcesense.nile.core.service.SchemaService;
-import com.sourcesense.nile.importcore.service.ImportService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.web.bind.annotation.RestController;
 

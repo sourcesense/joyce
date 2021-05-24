@@ -1,24 +1,19 @@
 package unit.com.sourcesense.nile.importcore.service;
 
-import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.databind.node.JsonNodeFactory;
 import com.fasterxml.jackson.databind.node.ObjectNode;
-import com.sourcesense.nile.core.dto.Schema;
 import com.sourcesense.nile.core.enumeration.ImportAction;
 import com.sourcesense.nile.core.enumeration.KafkaCustomHeaders;
 import com.sourcesense.nile.core.exception.handler.CustomExceptionHandler;
-import com.sourcesense.nile.core.service.SchemaService;
-import com.sourcesense.nile.importcore.service.ImportConsumer;
+import com.sourcesense.nile.importcore.consumer.ImportConsumer;
 import com.sourcesense.nile.importcore.service.ImportService;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.Mock;
-import org.mockito.Mockito;
 import org.mockito.junit.jupiter.MockitoExtension;
 
 import java.util.Map;
-import java.util.Optional;
 
 import static org.mockito.Mockito.*;
 
@@ -28,8 +23,7 @@ class ImportConsumerTest {
 	// Mocked components
 	@Mock
 	private ImportService importService;
-	@Mock
-	private SchemaService schemaService;
+
 	@Mock
 	private CustomExceptionHandler customExceptionHandler;
 
@@ -42,7 +36,7 @@ class ImportConsumerTest {
 
 	@BeforeEach
 	void init() {
-		importConsumer = new ImportConsumer(new ObjectMapper(), importService, schemaService, customExceptionHandler);
+		importConsumer = new ImportConsumer(importService, customExceptionHandler);
 	}
 
 	@Test
@@ -51,7 +45,6 @@ class ImportConsumerTest {
 		// mocking and stubbing data for test execution
 		ObjectNode message = new ObjectNode(JsonNodeFactory.instance);
 		Map<String, String> headers = computeHeaders(ImportAction.INSERT);
-		Mockito.when(schemaService.findByName(any())).thenReturn(Optional.of(new Schema()));
 
 		//  Subject under test
 		importConsumer.consumeMessage(message, MESSAGE_KEY, headers);
@@ -66,7 +59,6 @@ class ImportConsumerTest {
 		// mocking and stubbing data for test execution
 		ObjectNode message = new ObjectNode(JsonNodeFactory.instance);
 		Map<String, String> headers = computeHeaders(ImportAction.DELETE);
-		Mockito.when(schemaService.findByName(any())).thenReturn(Optional.of(new Schema()));
 
 		//  Subject under test
 		importConsumer.consumeMessage(message, MESSAGE_KEY, headers);
@@ -76,11 +68,11 @@ class ImportConsumerTest {
 	}
 
 
-
 	/* UTILITY METHODS */
 	private Map<String, String> computeHeaders(ImportAction delete) {
-		return Map
-				.of(KafkaCustomHeaders.MESSAGE_ACTION, delete.toString(), KafkaCustomHeaders.IMPORT_SCHEMA, IMPORT_SCHEMA);
+		return Map.of(
+				KafkaCustomHeaders.MESSAGE_ACTION, delete.toString(),
+				KafkaCustomHeaders.IMPORT_SCHEMA, IMPORT_SCHEMA
+		);
 	}
-
 }

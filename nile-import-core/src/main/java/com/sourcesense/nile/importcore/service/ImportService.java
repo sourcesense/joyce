@@ -16,6 +16,7 @@
 
 package com.sourcesense.nile.importcore.service;
 
+import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.databind.node.ObjectNode;
@@ -23,18 +24,25 @@ import com.sourcesense.nile.core.annotation.EventPayload;
 import com.sourcesense.nile.core.annotation.Notify;
 import com.sourcesense.nile.core.annotation.RawUri;
 import com.sourcesense.nile.core.dto.Schema;
+import com.sourcesense.nile.core.enumeration.KafkaCustomHeaders;
 import com.sourcesense.nile.core.enumeration.NotificationEvent;
 import com.sourcesense.nile.core.exception.InvalidMetadataException;
+import com.sourcesense.nile.core.exception.InvalidNileUriException;
+import com.sourcesense.nile.core.exception.SchemaNotFoundException;
 import com.sourcesense.nile.core.model.NileSchemaMetadata;
 import com.sourcesense.nile.core.model.NileURI;
 import com.sourcesense.nile.core.service.ContentProducer;
 import com.sourcesense.nile.core.service.SchemaService;
-import com.sourcesense.nile.schemaengine.exceptions.InvalidSchemaException;
+import com.sourcesense.nile.importcore.dto.ConnectKeyPayload;
+import com.sourcesense.nile.importcore.exception.ImportException;
+import com.sourcesense.nile.schemaengine.exception.NileSchemaEngineException;
 import com.sourcesense.nile.schemaengine.service.SchemaEngine;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import org.apache.commons.lang3.StringUtils;
 import org.springframework.stereotype.Service;
 
+import java.util.Map;
 import java.util.Optional;
 
 @Service
@@ -46,6 +54,56 @@ public class ImportService {
 	final private SchemaEngine schemaEngine;
 	final private SchemaService schemaService;
 	final private ContentProducer contentProducer;
+
+	@Notify(failureEvent = NotificationEvent.IMPORT_FAILED_INVALID_MESSAGE_KEY)
+	public NileURI computeRawURI(
+			@RawUri String messageKey,
+			Map<String, String> headers) throws JsonProcessingException {
+
+		if (headers.get(KafkaCustomHeaders.IMPORT_SCHEMA) == null) {
+
+			ConnectKeyPayload key = mapper.readValue(messageKey, ConnectKeyPayload.class);
+			checkValidKey(key);
+			return NileURI.make(NileURI.Type.RAW, NileURI.Subtype.OTHER, key.getSource(), key.getUid());
+		}
+
+		return NileURI.createURI(messageKey)
+				.orElseThrow(() -> new InvalidNileUriException(String.format("Uri [%s] is not a valid Nile Uri", messageKey)));
+	}
+
+	/**
+	 * @param messageKey the key associated with the consumed kafka message
+	 * @param headers    headers associated with the consumed kafka message. Obtaining the schema value from the headers
+	 *                   will be suppressed in future releases and only the message key value will be used to calculate
+	 *                   the NileURI
+	 * @return Returns a NileURI calculated starting from the schema value present in the message key or in the headers.
+	 * @throws JsonProcessingException
+	 */
+	@Notify(failureEvent = NotificationEvent.IMPORT_FAILED_INVALID_SCHEMA)
+	public NileURI computeValidSchemaUri(
+			String messageKey,
+			Map<String, String> headers,
+			@RawUri NileURI rawUri) throws JsonProcessingException {
+
+		return this.computeSchemaUri(messageKey, headers)
+				.filter(nileURI -> NileURI.Subtype.IMPORT.equals(nileURI.getSubtype()))
+				.orElseThrow(
+						() -> new InvalidNileUriException(
+								String.format("Schema %s is not a valid schema uri", headers.get(KafkaCustomHeaders.IMPORT_SCHEMA))
+						)
+				);
+	}
+
+	@Notify(failureEvent = NotificationEvent.IMPORT_FAILED_INVALID_SCHEMA)
+	public Schema computeSchema(@RawUri NileURI uri) {
+
+		return schemaService.findByName(uri.getCollection())
+				.orElseThrow(
+						() -> new SchemaNotFoundException(
+								String.format("Schema %s does not exists", uri.toString())
+						)
+				);
+	}
 
 	/**
 	 * Process a document with the schema specified and processImport it on nile_content topic
@@ -70,7 +128,7 @@ public class ImportService {
 		});
 
 		NileURI contentURI = computeContentURI(result, metadata);
-	  contentProducer.publishContent(schema, rawUri, contentURI, result, metadata);
+		contentProducer.publishContent(schema, rawUri, contentURI, result, metadata);
 
 		return true;
 	}
@@ -127,6 +185,21 @@ public class ImportService {
 		return mapper.createObjectNode().putPOJO("result", result);
 	}
 
+	private Optional<NileURI> computeSchemaUri(String messageKey, Map<String, String> headers) throws JsonProcessingException {
+		// If we have the header we're receiving messages from a nile connector
+		if (headers.get(KafkaCustomHeaders.IMPORT_SCHEMA) != null) {
+			return NileURI.createURI(headers.get(KafkaCustomHeaders.IMPORT_SCHEMA));
+
+			// else We espect to have a key in json format in the format of ConnectKeyPayload and derive from that the
+			// information we need.
+			// It's the case of using plain kafka connect
+		} else {
+			ConnectKeyPayload key = mapper.readValue(messageKey, ConnectKeyPayload.class);
+			checkValidKey(key);
+			return NileURI.createURI(key.getSchema());
+		}
+	}
+
 	private NileURI computeContentURI(JsonNode result, NileSchemaMetadata metadata) {
 		String uid = Optional.ofNullable(result.get(metadata.getUidKey()))
 				.orElseThrow(() -> new InvalidMetadataException(
@@ -151,14 +224,7 @@ public class ImportService {
 		 */
 		if (metadata.getParent() != null) {
 
-			Schema parent = Optional.of(metadata)
-					.map(NileSchemaMetadata::getParent)
-					.map(NileURI::toString)
-					.flatMap(schemaService::get)
-					.orElseThrow(() -> new InvalidSchemaException(
-									String.format("Parent schema [%s] does not exists", metadata.getParent())
-							)
-					);
+			Schema parent =  this.computeParentSchema(metadata);
 
 			if (validate) {
 				schemaEngine.validate(parent.getSchema(), result);
@@ -172,4 +238,31 @@ public class ImportService {
 
 		return Optional.empty();
 	}
+
+	private Schema computeParentSchema(NileSchemaMetadata metadata) {
+		return Optional.of(metadata)
+				.map(NileSchemaMetadata::getParent)
+				.map(NileURI::toString)
+				.flatMap(schemaService::get)
+				.orElseThrow(() -> new NileSchemaEngineException(
+								String.format("Parent schema [%s] does not exists", metadata.getParent())
+						)
+				);
+	}
+
+	/**************** UTILITY METHODS *******************/
+
+	private void checkValidKey(ConnectKeyPayload key) {
+
+		if (StringUtils.isEmpty(key.getSchema())) {
+			throw new ImportException("Missing [schema] from key");
+		}
+		if (StringUtils.isEmpty(key.getSource())) {
+			throw new ImportException("Missing [source] from key");
+		}
+		if (StringUtils.isEmpty(key.getUid())) {
+			throw new ImportException("Missing [uid] from key");
+		}
+	}
+
 }

@@ -1,0 +1,4 @@
+{
+  "schema": "nile://schema/import/user",
+  "source": "user"
+}
