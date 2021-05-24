@@ -3,7 +3,7 @@ import { CustomeSchemaParser } from "./CustomSchemaParser";
 const globaleQueryStringPagination = (entitySchema) => ({
   page: { type: "integer" },
   size: { type: "integer" },
-  ...entitySchema.getSchemaProperties(),
+  ...entitySchema.getParsedProperties(),
   orderBy: {
     default: "desc",
     type: "string",
@@ -31,7 +31,7 @@ const globaleQueryStringPagination = (entitySchema) => ({
 });
 
 export function SingleEntitySchema(entitySchema: CustomeSchemaParser): object {
-  return {
+  const v = {
     schema: {
       params: {
         type: "object",
@@ -47,6 +47,8 @@ export function SingleEntitySchema(entitySchema: CustomeSchemaParser): object {
       },
     },
   };
+
+  return v;
 }
 
 export function MultipleEntitySchema(

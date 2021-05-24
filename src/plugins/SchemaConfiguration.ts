@@ -13,7 +13,6 @@ export class SchemaConfiguration {
   }
   requestSchemas(logger): Promise<ResponsableSchema>[] | [] {
     const fetch = createFetch();
-
     return this.sources.map((resource) => {
       const finalFetchUrl =
         resource.version !== "latest" && resource.version
@@ -28,7 +27,7 @@ export class SchemaConfiguration {
           return r.json();
         })
         .then((j) => {
-          logger.info("-", resource.label, "schema Found");
+          logger.info(`SUCCESS: ${resource.label} schema Found`);
           return {
             ...resource,
             schema: j.schema,
@@ -36,7 +35,7 @@ export class SchemaConfiguration {
         })
         .catch((e) => {
           const { statusText } = e;
-          logger.info("*", resource.label, "schema", statusText);
+          logger.error(`ERROR:  ${resource.label} ${statusText}`);
           return {};
         });
     });

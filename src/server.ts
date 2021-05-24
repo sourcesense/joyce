@@ -189,8 +189,6 @@ function createServer(db, producer) {
         MultipleEntitySchema(tempSchema),
         async function (req, res) {
           const { page = 0, size = 10, orderBy, sortBy, ...other } = req.query;
-
-          console.log("aaaaaaaa", other);
           try {
             const collection = db.collection(
               schema.schema.$metadata.collection
