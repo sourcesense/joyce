@@ -1,57 +1,29 @@
-# Nile API Rest
+# Nile Mongodb Rest
 
-Swagger endpoint
+[![Publish Snapshot](https://github.com/sourcesense/nile-mongodb-rest/actions/workflows/master.yaml/badge.svg)](https://github.com/sourcesense/nile-mongodb-rest/actions/workflows/master.yaml)
+
+Is the REST api from which you can consume the final output of Nile transofrmations.
 
 ```
 http://${INTERNAL_URL}:${port}/docs/index.html#/default
 ```
+## Documentation
 
-## Variables available
+The full documentation is available [here](https://sourcesense.github.io/nile/docs/mongodb-rest).
 
-Folder variable where search for schema source's paths
+## Install
 
-```
-SCHEMAS_SOURCE
-```
+Nile Mongodb Rest is distributed as a Docker container:
 
-Base url of the API (for show on Swagger)
-
-```
-PRODUCTION_URL
+```bash
+docker pull sourcesense/nile-mongodb-rest:latest
 ```
 
-Base url of the API on internal/local network
+Refer to this [docker-compose](https://github.com/sourcesense/nile-compose/blob/master/docker-compose.yaml) to know how to configure it.
 
-```
-INTERNAL_URL
-```
+## Developing
 
-Endpoint to check healty of serverice. Default: _"/health"_
-
-```
-HEALTH_PATH
-```
-
-Port where service is. Default: _3000_
-
-```
-PORT
-```
-
-Mongo URI
-
-```
-MONGO_URI
-```
-
-Kafka Host
-
-```
-NILE_API_KAFKA_BOOTSTRAPADDRESS
-```
-
-Jakfka commando topic. Default: _commands_
-
-```
-NILE_API_KAFKA_COMMAND_TOPIC
+```bash
+npm install
+npm run dev
 ```

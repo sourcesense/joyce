@@ -13,7 +13,7 @@ const logger = require("pino")();
 
 const SCHEMAS_SOURCE = process.env.SCHEMAS_SOURCE || "assets/schemas.json";
 const PRODUCTION_URL = process.env.BASE_URL || "https://<production-url>";
-const INTERNAL_URL = process.env.BASE_URL || "http://localhost:3000";
+const INTERNAL_URL = process.env.BASE_URL || "http://localhost:6650";
 const HEALTH_PATH = process.env.HEALTH_PATH || "/health";
 
 const schemaSources = fs.readFileSync(SCHEMAS_SOURCE, "utf8");
