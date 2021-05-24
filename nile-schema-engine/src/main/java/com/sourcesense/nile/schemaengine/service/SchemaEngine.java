@@ -22,10 +22,10 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.databind.node.*;
 import com.networknt.schema.*;
 import com.sourcesense.nile.schemaengine.NileMetaSchema;
-import com.sourcesense.nile.schemaengine.exceptions.HandlerBeanNameNotFound;
-import com.sourcesense.nile.schemaengine.exceptions.InvalidSchemaException;
-import com.sourcesense.nile.schemaengine.exceptions.SchemaIsNotValidException;
-import com.sourcesense.nile.schemaengine.handlers.TransormerHandler;
+import com.sourcesense.nile.schemaengine.exception.HandlerBeanNameNotFound;
+import com.sourcesense.nile.schemaengine.exception.InvalidSchemaException;
+import com.sourcesense.nile.schemaengine.exception.NileSchemaEngineException;
+import com.sourcesense.nile.schemaengine.handler.TransormerHandler;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.BeansException;
 import org.springframework.context.ApplicationContext;
@@ -268,7 +268,7 @@ public class SchemaEngine implements ApplicationContextAware {
 		JsonSchema jsonSchema = factory.getSchema(schema);
 		ValidationResult validation = jsonSchema.validateAndCollect(content);
 		if(validation.getValidationMessages().size() > 0){
-			throw new SchemaIsNotValidException(validation);
+			throw new InvalidSchemaException(validation);
 		}
 	}
 
@@ -317,7 +317,7 @@ public class SchemaEngine implements ApplicationContextAware {
 				.collect(Collectors.toList());
 
 		if (missingFromNewSchema.size() > 0){
-			throw new InvalidSchemaException(String.format("New Schema is not valid some key were deleted or type changed %s", String.join(", ", missingFromNewSchema)));
+			throw new NileSchemaEngineException(String.format("New Schema is not valid some key were deleted or type changed %s", String.join(", ", missingFromNewSchema)));
 		}
 
 		return newDeprecated > prevDeprecated;

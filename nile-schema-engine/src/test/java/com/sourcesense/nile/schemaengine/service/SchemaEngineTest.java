@@ -18,9 +18,9 @@ package com.sourcesense.nile.schemaengine.service;
 
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.node.TextNode;
-import com.sourcesense.nile.schemaengine.exceptions.InvalidSchemaException;
-import com.sourcesense.nile.schemaengine.exceptions.SchemaIsNotValidException;
-import com.sourcesense.nile.schemaengine.handlers.TransormerHandler;
+import com.sourcesense.nile.schemaengine.exception.InvalidSchemaException;
+import com.sourcesense.nile.schemaengine.exception.NileSchemaEngineException;
+import com.sourcesense.nile.schemaengine.handler.TransormerHandler;
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
@@ -97,8 +97,8 @@ public class SchemaEngineTest {
 
         schemaEngine.registerHandler("$path", jsonPathTransformerHandler);
         schemaEngine.registerMetaSchema();
-        SchemaIsNotValidException exc = Assertions.assertThrows(
-                SchemaIsNotValidException.class,
+        InvalidSchemaException exc = Assertions.assertThrows(
+                InvalidSchemaException.class,
                 () -> schemaEngine.process(schema, source)
         );
     }
@@ -151,7 +151,7 @@ public class SchemaEngineTest {
         String newSchema = Files.readString(loadResource("schema/14.json"));
         ;
         SchemaEngine schemaEngine = new SchemaEngine(props);
-        Assertions.assertThrows(InvalidSchemaException.class, () -> {
+        Assertions.assertThrows(NileSchemaEngineException.class, () -> {
             schemaEngine.checkForBreakingChanges(schema, newSchema);
         });
     }

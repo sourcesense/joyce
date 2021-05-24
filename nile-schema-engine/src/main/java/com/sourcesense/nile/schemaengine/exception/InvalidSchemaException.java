@@ -14,21 +14,21 @@
  * limitations under the License.
  */
 
-package com.sourcesense.nile.schemaengine.exceptions;
+package com.sourcesense.nile.schemaengine.exception;
 
 import com.networknt.schema.ValidationMessage;
 import com.networknt.schema.ValidationResult;
 
 import java.util.stream.Collectors;
 
-public class SchemaIsNotValidException extends NileSchemaEngineException {
+public class InvalidSchemaException extends NileSchemaEngineException {
 	public ValidationResult getValidationResult() {
 		return validationResult;
 	}
 
 	private ValidationResult validationResult;
 
-	public SchemaIsNotValidException(ValidationResult validation) {
+	public InvalidSchemaException(ValidationResult validation) {
 		super(validation.getValidationMessages().stream().map(ValidationMessage::getMessage).collect(Collectors.joining()));
 		this.validationResult = validation;
 	}

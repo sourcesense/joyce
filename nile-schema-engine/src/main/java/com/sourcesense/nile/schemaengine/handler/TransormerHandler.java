@@ -14,10 +14,12 @@
  * limitations under the License.
  */
 
-package com.sourcesense.nile.schemaengine.exceptions;
+package com.sourcesense.nile.schemaengine.handler;
 
-public class InvalidSchemaException extends NileSchemaEngineException {
-    public InvalidSchemaException(String message) {
-        super(message);
-    }
+import com.fasterxml.jackson.databind.JsonNode;
+
+import java.util.Optional;
+
+public interface TransormerHandler {
+	JsonNode process(String key, JsonNode value, JsonNode source, Optional<JsonNode> metadata, Optional<Object> context);
 }

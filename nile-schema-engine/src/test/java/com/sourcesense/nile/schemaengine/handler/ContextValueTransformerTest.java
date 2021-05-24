@@ -14,7 +14,7 @@
  * limitations under the License.
  */
 
-package com.sourcesense.nile.schemaengine.handlers;
+package com.sourcesense.nile.schemaengine.handler;
 
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
@@ -28,20 +28,23 @@ import org.mockito.junit.jupiter.MockitoExtension;
 import java.util.Optional;
 
 @ExtendWith(MockitoExtension.class)
-public class FixedValueTransformerTest {
+public class ContextValueTransformerTest {
 	private ObjectMapper mapper = new ObjectMapper();
 
 	@Test
 	void testFixedValue() {
-		FixedValueTransformerHandler handler = new FixedValueTransformerHandler();
+		MetadataValueTransformerHandler handler = new MetadataValueTransformerHandler(mapper);
+		handler.configure();
 		ObjectNode source = mapper.createObjectNode();
-		source.put("foo", "bar");
-		JsonNode value = new TextNode("asd");
-		JsonNode result = handler.process("test", value, source, Optional.empty(), Optional.empty());
-		Assertions.assertEquals("asd",result.asText());
+		source.put("foo", "baz");
 
-		JsonNode result2 = handler.process("test2", source, source, Optional.empty(), Optional.empty());
-		Assertions.assertEquals("bar",result2.get("foo").asText());
+		ObjectNode metadataMap = mapper.createObjectNode();
+		metadataMap.put("foo", "bar");
+
+
+		JsonNode value = new TextNode("$.foo");
+		JsonNode result = handler.process(null,  value, source, Optional.of(metadataMap), Optional.empty());
+		Assertions.assertEquals("bar",result.asText());
+
 	}
-
 }

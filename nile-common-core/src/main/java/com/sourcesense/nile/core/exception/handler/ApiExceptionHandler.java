@@ -3,8 +3,7 @@ package com.sourcesense.nile.core.exception.handler;
 import com.jayway.jsonpath.PathNotFoundException;
 import com.sourcesense.nile.core.dto.ApiError;
 import com.sourcesense.nile.core.exception.*;
-import com.sourcesense.nile.schemaengine.exceptions.InvalidSchemaException;
-import com.sourcesense.nile.schemaengine.exceptions.SchemaIsNotValidException;
+import com.sourcesense.nile.schemaengine.exception.InvalidSchemaException;
 import lombok.RequiredArgsConstructor;
 import org.apache.kafka.common.KafkaException;
 import org.springframework.http.HttpStatus;
@@ -59,13 +58,6 @@ public class ApiExceptionHandler {
     @ResponseStatus(HttpStatus.NOT_FOUND)
     @ExceptionHandler(SchemaNotFoundException.class)
     public ApiError handler(SchemaNotFoundException exception, WebRequest request) {
-        return this.logExceptionAndComputeErrorResponse(exception);
-    }
-
-    @ResponseBody
-    @ResponseStatus(HttpStatus.INTERNAL_SERVER_ERROR)
-    @ExceptionHandler(SchemaIsNotValidException.class)
-    public ApiError handler(SchemaIsNotValidException exception, WebRequest request) {
         return this.logExceptionAndComputeErrorResponse(exception);
     }
 

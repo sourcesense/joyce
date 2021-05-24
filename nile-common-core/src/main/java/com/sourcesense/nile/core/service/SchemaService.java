@@ -26,11 +26,9 @@ import com.sourcesense.nile.core.exception.SchemaNotFoundException;
 import com.sourcesense.nile.core.mapper.SchemaMapper;
 import com.sourcesense.nile.core.model.NileURI;
 import com.sourcesense.nile.core.model.SchemaEntity;
-
-import com.sourcesense.nile.schemaengine.exceptions.InvalidSchemaException;
+import com.sourcesense.nile.schemaengine.exception.NileSchemaEngineException;
 import com.sourcesense.nile.schemaengine.service.SchemaEngine;
 import lombok.RequiredArgsConstructor;
-import org.springframework.beans.factory.annotation.Value;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnProperty;
 import org.springframework.cache.annotation.CacheEvict;
 import org.springframework.cache.annotation.Cacheable;
@@ -69,7 +67,7 @@ public class SchemaService {
 		if(schema.getMetadata().getParent() != null){
 			Optional<SchemaEntity> parent = schemaEntityDao.get(schema.getMetadata().getParent().toString());
 			if (parent.isEmpty()){
-				throw new InvalidSchemaException(String.format("Parent schema [%s] does not exists", schema.getMetadata().getParent()));
+				throw new NileSchemaEngineException(String.format("Parent schema [%s] does not exists", schema.getMetadata().getParent()));
 			}
 		}
 
@@ -81,7 +79,7 @@ public class SchemaService {
 			 * but we block if previous schema is not in dev mode
 			 */
 			if(entity.getMetadata().getDevelopment() && !previous.get().getMetadata().getDevelopment()){
-					throw new InvalidSchemaException("Previous schema is not in development mode");
+					throw new NileSchemaEngineException("Previous schema is not in development mode");
 			}
 
 			if (!entity.getMetadata().getDevelopment()) {

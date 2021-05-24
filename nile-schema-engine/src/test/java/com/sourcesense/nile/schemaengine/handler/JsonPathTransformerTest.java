@@ -14,7 +14,7 @@
  * limitations under the License.
  */
 
-package com.sourcesense.nile.schemaengine.handlers;
+package com.sourcesense.nile.schemaengine.handler;
 
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;

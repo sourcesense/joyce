@@ -14,12 +14,10 @@
  * limitations under the License.
  */
 
-package com.sourcesense.nile.schemaengine.handlers;
+package com.sourcesense.nile.schemaengine.exception;
 
-import com.fasterxml.jackson.databind.JsonNode;
-
-import java.util.Optional;
-
-public interface TransormerHandler {
-	JsonNode process(String key, JsonNode value, JsonNode source, Optional<JsonNode> metadata, Optional<Object> context);
+public class HandlerBeanNameNotFound extends NileSchemaEngineException {
+	public HandlerBeanNameNotFound(String message) {
+		super(message);
+	}
 }

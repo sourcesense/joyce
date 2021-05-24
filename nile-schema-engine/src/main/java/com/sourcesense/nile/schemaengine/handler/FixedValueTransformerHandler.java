@@ -14,10 +14,19 @@
  * limitations under the License.
  */
 
-package com.sourcesense.nile.schemaengine.exceptions;
+package com.sourcesense.nile.schemaengine.handler;
 
-public class HandlerBeanNameNotFound extends NileSchemaEngineException {
-	public HandlerBeanNameNotFound(String message) {
-		super(message);
+import com.fasterxml.jackson.databind.JsonNode;
+import lombok.extern.slf4j.Slf4j;
+import org.springframework.stereotype.Component;
+
+import java.util.Optional;
+
+@Component("fixedValueTransformerHandler")
+@Slf4j
+public class FixedValueTransformerHandler implements TransormerHandler{
+	@Override
+	public JsonNode process(String key, JsonNode value, JsonNode source, Optional<JsonNode> metadata, Optional<Object> context) {
+		return value;
 	}
 }

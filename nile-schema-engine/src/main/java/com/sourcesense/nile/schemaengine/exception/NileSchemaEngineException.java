@@ -14,7 +14,7 @@
  * limitations under the License.
  */
 
-package com.sourcesense.nile.schemaengine.exceptions;
+package com.sourcesense.nile.schemaengine.exception;
 
 public class NileSchemaEngineException extends RuntimeException {
 	public NileSchemaEngineException(String message) {

@@ -19,7 +19,7 @@ package com.sourcesense.nile.schemaengine;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.databind.node.TextNode;
-import com.sourcesense.nile.schemaengine.handlers.TransormerHandler;
+import com.sourcesense.nile.schemaengine.handler.TransormerHandler;
 import org.springframework.boot.autoconfigure.SpringBootApplication;
 import org.springframework.context.annotation.Bean;
 
