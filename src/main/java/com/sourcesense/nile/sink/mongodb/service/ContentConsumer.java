@@ -17,6 +17,7 @@ import com.sourcesense.nile.core.service.NotificationService;
 import com.sourcesense.nile.sink.mongodb.exception.MongodbSinkException;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import org.apache.tomcat.util.net.WriteBuffer;
 import org.bson.Document;
 import org.springframework.data.mongodb.core.MongoTemplate;
 import org.springframework.data.mongodb.core.query.Criteria;
@@ -35,9 +36,7 @@ import java.util.Optional;
 @Service
 @RequiredArgsConstructor
 public class ContentConsumer {
-
-    private final MongoTemplate mongoTemplate;
-    private final ObjectMapper mapper;
+    final private SinkService sinkService;
     final private CustomExceptionHandler customExceptionHandler;
 
     @KafkaListener(topics = "${nile.kafka.content-topic:nile_content}")
@@ -47,67 +46,21 @@ public class ContentConsumer {
             @Headers Map<String, String> headers) {
         try {
 
-            String collection = getCollection(key, headers);
+            String collection = sinkService.getCollection(key, headers);
 
             ImportAction action = ImportAction.valueOf(headers.getOrDefault(KafkaCustomHeaders.MESSAGE_ACTION, ImportAction.INSERT.name()));
 
-            NileURI uri = getNileURI(key);
+            NileURI uri = sinkService.getNileURI(key);
 
             if (action.equals(ImportAction.INSERT)){
-                saveDocument(message, uri, collection);
+                sinkService.saveDocument(message, uri, collection);
             } else if (action.equals(ImportAction.DELETE)){
-                deleteDocument(uri, collection);
+                sinkService.deleteDocument(uri, collection);
             }
 
         } catch (Exception exception){
             customExceptionHandler.handleException(exception);
         }
 
-    }
-
-    @Notify(failureEvent = NotificationEvent.SINK_MONGODB_FAILED,
-            successEvent = NotificationEvent.SINK_MONGODB_DELETED)
-    private void deleteDocument(@ContentUri NileURI uri, String collection) throws MongodbSinkException {
-        /**
-         * Delete document
-         */
-        DeleteResult response;
-        if (uri.getType().equals(NileURI.Type.RAW)){
-            response = mongoTemplate.remove(new Query(Criteria.where("_metadata_.raw_uri").is(uri.toString())), collection);
-        } else { // if (uri.get().getType().equals(NileURI.Type.CONTENT)
-            response = mongoTemplate.remove(new Query(Criteria.where("_id").is(uri.toString())), collection);
-        }
-
-        if (response.getDeletedCount() < 1){
-            throw new MongodbSinkException(String.format("There is no docuemtn to delete with uri %s", uri.toString()));
-        }
-    }
-
-    @Notify(failureEvent = NotificationEvent.SINK_MONGODB_FAILED,
-            successEvent = NotificationEvent.SINK_MONGODB_STORED)
-    private void saveDocument(@EventPayload ObjectNode message, @ContentUri NileURI uri, String collection) throws MongodbSinkException {
-        /**
-         * Insert document
-         */
-        Document doc = new Document(mapper.convertValue(message, new TypeReference<>() {
-        }));
-        doc.put("_id", uri.toString());
-        Document res = mongoTemplate.save(doc, collection);
-        if (res.isEmpty()){
-            throw new MongodbSinkException("Document was not saved, result is empty");
-        }
-    }
-
-    @Notify(failureEvent = NotificationEvent.SINK_MONGODB_FAILED)
-    private NileURI getNileURI(@ContentUri String key) throws MongodbSinkException {
-        return NileURI.createURI(key).orElseThrow(() -> new MongodbSinkException(String.format("uri [%s] is not a Valid Nile Uri", key)));
-    }
-
-    @Notify(failureEvent = NotificationEvent.SINK_MONGODB_FAILED)
-    private String getCollection(@ContentUri String key, Map<String, String> headers) throws MongodbSinkException {
-        if(headers.get(KafkaCustomHeaders.COLLECTION) == null){
-            throw new MongodbSinkException(String.format("Missing %s header", KafkaCustomHeaders.COLLECTION));
-        }
-        return headers.get(KafkaCustomHeaders.COLLECTION);
     }
 }
