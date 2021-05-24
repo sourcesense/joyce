@@ -16,39 +16,11 @@ const PRODUCTION_URL = process.env.BASE_URL || "https://<production-url>";
 const INTERNAL_URL = process.env.BASE_URL || "http://localhost:3000";
 const HEALTH_PATH = process.env.HEALTH_PATH || "/health";
 
-// const schemaSources = fs.readFileSync(
-//   path.join(__dirname, SCHEMAS_SOURCE),
-//   "utf8"
-// );
 const schemaSources = fs.readFileSync(SCHEMAS_SOURCE, "utf8");
 const schemaConfiguration = new SchemaConfiguration(JSON.parse(schemaSources));
 const requests = schemaConfiguration.requestSchemas(logger);
 const NILE_API_KAFKA_COMMAND_TOPIC =
   process.env.NILE_API_KAFKA_COMMAND_TOPIC || "commands";
-
-// producer.on("ready", function (v) {
-//   // payloads = [
-//   //   { topic: "topic1", messages: "hi" },
-//   //   { topic: "topic2", messages: ["hello", "world"] },
-//   // ];
-//   producer.send(
-//     [
-//       {
-//         topic: "commands",
-//         messages: "antani",
-//       },
-//     ],
-//     (err, data) => {
-//       if (err) {
-//         console.log("error", err);
-//       }
-//       console.log("ok", data);
-//     }
-//   );
-//   // producer.send(payloads, function (err, data) {
-//   //     console.log(data);
-//   // });
-// });
 
 function createServer(db, producer) {
   return Promise.all(requests).then((schemasList) => {
@@ -64,7 +36,7 @@ function createServer(db, producer) {
       exposeRoute: true,
       swagger: {
         info: {
-          title: "nile-rest-api",
+          title: "nile-mongodb-rest",
           description: "api documentation",
           version: "1.0.0",
         },
