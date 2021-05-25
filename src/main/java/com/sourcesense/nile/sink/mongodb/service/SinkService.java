@@ -40,7 +40,7 @@ public class SinkService {
         }
 
         if (response.getDeletedCount() < 1){
-            throw new MongodbSinkException(String.format("There is no docuemtn to delete with uri %s", uri.toString()));
+            throw new MongodbSinkException(String.format("There is no docuement to delete with uri %s", uri.toString()));
         }
     }
 
