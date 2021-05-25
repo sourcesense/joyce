@@ -20,4 +20,8 @@ public class NileSchemaEngineException extends RuntimeException {
 	public NileSchemaEngineException(String message) {
 		super(message);
 	}
+
+	public NileSchemaEngineException(Exception e) {
+		super(e);
+	}
 }
