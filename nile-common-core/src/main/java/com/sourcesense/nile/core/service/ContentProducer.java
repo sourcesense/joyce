@@ -156,8 +156,9 @@ public class ContentProducer extends KafkaMessageService<JsonNode> {
                 rawUri,
                 contentUri,
                 NotificationEvent.CONTENT_PUBLISHED,
-                eventPayload,
-                eventMetadata
+                eventMetadata,
+                eventPayload
+
         );
     }
 
@@ -175,8 +176,8 @@ public class ContentProducer extends KafkaMessageService<JsonNode> {
                 rawUri,
                 contentUri,
                 NotificationEvent.CONTENT_PUBLISH_FAILED,
-                eventPayload,
-                eventMetadata
+                eventMetadata,
+                eventPayload
         );
     }
 

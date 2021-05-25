@@ -55,7 +55,7 @@ public class NotificationAspect implements MethodAspect {
         try {
             Object result = joinPoint.proceed();
             this.computeNotificationEvent(method, Notify::successEvent).ifPresent(
-                    successEvent -> notificationService.ok(rawUri, contentUri, successEvent, eventPayload, eventMetadata)
+                    successEvent -> notificationService.ok(rawUri, contentUri, successEvent, eventMetadata, eventPayload )
             );
 
             return result;
