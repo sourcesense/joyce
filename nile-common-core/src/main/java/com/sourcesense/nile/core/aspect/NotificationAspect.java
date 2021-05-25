@@ -1,6 +1,7 @@
 package com.sourcesense.nile.core.aspect;
 
 import com.fasterxml.jackson.databind.JsonNode;
+import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.databind.node.JsonNodeFactory;
 import com.fasterxml.jackson.databind.node.ObjectNode;
 import com.sourcesense.nile.core.annotation.*;
@@ -14,6 +15,7 @@ import org.aspectj.lang.annotation.Around;
 import org.aspectj.lang.annotation.Aspect;
 import org.springframework.stereotype.Component;
 
+import java.io.ObjectInputFilter;
 import java.lang.annotation.Annotation;
 import java.lang.reflect.Method;
 import java.lang.reflect.Parameter;
@@ -61,7 +63,14 @@ public class NotificationAspect implements MethodAspect {
         } catch (Throwable exception) {
             if (!NotifiedException.class.equals(exception.getClass())) {
                 this.computeNotificationEvent(method, Notify::failureEvent).ifPresent(
-                        failureEvent -> notificationService.ko(rawUri, contentUri, failureEvent, eventPayload, eventMetadata)
+                        failureEvent -> {
+                            ObjectNode meta = JsonNodeFactory.instance.objectNode();
+                            if (eventMetadata != null){
+                                meta = eventMetadata.deepCopy();
+                            }
+                            meta.put("error", exception.getMessage());
+                            notificationService.ko(rawUri, contentUri, failureEvent, meta, eventPayload);
+                        }
                 );
                 throw new NotifiedException(exception);
             }

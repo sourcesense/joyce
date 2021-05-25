@@ -22,10 +22,11 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.databind.node.*;
 import com.networknt.schema.*;
 import com.sourcesense.nile.schemaengine.NileMetaSchema;
-import com.sourcesense.nile.schemaengine.exception.HandlerBeanNameNotFound;
-import com.sourcesense.nile.schemaengine.exception.InvalidSchemaException;
-import com.sourcesense.nile.schemaengine.exception.NileSchemaEngineException;
-import com.sourcesense.nile.schemaengine.handler.TransormerHandler;
+import com.sourcesense.nile.schemaengine.exceptions.HandlerBeanNameNotFound;
+import com.sourcesense.nile.schemaengine.exceptions.InvalidSchemaException;
+import com.sourcesense.nile.schemaengine.exceptions.NileSchemaEngineException;
+import com.sourcesense.nile.schemaengine.exceptions.SchemaIsNotValidException;
+import com.sourcesense.nile.schemaengine.handlers.TransormerHandler;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.BeansException;
 import org.springframework.context.ApplicationContext;
@@ -112,51 +113,73 @@ public class SchemaEngine implements ApplicationContextAware {
 	 * @return
 	 */
 	private JsonNode parse(String key, JsonNode schema, JsonNode sourceJsonNode, Optional<JsonNode> metadata, Optional<Object> context) {
+		try {
+			if (schema.getNodeType().equals(JsonNodeType.OBJECT)){
+				// Apply custom handlers
+				Optional<JsonNode> transformed = this.applyHandlers(key, schema, sourceJsonNode, metadata, context);
+				if(transformed.isPresent()){
+					ObjectNode node = mapper.createObjectNode();
+					node.set(key, transformed.get());
+					ObjectNode tempSchema = schema.deepCopy();
+					tempSchema.remove(handlers.keySet());
 
-		if (schema.getNodeType().equals(JsonNodeType.OBJECT)){
-			// Apply custom handlers
-			Optional<JsonNode> transformed = this.applyHandlers(key, schema, sourceJsonNode, metadata, context);
-			if(transformed.isPresent()){
-				ObjectNode node = mapper.createObjectNode();
-				node.set(key, transformed.get());
-				ObjectNode tempSchema = schema.deepCopy();
-				tempSchema.remove(handlers.keySet());
+					tempSchema.set("type", schema.get("type"));
+					return this.parse(key, tempSchema, node, metadata, context);
+				}
+				// TODO: parse and handle "$ref"
+				JsonNode type = Optional.ofNullable(schema.get("type")).orElse(new TextNode("string"));
+				if (type.getNodeType().equals(JsonNodeType.ARRAY)){
 
-				tempSchema.set("type", schema.get("type"));
-				return this.parse(key, tempSchema, node, metadata, context);
-			}
-
-			String type = Optional.ofNullable(schema.get("type")).orElse(new TextNode("string")).asText();
-			if(type.equals("object")){
-				ObjectNode objectNode = mapper.createObjectNode();
-				JsonNode props = schema.get("properties");
-				if (props != null) {
-					Iterator<Map.Entry<String, JsonNode>> iter = props.fields();
-					while (iter.hasNext()) {
-						Map.Entry<String, JsonNode> entry = iter.next();
-						JsonNode node = this.parse(entry.getKey(), entry.getValue(), sourceJsonNode, metadata, context);
-						objectNode.set(entry.getKey(), node);
+					for (JsonNode aType : type){
+						JsonNode result = parseType(key, schema, sourceJsonNode, metadata, context, aType.asText());
+						if (result != null){
+							return result;
+						}
 					}
+					return null;
+				} else {
+					return parseType(key, schema, sourceJsonNode, metadata, context, type.asText());
 				}
-				return objectNode;
-			} else if (type.equals("array")){
-				ArrayNode arrayNode = mapper.createArrayNode();
-				for (JsonNode item : sourceJsonNode.get(key)){
-					JsonNode parsedItem = this.parse(null, schema.get("items"), item, metadata, context);
-					arrayNode.add(parsedItem);
-				}
-				return arrayNode;
-			} else if (type.equals("integer")){
-				return JsonNodeFactory.instance.numberNode(Integer.parseInt(sourceJsonNode.get(key).asText()));
-			} else if (type.equals("number")){
-				return JsonNodeFactory.instance.numberNode(Double.parseDouble(sourceJsonNode.get(key).asText()));
-			} else {
-				//TODO: handle other types and modification ie range and other limitations
-				return sourceJsonNode.get(key);
+
+
 			}
+		} catch (Exception e){
+			throw new NileSchemaEngineException(String.format("Cannot parse [%s]: %s", key, e.getMessage()));
 		}
 
 		return null;
+	}
+
+	private JsonNode parseType(String key, JsonNode schema, JsonNode sourceJsonNode, Optional<JsonNode> metadata, Optional<Object> context, String type) {
+		if(type.equals("object")){
+			ObjectNode objectNode = mapper.createObjectNode();
+			JsonNode props = schema.get("properties");
+			if (props != null) {
+				Iterator<Map.Entry<String, JsonNode>> iter = props.fields();
+				while (iter.hasNext()) {
+					Map.Entry<String, JsonNode> entry = iter.next();
+					JsonNode node = this.parse(entry.getKey(), entry.getValue(), sourceJsonNode, metadata, context);
+					objectNode.set(entry.getKey(), node);
+				}
+			}
+			return objectNode;
+		} else if (type.equals("array")){
+			ArrayNode arrayNode = mapper.createArrayNode();
+			for (JsonNode item : sourceJsonNode.get(key)){
+				JsonNode parsedItem = this.parse(null, schema.get("items"), item, metadata, context);
+				arrayNode.add(parsedItem);
+			}
+			return arrayNode;
+		} else if (type.equals("integer")){
+			return sourceJsonNode.get(key).asText().isEmpty() ? null :  JsonNodeFactory.instance.numberNode(Integer.parseInt(sourceJsonNode.get(key).asText()));
+		} else if (type.equals("number")){
+			return sourceJsonNode.get(key).asText().isEmpty() ? null :JsonNodeFactory.instance.numberNode(Double.parseDouble(sourceJsonNode.get(key).asText()));
+		} else if (type.equals("null")){
+			return null;
+		} else {
+			//TODO: handle other types and modification ie range and other limitations
+			return sourceJsonNode.get(key);
+		}
 	}
 
 	/**
