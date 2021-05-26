@@ -9,6 +9,8 @@ RUN wget https://repo1.maven.org/maven2/org/apache/camel/kafkaconnector/camel-fi
 RUN tar -xvzf /usr/share/java/camel/camel-file-kafka-connector-0.7.0-package.tar.gz --directory /usr/share/java/camel
 RUN rm /usr/share/java/camel/camel-file-kafka-connector-0.7.0-package.tar.gz
 
+RUN mkdir -p /usr/share/java/joyce
+COPY InsertJoyceMessageKey/target/InsertJoyceMessageKey-*-SNAPSHOT.jar /usr/share/java/joyce/
 
 
 
