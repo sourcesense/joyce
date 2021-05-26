@@ -103,7 +103,7 @@ public class SchemaService {
 			return schemaEntityDao.get(getSchemaUid(name).toString()).map(schemaMapper::toDto);
     }
 
-	@CacheEvict("schemas")
+	@CacheEvict(value = "schemas", allEntries=true)
 	public void delete(String name) {
 		Optional<SchemaEntity> entity = schemaEntityDao.get(getSchemaUid(name).toString());
 		if(entity.isEmpty()){

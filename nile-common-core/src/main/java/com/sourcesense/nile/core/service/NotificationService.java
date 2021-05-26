@@ -21,12 +21,15 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.databind.node.ObjectNode;
 import com.sourcesense.nile.core.configuration.NotificationServiceProperties;
 import com.sourcesense.nile.core.enumeration.NotificationEvent;
+import com.sourcesense.nile.core.utililty.KafkaUtility;
 import io.confluent.ksql.api.client.Client;
 import lombok.Builder;
 import lombok.Getter;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import org.apache.kafka.common.config.TopicConfig;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnProperty;
+import org.springframework.kafka.core.KafkaAdmin;
 import org.springframework.kafka.core.KafkaTemplate;
 import org.springframework.kafka.support.KafkaHeaders;
 import org.springframework.messaging.Message;
@@ -73,9 +76,16 @@ public class NotificationService {
     private final NotificationServiceProperties properties;
     final private KafkaTemplate<String, JsonNode> kafkaTemplate;
     private final Client ksql;
+    private final KafkaAdmin kafkaAdmin;
 
     @PostConstruct
     void init() throws ExecutionException, InterruptedException {
+        KafkaUtility.addTopicIfNeeded(kafkaAdmin,
+                properties.getTopic(),
+                properties.getPartitions(),
+                properties.getReplicas(),
+                properties.getRetention(),
+                TopicConfig.CLEANUP_POLICY_DELETE);
         String createTable = String.format(
                 "CREATE TABLE IF NOT EXISTS NILE_NOTIFICATION (\n" +
                         "     id VARCHAR PRIMARY KEY,\n" +
@@ -88,9 +98,8 @@ public class NotificationService {
                         "     content VARCHAR\n" +
                         "   ) WITH (\n" +
                         "     KAFKA_TOPIC = '%s', \n" +
-                        "     PARTITIONS = %d, \n" +
                         "     VALUE_FORMAT = 'JSON'\n" +
-                        "   );", properties.getTopic(), properties.getPartitions());
+                        "   );", properties.getTopic());
         ksql.executeStatement(createTable).get();
     }
 

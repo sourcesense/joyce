@@ -52,20 +52,24 @@ public class KafkaSchemaDao implements SchemaDao {
     private final ObjectMapper mapper;
     private final KafkaAdmin kafkaAdmin;
 
-    private void addTopicsIfNeeded() throws ExecutionException, InterruptedException {
-        AdminClient adminClient = AdminClient.create(kafkaAdmin.getConfigurationProperties());
-        List<NewTopic> topics = new ArrayList<>();
-        topics.add(TopicBuilder.name(schemaServiceProperties.getTopic())
-                .partitions(schemaServiceProperties.getPartitions())
-                .replicas(schemaServiceProperties.getReplicas())
-                .config(TopicConfig.CLEANUP_POLICY_CONFIG, TopicConfig.CLEANUP_POLICY_COMPACT)
-                .build());
-        try {
-            Map<String, TopicDescription> res = adminClient.describeTopics(Collections.singletonList(schemaServiceProperties.getTopic())).all().get();
-        } catch (ExecutionException e){
-            // topic does not exists
-            adminClient.createTopics(topics).all().get();
-        }
+
+    private void createTable() throws ExecutionException, InterruptedException {
+        String createTable = String.format(
+                "CREATE TABLE IF NOT EXISTS %s (\n" +
+                        "     uid VARCHAR PRIMARY KEY,\n" +
+                        "     value VARCHAR\n," +
+                        "     subtype VARCHAR\n" +
+                        "   ) WITH (\n" +
+                        "     KAFKA_TOPIC = '%s', \n" +
+                        "     PARTITIONS = %d,\n" +
+                        "     REPLICAS = %d,\n" +
+                        "     VALUE_FORMAT = 'JSON'\n" +
+                        "   );",
+                TABLE_NAME,
+                schemaServiceProperties.getTopic(),
+                schemaServiceProperties.getPartitions(),
+                schemaServiceProperties.getReplicas());
+        ksql.executeStatement(createTable).get();
     }
 
     private void createStream() throws InterruptedException, ExecutionException {
@@ -81,20 +85,6 @@ public class KafkaSchemaDao implements SchemaDao {
         ksql.executeStatement(createStream).get();
     }
 
-
-    private void createTable() throws ExecutionException, InterruptedException {
-        String createTable = String.format(
-                "CREATE TABLE IF NOT EXISTS %s (\n" +
-                        "     uid VARCHAR PRIMARY KEY,\n" +
-                        "     value VARCHAR\n," +
-                        "     subtype VARCHAR\n" +
-                        "   ) WITH (\n" +
-                        "     KAFKA_TOPIC = '%s', \n" +
-                        "     VALUE_FORMAT = 'JSON'\n" +
-                        "   );", TABLE_NAME, schemaServiceProperties.getTopic());
-        ksql.executeStatement(createTable).get();
-    }
-
     private void createMaterializedView() throws InterruptedException, ExecutionException {
         String createMaterializedView = String.format(
                 "CREATE TABLE IF NOT EXISTS %s AS SELECT * FROM %s WHERE subtype = '%s';", getSchemaTableName(), TABLE_NAME, schemaServiceProperties.getSubtype());
@@ -106,9 +96,8 @@ public class KafkaSchemaDao implements SchemaDao {
     @PostConstruct
     void init() {
         try {
-            addTopicsIfNeeded();
-            createStream();
             createTable();
+            createStream();
             createMaterializedView();
         } catch (Exception e){
             throw new RuntimeException(e.getMessage());
@@ -178,7 +167,16 @@ public class KafkaSchemaDao implements SchemaDao {
     }
 
     @Override
-    public void delete(SchemaEntity t) {
-        //TODO: to implement
+    public void delete(SchemaEntity schemaEntity) {
+        try {
+            KsqlObject row = new KsqlObject()
+                    .put("uid", schemaEntity.getUid())
+                    .put("subtype", "null")
+                    .put("value", "null");
+            ksql.insertInto(STREAM_NAME, row).get();
+
+        } catch (InterruptedException | ExecutionException e) {
+            throw new RuntimeException(e.getMessage());
+        }
     }
 }
