@@ -1,8 +1,9 @@
-name: Docker latest Image
+name: Docker Image Version
 
 on:
   push:
-    branches: [main]
+    tags:
+      - "*"
 jobs:
   build:
     runs-on: ubuntu-latest
@@ -33,7 +34,7 @@ jobs:
         run: echo ${{ secrets.DOCKER_PASSWORD }} | docker login -u ${{ secrets.DOCKER_USERNAME }} --password-stdin
       - name: Build and Push Docker image
         run: |
-          docker build . -t sourcesense/nile-kafka-connect:${{steps.vars.outputs.SHA}} 
-          docker push sourcesense/nile-kafka-connect:${{steps.vars.outputs.SHA}}
-          docker tag sourcesense/nile-kafka-connect:${{steps.vars.outputs.SHA}} sourcesense/nile-kafka-connect:latest
+          docker build . -t sourcesense/nile-kafka-connect:${{steps.vars.outputs.VERSION}} 
+          docker push sourcesense/nile-kafka-connect:${{steps.vars.outputs.VERSION}}
+          docker tag sourcesense/nile-kafka-connect:${{steps.vars.outputs.VERSION}} sourcesense/nile-kafka-connect:latest
           docker push sourcesense/nile-kafka-connect:latest
