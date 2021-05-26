@@ -62,8 +62,9 @@ public class SchemaApiController implements SchemaApi {
 	}
 
 	@Override
-	public void deleteSchema(String id) {
-		schemaService.delete(id);
+	public void deleteSchema(String name) {
+
+		schemaService.delete(name);
 	}
 
 	private Schema getValidatedSchema(String name) {
