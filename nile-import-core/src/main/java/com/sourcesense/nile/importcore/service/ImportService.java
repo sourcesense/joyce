@@ -45,6 +45,12 @@ import org.springframework.stereotype.Service;
 import java.util.Map;
 import java.util.Optional;
 
+/**
+ * This class handles the business logic needed to process a raw message
+ * until the message is send to kafka content topic.
+ * It also sends notifications to kafka notification topic if
+ * the message is sent successfully or if there is an error.
+ */
 @Service
 @Slf4j
 @RequiredArgsConstructor
@@ -55,6 +61,18 @@ public class ImportService {
 	final private SchemaService schemaService;
 	final private ContentProducer contentProducer;
 
+	/**
+	 *
+	 * Builds an uri for the raw message used to identify the message.
+	 * Mostly used to trace the message if there is an error.
+	 *
+	 * @param messageKey the key associated with the consumed kafka message
+	 * @param headers  headers associated with the consumed kafka message. Obtaining the schema value from the headers
+	 *                 will be suppressed in future releases and only the message key value will be used to calculate
+	 *                 the NileURI
+	 * @return The computed raw uri
+	 * @throws JsonProcessingException
+	 */
 	@Notify(failureEvent = NotificationEvent.IMPORT_FAILED_INVALID_MESSAGE_KEY)
 	public NileURI computeRawURI(
 			@RawUri String messageKey,
@@ -72,11 +90,14 @@ public class ImportService {
 	}
 
 	/**
+	 * Builds the uri of the schema that will be used to process the message
+	 *
 	 * @param messageKey the key associated with the consumed kafka message
 	 * @param headers    headers associated with the consumed kafka message. Obtaining the schema value from the headers
 	 *                   will be suppressed in future releases and only the message key value will be used to calculate
 	 *                   the NileURI
-	 * @return Returns a NileURI calculated starting from the schema value present in the message key or in the headers.
+	 * @param rawUri Uri used to trace the message if an error happens
+	 * @return Uri calculated starting from the schema value present in the message key or in the headers.
 	 * @throws JsonProcessingException
 	 */
 	@Notify(failureEvent = NotificationEvent.IMPORT_FAILED_INVALID_SCHEMA)
@@ -94,13 +115,22 @@ public class ImportService {
 				);
 	}
 
+	/**
+	 * Uses the schema uri to fetch the schema on ksql.
+	 *
+	 * @param schemaUri Computed schema uri
+	 * @param rawUri Uri used to trace the message if an error happens
+	 * @return Schema used to process raw message
+	 */
 	@Notify(failureEvent = NotificationEvent.IMPORT_FAILED_INVALID_SCHEMA)
-	public Schema computeSchema(@RawUri NileURI uri) {
+	public Schema computeSchema(
+			NileURI schemaUri,
+			@RawUri NileURI rawUri) {
 
-		return schemaService.findByName(uri.getCollection())
+		return schemaService.findByName(schemaUri.getCollection())
 				.orElseThrow(
 						() -> new SchemaNotFoundException(
-								String.format("Schema %s does not exists", uri.toString())
+								String.format("Schema %s does not exists", schemaUri.toString())
 						)
 				);
 	}
@@ -108,10 +138,10 @@ public class ImportService {
 	/**
 	 * Process a document with the schema specified and processImport it on nile_content topic
 	 *
-	 * @param schema
-	 * @param document
-	 * @param rawUri
-	 * @return
+	 * @param rawUri Uri used to trace the message if an error happens
+	 * @param document Raw message payload
+	 * @param schema Schema used to process raw message
+	 * @return true if the operation succeeded
 	 */
 	@Notify(failureEvent = NotificationEvent.IMPORT_INSERT_FAILED)
 	public boolean processImport(
@@ -133,6 +163,15 @@ public class ImportService {
 		return true;
 	}
 
+	/**
+	 * Sends a message to kafka content topic that contains everything is needed to
+	 * trigger document removal.
+	 * Used by {@link com.sourcesense.nile.importcore.controller.ImportController}
+	 *
+	 * @param rawUri Uri used to trace the message if an error happens
+	 * @param document Raw message payload
+	 * @param schema Schema used to process raw message
+	 */
 	@Notify(failureEvent = NotificationEvent.IMPORT_REMOVE_FAILED)
 	public void removeDocument(
 			@RawUri NileURI rawUri,
@@ -154,10 +193,12 @@ public class ImportService {
 	}
 
 	/**
-	 * Publish on nile_content topic the removal of a docuemnt
+	 * Sends a message to kafka content topic that contains everything is needed to
+	 * trigger document removal.
+	 * Used by {@link com.sourcesense.nile.importcore.consumer.ImportConsumer}
 	 *
-	 * @param schema
-	 * @param rawUri
+	 * @param rawUri Uri used to trace the message if an error happens
+	 * @param schema Schema used to process raw message
 	 */
 	@Notify(failureEvent = NotificationEvent.IMPORT_REMOVE_FAILED)
 	public void removeDocument(
@@ -176,21 +217,32 @@ public class ImportService {
 	/**
 	 * Processes a document with a schema returning it, without doing a real import
 	 *
-	 * @param schema
-	 * @param document
-	 * @return
+	 * @param document Raw message payload
+	 * @param schema Schema used to process raw message
+	 * @return Processed message
 	 */
 	public JsonNode importDryRun(JsonNode document, Schema schema) {
 		JsonNode result = schemaEngine.process(schema.getSchema(), document, null);
 		return mapper.createObjectNode().putPOJO("result", result);
 	}
 
+	/**
+	 * Builds the schema uri in two different ways:
+	 * 1)If import schema is in kafka headers we use that one. (nile connector)
+	 * 2)Else we will receive the key as a JsonNode (kafka connect)
+	 *
+	 * @param messageKey
+	 * @param headers
+	 * @return Optional Schema Uri
+	 * @throws JsonProcessingException
+	 */
 	private Optional<NileURI> computeSchemaUri(String messageKey, Map<String, String> headers) throws JsonProcessingException {
+
 		// If we have the header we're receiving messages from a nile connector
 		if (headers.get(KafkaCustomHeaders.IMPORT_SCHEMA) != null) {
 			return NileURI.createURI(headers.get(KafkaCustomHeaders.IMPORT_SCHEMA));
 
-			// else We espect to have a key in json format in the format of ConnectKeyPayload and derive from that the
+			// else we expect to have a key in json format in the format of ConnectKeyPayload and derive from that the
 			// information we need.
 			// It's the case of using plain kafka connect
 		} else {
@@ -200,6 +252,14 @@ public class ImportService {
 		}
 	}
 
+	/**
+	 * Build the content uri that will be used as key when
+	 * we will send the processed message to kafka content topic
+	 *
+	 * @param result
+	 * @param metadata
+	 * @return Content uri
+	 */
 	private NileURI computeContentURI(JsonNode result, NileSchemaMetadata metadata) {
 		String uid = Optional.ofNullable(result.get(metadata.getUidKey()))
 				.orElseThrow(() -> new InvalidMetadataException(
@@ -209,6 +269,12 @@ public class ImportService {
 		return NileURI.make(NileURI.Type.CONTENT, metadata.getSubtype(), metadata.getCollection(), uid);
 	}
 
+	/**
+	 * Retrieves the metadata from the schema
+	 *
+	 * @param schema
+	 * @return Schema metadata
+	 */
 	private NileSchemaMetadata computeMetadata(Schema schema) {
 		return Optional.ofNullable(schema)
 				.map(Schema::getSchema)
@@ -217,6 +283,14 @@ public class ImportService {
 				.orElseThrow(() -> new InvalidMetadataException("Schema has no metadata"));
 	}
 
+	/**
+	 * Retrieves the parent metadata from the schema
+	 *
+	 * @param metadata
+	 * @param result
+	 * @param validate
+	 * @return Optional schema parent metadata
+	 */
 	private Optional<NileSchemaMetadata> computeParentMetadata(NileSchemaMetadata metadata, JsonNode result, boolean validate) {
 		/*
 		 * If schema has a parent we validate with the parent
@@ -224,7 +298,7 @@ public class ImportService {
 		 */
 		if (metadata.getParent() != null) {
 
-			Schema parent =  this.computeParentSchema(metadata);
+			Schema parent = this.computeParentSchema(metadata);
 
 			if (validate) {
 				schemaEngine.validate(parent.getSchema(), result);
@@ -239,6 +313,12 @@ public class ImportService {
 		return Optional.empty();
 	}
 
+	/**
+	 * Retrieves the parent schema
+	 *
+	 * @param metadata
+	 * @return Parent schema
+	 */
 	private Schema computeParentSchema(NileSchemaMetadata metadata) {
 		return Optional.of(metadata)
 				.map(NileSchemaMetadata::getParent)

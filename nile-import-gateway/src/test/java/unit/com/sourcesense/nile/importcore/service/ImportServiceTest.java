@@ -200,7 +200,7 @@ class ImportServiceTest {
 
 		assertThrows(
 				SchemaNotFoundException.class,
-				() -> importService.computeSchema(schemaUri)
+				() -> importService.computeSchema(schemaUri, null)
 		);
 	}
 

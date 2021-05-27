@@ -42,6 +42,15 @@ public class ImportConsumer {
 	final private ImportService importService;
 	final private CustomExceptionHandler customExceptionHandler;
 
+	/**
+	 * Kafka consumer that reads raw messages from the import topic and processes them using
+	 * a schema .
+	 * There are two types of action that can be executed on a message: Insert and Delete.
+	 *
+	 * @param message The payload of the kafka message
+	 * @param messageKey The key of the kafka message
+	 * @param headers the headers of the kafka message
+	 */
 	@KafkaListener(topics = "${nile.kafka.import-topic:import}")
 	public void consumeMessage(
 			@Payload ObjectNode message,
@@ -51,7 +60,7 @@ public class ImportConsumer {
 		try {
 			NileURI rawURI = importService.computeRawURI(messageKey, headers);
 			NileURI schemaURI = importService.computeValidSchemaUri(messageKey, headers, rawURI);
-			Schema schema = importService.computeSchema(schemaURI);
+			Schema schema = importService.computeSchema(schemaURI, rawURI);
 
 			//TODO: understand how to deal with deletion with kafka connect ingested
 			String action = headers.getOrDefault(KafkaCustomHeaders.MESSAGE_ACTION, ImportAction.INSERT.name());

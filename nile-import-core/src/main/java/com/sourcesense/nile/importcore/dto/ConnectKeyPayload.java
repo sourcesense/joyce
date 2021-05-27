@@ -18,6 +18,10 @@ package com.sourcesense.nile.importcore.dto;
 
 import lombok.Data;
 
+/**
+ *  This class maps the structure of the messageKey coming
+ *  from a kafka connect
+ */
 @Data
 public class ConnectKeyPayload {
 	private String schema;

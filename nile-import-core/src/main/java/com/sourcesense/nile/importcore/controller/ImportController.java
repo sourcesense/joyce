@@ -33,11 +33,22 @@ import java.util.UUID;
 
 @RestController
 @RequiredArgsConstructor
+/**
+ *  Controller that reads raw messages from request body and processes them.
+ * 	There are two types of action that can be executed on a message: Insert and Delete.
+ * 	*/
 public class ImportController implements ImportApi {
 
 	final private ImportService importService;
 	final private SchemaService schemaService;
 
+	/**
+	 * Insert raw message using schema found in the endpoint path.
+	 *
+	 * @param schemaId The key of the schema
+	 * @param document The payload of the message
+	 * @return true if the operation succeed
+	 */
 	@Override
 	public Boolean importDocument(String schemaId, ObjectNode document) {
 		return importService.processImport(
@@ -47,11 +58,25 @@ public class ImportController implements ImportApi {
 		);
 	}
 
+	/**
+	 * Test endpoint that simulates an insert without posting a message on Kafka
+	 *
+	 * @param schemaId The key of the schema
+	 * @param document The payload of the message
+	 * @return Processed message
+	 */
 	@Override
 	public JsonNode importDryRun(String schemaId, ObjectNode document) {
 		return importService.importDryRun(document, this.fetchSchema(schemaId));
 	}
 
+	/**
+	 * Deletes raw message using schema found in the endpoint path.
+	 *
+	 * @param schemaId The key of the schema
+	 * @param document The payload of the message
+	 * @return true if the operation succeed
+	 */
 	@Override
 	public Boolean removeDocument(String schemaId, ObjectNode document) {
 		importService.removeDocument(
