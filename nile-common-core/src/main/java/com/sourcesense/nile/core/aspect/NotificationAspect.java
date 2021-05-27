@@ -9,7 +9,6 @@ import com.sourcesense.nile.core.enumeration.NotificationEvent;
 import com.sourcesense.nile.core.exception.NotifiedException;
 import com.sourcesense.nile.core.service.NotificationService;
 import lombok.RequiredArgsConstructor;
-import lombok.SneakyThrows;
 import org.aspectj.lang.ProceedingJoinPoint;
 import org.aspectj.lang.annotation.Around;
 import org.aspectj.lang.annotation.Aspect;
@@ -23,6 +22,22 @@ import java.util.Optional;
 import java.util.function.Function;
 import java.util.function.Predicate;
 
+
+/**
+ * Aspect that intercept method annotated with
+ * {@link com.sourcesense.nile.core.annotation.Notify}
+ * It retrieves data from the method parameters annotated with
+ * {@link com.sourcesense.nile.core.annotation.RawUri}
+ * {@link com.sourcesense.nile.core.annotation.ContentUri}
+ * {@link com.sourcesense.nile.core.annotation.EventPayload}
+ * {@link com.sourcesense.nile.core.annotation.EventMetadata}
+ * and sends notifications to kafka notification topic
+ * enriched with the retrieved data.
+ * If Notify annotation contains a successEvent it will send the event or
+ * else if the Notify annotation contains a failure event and if the intercepted
+ * method throws an exception, the aspect catches that exception and sends
+ * a message to notification topic with that event.
+ */
 @Aspect
 @Component
 @RequiredArgsConstructor
@@ -30,6 +45,15 @@ public class NotificationAspect implements MethodAspect {
 
     private final NotificationService notificationService;
 
+    /**
+     * Contains the code that gets executed when a method annotated
+     * {@link com.sourcesense.nile.core.annotation.Notify} is called.
+     * First it collects data from the annotated parameters, then
+     * if sends an event to kafka notification topic
+     *
+     * @param joinPoint
+     * @return
+     */
     @Around("@annotation(com.sourcesense.nile.core.annotation.Notify)")
     public Object notify(ProceedingJoinPoint joinPoint) {
 
@@ -44,6 +68,19 @@ public class NotificationAspect implements MethodAspect {
         return this.notify(joinPoint, method, rawUri, contentUri, eventPayload, eventMetadata);
     }
 
+    /**
+     *
+     * Sends an event to kafka notification topic that contains
+     * all the data retrieved from the intercepted method parameters
+     *
+     * @param joinPoint
+     * @param method
+     * @param rawUri
+     * @param contentUri
+     * @param eventPayload
+     * @param eventMetadata
+     * @return
+     */
     private Object notify(
             ProceedingJoinPoint joinPoint,
             Method method,
@@ -78,6 +115,13 @@ public class NotificationAspect implements MethodAspect {
         }
     }
 
+    /**
+     * Retrieves a success or failure event from the Notify annotation
+     *
+     * @param method
+     * @param eventProvider
+     * @return A notification event
+     */
     private Optional<NotificationEvent> computeNotificationEvent(
             Method method,
             Function<Notify, NotificationEvent> eventProvider) {
@@ -88,7 +132,18 @@ public class NotificationAspect implements MethodAspect {
                 .filter(Predicate.not(NotificationEvent.NONE::equals));
     }
 
-    //Uri can of type NileURI or String
+    /**
+     * Retrieves an uri from a param of the intercepted method
+     * annotated with {@link com.sourcesense.nile.core.annotation.RawUri}
+     * or {@link com.sourcesense.nile.core.annotation.ContentUri}
+     * Uri can of type NileURI or String.
+     *
+     * @param params
+     * @param paramsValues
+     * @param annotationClass
+     * @param <A>
+     * @return Nile uri or string uri
+     */
     private <A extends Annotation> String computeUri(
             Parameter[] params,
             Object[] paramsValues,
@@ -99,6 +154,18 @@ public class NotificationAspect implements MethodAspect {
                 .orElse("");
     }
 
+    /**
+     *
+     * Retrieves a json node from a param of the intercepted method
+     * annotated with {@link com.sourcesense.nile.core.annotation.EventPayload}
+     * or {@link com.sourcesense.nile.core.annotation.EventMetadata}
+     *
+     * @param params
+     * @param paramsValues
+     * @param annotationClass
+     * @param <A>
+     * @return Json node
+     */
     private <A extends Annotation> JsonNode computeNode(
             Parameter[] params,
             Object[] paramsValues,

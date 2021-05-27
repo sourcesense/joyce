@@ -8,8 +8,18 @@ import java.lang.reflect.Method;
 import java.lang.reflect.Parameter;
 import java.util.Optional;
 
+/**
+ * Interface that contains utility methods for aspect
+ * focused on working on intercepted method signature
+ */
 public interface MethodAspect {
 
+    /**
+     * Retrieves method reflection class from the join point
+     *
+     * @param joinPoint
+     * @return method reflection class
+     */
     default Method computeMethod(ProceedingJoinPoint joinPoint) {
         MethodSignature signature = (MethodSignature) joinPoint.getSignature();
         return signature.getMethod();
