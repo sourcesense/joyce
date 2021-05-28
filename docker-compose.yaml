@@ -3,4 +3,4 @@ version: "3.6"
 services:
   kafka-connect:
     build: .
-    image: "sourcesense/nile-kafka-connect:latest"
+    image: "sourcesense/joyce-kafka-connect:latest"

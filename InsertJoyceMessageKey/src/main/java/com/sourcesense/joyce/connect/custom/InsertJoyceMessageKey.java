@@ -20,7 +20,7 @@ public  class InsertJoyceMessageKey<R extends ConnectRecord<R>> implements Trans
     public static final ConfigDef CONFIG_DEF = new ConfigDef()
             .define(KEY_UID, ConfigDef.Type.STRING, "id",
                     ConfigDef.Importance.HIGH, "document field name of unique id")
-            .define(KEY_SCHEMA, ConfigDef.Type.STRING, "nile://schema/import/test",
+            .define(KEY_SCHEMA, ConfigDef.Type.STRING, "joyce://schema/import/test",
                     ConfigDef.Importance.HIGH, "Schema uri to use with produced content")
             .define(KEY_SOURCE, ConfigDef.Type.STRING, "test-connector-default",
                     ConfigDef.Importance.HIGH, "String identifier of the current connector configuration");;

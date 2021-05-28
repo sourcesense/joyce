@@ -1,8 +1,8 @@
-# Nile Kafka Connect
+# Joyce Kafka Connect
 
-[![Docker Image](https://github.com/sourcesense/nile-kafka-connect/actions/workflows/master.yaml/badge.svg)](https://github.com/sourcesense/nile-kafka-connect/actions/workflows/master.yaml)
+[![Docker Image](https://github.com/sourcesense/joyce-kafka-connect/actions/workflows/master.yaml/badge.svg)](https://github.com/sourcesense/joyce-kafka-connect/actions/workflows/master.yaml)
 
-Nile Kafka Connect it's [Kafka Connect](https://docs.confluent.io/platform/current/connect/index.html) with some connectors already installed:
+Joyce Kafka Connect it's [Kafka Connect](https://docs.confluent.io/platform/current/connect/index.html) with some connectors already installed:
 
 - confluentinc/kafka-connect-jdbc
 - apache/camel-file-kafka-connector
@@ -12,7 +12,7 @@ Nile Kafka Connect it's [Kafka Connect](https://docs.confluent.io/platform/curre
 
 ## Install
 
-Nile Kafka Connect is distributed as a Docker container:
+Joyce Kafka Connect is distributed as a Docker container:
 
 ```bash
 ```
@@ -20,4 +20,4 @@ Nile Kafka Connect is distributed as a Docker container:
 ## Configuration
 
 Refer to Kafka Connect documetnation to view configurations you can set via environemnt.  
-Check this [docker-compose](https://github.com/sourcesense/nile-compose/blob/master/docker-compose.yaml) to view an example.
+Check this [docker-compose](https://github.com/sourcesense/joyce-compose/blob/master/docker-compose.yaml) to view an example.
