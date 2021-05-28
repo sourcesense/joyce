@@ -58,7 +58,7 @@ Refer to [official docs](https://docs.github.com/en/packages/working-with-a-gith
 > Building Joyce Mongodb Sink requires JDK 11
 
 ```bash
-# build java 
+# build java
 mvn clean package
 
 # build docker image
