@@ -1,0 +1,5 @@
+joyce:
+  data:
+    mongodb:
+      uri: mongodb://user:password@localhost:27017/joyce
+      database: joyce

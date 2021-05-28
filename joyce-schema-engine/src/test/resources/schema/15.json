@@ -1,0 +1,23 @@
+{
+  "$schema": "https://joyce.sourcesensce.com/v1/schema",
+  "$metadata": {
+    "message_key": "$.id"
+  },
+  "type": "object",
+  "properties": {
+    "name": {
+      "type": "string",
+      "required": true
+    },
+    "mail": {
+      "type": "string",
+      "required": true,
+      "$path": "$.email",
+      "deprecated": true
+    },
+    "foo": {
+      "type": ["integer", "null"],
+      "$foo": null
+    }
+  }
+}

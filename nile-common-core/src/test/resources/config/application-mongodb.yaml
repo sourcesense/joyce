@@ -1,5 +1,0 @@
- nile:
-  data:
-    mongodb:
-      uri: mongodb://user:password@localhost:27017/nile
-      database: nile
