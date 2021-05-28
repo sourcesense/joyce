@@ -35,7 +35,7 @@ jobs:
         run: echo ${{ secrets.DOCKER_PASSWORD }} | docker login -u ${{ secrets.DOCKER_USERNAME }} --password-stdin
       - name: Build and Push Docker image
         run: |
-          docker build . --no-cache -t sourcesense/nile-import-gateway:${{steps.vars.outputs.VERSION}}
-          docker push sourcesense/nile-import-gateway:${{steps.vars.outputs.VERSION}}
-          docker tag sourcesense/nile-import-gateway:${{steps.vars.outputs.VERSION}} sourcesense/nile-import-gateway:latest
-          docker push sourcesense/nile-import-gateway:latest
+          docker build . -t sourcesense/joyce-import-gateway:${{steps.vars.outputs.VERSION}}
+          docker push sourcesense/joyce-import-gateway:${{steps.vars.outputs.VERSION}}
+          docker tag sourcesense/joyce-import-gateway:${{steps.vars.outputs.VERSION}} sourcesense/joyce-import-gateway:latest
+          docker push sourcesense/joyce-import-gateway:latest

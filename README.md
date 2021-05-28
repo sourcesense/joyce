@@ -1,6 +1,6 @@
-# Nile Import gateway
+# Joyce Import gateway
 
-[![Publish Snapshot](https://github.com/sourcesense/nile-import-gateway/actions/workflows/master.yaml/badge.svg)](https://github.com/sourcesense/nile-import-gateway/actions/workflows/master.yaml)
+[![Publish Snapshot](https://github.com/sourcesense/joyce-import-gateway/actions/workflows/master.yaml/badge.svg)](https://github.com/sourcesense/joyce-import-gateway/actions/workflows/master.yaml)
 
 
 The Import Gateway is the single point where you ingest your data into the system.   
@@ -8,23 +8,23 @@ It manages import schemas and applies them to the content you send to it.
 
 ## Documentation
 
-The full documentation is available [here](https://sourcesense.github.io/nile/docs/import-gateway).
+The full documentation is available [here](https://sourcesense.github.io/joyce/docs/import-gateway).
 
 ## Install
 
-Nile Import Gateway is distributed as a Docker container:
+Joyce Import Gateway is distributed as a Docker container:
 
 ```bash
-docker pull sourcesense/nile-import-gateway:latest
+docker pull sourcesense/joyce-import-gateway:latest
 ```
 
-Refer to this [docker-compose](https://github.com/sourcesense/nile-compose/blob/master/docker-compose.yaml) to know how to configure it.
+Refer to this [docker-compose](https://github.com/sourcesense/joyce-compose/blob/master/docker-compose.yaml) to know how to configure it.
 
 ## Developing
 
 ### Dependencies
 
-Nile Import Gateway needs [Nile Parent](https://github.com/sourcesense/nile-parent) as dependency.
+Joyce Import Gateway needs [joyce Parent](https://github.com/sourcesense/joyce-parent) as dependency.
 You can install it **from source**, or get it from **Maven repository**.
 
 To get it from Maven repository you have to maven to retrieve package from Github packages.
@@ -57,7 +57,7 @@ Refer to [official docs](https://docs.github.com/en/packages/working-with-a-gith
 
 ### Build
 
-> Building Nile Gateway requires JDK 11
+> Building joyce Gateway requires JDK 11
 
 ```bash
 # build java 
