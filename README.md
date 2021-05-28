@@ -1,6 +1,6 @@
 # Joyce Parent
 
-[![Publish Snapshot](https://github.com/sourcesense/nile-parent/actions/workflows/master.yaml/badge.svg)](https://github.com/sourcesense/nile-parent/actions/workflows/master.yaml)
+[![Publish Snapshot](https://github.com/sourcesense/joyce-parent/actions/workflows/master.yaml/badge.svg)](https://github.com/sourcesense/joyce-parent/actions/workflows/master.yaml)
 
 
 Joyce Parent is a maven multi model project that has common moduls used by other Joyce projects, and has a parent pom gathering dependancies versions.

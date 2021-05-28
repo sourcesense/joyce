@@ -30,7 +30,7 @@
         <repository>
             <id>github</id>
             <name>GitHub OWNER Apache Maven Packages</name>
-            <url>https://maven.pkg.github.com/sourcesense/nile-parent</url>
+            <url>https://maven.pkg.github.com/sourcesense/joyce-parent</url>
         </repository>
     </distributionManagement>
 
