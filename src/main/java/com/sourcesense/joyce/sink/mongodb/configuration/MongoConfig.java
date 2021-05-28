@@ -14,7 +14,7 @@
  * limitations under the License.
  */
 
-package com.sourcesense.nile.sink.mongodb.configuration;
+package com.sourcesense.joyce.sink.mongodb.configuration;
 
 import com.mongodb.ConnectionString;
 import com.mongodb.MongoClientSettings;
@@ -27,10 +27,10 @@ import org.springframework.data.mongodb.core.MongoTemplate;
 
 @Configuration
 public class MongoConfig  {
-	@Value("${nile.data.mongodb.uri:mongodb://localhost:27017/nile}")
+	@Value("${joyce.data.mongodb.uri:mongodb://localhost:27017/joyce}")
 	String mongoUri;
 
-	@Value("${nile.data.mongodb.database:nile}")
+	@Value("${joyce.data.mongodb.database:joyce}")
 	String database;
 
 	@Bean

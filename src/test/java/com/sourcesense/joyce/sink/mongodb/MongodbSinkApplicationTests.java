@@ -1,4 +1,4 @@
-package com.sourcesense.nile.sink.mongodb;
+package com.sourcesense.joyce.sink.mongodb;
 
 import org.junit.jupiter.api.Test;
 

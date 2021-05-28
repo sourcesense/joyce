@@ -1,28 +1,28 @@
-# Nile Mongodb Sink
+# Joyce Mongodb Sink
 
-[![Build and Publish Snapshot Image](https://github.com/sourcesense/nile-mongodb-sink/actions/workflows/master.yaml/badge.svg)](https://github.com/sourcesense/nile-mongodb-sink/actions/workflows/master.yaml)
+[![Build and Publish Snapshot Image](https://github.com/sourcesense/joyce-mongodb-sink/actions/workflows/master.yaml/badge.svg)](https://github.com/sourcesense/joyce-mongodb-sink/actions/workflows/master.yaml)
 
-It is a simple Sink that stores transformed content published to nile-content topic inside Mongodb.
+It is a simple Sink that stores transformed content published to joyce-content topic inside Mongodb.
 
 ## Documentation
 
-Documentation is available [here](https://sourcesense.github.io/nile/docs/mongodb-sink).
+Documentation is available [here](https://sourcesense.github.io/joyce/docs/mongodb-sink).
 
 ## Install
 
-Nile Mongodb Sink is distributed as a Docker container:
+Joyce Mongodb Sink is distributed as a Docker container:
 
 ```bash
-docker pull sourcesense/nile-mongodb-sink:latest
+docker pull sourcesense/joyce-mongodb-sink:latest
 ```
 
-Refer to this [docker-compose](https://github.com/sourcesense/nile-compose/blob/master/docker-compose.yaml) to know how to configure it.
+Refer to this [docker-compose](https://github.com/sourcesense/joyce-compose/blob/master/docker-compose.yaml) to know how to configure it.
 
 ## Developing
 
 ### Dependencies
 
-Nile Mongodb Sink needs [Nile Parent](https://github.com/sourcesense/nile-parent) as dependency.
+Joyce Mongodb Sink needs [Joyce Parent](https://github.com/sourcesense/joyce-parent) as dependency.
 You can install it **from source**, or get it from **Maven repository**.
 
 To get it from Maven repository you have to maven to retrieve package from Github packages.
@@ -55,7 +55,7 @@ Refer to [official docs](https://docs.github.com/en/packages/working-with-a-gith
 
 ### Build
 
-> Building Nile Mongodb Sink requires JDK 11
+> Building Joyce Mongodb Sink requires JDK 11
 
 ```bash
 # build java 

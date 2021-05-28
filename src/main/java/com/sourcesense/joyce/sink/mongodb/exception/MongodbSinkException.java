@@ -1,4 +1,4 @@
-package com.sourcesense.nile.sink.mongodb.exception;
+package com.sourcesense.joyce.sink.mongodb.exception;
 
 public class MongodbSinkException extends Exception {
     public MongodbSinkException(String s) {

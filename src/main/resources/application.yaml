@@ -1,23 +1,23 @@
 spring:
   main:
     web-application-type: none
-nile:
+joyce:
   ksql:
     host: localhost
     port: 8088
   kafka:
-    content-topic: nile_content
+    content-topic: joyce_content
     bootstrapAddress: kafka:9092
     producer:
       enabled: true
     consumer:
-      groupId: nile-mongodb-projector-local
+      groupId: joyce-mongodb-projector-local
       enabled: true
   notification-service:
     enabled: true
     source: MongodbSink
-    topic: nile_notification
+    topic: joyce_notification
   data:
     mongodb:
-      uri: mongodb://user:password@localhost:27017/nile
-      database: nile
+      uri: mongodb://user:password@localhost:27017/joyce
+      database: joyce
