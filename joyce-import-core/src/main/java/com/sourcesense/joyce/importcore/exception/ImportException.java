@@ -16,6 +16,9 @@
 
 package com.sourcesense.joyce.importcore.exception;
 
+/**
+ * Generic custom exception for this module
+ */
 public class ImportException extends RuntimeException {
 	public ImportException(String mess){
 		super(mess);

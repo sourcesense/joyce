@@ -27,6 +27,7 @@ import org.springframework.web.bind.annotation.*;
 @RequestMapping( value = "/api/import")
 @Tag(name = "Joyce Import API", description = "Joyce Import API")
 public interface ImportApi {
+
 	@PostMapping(value = "/{schemaId}", produces = "application/json; charset=utf-8")
 	@ResponseStatus(code = HttpStatus.OK)
 	Boolean importDocument(@PathVariable String schemaId, @RequestBody ObjectNode document ) throws JsonProcessingException;

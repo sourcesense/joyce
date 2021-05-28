@@ -17,7 +17,7 @@
 package com.sourcesense.joyce.importcore.exception;
 
 public class MissingMetadataException extends RuntimeException {
-	public MissingMetadataException(String s) {
-		super(s);
+	public MissingMetadataException(String message) {
+		super(message);
 	}
 }
