@@ -7,6 +7,7 @@ Joyce Kafka Connect it's [Kafka Connect](https://docs.confluent.io/platform/curr
 - confluentinc/kafka-connect-jdbc
 - apache/camel-file-kafka-connector
 - confluentinc/kafka-connect-jira
+- jcustenborder/kafka-connect-spooldir
 - ...
 
 
@@ -15,6 +16,7 @@ Joyce Kafka Connect it's [Kafka Connect](https://docs.confluent.io/platform/curr
 Joyce Kafka Connect is distributed as a Docker container:
 
 ```bash
+docker pull sourcesense/joyce-kafka-connect:latest
 ```
 
 ## Configuration
