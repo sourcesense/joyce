@@ -10,4 +10,4 @@ services:
       - "6650:6650"
     volumes:
       - ./assets/:/assets/
-    image: sourcesense/nile-mongodb-rest:latest
+    image: sourcesense/joyce-rest:latest

@@ -1,8 +1,4 @@
 {
     "schemas": {
-        "user": {
-            "version": "1",
-            "source": "http://localhost:8080/api/schema/user"
-        }
     }
 }

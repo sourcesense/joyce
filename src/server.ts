@@ -19,8 +19,8 @@ const HEALTH_PATH = process.env.HEALTH_PATH || "/health";
 const schemaSources = fs.readFileSync(SCHEMAS_SOURCE, "utf8");
 const schemaConfiguration = new SchemaConfiguration(JSON.parse(schemaSources));
 const requests = schemaConfiguration.requestSchemas(logger);
-const NILE_API_KAFKA_COMMAND_TOPIC =
-  process.env.NILE_API_KAFKA_COMMAND_TOPIC || "commands";
+const JOYCE_API_KAFKA_COMMAND_TOPIC =
+  process.env.JOYCE_API_KAFKA_COMMAND_TOPIC || "commands";
 
 function createServer(db, producer) {
   return Promise.all(requests).then((schemasList) => {
@@ -36,7 +36,7 @@ function createServer(db, producer) {
       exposeRoute: true,
       swagger: {
         info: {
-          title: "nile-mongodb-rest",
+          title: "joyce-rest",
           description: "api documentation",
           version: "1.0.0",
         },
@@ -97,7 +97,7 @@ function createServer(db, producer) {
         //   });
         // }
         const payload = {
-          topic: NILE_API_KAFKA_COMMAND_TOPIC,
+          topic: JOYCE_API_KAFKA_COMMAND_TOPIC,
           messages: JSON.stringify(req.body),
           key: req.body.id,
         };
@@ -117,7 +117,7 @@ function createServer(db, producer) {
        Per specificare le interfacce dei parametri di Fastify usa:
         Querystring: {page:number:, size:number}
         Params: {id:string}
-        Headers: {'x-nile':string}
+        Headers: {'x-joyce':string}
         Body: {veditu:string}
        */
       server.get<{ Params: { id: string } }>(
@@ -131,7 +131,7 @@ function createServer(db, producer) {
             const collection = db.collection(
               schema.schema.$metadata.collection
             );
-            const _id = `nile://content/${schema.schema.$metadata.subtype}/${schema.schema.$metadata.collection}/${entityID}`;
+            const _id = `joyce://content/${schema.schema.$metadata.subtype}/${schema.schema.$metadata.collection}/${entityID}`;
             const entity = await collection.findOne({ _id });
 
             if (entity) {
@@ -174,7 +174,7 @@ function createServer(db, producer) {
               .toArray();
             res
               .status(200)
-              .header("x-nile-schema-version", schema.version)
+              .header("x-joyce-schema-version", schema.version)
               .send(docs);
           } catch (errore) {
             req.log.error(errore);
