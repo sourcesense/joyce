@@ -1,32 +1,48 @@
 <?xml version="1.0" encoding="UTF-8"?>
+<!--
+  ~ Copyright 2021 Sourcesense Spa
+  ~
+  ~ Licensed under the Apache License, Version 2.0 (the "License");
+  ~ you may not use this file except in compliance with the License.
+  ~ You may obtain a copy of the License at
+  ~
+  ~     http://www.apache.org/licenses/LICENSE-2.0
+  ~
+  ~ Unless required by applicable law or agreed to in writing, software
+  ~ distributed under the License is distributed on an "AS IS" BASIS,
+  ~ WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+  ~ See the License for the specific language governing permissions and
+  ~ limitations under the License.
+  -->
+
 <project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
 	xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 https://maven.apache.org/xsd/maven-4.0.0.xsd">
 	<modelVersion>4.0.0</modelVersion>
 	<parent>
-		<groupId>com.sourcesense.nile</groupId>
-		<artifactId>nile-parent</artifactId>
+		<groupId>com.sourcesense.joyce</groupId>
+		<artifactId>joyce-parent</artifactId>
 		<version>1.0.0-SNAPSHOT</version>
 <!--		<relativePath/> &lt;!&ndash; lookup parent from repository &ndash;&gt;-->
 	</parent>
-  <artifactId>nile-import-parent</artifactId>
+  <artifactId>joyce-import-parent</artifactId>
 	<version>${revision}</version>
   <properties>
     <revision>1.0.0-SNAPSHOT</revision>
   </properties>
   <packaging>pom</packaging>
-	<name>nile-import-parent</name>
-	<description>Nile Import Gateway Microservice</description>
+	<name>joyce-import-parent</name>
+	<description>Joyce Import Gateway Microservice</description>
 
 	<modules>
-    <module>nile-import-core</module>
-    <module>nile-import-gateway</module>
+    <module>joyce-import-core</module>
+    <module>joyce-import-gateway</module>
   </modules>
 
   <repositories>
     <repository>
       <id>github</id>
       <name>GitHub Packages</name>
-      <url>https://maven.pkg.github.com/sourcesense/nile-parent</url>
+      <url>https://maven.pkg.github.com/sourcesense/joyce-parent</url>
     </repository>
   </repositories>
 

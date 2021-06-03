@@ -1,0 +1,40 @@
+{
+	"uid": "joyce://schema/import/user",
+	"name": "user",
+	"description": "A test schema",
+	"development": true,
+	"schema": {
+		"uid": "joyce://schema/import/user",
+		"type": "object",
+		"required": null,
+		"properties": {
+			"code": {
+				"type": "integer",
+				"$path": "$['user_id']"
+			},
+			"full_name": {
+				"type": "string",
+				"$path": ["$['first_name']", " ", "$['last_name']"]
+			},
+			"email": {
+				"type": "string"
+			},
+			"kind": {
+				"type": "string",
+				"$fixed": "SimpleUser"
+			}
+		},
+		"$schema": "https://joyce.sourcesensce.com/v1/schema",
+		"$metadata": {
+			"subtype": "import",
+			"collection": "users",
+			"name": "user",
+			"description": "A test schema",
+			"development": true,
+			"parent": null,
+			"uid": "code",
+			"root_query": null,
+			"root_collection": null
+		}
+	}
+}
