@@ -16,41 +16,52 @@
   -->
 
 <project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
-	xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 https://maven.apache.org/xsd/maven-4.0.0.xsd">
-	<modelVersion>4.0.0</modelVersion>
-	<parent>
-		<groupId>com.sourcesense.joyce</groupId>
-		<artifactId>joyce-import-parent</artifactId>
-		<version>${revision}</version>
-	</parent>
+         xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 https://maven.apache.org/xsd/maven-4.0.0.xsd">
+  <modelVersion>4.0.0</modelVersion>
+  <parent>
+    <groupId>com.sourcesense.joyce</groupId>
+    <artifactId>joyce-import-parent</artifactId>
+    <version>${revision}</version>
+  </parent>
 
   <artifactId>joyce-import-core</artifactId>
-	<name>joyce-import-core</name>
-	<description>Joyce Import Core</description>
+  <name>joyce-import-core</name>
+  <description>Joyce Import Core</description>
 
-	<dependencies>
+  <dependencies>
     <dependency>
       <groupId>com.sourcesense.joyce</groupId>
       <artifactId>joyce-common-core</artifactId>
     </dependency>
+
     <dependency>
       <groupId>org.springframework.boot</groupId>
       <artifactId>spring-boot-starter-actuator</artifactId>
     </dependency>
+
     <dependency>
       <groupId>org.springframework.boot</groupId>
       <artifactId>spring-boot-starter-web</artifactId>
     </dependency>
+
     <dependency>
-			<groupId>org.springframework.boot</groupId>
-			<artifactId>spring-boot-starter-test</artifactId>
-			<scope>test</scope>
-		</dependency>
+      <groupId>org.springframework.boot</groupId>
+      <artifactId>spring-boot-starter-test</artifactId>
+      <scope>test</scope>
+    </dependency>
+
     <dependency>
       <groupId>io.confluent.ksql</groupId>
       <artifactId>ksqldb-api-client</artifactId>
     </dependency>
-	</dependencies>
+
+    <dependency>
+      <groupId>org.pf4j</groupId>
+      <artifactId>pf4j-spring</artifactId>
+    </dependency>
+
+  </dependencies>
+
   <build>
     <plugins>
       <plugin>
@@ -74,8 +85,8 @@
               -Amapstruct.defaultComponentModel=spring
             </compilerArg>
           </compilerArgs>
-            <source>11</source>
-            <target>11</target>
+          <source>11</source>
+          <target>11</target>
         </configuration>
       </plugin>
     </plugins>

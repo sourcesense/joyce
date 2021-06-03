@@ -15,6 +15,8 @@ COPY --from=builder /app/snapshot-dependencies/ ./
 RUN true
 COPY --from=builder /app/application/ ./
 
+VOLUME /app/custom-handlers
+
 EXPOSE 6651
 
 ENTRYPOINT ["java", "org.springframework.boot.loader.JarLauncher"]

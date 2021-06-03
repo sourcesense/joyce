@@ -5,7 +5,11 @@ springdoc:
   swagger-ui:
     path: /docs
     disable-swagger-default-url: true
+
 joyce:
+  schema-transformer-plugin:
+    enabled: true
+    jar-path: /app/custom-handlers
   schema-service:
     enabled: true
     database: kafka
