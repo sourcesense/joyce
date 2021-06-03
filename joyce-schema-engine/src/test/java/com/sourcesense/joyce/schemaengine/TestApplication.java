@@ -19,7 +19,7 @@ package com.sourcesense.joyce.schemaengine;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.databind.node.TextNode;
-import com.sourcesense.joyce.schemaengine.handler.TransormerHandler;
+import com.sourcesense.joyce.schemaengine.handler.SchemaTransformerHandler;
 import org.springframework.boot.autoconfigure.SpringBootApplication;
 import org.springframework.context.annotation.Bean;
 
@@ -31,8 +31,8 @@ public class TestApplication {
 	}
 
 	@Bean(name = "fooHandler")
-    TransormerHandler handler(){
-		TransormerHandler transormerHandler = (key, schema, sourceJsonNode, metadata, context) -> new TextNode("bar");
-		return transormerHandler;
+	SchemaTransformerHandler handler(){
+		SchemaTransformerHandler schemaTransformerHandler = (key, schema, sourceJsonNode, metadata, context) -> new TextNode("bar");
+		return schemaTransformerHandler;
 	}
 }

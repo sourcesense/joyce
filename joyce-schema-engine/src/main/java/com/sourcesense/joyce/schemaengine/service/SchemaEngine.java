@@ -22,14 +22,12 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.databind.node.*;
 import com.networknt.schema.*;
 import com.sourcesense.joyce.schemaengine.JoyceMetaSchema;
-import com.sourcesense.joyce.schemaengine.exception.HandlerBeanNameNotFound;
-import com.sourcesense.joyce.schemaengine.handler.TransormerHandler;
 import com.sourcesense.joyce.schemaengine.exception.InvalidSchemaException;
 import com.sourcesense.joyce.schemaengine.exception.JoyceSchemaEngineException;
+import com.sourcesense.joyce.schemaengine.handler.SchemaTransformerHandler;
 import lombok.extern.slf4j.Slf4j;
-import org.springframework.beans.BeansException;
-import org.springframework.context.ApplicationContext;
-import org.springframework.context.ApplicationContextAware;
+import org.springframework.beans.factory.annotation.Qualifier;
+import org.springframework.context.annotation.DependsOn;
 import org.springframework.stereotype.Service;
 
 import javax.annotation.PostConstruct;
@@ -39,19 +37,23 @@ import java.util.stream.StreamSupport;
 
 @Service
 @Slf4j
-public class SchemaEngine implements ApplicationContextAware {
-	public static final String METADATA = "$metadata";
-	private ObjectMapper mapper;
-	private JsonSchemaFactory factory;
-	private Map<String, TransormerHandler> handlers;
-	private final SchemaEngineProperties properties;
-	private ApplicationContext applicationContext;
+@DependsOn("transformerHandlers")
+public class SchemaEngine{
 
-	public SchemaEngine(SchemaEngineProperties properties) {
+	public static final String METADATA = "$metadata";
+
+	private final ObjectMapper mapper;
+	private final Map<String, SchemaTransformerHandler> transformerHandlers;
+
+	private JsonSchemaFactory factory;
+
+	public SchemaEngine(
+			ObjectMapper mapper,
+			@Qualifier("transformerHandlers") Map<String, SchemaTransformerHandler> transformerHandlers) {
+
+		this.mapper = mapper;
+		this.transformerHandlers = transformerHandlers;
 		this.factory = JsonSchemaFactory.getInstance(SpecVersion.VersionFlag.V7);
-		this.mapper = new ObjectMapper();
-		this.handlers = new HashMap<>();
-		this.properties = properties;
 	}
 
 	/**
@@ -59,46 +61,25 @@ public class SchemaEngine implements ApplicationContextAware {
 	 */
 	@PostConstruct
 	public void defaultInit() {
-
-		/**
-		 * Register Default Handlers
-		 */
-		Map<String, String> defaultHandlers = Map.of(
-				"$path", "jsonPathTransformerHandler",
-				"$fixed", "fixedValueTransformerHandler",
-				"$meta", "metadataValueTransformerHandler"
-		);
-		for (String key : defaultHandlers.keySet()) {
-			TransormerHandler handler = applicationContext.getBean(defaultHandlers.get(key), TransormerHandler.class);
-			this.registerHandler(key, handler);
-		}
-
-
-		/**
-		 * Register Handlers from configuration
-		 */
-		for (String key : this.properties.getHandlers().keySet()){
-			TransormerHandler handler = applicationContext.getBean(this.properties.getHandlers().get(key), TransormerHandler.class);
-			if (handler == null){
-				throw new HandlerBeanNameNotFound(String.format("%s not found", this.properties.getHandlers().get(key)));
-			}
-			this.registerHandler(key, handler);
-		}
-
 		this.registerMetaSchema();
+		this.logRegisteredTransformerHandlers();
 	}
 
 	/**
-	 * Genrates the Meta Schema with correct registered Keywords
+	 * Generates the Meta Schema with correct registered Keywords
 	 */
-	public void registerMetaSchema() {
-		JsonMetaSchema metaSchema = JoyceMetaSchema.getInstance(new ArrayList<>(handlers.keySet()));
-		JsonSchemaFactory.Builder builder = new JsonSchemaFactory.Builder();
-		this.factory = builder.defaultMetaSchemaURI(metaSchema.getUri())
-				.addMetaSchema(metaSchema).build();
-	//
+	private void registerMetaSchema() {
+		JsonMetaSchema metaSchema = JoyceMetaSchema.getInstance(transformerHandlers.keySet());
+		this.factory = new JsonSchemaFactory.Builder()
+				.defaultMetaSchemaURI(metaSchema.getUri())
+				.addMetaSchema(metaSchema)
+				.build();
 	}
 
+	private void logRegisteredTransformerHandlers() {
+		log.info("The following {} schema transformer handlers have been loaded: {}",
+				transformerHandlers.size(), transformerHandlers.keySet());
+	}
 
 	/**
 	 * Main Parse method, applies the transformer and navigate the schema calling parse recursively
@@ -120,7 +101,7 @@ public class SchemaEngine implements ApplicationContextAware {
 					ObjectNode node = mapper.createObjectNode();
 					node.set(key, transformed.get());
 					ObjectNode tempSchema = schema.deepCopy();
-					tempSchema.remove(handlers.keySet());
+					tempSchema.remove(transformerHandlers.keySet());
 
 					tempSchema.set("type", schema.get("type"));
 					return this.parse(key, tempSchema, node, metadata, context);
@@ -182,19 +163,6 @@ public class SchemaEngine implements ApplicationContextAware {
 	}
 
 	/**
-	 * Register a new transformation handler for the given Key
-	 * @param key a key that MUST start with a dollar sign
-	 * @param handler an instance implementing TransformationHandler
-	 */
-	public void registerHandler(String key, TransormerHandler handler) {
-		if(!key.startsWith("$")){
-			key = "$".concat(key);
-		}
-		this.handlers.put(key, handler);
-	}
-
-
-	/**
 	 * Apply registered handlers in cascade sing output from the first as input to the following
 	 *
 	 * @param key
@@ -213,7 +181,7 @@ public class SchemaEngine implements ApplicationContextAware {
 		List<String> knownHandlerKeys = StreamSupport.stream(
 				Spliterators.spliteratorUnknownSize(schema.fieldNames(), Spliterator.ORDERED),
 				false)
-				.filter(handlers.keySet()::contains)
+				.filter(transformerHandlers.keySet()::contains)
 				.collect(Collectors.toList());
 		if (knownHandlerKeys.size() < 1){
 			return Optional.empty();
@@ -221,7 +189,7 @@ public class SchemaEngine implements ApplicationContextAware {
 
 		JsonNode returnNode = sourceJsonNode.deepCopy();
 		for (String handlerKey : knownHandlerKeys){
-				TransormerHandler handler = this.handlers.get(handlerKey);
+				SchemaTransformerHandler handler = transformerHandlers.get(handlerKey);
 				returnNode = handler.process(key, schema.get(handlerKey), returnNode, metadata, context);
 
 		}
@@ -292,12 +260,6 @@ public class SchemaEngine implements ApplicationContextAware {
 		if(validation.getValidationMessages().size() > 0){
 			throw new InvalidSchemaException(validation);
 		}
-	}
-
-
-	@Override
-	public void setApplicationContext(ApplicationContext applicationContext) throws BeansException {
-		this.applicationContext = applicationContext;
 	}
 
 	/**

@@ -21,7 +21,7 @@ public class JoyceSchemaEngineException extends RuntimeException {
 		super(message);
 	}
 
-	public JoyceSchemaEngineException(Exception e) {
-		super(e);
+	public JoyceSchemaEngineException(Exception exception) {
+		super(exception);
 	}
 }

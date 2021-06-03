@@ -20,6 +20,7 @@ import com.networknt.schema.*;
 
 import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.Collection;
 import java.util.List;
 import java.util.stream.Collectors;
 
@@ -27,8 +28,9 @@ import java.util.stream.Collectors;
  * Joyce MetaSchema extends json schema 2019-09
  */
 public class JoyceMetaSchema {
-    private static String URI = "https://joyce.sourcesensce.com/v1/schema";
+
     private static final String ID = "$id";
+    private static final String URI = "https://joyce.sourcesense.com/v1/schema";
 
     public static final List<Format> BUILTIN_FORMATS = new ArrayList<Format>(JsonMetaSchema.COMMON_BUILTIN_FORMATS);
 
@@ -37,7 +39,7 @@ public class JoyceMetaSchema {
         //BUILTIN_FORMATS.add(pattern("phone", "^\\+(?:[0-9] ?){6,14}[0-9]$"));
     }
 
-    public static JsonMetaSchema getInstance(List<String> augmentedKeys) {
+    public static JsonMetaSchema getInstance(Collection<String> augmentedKeys) {
         List<Keyword> nonValidationKeywords = new ArrayList<>(Arrays.asList(
                 new NonValidationKeyword("$schema"),
                 new NonValidationKeyword("$id"),
@@ -56,7 +58,7 @@ public class JoyceMetaSchema {
         ));
         nonValidationKeywords.addAll(
                 augmentedKeys.stream()
-                .map(s -> new NonValidationKeyword(s))
+                .map(NonValidationKeyword::new)
                 .collect(Collectors.toList())
         );
         return new JsonMetaSchema.Builder(URI)

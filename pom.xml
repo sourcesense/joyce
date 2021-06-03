@@ -30,6 +30,7 @@
 		<com.networknt.version>1.0.50</com.networknt.version>
 		<commons-codec.version>1.11</commons-codec.version>
 		<io.reactivex.rxjava2.version>2.2.21</io.reactivex.rxjava2.version>
+		<pf4j-spring.version>0.7.0</pf4j-spring.version>
 		<flatten-maven-plugin.version>1.2.7</flatten-maven-plugin.version>
 	</properties>
 
@@ -140,6 +141,17 @@
 				<groupId>io.reactivex.rxjava2</groupId>
 				<artifactId>rxjava</artifactId>
 				<version>${io.reactivex.rxjava2.version}</version>
+			</dependency>
+			<dependency>
+				<groupId>org.pf4j</groupId>
+				<artifactId>pf4j-spring</artifactId>
+				<version>${pf4j-spring.version}</version>
+				<exclusions>
+					<exclusion>
+						<artifactId>slf4j-log4j12</artifactId>
+						<groupId>org.slf4j</groupId>
+					</exclusion>
+				</exclusions>
 			</dependency>
 		</dependencies>
 	</dependencyManagement>
