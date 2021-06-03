@@ -8,21 +8,21 @@
 		<version>2.4.4</version>
 		<relativePath/> <!-- lookup parent from repository -->
 	</parent>
-	<groupId>com.sourcesense.nile</groupId>
-	<artifactId>nile-parent</artifactId>
+	<groupId>com.sourcesense.joyce</groupId>
+	<artifactId>joyce-parent</artifactId>
 	<version>${revision}</version>
   	<packaging>pom</packaging>
 
-	<name>nile-parent</name>
-	<description>Nile Parent Project</description>
+	<name>joyce-parent</name>
+	<description>Joyce Parent Project</description>
 
 	<properties>
 		<revision>1.0.0-SNAPSHOT</revision>
 		<java.version>11</java.version>
-		<nile.common-core.version>${revision}</nile.common-core.version>
-		<nile.connector-core.version>${revision}</nile.connector-core.version>
-		<nile.schema-engine.version>${revision}</nile.schema-engine.version>
-		<nile.import.core.version>0.0.1-SNAPSHOT</nile.import.core.version>
+		<joyce.common-core.version>${revision}</joyce.common-core.version>
+		<joyce.connector-core.version>${revision}</joyce.connector-core.version>
+		<joyce.schema-engine.version>${revision}</joyce.schema-engine.version>
+		<joyce.import.core.version>0.0.1-SNAPSHOT</joyce.import.core.version>
 		<org.mapstruct.version>1.4.1.Final</org.mapstruct.version>
 		<org.springdoc.version>1.5.5</org.springdoc.version>
 		<ksqldb.version>0.17.0</ksqldb.version>
@@ -35,9 +35,9 @@
 	</properties>
 
 	<modules>
-		<module>nile-schema-engine</module>
-		<module>nile-connector-core</module>
-		<module>nile-common-core</module>
+		<module>joyce-schema-engine</module>
+		<module>joyce-connector-core</module>
+		<module>joyce-common-core</module>
 	</modules>
 
 	<organization>
@@ -58,7 +58,7 @@
 		<repository>
 			<id>github</id>
 			<name>GitHub OWNER Apache Maven Packages</name>
-			<url>https://maven.pkg.github.com/sourcesense/nile-parent</url>
+			<url>https://maven.pkg.github.com/sourcesense/joyce-parent</url>
 		</repository>
 	</distributionManagement>
 
@@ -78,24 +78,24 @@
 	<dependencyManagement>
 		<dependencies>
 			<dependency>
-				<groupId>com.sourcesense.nile</groupId>
-				<artifactId>nile-common-core</artifactId>
-				<version>${nile.common-core.version}</version>
+				<groupId>com.sourcesense.joyce</groupId>
+				<artifactId>joyce-common-core</artifactId>
+				<version>${joyce.common-core.version}</version>
 			</dependency>
 			<dependency>
-				<groupId>com.sourcesense.nile</groupId>
-				<artifactId>nile-import-core</artifactId>
-				<version>${nile.import.core.version}</version>
+				<groupId>com.sourcesense.joyce</groupId>
+				<artifactId>joyce-import-core</artifactId>
+				<version>${joyce.import.core.version}</version>
 			</dependency>
 			<dependency>
-				<groupId>com.sourcesense.nile</groupId>
-				<artifactId>nile-connector-core</artifactId>
-				<version>${nile.connector-core.version}</version>
+				<groupId>com.sourcesense.joyce</groupId>
+				<artifactId>joyce-connector-core</artifactId>
+				<version>${joyce.connector-core.version}</version>
 			</dependency>
 			<dependency>
-				<groupId>com.sourcesense.nile</groupId>
-				<artifactId>nile-schema-engine</artifactId>
-				<version>${nile.schema-engine.version}</version>
+				<groupId>com.sourcesense.joyce</groupId>
+				<artifactId>joyce-schema-engine</artifactId>
+				<version>${joyce.schema-engine.version}</version>
 			</dependency>
 			<dependency>
 				<groupId>org.mapstruct</groupId>
