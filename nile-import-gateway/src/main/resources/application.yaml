@@ -5,7 +5,11 @@ springdoc:
   swagger-ui:
     path: /docs
     disable-swagger-default-url: true
+
 nile:
+  schema-transformer-plugin:
+    enabled: true
+    jar-path: /app/custom-handlers
   schema-service:
     enabled: true
     database: kafka
@@ -29,3 +33,6 @@ nile:
     import-topic: nile_import
     content-topic: nile_content
 
+logging:
+  level:
+    com.sourcesense.nile: ERROR
