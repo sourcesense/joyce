@@ -17,14 +17,17 @@
 package com.sourcesense.nile.schemaengine.handler;
 
 import com.fasterxml.jackson.databind.JsonNode;
+import com.sourcesense.nile.schemaengine.annotation.SchemaTransformationHandler;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Component;
 
 import java.util.Optional;
 
-@Component("fixedValueTransformerHandler")
 @Slf4j
-public class FixedValueTransformerHandler implements TransormerHandler{
+@Component
+@SchemaTransformationHandler(keyword = "$fixed")
+public class FixedValueTransformerHandler implements SchemaTransformerHandler {
+
 	@Override
 	public JsonNode process(String key, JsonNode value, JsonNode source, Optional<JsonNode> metadata, Optional<Object> context) {
 		return value;

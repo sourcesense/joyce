@@ -14,10 +14,20 @@
  * limitations under the License.
  */
 
-package com.sourcesense.nile.schemaengine.exception;
+package com.sourcesense.nile.schemaengine.handler;
 
-public class HandlerBeanNameNotFound extends NileSchemaEngineException {
-	public HandlerBeanNameNotFound(String message) {
-		super(message);
-	}
+import com.fasterxml.jackson.databind.JsonNode;
+import org.pf4j.ExtensionPoint;
+
+import java.util.Optional;
+
+public interface SchemaTransformerHandler extends ExtensionPoint {
+
+	JsonNode process(
+			String key,
+			JsonNode value,
+			JsonNode source,
+			Optional<JsonNode> metadata,
+			Optional<Object> context
+	);
 }

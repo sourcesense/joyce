@@ -26,6 +26,7 @@ import com.jayway.jsonpath.spi.json.JacksonJsonNodeJsonProvider;
 import com.jayway.jsonpath.spi.json.JsonProvider;
 import com.jayway.jsonpath.spi.mapper.JacksonMappingProvider;
 import com.jayway.jsonpath.spi.mapper.MappingProvider;
+import com.sourcesense.nile.schemaengine.annotation.SchemaTransformationHandler;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Component;
 
@@ -34,15 +35,19 @@ import java.util.EnumSet;
 import java.util.Optional;
 import java.util.Set;
 
-@Component("jsonPathTransformerHandler")
+
 @Slf4j
-public class JsonPathTransformerHandler implements TransormerHandler {
+@Component
+@SchemaTransformationHandler(keyword = "$path")
+public class JsonPathTransformerHandler implements SchemaTransformerHandler {
 
 	@PostConstruct
 	public void configure(){
 		Configuration.setDefaults(new Configuration.Defaults() {
+
 			private final JsonProvider jsonProvider = new JacksonJsonNodeJsonProvider();
 			private final MappingProvider mappingProvider = new JacksonMappingProvider();
+
 			@Override
 			public JsonProvider jsonProvider() {
 				return jsonProvider;

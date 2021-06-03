@@ -21,7 +21,7 @@ public class NileSchemaEngineException extends RuntimeException {
 		super(message);
 	}
 
-	public NileSchemaEngineException(Exception e) {
-		super(e);
+	public NileSchemaEngineException(Exception exception) {
+		super(exception);
 	}
 }
