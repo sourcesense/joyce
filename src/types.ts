@@ -21,7 +21,6 @@ export interface SchemaResources {
   [key: string]: Resource;
 }
 export interface Resource {
-  version: string;
   source: string;
 }
 export interface ResponsableSchema extends Resource {

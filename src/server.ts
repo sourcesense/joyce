@@ -121,8 +121,7 @@ function createServer(db, producer) {
         Body: {veditu:string}
        */
       server.get<{ Params: { id: string } }>(
-        `${tempSchema.development ? "/development" : ""}/${
-          tempSchema.collectionName
+        `${tempSchema.development ? "/development" : ""}/${tempSchema.collectionName
         }/:id`,
         SingleEntitySchema(tempSchema),
         async function (req, res) {
@@ -155,8 +154,7 @@ function createServer(db, producer) {
           sortBy: string;
         };
       }>(
-        `${tempSchema.development ? "/development" : ""}/${
-          tempSchema.collectionName
+        `${tempSchema.development ? "/development" : ""}/${tempSchema.collectionName
         }`,
         MultipleEntitySchema(tempSchema),
         async function (req, res) {
@@ -174,7 +172,6 @@ function createServer(db, producer) {
               .toArray();
             res
               .status(200)
-              .header("x-joyce-schema-version", schema.version)
               .send(docs);
           } catch (errore) {
             req.log.error(errore);

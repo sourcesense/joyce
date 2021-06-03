@@ -14,11 +14,7 @@ export class SchemaConfiguration {
   requestSchemas(logger): Promise<ResponsableSchema>[] | [] {
     const fetch = createFetch();
     return this.sources.map((resource) => {
-      const finalFetchUrl =
-        resource.version !== "latest" && resource.version
-          ? `${resource.source}/version/${resource.version}`
-          : resource.source;
-      logger.info(finalFetchUrl);
+      logger.info(resource.source);
       return fetch(resource.source)
         .then((r) => {
           if (!r.ok) {
