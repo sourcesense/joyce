@@ -111,7 +111,7 @@ public class ContentProducer extends KafkaMessageService<JsonNode> {
 
         setMetadataHeaders(metadata, message);
 
-        this.sendMessage(rawUri.toString(), contentUri.toString(), message.build());
+        this.sendMessage((rawUri != null)?rawUri.toString():null, contentUri.toString(), message.build());
         return contentUri;
     }
 
