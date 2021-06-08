@@ -9,10 +9,9 @@ import org.springframework.context.annotation.Configuration;
 import java.nio.file.Paths;
 
 @Configuration
-@ConditionalOnProperty(value = "joyce.schema-transformer-plugin.enabled", havingValue = "true")
 public class PluginManagerConfiguration {
 
-	@Value("${joyce.schema-transformer-plugin.jar-path:/app/custom-handlers}")
+	@Value("${joyce.schema-engine.plugin-path:/app/custom-handlers}")
 	private String jarPath;
 
 	@Bean

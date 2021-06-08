@@ -17,6 +17,7 @@
 package com.sourcesense.joyce.core.dao;
 
 import com.fasterxml.jackson.core.JsonProcessingException;
+import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.sourcesense.joyce.core.configuration.SchemaServiceProperties;
 import com.sourcesense.joyce.core.model.SchemaEntity;
@@ -40,9 +41,10 @@ import java.util.concurrent.ExecutionException;
 @Component
 public class KafkaSchemaDao implements SchemaDao {
 
-    private static final String STREAM_NAME = "JOYCE_SCHEMA_STREAM";
+		private static final String STREAM_NAME = "JOYCE_SCHEMA_STREAM";
     private static final String TABLE_NAME = "JOYCE_SCHEMA_TABLE";
-    private final Client ksql;
+		public static final String VALUE = "VALUE";
+		private final Client ksql;
     private final SchemaServiceProperties schemaServiceProperties;
     private final ObjectMapper mapper;
     private final KafkaAdmin kafkaAdmin;
@@ -114,7 +116,7 @@ public class KafkaSchemaDao implements SchemaDao {
             List<Row> resultRows = result.get();
             if (resultRows.size() > 0){
                 Row row = resultRows.get(0);
-                SchemaEntity schema = mapper.readValue(row.getString("VALUE"), SchemaEntity.class);
+                SchemaEntity schema = mapper.readValue(row.getString(VALUE), SchemaEntity.class);
                 schema.setUid(row.getString("UID"));
                 return Optional.of(schema);
             }
@@ -124,6 +126,17 @@ public class KafkaSchemaDao implements SchemaDao {
         }
         return Optional.empty();
     }
+
+    @Override
+		public Optional<SchemaEntity> mapFromJson(JsonNode json)  {
+			try {
+				SchemaEntity schema = mapper.readValue(json.get(VALUE).asText(), SchemaEntity.class);
+				return Optional.ofNullable(schema);
+			} catch (JsonProcessingException e) {
+				log.error(e.getMessage());
+				return Optional.empty();
+			}
+		}
 
     @Override
     public List<SchemaEntity> getAll() {

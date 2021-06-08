@@ -32,6 +32,8 @@
 		<io.reactivex.rxjava2.version>2.2.21</io.reactivex.rxjava2.version>
 		<pf4j-spring.version>0.7.0</pf4j-spring.version>
 		<flatten-maven-plugin.version>1.2.7</flatten-maven-plugin.version>
+    <org.elasticsearch.version>7.12.0</org.elasticsearch.version>
+    <com.github.spullara.mustache.version>0.9.7</com.github.spullara.mustache.version>
 	</properties>
 
 	<modules>
@@ -153,6 +155,22 @@
 					</exclusion>
 				</exclusions>
 			</dependency>
+      <dependency>
+        <groupId>org.elasticsearch</groupId>
+        <artifactId>elasticsearch</artifactId>
+        <version>${org.elasticsearch.version}</version>
+      </dependency>
+      <dependency>
+        <groupId>org.elasticsearch.client</groupId>
+        <artifactId>elasticsearch-rest-high-level-client</artifactId>
+        <version>${org.elasticsearch.version}</version>
+      </dependency>
+      <dependency>
+        <groupId>com.github.spullara.mustache.java</groupId>
+        <artifactId>compiler</artifactId>
+        <version>${com.github.spullara.mustache.version}</version>
+      </dependency>
+
 		</dependencies>
 	</dependencyManagement>
 
