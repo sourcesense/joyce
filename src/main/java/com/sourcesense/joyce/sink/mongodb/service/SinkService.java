@@ -23,52 +23,53 @@ import java.util.Map;
 @Service
 @RequiredArgsConstructor
 public class SinkService {
-    private final MongoTemplate mongoTemplate;
-    private final ObjectMapper mapper;
 
-    @Notify(failureEvent = NotificationEvent.SINK_MONGODB_FAILED,
-            successEvent = NotificationEvent.SINK_MONGODB_DELETED)
-    public void deleteDocument(@ContentUri JoyceURI uri, String collection) throws MongodbSinkException {
-        /**
-         * Delete document
-         */
-        DeleteResult response;
-        if (uri.getType().equals(JoyceURI.Type.RAW)){
-            response = mongoTemplate.remove(new Query(Criteria.where("_metadata_.raw_uri").is(uri.toString())), collection);
-        } else { // if (uri.get().getType().equals(JoyceURI.Type.CONTENT)
-            response = mongoTemplate.remove(new Query(Criteria.where("_id").is(uri.toString())), collection);
-        }
+	private final ObjectMapper mapper;
+	private final MongoTemplate mongoTemplate;
 
-        if (response.getDeletedCount() < 1){
-            throw new MongodbSinkException(String.format("There is no docuement to delete with uri %s", uri.toString()));
-        }
-    }
+	@Notify(failureEvent = NotificationEvent.SINK_MONGODB_STORE_FAILED,
+			successEvent = NotificationEvent.SINK_MONGODB_DELETE_SUCCESS)
+	public void deleteDocument(@ContentUri JoyceURI uri, String collection) throws MongodbSinkException {
+		/**
+		 * Delete document
+		 */
+		DeleteResult response;
+		if (uri.getType().equals(JoyceURI.Type.RAW)) {
+			response = mongoTemplate.remove(new Query(Criteria.where("_metadata_.raw_uri").is(uri.toString())), collection);
+		} else { // if (uri.get().getType().equals(JoyceURI.Type.CONTENT)
+			response = mongoTemplate.remove(new Query(Criteria.where("_id").is(uri.toString())), collection);
+		}
 
-    @Notify(failureEvent = NotificationEvent.SINK_MONGODB_FAILED,
-            successEvent = NotificationEvent.SINK_MONGODB_STORED)
-    public void saveDocument(@EventPayload ObjectNode message, @ContentUri JoyceURI uri, String collection) throws MongodbSinkException {
-        /**
-         * Insert document
-         */
-        Document doc = new Document(mapper.convertValue(message, new TypeReference<>() {
-        }));
-        doc.put("_id", uri.toString());
-        Document res = mongoTemplate.save(doc, collection);
-        if (res.isEmpty()){
-            throw new MongodbSinkException("Document was not saved, result is empty");
-        }
-    }
+		if (response.getDeletedCount() < 1) {
+			throw new MongodbSinkException(String.format("There is no document to delete with uri %s", uri.toString()));
+		}
+	}
 
-    @Notify(failureEvent = NotificationEvent.SINK_MONGODB_FAILED)
-    public JoyceURI getJoyceURI(@ContentUri String key) throws MongodbSinkException {
-        return JoyceURI.createURI(key).orElseThrow(() -> new MongodbSinkException(String.format("uri [%s] is not a Valid Joyce Uri", key)));
-    }
+	@Notify(failureEvent = NotificationEvent.SINK_MONGODB_STORE_FAILED,
+			successEvent = NotificationEvent.SINK_MONGODB_STORE_SUCCESS)
+	public void saveDocument(@EventPayload ObjectNode message, @ContentUri JoyceURI uri, String collection) throws MongodbSinkException {
+		/**
+		 * Insert document
+		 */
+		Document doc = new Document(mapper.convertValue(message, new TypeReference<>() {
+		}));
+		doc.put("_id", uri.toString());
+		Document res = mongoTemplate.save(doc, collection);
+		if (res.isEmpty()) {
+			throw new MongodbSinkException("Document was not saved, result is empty");
+		}
+	}
 
-    @Notify(failureEvent = NotificationEvent.SINK_MONGODB_FAILED)
-    public String getCollection(@ContentUri String key, Map<String, String> headers) throws MongodbSinkException {
-        if(headers.get(KafkaCustomHeaders.COLLECTION) == null){
-            throw new MongodbSinkException(String.format("Missing %s header", KafkaCustomHeaders.COLLECTION));
-        }
-        return headers.get(KafkaCustomHeaders.COLLECTION);
-    }
+	@Notify(failureEvent = NotificationEvent.SINK_MONGODB_STORE_FAILED)
+	public JoyceURI getJoyceURI(@ContentUri String key) throws MongodbSinkException {
+		return JoyceURI.createURI(key).orElseThrow(() -> new MongodbSinkException(String.format("uri [%s] is not a Valid Joyce Uri", key)));
+	}
+
+	@Notify(failureEvent = NotificationEvent.SINK_MONGODB_STORE_FAILED)
+	public String getCollection(@ContentUri String key, Map<String, String> headers) throws MongodbSinkException {
+		if (headers.get(KafkaCustomHeaders.COLLECTION) == null) {
+			throw new MongodbSinkException(String.format("Missing %s header", KafkaCustomHeaders.COLLECTION));
+		}
+		return headers.get(KafkaCustomHeaders.COLLECTION);
+	}
 }
