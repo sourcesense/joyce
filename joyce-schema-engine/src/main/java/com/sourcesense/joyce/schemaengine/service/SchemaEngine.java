@@ -25,9 +25,7 @@ import com.sourcesense.joyce.schemaengine.JoyceMetaSchema;
 import com.sourcesense.joyce.schemaengine.exception.InvalidSchemaException;
 import com.sourcesense.joyce.schemaengine.exception.JoyceSchemaEngineException;
 import com.sourcesense.joyce.schemaengine.handler.SchemaTransformerHandler;
-import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Qualifier;
-import org.springframework.context.annotation.DependsOn;
 import org.springframework.stereotype.Service;
 
 import javax.annotation.PostConstruct;
@@ -36,8 +34,6 @@ import java.util.stream.Collectors;
 import java.util.stream.StreamSupport;
 
 @Service
-@Slf4j
-@DependsOn("transformerHandlers")
 public class SchemaEngine{
 
 	public static final String METADATA = "$metadata";
@@ -62,7 +58,6 @@ public class SchemaEngine{
 	@PostConstruct
 	public void defaultInit() {
 		this.registerMetaSchema();
-		this.logRegisteredTransformerHandlers();
 	}
 
 	/**
@@ -75,127 +70,6 @@ public class SchemaEngine{
 				.addMetaSchema(metaSchema)
 				.build();
 	}
-
-	private void logRegisteredTransformerHandlers() {
-		log.info("The following {} schema transformer handlers have been loaded: {}",
-				transformerHandlers.size(), transformerHandlers.keySet());
-	}
-
-	/**
-	 * Main Parse method, applies the transformer and navigate the schema calling parse recursively
-	 * Root key could be null
-	 * the schema is the json-schema definition
-	 * source is the json source node from wich the transformation are applied
-	 * @param key
-	 * @param schema
-	 * @param sourceJsonNode
-	 * @param context
-	 * @return
-	 */
-	private JsonNode parse(String key, JsonNode schema, JsonNode sourceJsonNode, Optional<JsonNode> metadata, Optional<Object> context) {
-		try {
-			if (schema.getNodeType().equals(JsonNodeType.OBJECT)){
-				// Apply custom handlers
-				Optional<JsonNode> transformed = this.applyHandlers(key, schema, sourceJsonNode, metadata, context);
-				if(transformed.isPresent()){
-					ObjectNode node = mapper.createObjectNode();
-					node.set(key, transformed.get());
-					ObjectNode tempSchema = schema.deepCopy();
-					tempSchema.remove(transformerHandlers.keySet());
-
-					tempSchema.set("type", schema.get("type"));
-					return this.parse(key, tempSchema, node, metadata, context);
-				}
-				// TODO: parse and handle "$ref"
-				JsonNode type = Optional.ofNullable(schema.get("type")).orElse(new TextNode("string"));
-				if (type.getNodeType().equals(JsonNodeType.ARRAY)){
-
-					for (JsonNode aType : type){
-						JsonNode result = parseType(key, schema, sourceJsonNode, metadata, context, aType.asText());
-						if (result != null){
-							return result;
-						}
-					}
-					return null;
-				} else {
-					return parseType(key, schema, sourceJsonNode, metadata, context, type.asText());
-				}
-
-
-			}
-		} catch (Exception e){
-			throw new JoyceSchemaEngineException(String.format("Cannot parse [%s]: %s", key, e.getMessage()));
-		}
-
-		return null;
-	}
-
-	private JsonNode parseType(String key, JsonNode schema, JsonNode sourceJsonNode, Optional<JsonNode> metadata, Optional<Object> context, String type) {
-		if(type.equals("object")){
-			ObjectNode objectNode = mapper.createObjectNode();
-			JsonNode props = schema.get("properties");
-			if (props != null) {
-				Iterator<Map.Entry<String, JsonNode>> iter = props.fields();
-				while (iter.hasNext()) {
-					Map.Entry<String, JsonNode> entry = iter.next();
-					JsonNode node = this.parse(entry.getKey(), entry.getValue(), sourceJsonNode, metadata, context);
-					objectNode.set(entry.getKey(), node);
-				}
-			}
-			return objectNode;
-		} else if (type.equals("array")){
-			ArrayNode arrayNode = mapper.createArrayNode();
-			for (JsonNode item : sourceJsonNode.get(key)){
-				JsonNode parsedItem = this.parse(null, schema.get("items"), item, metadata, context);
-				arrayNode.add(parsedItem);
-			}
-			return arrayNode;
-		} else if (type.equals("integer")){
-			return sourceJsonNode.get(key).asText().isEmpty() ? null :  JsonNodeFactory.instance.numberNode(Integer.parseInt(sourceJsonNode.get(key).asText()));
-		} else if (type.equals("number")){
-			return sourceJsonNode.get(key).asText().isEmpty() ? null :JsonNodeFactory.instance.numberNode(Double.parseDouble(sourceJsonNode.get(key).asText()));
-		} else if (type.equals("null")){
-			return null;
-		} else {
-			//TODO: handle other types and modification ie range and other limitations
-			return sourceJsonNode.get(key);
-		}
-	}
-
-	/**
-	 * Apply registered handlers in cascade sing output from the first as input to the following
-	 *
-	 * @param key
-	 * @param schema
-	 * @param sourceJsonNode
-	 * @param context
-	 * @return
-	 */
-	private Optional<JsonNode> applyHandlers(String key, JsonNode schema, JsonNode sourceJsonNode, Optional<JsonNode> metadata, Optional<Object> context) {
-
-		if(sourceJsonNode.getNodeType() != JsonNodeType.OBJECT){
-			return Optional.empty();
-		}
-
-		// Apply handlers in cascade
-		List<String> knownHandlerKeys = StreamSupport.stream(
-				Spliterators.spliteratorUnknownSize(schema.fieldNames(), Spliterator.ORDERED),
-				false)
-				.filter(transformerHandlers.keySet()::contains)
-				.collect(Collectors.toList());
-		if (knownHandlerKeys.size() < 1){
-			return Optional.empty();
-		}
-
-		JsonNode returnNode = sourceJsonNode.deepCopy();
-		for (String handlerKey : knownHandlerKeys){
-				SchemaTransformerHandler handler = transformerHandlers.get(handlerKey);
-				returnNode = handler.process(key, schema.get(handlerKey), returnNode, metadata, context);
-
-		}
-		return Optional.ofNullable(returnNode);
-	}
-
 
 	/**
 	 * Create a new json described by the json-schema provided, with sourceJson as input for the transformation
@@ -307,6 +181,119 @@ public class SchemaEngine{
 		return newDeprecated > prevDeprecated;
 	}
 
+	/**
+	 * Main Parse method, applies the transformer and navigate the schema calling parse recursively
+	 * Root key could be null
+	 * the schema is the json-schema definition
+	 * source is the json source node from wich the transformation are applied
+	 * @param key
+	 * @param schema
+	 * @param sourceJsonNode
+	 * @param context
+	 * @return
+	 */
+	private JsonNode parse(String key, JsonNode schema, JsonNode sourceJsonNode, Optional<JsonNode> metadata, Optional<Object> context) {
+		try {
+			if (schema.getNodeType().equals(JsonNodeType.OBJECT)){
+				// Apply custom handlers
+				Optional<JsonNode> transformed = this.applyHandlers(key, schema, sourceJsonNode, metadata, context);
+				if(transformed.isPresent()){
+					ObjectNode node = mapper.createObjectNode();
+					node.set(key, transformed.get());
+					ObjectNode tempSchema = schema.deepCopy();
+					tempSchema.remove(transformerHandlers.keySet());
+
+					tempSchema.set("type", schema.get("type"));
+					return this.parse(key, tempSchema, node, metadata, context);
+				}
+				// TODO: parse and handle "$ref"
+				JsonNode type = Optional.ofNullable(schema.get("type")).orElse(new TextNode("string"));
+				if (type.getNodeType().equals(JsonNodeType.ARRAY)){
+
+					for (JsonNode aType : type){
+						JsonNode result = parseType(key, schema, sourceJsonNode, metadata, context, aType.asText());
+						if (result != null){
+							return result;
+						}
+					}
+					return null;
+				} else {
+					return parseType(key, schema, sourceJsonNode, metadata, context, type.asText());
+				}
+			}
+		} catch (Exception e){
+			throw new JoyceSchemaEngineException(String.format("Cannot parse [%s]: %s", key, e.getMessage()));
+		}
+
+		return null;
+	}
+
+	private JsonNode parseType(String key, JsonNode schema, JsonNode sourceJsonNode, Optional<JsonNode> metadata, Optional<Object> context, String type) {
+		if(type.equals("object")){
+			ObjectNode objectNode = mapper.createObjectNode();
+			JsonNode props = schema.get("properties");
+			if (props != null) {
+				Iterator<Map.Entry<String, JsonNode>> iter = props.fields();
+				while (iter.hasNext()) {
+					Map.Entry<String, JsonNode> entry = iter.next();
+					JsonNode node = this.parse(entry.getKey(), entry.getValue(), sourceJsonNode, metadata, context);
+					objectNode.set(entry.getKey(), node);
+				}
+			}
+			return objectNode;
+		} else if (type.equals("array")){
+			ArrayNode arrayNode = mapper.createArrayNode();
+			for (JsonNode item : sourceJsonNode.get(key)){
+				JsonNode parsedItem = this.parse(null, schema.get("items"), item, metadata, context);
+				arrayNode.add(parsedItem);
+			}
+			return arrayNode;
+		} else if (type.equals("integer")){
+			return sourceJsonNode.get(key).asText().isEmpty() ? null :  JsonNodeFactory.instance.numberNode(Integer.parseInt(sourceJsonNode.get(key).asText()));
+		} else if (type.equals("number")){
+			return sourceJsonNode.get(key).asText().isEmpty() ? null :JsonNodeFactory.instance.numberNode(Double.parseDouble(sourceJsonNode.get(key).asText()));
+		} else if (type.equals("null")){
+			return null;
+		} else {
+			//TODO: handle other types and modification ie range and other limitations
+			return sourceJsonNode.get(key);
+		}
+	}
+
+	/**
+	 * Apply registered handlers in cascade sing output from the first as input to the following
+	 *
+	 * @param key
+	 * @param schema
+	 * @param sourceJsonNode
+	 * @param context
+	 * @return
+	 */
+	private Optional<JsonNode> applyHandlers(String key, JsonNode schema, JsonNode sourceJsonNode, Optional<JsonNode> metadata, Optional<Object> context) {
+
+		if(sourceJsonNode.getNodeType() != JsonNodeType.OBJECT){
+			return Optional.empty();
+		}
+
+		// Apply handlers in cascade
+		List<String> knownHandlerKeys = StreamSupport.stream(
+				Spliterators.spliteratorUnknownSize(schema.fieldNames(), Spliterator.ORDERED),
+				false)
+				.filter(transformerHandlers.keySet()::contains)
+				.collect(Collectors.toList());
+		if (knownHandlerKeys.size() < 1){
+			return Optional.empty();
+		}
+
+		JsonNode returnNode = sourceJsonNode.deepCopy();
+		for (String handlerKey : knownHandlerKeys){
+				SchemaTransformerHandler handler = transformerHandlers.get(handlerKey);
+				returnNode = handler.process(key, schema.get(handlerKey), returnNode, metadata, context);
+
+		}
+		return Optional.ofNullable(returnNode);
+	}
+
 	private List<String> getTypesList(Map.Entry<String, JsonNode> stringJsonNodeEntry) {
 		List<String> list = new ArrayList<>();
 		if (stringJsonNodeEntry.getValue().get("type").getNodeType().equals(JsonNodeType.ARRAY)){
@@ -318,6 +305,4 @@ public class SchemaEngine{
 		}
 		return list;
 	}
-
-
 }

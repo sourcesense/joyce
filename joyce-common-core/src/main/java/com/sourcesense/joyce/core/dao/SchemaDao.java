@@ -30,5 +30,4 @@ public interface SchemaDao {
 	void save(SchemaEntity t);
 
 	void delete(SchemaEntity t);
-
 }

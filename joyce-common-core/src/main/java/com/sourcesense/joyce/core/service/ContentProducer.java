@@ -98,9 +98,8 @@ public class ContentProducer extends KafkaMessageService<JsonNode> {
         content_metadata.put("schema_uid", schema.getUid());
         content_metadata.put("schema_name", schema.getName());
         content_metadata.put("schema_development", schema.getDevelopment());
-        if (rawUri != null) {
-            content_metadata.put("raw_uri", rawUri.toString());
-        }
+        content_metadata.put("raw_uri", rawUri.toString());
+
         ((ObjectNode) content).set("_metadata_", content_metadata);
 
         MessageBuilder<JsonNode> message = MessageBuilder
@@ -111,17 +110,18 @@ public class ContentProducer extends KafkaMessageService<JsonNode> {
 
         setMetadataHeaders(metadata, message);
 
-        this.sendMessage(rawUri.toString(), contentUri.toString(), message.build());
+        this.sendMessage((rawUri != null)?rawUri.toString():null, contentUri.toString(), message.build());
         return contentUri;
     }
 
     private void setMetadataHeaders(JoyceSchemaMetadata metadata, MessageBuilder<JsonNode> message) {
         message.setHeader(KafkaCustomHeaders.COLLECTION, metadata.getCollection());
         message.setHeader(KafkaCustomHeaders.SCHEMA, metadata.getName());
+        message.setHeader(KafkaCustomHeaders.SUBTYPE, metadata.getSubtype().toString());
+        message.setHeader(KafkaCustomHeaders.STORE_CONTENT, metadata.getStore().toString());
         if (metadata.getParent() != null) {
             message.setHeader(KafkaCustomHeaders.PARENT, metadata.getParent().toString());
         }
-        message.setHeader(KafkaCustomHeaders.SUBTYPE, metadata.getSubtype().toString());
     }
 
 
@@ -155,7 +155,7 @@ public class ContentProducer extends KafkaMessageService<JsonNode> {
         notificationService.ok(
                 rawUri,
                 contentUri,
-                NotificationEvent.CONTENT_PUBLISHED,
+                NotificationEvent.CONTENT_PUBLISH_SUCCESS,
                 eventMetadata,
                 eventPayload
 
