@@ -39,9 +39,9 @@ import java.util.List;
 import java.util.Optional;
 import java.util.stream.Collectors;
 
-@ConditionalOnProperty(value = "joyce.schema-service.enabled", havingValue = "true")
 @Service
 @RequiredArgsConstructor
+@ConditionalOnProperty(value = "joyce.schema-service.enabled", havingValue = "true")
 public class SchemaService {
 	private final SchemaDao schemaEntityDao;
 	private final SchemaMapper schemaMapper;

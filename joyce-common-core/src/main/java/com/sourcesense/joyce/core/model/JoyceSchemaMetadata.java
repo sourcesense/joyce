@@ -18,9 +18,15 @@ package com.sourcesense.joyce.core.model;
 
 import com.fasterxml.jackson.annotation.JsonProperty;
 import com.fasterxml.jackson.databind.JsonNode;
+import com.fasterxml.jackson.databind.node.ArrayNode;
 import com.sourcesense.joyce.core.exception.InvalidMetadataException;
+import lombok.Data;
 import lombok.Getter;
 import lombok.Setter;
+
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
 
 @Getter
 @Setter
@@ -39,8 +45,10 @@ public class JoyceSchemaMetadata {
     private JoyceURI.Subtype subtype;
     private String collection;
     private String name;
+    private List<Map<String, Object>> indexes;
     private String description;
     private Boolean development = false;
+    private Boolean store = true;
 
     @JsonProperty(KEY_ROOT_QUERY)
     private JsonNode rootQuery;
@@ -93,5 +101,4 @@ public class JoyceSchemaMetadata {
         }
         return this;
     }
-
 }
