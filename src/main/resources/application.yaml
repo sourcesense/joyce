@@ -7,6 +7,7 @@ joyce:
     port: 8088
   kafka:
     content-topic: joyce_content
+    schema-topic: joyce_schema
     bootstrapAddress: kafka:9092
     producer:
       enabled: true
@@ -21,3 +22,7 @@ joyce:
     mongodb:
       uri: mongodb://user:password@localhost:27017/joyce
       database: joyce
+      metadata-indexes:
+        - raw_uri: 1
+        - schema_uid: 1
+        - schema_name: 1

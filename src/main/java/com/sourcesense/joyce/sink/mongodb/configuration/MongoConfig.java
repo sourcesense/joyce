@@ -27,6 +27,8 @@ import org.springframework.data.mongodb.core.MongoTemplate;
 
 @Configuration
 public class MongoConfig  {
+
+
 	@Value("${joyce.data.mongodb.uri:mongodb://localhost:27017/joyce}")
 	String mongoUri;
 
