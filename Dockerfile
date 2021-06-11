@@ -6,10 +6,15 @@ RUN confluent-hub install --no-prompt jcustenborder/kafka-connect-spooldir:lates
 RUN confluent-hub install --no-prompt castorm/kafka-connect-http:0.8.6
 RUN confluent-hub install --no-prompt kaliy/kafka-connect-rss:0.1.0
 
-RUN mkdir -p /usr/share/java/camel
-RUN wget https://repo1.maven.org/maven2/org/apache/camel/kafkaconnector/camel-file-kafka-connector/0.7.0/camel-file-kafka-connector-0.7.0-package.tar.gz -O /usr/share/java/camel/camel-file-kafka-connector-0.7.0-package.tar.gz
-RUN tar -xvzf /usr/share/java/camel/camel-file-kafka-connector-0.7.0-package.tar.gz --directory /usr/share/java/camel
-RUN rm /usr/share/java/camel/camel-file-kafka-connector-0.7.0-package.tar.gz
+RUN curl -fSL -o /tmp/plugin.tar.gz \
+    https://github.com/RedHatInsights/expandjsonsmt/releases/download/0.0.5/kafka-connect-smt-expandjsonsmt-0.0.5.tar.gz && \
+    tar -xzf /tmp/plugin.tar.gz -C $KAFKA_CONNECT_PLUGINS_DIR && \
+    rm -f /tmp/plugin.tar.gz;
+
+RUN mkdir -p /usr/share/java/camel && \
+  wget https://repo1.maven.org/maven2/org/apache/camel/kafkaconnector/camel-file-kafka-connector/0.7.0/camel-file-kafka-connector-0.7.0-package.tar.gz -O /usr/share/java/camel/camel-file-kafka-connector-0.7.0-package.tar.gz && \
+  tar -xvzf /usr/share/java/camel/camel-file-kafka-connector-0.7.0-package.tar.gz --directory /usr/share/java/camel && \
+  rm /usr/share/java/camel/camel-file-kafka-connector-0.7.0-package.tar.gz
 
 RUN mkdir -p /usr/share/java/joyce
 COPY InsertJoyceMessageKey/target/InsertJoyceMessageKey-*-SNAPSHOT.jar /usr/share/java/joyce/
