@@ -8,7 +8,7 @@ RUN confluent-hub install --no-prompt kaliy/kafka-connect-rss:0.1.0
 
 RUN curl -fSL -o /tmp/plugin.tar.gz \
     https://github.com/RedHatInsights/expandjsonsmt/releases/download/0.0.5/kafka-connect-smt-expandjsonsmt-0.0.5.tar.gz && \
-    tar -xzf /tmp/plugin.tar.gz -C $KAFKA_CONNECT_PLUGINS_DIR && \
+    tar -xzf /tmp/plugin.tar.gz --directory /usr/share/java && \
     rm -f /tmp/plugin.tar.gz;
 
 RUN mkdir -p /usr/share/java/camel && \
