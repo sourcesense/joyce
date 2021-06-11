@@ -17,7 +17,7 @@ public interface MethodAspect {
     /**
      * Retrieves method reflection class from the join point
      *
-     * @param joinPoint
+     * @param joinPoint join point with method signature and args
      * @return method reflection class
      */
     default Method computeMethod(ProceedingJoinPoint joinPoint) {
@@ -35,23 +35,18 @@ public interface MethodAspect {
      * @param params method reflection parameters
      * @param paramsValues method parameters values
      * @param annotationClass the class of the parameter annotation
-     * @param parameterClass the class of the annotated parameter
-     * @param <P> type of the annotated parameter class
      * @param <A> type of the parameter annotation class
      * @return optional that contains the value of the first annotated parameter
      */
-    default <P, A extends Annotation> Optional<P> computeAnnotatedParamValue(
+    default <A extends Annotation> Optional<Object> computeAnnotatedParamValue(
             Parameter[] params,
             Object[] paramsValues,
-            Class<A> annotationClass,
-            Class<P> parameterClass) {
+            Class<A> annotationClass) {
 
         try {
             for (int i = 0; i < params.length; i++) {
                 if (params[i].isAnnotationPresent(annotationClass)) {
-                    return Optional
-                            .ofNullable(paramsValues[i])
-                            .map(parameterClass::cast);
+                    return Optional.ofNullable(paramsValues[i]);
                 }
             }
             return Optional.empty();

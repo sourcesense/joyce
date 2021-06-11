@@ -16,7 +16,6 @@
 
 package com.sourcesense.joyce.core.dao;
 
-import com.fasterxml.jackson.databind.JsonNode;
 import com.sourcesense.joyce.core.model.SchemaEntity;
 
 import java.util.List;
@@ -31,6 +30,4 @@ public interface SchemaDao {
 	void save(SchemaEntity t);
 
 	void delete(SchemaEntity t);
-
-	Optional<SchemaEntity> mapFromJson(JsonNode json);
 }
