@@ -110,9 +110,8 @@ public class ImportService {
 				.filter(joyceURI -> JoyceURI.Subtype.IMPORT.equals(joyceURI.getSubtype()))
 				.orElseThrow(
 						() -> new InvalidJoyceUriException(
-								String.format("Schema %s is not a valid schema uri", headers.get(KafkaCustomHeaders.IMPORT_SCHEMA))
-						)
-				);
+								String.format("Schema is not a valid schema uri. key: %s", messageKey))
+						);
 	}
 
 	/**
