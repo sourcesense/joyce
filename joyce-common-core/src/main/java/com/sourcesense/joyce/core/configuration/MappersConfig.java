@@ -35,6 +35,7 @@ public class MappersConfig {
 	@Primary
 	ObjectMapper jsonMapper() {
 		return new ObjectMapper()
+				.disable(DeserializationFeature.FAIL_ON_UNKNOWN_PROPERTIES)
 				.disable(SerializationFeature.FAIL_ON_EMPTY_BEANS);
 	}
 

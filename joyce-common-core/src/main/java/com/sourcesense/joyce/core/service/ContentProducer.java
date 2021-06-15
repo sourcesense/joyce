@@ -35,6 +35,8 @@ import org.springframework.messaging.Message;
 import org.springframework.messaging.support.MessageBuilder;
 import org.springframework.stereotype.Service;
 
+import java.util.Optional;
+
 @Slf4j
 @ConditionalOnProperty(value = "joyce.content-producer.enabled", havingValue = "true")
 @Service
@@ -98,7 +100,8 @@ public class ContentProducer extends KafkaMessageService<JsonNode> {
         content_metadata.put("schema_uid", schema.getUid());
         content_metadata.put("schema_name", schema.getName());
         content_metadata.put("schema_development", schema.getDevelopment());
-        content_metadata.put("raw_uri", rawUri.toString());
+			Optional.ofNullable(rawUri).ifPresent(joyceURI -> content_metadata.put("raw_uri", rawUri.toString()));
+
 
         ((ObjectNode) content).set("_metadata_", content_metadata);
 

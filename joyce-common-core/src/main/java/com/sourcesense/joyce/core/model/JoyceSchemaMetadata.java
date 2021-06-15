@@ -31,17 +31,9 @@ import java.util.Map;
 @Getter
 @Setter
 public class JoyceSchemaMetadata {
-    /**
-     * key Constants
-     */
-    public static final String KEY_ROOT_QUERY = "root_query";
-    public static final String KEY_ROOT_COLLECTION = "root_collection";
-
-
 
     @JsonProperty("uid")
     private String uidKey;
-
     private JoyceURI.Subtype subtype;
     private String collection;
     private String name;
@@ -49,14 +41,8 @@ public class JoyceSchemaMetadata {
     private String description;
     private Boolean development = false;
     private Boolean store = true;
-
-    @JsonProperty(KEY_ROOT_QUERY)
-    private JsonNode rootQuery;
-
-    @JsonProperty(KEY_ROOT_COLLECTION)
-    private String rootCollection;
-
     private JoyceURI parent;
+    private JsonNode extra;
 
 
     /**
@@ -87,18 +73,6 @@ public class JoyceSchemaMetadata {
             throw new InvalidMetadataException("Missing [collection] from metadata");
         }
 
-        switch (subtype){
-            case MODEL:
-                if(rootCollection == null){
-                    throw new InvalidMetadataException("Missing [root_collection] from metadata");
-                }
-                if(rootQuery == null){
-                    throw new InvalidMetadataException("Missing [root_query] from metadata");
-                }
-                break;
-            case IMPORT:
-                break;
-        }
         return this;
     }
 }
