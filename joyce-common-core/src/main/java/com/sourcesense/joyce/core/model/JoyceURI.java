@@ -104,6 +104,12 @@ public class JoyceURI {
         @JsonProperty("csv")
         CSV("csv"),
 
+				/**
+				 * Content produced by fixed content inside a schema
+				 */
+				@JsonProperty("fixed")
+				FIXED("fixed"),
+
         /**
          * Content produced by other sources
          */
