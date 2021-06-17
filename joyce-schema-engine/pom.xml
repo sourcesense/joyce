@@ -55,6 +55,36 @@
 			<groupId>org.pf4j</groupId>
 			<artifactId>pf4j-spring</artifactId>
 		</dependency>
+
+    <dependency>
+      <groupId>org.python</groupId>
+      <artifactId>jython</artifactId>
+      <version>2.7.2</version>
+    </dependency>
+
+    <dependency>
+      <groupId>org.graalvm.js</groupId>
+      <artifactId>js</artifactId>
+      <version>21.1.0</version>
+    </dependency>
+
+    <dependency>
+      <groupId>org.graalvm.js</groupId>
+      <artifactId>js-scriptengine</artifactId>
+      <version>21.1.0</version>
+    </dependency>
+
+    <dependency>
+      <groupId>org.graalvm.truffle</groupId>
+      <artifactId>truffle-api</artifactId>
+      <version>21.1.0</version>
+    </dependency>
+
+    <dependency>
+      <groupId>org.codehaus.groovy</groupId>
+      <artifactId>groovy-jsr223</artifactId>
+      <version>3.0.8</version>
+    </dependency>
 	</dependencies>
 
     <build>

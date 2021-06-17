@@ -8,7 +8,7 @@ import org.springframework.context.annotation.Configuration;
 import java.nio.file.Paths;
 
 @Configuration
-public class PluginManagerConfiguration {
+public class PluginManagerConfig {
 
 	@Value("${joyce.schema-engine.plugin-path:/app/custom-handlers}")
 	private String jarPath;
