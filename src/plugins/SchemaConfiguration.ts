@@ -1,4 +1,4 @@
-import createFetch from "@vercel/fetch";
+import fetch from "node-fetch";
 import { ResponsableSchema, SchemaResources } from "../types";
 
 export class SchemaConfiguration {
@@ -12,7 +12,6 @@ export class SchemaConfiguration {
     });
   }
   requestSchemas(logger): Promise<ResponsableSchema>[] | [] {
-    const fetch = createFetch();
     return this.sources.map((resource) => {
       logger.info(resource.source);
       return fetch(resource.source)
