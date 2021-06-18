@@ -20,9 +20,7 @@
 			"description": "A test schema",
 			"development": true,
 			"parent": "joyce://schema/import/user",
-			"uid": "code",
-			"root_query": null,
-			"root_collection": null
+			"uid": "code"
 		}
 	}
 }

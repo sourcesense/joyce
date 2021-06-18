@@ -32,9 +32,7 @@
 			"description": "A test schema",
 			"development": true,
 			"parent": null,
-			"uid": "code",
-			"root_query": null,
-			"root_collection": null
+			"uid": "code"
 		}
 	}
 }
