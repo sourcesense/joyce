@@ -138,15 +138,14 @@ public class SchemaEngine{
 
 	/**
 	 * Detects if the changes in the schema are breaking changes or not, throws Exception if the schema changes are unacceptable
-	 * @param previousSchema
-	 * @param newSchema
+	 * @param prevJson
+	 * @param newJson
 	 * @return
 	 */
-	public Boolean checkForBreakingChanges(String previousSchema, String newSchema) throws JsonProcessingException {
+	public Boolean checkForBreakingChanges(JsonNode prevJson, JsonNode newJson) throws JsonProcessingException {
 
 		//TODO: enrich tests for required fields
-		JsonNode prevJson = mapper.readValue(previousSchema, JsonNode.class);
-		JsonNode newJson = mapper.readValue(newSchema, JsonNode.class);
+
 		Integer prevDeprecated = 0;
 		Integer newDeprecated = 0;
 
