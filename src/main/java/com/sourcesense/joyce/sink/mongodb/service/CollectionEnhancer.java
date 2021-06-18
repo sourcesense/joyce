@@ -1,20 +1,21 @@
 package com.sourcesense.joyce.sink.mongodb.service;
 
 
-import com.fasterxml.jackson.core.JsonProcessingException;
-import com.fasterxml.jackson.core.type.TypeReference;
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
-import com.fasterxml.jackson.databind.node.ObjectNode;
 import com.mongodb.client.model.IndexOptions;
 import com.sourcesense.joyce.core.annotation.ContentUri;
 import com.sourcesense.joyce.core.annotation.EventPayload;
 import com.sourcesense.joyce.core.annotation.Notify;
+import com.sourcesense.joyce.core.dao.utility.SchemaDaoUtil;
 import com.sourcesense.joyce.core.enumeration.NotificationEvent;
 import com.sourcesense.joyce.core.model.SchemaEntity;
+import com.sourcesense.joyce.sink.mongodb.exception.MongodbSinkException;
 import com.sourcesense.joyce.sink.mongodb.model.MetadataIndexesProperties;
 import com.sourcesense.joyce.sink.mongodb.model.MongoIndex;
+import com.sourcesense.joyce.sink.mongodb.model.SchemaObject;
 import lombok.RequiredArgsConstructor;
+import lombok.SneakyThrows;
 import lombok.extern.slf4j.Slf4j;
 import org.bson.Document;
 import org.springframework.data.mongodb.core.MongoTemplate;
@@ -32,7 +33,22 @@ public class CollectionEnhancer {
 
 	private final ObjectMapper mapper;
 	private final MongoTemplate mongoTemplate;
+	private final SchemaDaoUtil schemaDaoUtil;
 	private final MetadataIndexesProperties metadataIndexesProperties;
+
+	@Notify(failureEvent = NotificationEvent.SINK_MONGODB_SCHEMA_PARSING_FAILED)
+	public <T> T computeSchema(
+			@ContentUri String schemaUri,
+			@EventPayload JsonNode jsonSchema,
+			Class<T> clazz) {
+
+		log.debug("Parsing schema retrieved from kafka message");
+		return schemaDaoUtil.mapFromData(jsonSchema, clazz)
+				.orElseThrow(() -> new MongodbSinkException(
+						"Impossible to parse schema from kafka message. " +
+						(!schemaUri.isEmpty() ? "Schema uri is '" + schemaUri + "'" : schemaUri)
+				));
+	}
 
 	@Notify(
 			successEvent = NotificationEvent.SINK_MONGODB_CREATE_COLLECTION_SUCCESS,
@@ -54,12 +70,13 @@ public class CollectionEnhancer {
 	)
 	public void upsertCollectionValidator(
 			@ContentUri String schemaUri,
-			@EventPayload SchemaEntity schema) throws JsonProcessingException {
+			@EventPayload SchemaObject schemaObject,
+			String schemaCollection) {
 
 		log.debug("Updating validation schema for schema: '{}'", schemaUri);
 		LinkedHashMap<String, Object> validatorCommand = new LinkedHashMap<>();
-		validatorCommand.put("collMod", schema.getMetadata().getCollection());
-		validatorCommand.put("validator", this.computeValidationSchema(schema));
+		validatorCommand.put("collMod", schemaCollection);
+		validatorCommand.put("validator", this.computeValidationSchema(schemaObject));
 		mongoTemplate.executeCommand(new Document(validatorCommand));
 	}
 
@@ -79,56 +96,11 @@ public class CollectionEnhancer {
 		);
 	}
 
-	private Document computeValidationSchema(SchemaEntity schema) throws JsonProcessingException {
-
-		ObjectNode jsonValidationSchema = mapper.createObjectNode();
-		jsonValidationSchema.putPOJO("type", schema.getType());
-		this.putRequiredInValidationSchema(schema, jsonValidationSchema);
-		this.putPropertiesInValidationSchema(schema, jsonValidationSchema);
-
-		String stringValidationSchema = mapper
-				.writeValueAsString(jsonValidationSchema)
-				.replace("\"type\":\"integer\"", "\"type\":\"int\"")
-				.replace("\"type\":", "\"bsonType\":");
-
+	@SneakyThrows
+	private Document computeValidationSchema(SchemaObject schemaObject) {
 		return new Document(
-				"$jsonSchema", mapper.readValue(stringValidationSchema, Document.class)
+				"$jsonSchema", mapper.convertValue(schemaObject, Document.class)
 		);
-	}
-
-	private void putRequiredInValidationSchema(SchemaEntity schema, ObjectNode jsonValidationSchema) {
-		Optional.of(schema)
-				.map(SchemaEntity::getRequired)
-				.filter(Predicate.not(List::isEmpty))
-				.ifPresent(required -> jsonValidationSchema.putPOJO("required", required));
-	}
-
-	private void putPropertiesInValidationSchema(SchemaEntity schema, ObjectNode jsonValidationSchema) {
-		Optional.of(schema)
-				.map(SchemaEntity::getProperties)
-				.map(this::computeProperties)
-				.ifPresent(properties -> jsonValidationSchema.putPOJO("properties", properties));
-	}
-
-	private Map<String, Map<String, Object>> computeProperties(JsonNode propertiesObject) {
-		TypeReference<Map<String, Map<String, Object>>> jsonAsMap = new TypeReference<>() {};
-		return mapper.convertValue(propertiesObject, jsonAsMap)
-				.entrySet().stream()
-				.collect(Collectors.toMap(
-						Map.Entry::getKey,
-						property -> this.computePropertyWithoutCustomHandlers(property.getValue())
-						)
-				);
-	}
-
-	private Map<String, Object> computePropertyWithoutCustomHandlers(Map<String, Object> property) {
-		return property.entrySet().stream()
-				.filter(propertyField -> !propertyField.getKey().startsWith("$"))
-				.collect(Collectors.toMap(
-						Map.Entry::getKey,
-						Map.Entry::getValue
-						)
-				);
 	}
 
 	private List<MongoIndex> computeMongoIndexes(List<Map<String, Object>> fieldIndexes) {
