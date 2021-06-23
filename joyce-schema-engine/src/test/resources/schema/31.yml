@@ -1,0 +1,21 @@
+$schema: https://joyce.sourcesense.com/v1/schema
+$metadata:
+  subtype: import
+  name: user
+  description: A test schema
+  development: true
+  uid: code
+  collection: users
+type: object
+properties:
+  code:
+    type: string
+  full_name:
+    type: string
+    $path: ["$['first_name']", " ", "$['last_name']"]
+  other_name:
+    type: string
+    $jsExpr: "$['first_name'].toUpperCase().concat('-').concat($['last_name'].toLowerCase())"
+  reduced_array:
+    type: string
+    $jsExpr: "$['array'].reduce((a,b,i) => `${a}-${b}-${i}`, 'start')"

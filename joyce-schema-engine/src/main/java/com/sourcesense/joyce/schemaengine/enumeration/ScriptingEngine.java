@@ -1,4 +1,4 @@
-package com.sourcesense.joyce.schemaengine;
+package com.sourcesense.joyce.schemaengine.enumeration;
 
 import lombok.Getter;
 import lombok.RequiredArgsConstructor;

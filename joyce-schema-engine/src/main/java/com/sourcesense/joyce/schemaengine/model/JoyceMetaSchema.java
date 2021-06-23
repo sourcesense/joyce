@@ -14,7 +14,7 @@
  * limitations under the License.
  */
 
-package com.sourcesense.joyce.schemaengine;
+package com.sourcesense.joyce.schemaengine.model;
 
 import com.networknt.schema.*;
 
