@@ -70,14 +70,16 @@ public class CollectionEnhancer {
 	)
 	public void upsertCollectionValidator(
 			@ContentUri String schemaUri,
-			@EventPayload SchemaObject schemaObject,
-			String schemaCollection) {
+			@EventPayload SchemaEntity schema,
+			SchemaObject schemaObject) {
 
-		log.debug("Updating validation schema for schema: '{}'", schemaUri);
-		LinkedHashMap<String, Object> validatorCommand = new LinkedHashMap<>();
-		validatorCommand.put("collMod", schemaCollection);
-		validatorCommand.put("validator", this.computeValidationSchema(schemaObject));
-		mongoTemplate.executeCommand(new Document(validatorCommand));
+		if(schema.getMetadata().getValidation()) {
+			log.debug("Updating validation schema for schema: '{}'", schemaUri);
+			LinkedHashMap<String, Object> validatorCommand = new LinkedHashMap<>();
+			validatorCommand.put("collMod", schema.getMetadata().getCollection());
+			validatorCommand.put("validator", this.computeValidationSchema(schemaObject));
+			mongoTemplate.executeCommand(new Document(validatorCommand));
+		}
 	}
 
 	@Notify(
@@ -88,12 +90,14 @@ public class CollectionEnhancer {
 			@ContentUri String schemaUri,
 			@EventPayload SchemaEntity schema) {
 
-		log.debug("Creating indexes for schema: '{}'", schemaUri);
-		List<Map<String, Object>> fieldIndexes = schema.getMetadata().getIndexes();
-		this.insertIndexes(
-				this.computeMongoIndexes(fieldIndexes),
-				schema.getMetadata().getCollection()
-		);
+		if(schema.getMetadata().getIndexed()) {
+			log.debug("Creating indexes for schema: '{}'", schemaUri);
+			List<Map<String, Object>> fieldIndexes = schema.getMetadata().getIndexes();
+			this.insertIndexes(
+					this.computeMongoIndexes(fieldIndexes),
+					schema.getMetadata().getCollection()
+			);
+		}
 	}
 
 	@SneakyThrows

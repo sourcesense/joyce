@@ -29,7 +29,7 @@ public class SchemaConsumer {
 
 			String schemaCollection = schema.getMetadata().getCollection();
 			collectionEnhancer.initCollection(schema.getUid(), schema);
-			collectionEnhancer.upsertCollectionValidator(schema.getUid(), schemaObject, schemaCollection);
+			collectionEnhancer.upsertCollectionValidator(schema.getUid(), schema, schemaObject);
 			collectionEnhancer.createIndexes(schema.getUid(), schema);
 
 		} catch (Exception exception) {
