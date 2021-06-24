@@ -1,6 +1,40 @@
 {
-  "code": "codice",
-  "first_name": "Jon",
-  "last_name": "Snow",
-  "array": ["primo", "secondo", "terzo"]
+  "id": 1,
+  "simpleField": "simpleFieldValue",
+  "stringArray": [
+    "stringArrayValue1",
+    "stringArrayValue2",
+    "stringArrayValueN"
+  ],
+  "complexArray": [
+    {"complexArrayField": "complexArrayValue1"},
+    {"complexArrayField": "complexArrayValue2"},
+    {"complexArrayField": "complexArrayValueN"}
+  ],
+  "object": {
+    "objectField": "objectValue",
+    "objectStringArray": [
+      "objectStringArrayValue1",
+      "objectStringArrayValue2",
+      "objectStringArrayValueN"
+    ],
+    "objectComplexArray": [
+      {"objectComplexArrayField": "objectComplexArrayValue1"},
+      {"objectComplexArrayField": "objectComplexArrayValue2"},
+      {"objectComplexArrayField": "objectComplexArrayValueN"}
+    ],
+    "nestedObject": {
+      "nestedObjectField": "nestedObjectValue",
+      "nestedObjectStringArray": [
+        "nestedObjectStringArrayValue1",
+        "nestedObjectStringArrayValue2",
+        "nestedObjectStringArrayValueN"
+      ],
+      "nestedObjectComplexArray": [
+        {"nestedObjectComplexArrayField": "nestedObjectComplexArrayValue1"},
+        {"nestedObjectComplexArrayField": "nestedObjectComplexArrayValue2"},
+        {"nestedObjectComplexArrayField": "nestedObjectComplexArrayValueN"}
+      ]
+    }
+  }
 }

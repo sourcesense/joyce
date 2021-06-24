@@ -22,7 +22,7 @@ public class JavascriptScriptingTransformerHandler extends ScriptingTransformerH
 
 
 	@Override
-	protected String computePlaceholderWithJsonParser(String placeholder) {
+	protected String computeJsonParsingPlaceholder(String placeholder) {
 		return "JSON.parse(" + placeholder + ")";
 	}
 }
