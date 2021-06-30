@@ -4,11 +4,10 @@ import com.fasterxml.jackson.databind.DeserializationFeature;
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.databind.SerializationFeature;
-import com.fasterxml.jackson.databind.node.ArrayNode;
 import com.fasterxml.jackson.databind.node.TextNode;
 import com.oracle.truffle.js.scriptengine.GraalJSScriptEngine;
+import com.sourcesense.joyce.schemaengine.exception.JoyceSchemaEngineException;
 import org.graalvm.polyglot.Context;
-import org.graalvm.polyglot.HostAccess;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
@@ -21,8 +20,8 @@ import java.nio.file.Files;
 import java.nio.file.Path;
 import java.util.Optional;
 
-import static org.junit.jupiter.api.Assertions.assertArrayEquals;
-import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.assertj.core.api.Assertions.assertThat;
+import static org.junit.jupiter.api.Assertions.*;
 
 @ExtendWith(MockitoExtension.class)
 public class JavascriptScriptingTransformerTest {
@@ -38,6 +37,23 @@ public class JavascriptScriptingTransformerTest {
 						this.initGraalJSScriptEngine(),
 						this.initMapper()
 				);
+	}
+
+	@Test
+	void shouldNotProcessVoidScript() throws IOException, URISyntaxException {
+		String key = "void";
+		JsonNode source = this.getResourceAsNode("source/31.json");
+		JsonNode script = mapper.convertValue(
+				"print('void')",
+				TextNode.class
+		);
+
+		assertThrows(
+				JoyceSchemaEngineException.class,
+				() -> javascriptScriptingTransformerHandler.process(
+						key, script, source, Optional.empty(), Optional.empty()
+				)
+		);
 	}
 
 	@Test
@@ -62,7 +78,7 @@ public class JavascriptScriptingTransformerTest {
 		String key = "lowercaseSimpleField";
 		JsonNode source = this.getResourceAsNode("source/31.json");
 		JsonNode script = mapper.convertValue(
-				"__source.simpleField.toLowerCase()",
+				"source.simpleField.toLowerCase()",
 				TextNode.class
 		);
 
@@ -79,7 +95,7 @@ public class JavascriptScriptingTransformerTest {
 		String key = "reducedStringArray";
 		JsonNode source = this.getResourceAsNode("source/31.json");
 		JsonNode script = mapper.convertValue(
-				"__source.stringArray.reduce((a,b) => `${a}-${b}`, 'start')",
+				"source.stringArray.reduce((a,b) => `${a}-${b}`, 'start')",
 				TextNode.class
 		);
 
@@ -96,7 +112,7 @@ public class JavascriptScriptingTransformerTest {
 		String key = "uppercaseComplexArrayField";
 		JsonNode source = this.getResourceAsNode("source/31.json");
 		JsonNode script = mapper.convertValue(
-				"__source.complexArray[0]['complexArrayField'].toUpperCase()",
+				"source.complexArray[0]['complexArrayField'].toUpperCase()",
 				TextNode.class
 		);
 
@@ -109,26 +125,26 @@ public class JavascriptScriptingTransformerTest {
 	}
 
 
-//	@Test
-//	void shouldProcessForObject() throws IOException, URISyntaxException {
-//		String key = "mapComplexArrayToValues";
-//		JsonNode source = this.getResourceAsNode("source/31.json");
-//		JsonNode script = mapper.convertValue(
-//				"__source.object.nestedObject.nestedObjectComplexArray.map(e => e.nestedObjectComplexArrayField)",
-//				TextNode.class
-//		);
-//
-//		Object[] expected = {
-//				"nestedObjectComplexArrayValue1",
-//				"nestedObjectComplexArrayValue2",
-//				"nestedObjectComplexArrayValueN"
-//		};
-//		Object[] actual = mapper.convertValue(
-//				javascriptScriptingTransformerHandler.process(key, script, source, Optional.empty(), Optional.empty()),
-//				Object[].class
-//		);
-//		assertArrayEquals(expected, actual);
-//	}
+	@Test
+	void shouldProcessForObject() throws IOException, URISyntaxException {
+		String key = "mapComplexArrayToValues";
+		JsonNode source = this.getResourceAsNode("source/31.json");
+		JsonNode script = mapper.convertValue(
+				"source.object.nestedObject.nestedObjectComplexArray.map(e => e.nestedObjectComplexArrayField)",
+				TextNode.class
+		);
+
+		Object[] expected = {
+				"nestedObjectComplexArrayValue1",
+				"nestedObjectComplexArrayValue2",
+				"nestedObjectComplexArrayValueN"
+		};
+		Object[] actual = mapper.convertValue(
+				javascriptScriptingTransformerHandler.process(key, script, source, Optional.empty(), Optional.empty()),
+				Object[].class
+		);
+		assertArrayEquals(expected, actual);
+	}
 
 	private ObjectMapper initMapper() {
 		return new ObjectMapper()
@@ -140,8 +156,6 @@ public class JavascriptScriptingTransformerTest {
 		return GraalJSScriptEngine.create(
 				null,
 				Context.newBuilder("js")
-						.allowHostAccess(HostAccess.ALL)
-						.allowHostClassLookup(s -> true)
 						.option("js.ecmascript-version", "2021")
 		);
 	}

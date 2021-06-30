@@ -31,10 +31,7 @@ public class ScriptEngineManagerConfig {
 	GraalJSScriptEngine jsScriptEngine() {
 		return GraalJSScriptEngine.create(
 				null,
-				Context.newBuilder("js")
-						.allowHostAccess(HostAccess.ALL)
-						.allowHostClassLookup(s -> true)
-						.option("js.ecmascript-version", "2021")
+				Context.newBuilder("js").option("js.ecmascript-version", "2021")
 		);
 	}
 
@@ -46,28 +43,5 @@ public class ScriptEngineManagerConfig {
 	@Bean
 	GroovyScriptEngineImpl groovyScriptEngine(ScriptEngineManager scriptEngineManager) {
 		return (GroovyScriptEngineImpl) scriptEngineManager.getEngineByName(ScriptingEngine.GROOVY.getName());
-	}
-
-	public static void main(String[] args) throws ScriptException {
-
-		GraalJSScriptEngine engine = jsEngine();
-		List<String> list = Arrays.asList("primo", "secondo", "terzo");
-		engine.put("__list__", list);
-
-		engine.eval("print(__list__).reduce((a1, b1) => a1 + '-' + b1))");
-
-//		manager.getEngineFactories().stream()
-//				.map(ScriptEngineFactory::getEngineName)
-//				.forEach(System.out::println);
-	}
-
-	private static GraalJSScriptEngine jsEngine() {
-		return GraalJSScriptEngine.create(
-				null,
-				Context.newBuilder("js")
-						.allowHostAccess(HostAccess.ALL)
-						.allowHostClassLookup(s -> true)
-						.option("js.ecmascript-version", "2021")
-		);
 	}
 }
