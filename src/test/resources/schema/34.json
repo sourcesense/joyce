@@ -29,28 +29,31 @@
       }
     ]
   },
-  "type": "object",
-  "required": [],
+  "bsonType": "object",
+  "required": ["id"],
   "properties": {
+    "id": {
+      "type": "integer"
+    },
     "stringProp": {
-      "type": "string",
+      "bsonType": "string",
       "$path": "$['user_id']"
     },
     "booleanProp": {
-      "type": "boolean"
+      "bsonType": "boolean"
     },
     "integerProp": {
-      "type": "integer"
+      "bsonType": "integer"
     },
     "numberProp": {
-      "type": "number"
+      "bsonType": "number"
     },
     "objectProp": {
-      "type": "object",
+      "bsonType": "object",
       "required": [],
       "properties": {
         "nestedProp": {
-          "type": "string",
+          "bsonType": "string",
           "required": [],
           "​$path": [
             "$['first_name']",
@@ -61,25 +64,25 @@
       }
     },
     "arrayProp": {
-      "type": "array",
+      "bsonType": "array",
       "items": {
-        "type": "object",
+        "bsonType": "object",
         "properties": {
           "booleanProp": {
-            "type": "boolean"
+            "bsonType": "boolean"
           },
           "integerProp": {
-            "type": "integer"
+            "bsonType": "integer"
           },
           "numberProp": {
-            "type": "number"
+            "bsonType": "number"
           },
           "objectProp": {
-            "type": "object",
+            "bsonType": "object",
             "required": [],
             "properties": {
               "nestedProp": {
-                "type": "string",
+                "bsonType": "string",
                 "required": [],
                 "$fixed": "SimpleUser"
               }

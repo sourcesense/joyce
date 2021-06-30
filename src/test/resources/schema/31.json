@@ -1,0 +1,40 @@
+{
+  "$schema": "https://joyce.sourcesense.com/v1/schema",
+  "$metadata": {
+    "subtype": "import",
+    "name": "test",
+    "description": "A test schema",
+    "development": true,
+    "uid": "number",
+    "collection": "test"
+  },
+  "bsonType": "object",
+  "properties": {
+    "integer": {
+      "bsonType": "integer"
+    },
+    "number": {
+      "bsonType": "number"
+    },
+    "boolean": {
+      "bsonType": "boolean"
+    },
+    "string": {
+      "bsonType": "string"
+    },
+    "object": {
+      "bsonType": "object",
+      "properties": {
+        "field": {
+          "bsonType": "string"
+        }
+      }
+    },
+    "array": {
+      "bsonType": "array",
+      "items": {
+        "bsonType": "string"
+      }
+    }
+  }
+}

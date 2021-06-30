@@ -1,0 +1,21 @@
+{
+  "$schema": "https://joyce.sourcesense.com/v1/schema",
+  "$metadata": {
+    "subtype": "import",
+    "name": "test",
+    "description": "A test schema",
+    "development": true,
+    "uid": "id",
+    "collection": "test"
+  },
+  "bsonType": "object",
+  "properties": {
+    "id": {
+      "bsonType": "integer"
+    },
+    "field": {
+      "bsonType": "string",
+      "$handler": "testHandler"
+    }
+  }
+}

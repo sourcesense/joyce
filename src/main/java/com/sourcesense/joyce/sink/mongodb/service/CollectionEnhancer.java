@@ -15,7 +15,6 @@ import com.sourcesense.joyce.sink.mongodb.model.MetadataIndexesProperties;
 import com.sourcesense.joyce.sink.mongodb.model.MongoIndex;
 import com.sourcesense.joyce.sink.mongodb.model.SchemaObject;
 import lombok.RequiredArgsConstructor;
-import lombok.SneakyThrows;
 import lombok.extern.slf4j.Slf4j;
 import org.bson.Document;
 import org.springframework.data.mongodb.core.MongoTemplate;
@@ -100,7 +99,7 @@ public class CollectionEnhancer {
 		}
 	}
 
-	@SneakyThrows
+
 	private Document computeValidationSchema(SchemaObject schemaObject) {
 		return new Document(
 				"$jsonSchema", mapper.convertValue(schemaObject, Document.class)
