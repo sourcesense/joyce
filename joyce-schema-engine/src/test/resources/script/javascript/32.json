@@ -1,0 +1,4 @@
+{
+  "language": "javascript",
+  "code": "'noValue'.substring(0,1)"
+}
