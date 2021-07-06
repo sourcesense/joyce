@@ -1,0 +1,54 @@
+{
+  "bsonType": "object",
+  "required": ["id"],
+  "properties": {
+    "id": {
+      "bsonType": "int"
+    },
+    "stringProp": {
+      "bsonType": "string"
+    },
+    "booleanProp": {
+      "bsonType": "bool"
+    },
+    "integerProp": {
+      "bsonType": "int"
+    },
+    "numberProp": {
+      "bsonType": "double"
+    },
+    "objectProp": {
+      "bsonType": "object",
+      "properties": {
+        "nestedProp": {
+          "bsonType": "string"
+        }
+      }
+    },
+    "arrayProp": {
+      "bsonType": "array",
+      "items": {
+        "bsonType": "object",
+        "properties": {
+          "booleanProp": {
+            "bsonType": "bool"
+          },
+          "integerProp": {
+            "bsonType": "int"
+          },
+          "numberProp": {
+            "bsonType": "double"
+          },
+          "objectProp": {
+            "bsonType": "object",
+            "properties": {
+              "nestedProp": {
+                "bsonType": "string"
+              }
+            }
+          }
+        }
+      }
+    }
+  }
+}

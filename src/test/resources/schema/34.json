@@ -1,0 +1,95 @@
+{
+  "$schema": "https://joyce.sourcesense.com/v1/schema",
+  "$metadata": {
+    "subtype": "import",
+    "name": "user",
+    "description": "A test schema",
+    "development": true,
+    "uid": "code",
+    "collection": "users",
+    "store": false,
+    "indexes": [
+      {
+        "code": 1
+      },
+      {
+        "full_name": 1
+      },
+      {
+        "email": 1
+      },
+      {
+        "kind": 1
+      },
+      {
+        "code": 1,
+        "full_name": 1,
+        "email": 1,
+        "kind": 1
+      }
+    ]
+  },
+  "bsonType": "object",
+  "required": ["id"],
+  "properties": {
+    "id": {
+      "type": "integer"
+    },
+    "stringProp": {
+      "bsonType": "string",
+      "$path": "$['user_id']"
+    },
+    "booleanProp": {
+      "bsonType": "boolean"
+    },
+    "integerProp": {
+      "bsonType": "integer"
+    },
+    "numberProp": {
+      "bsonType": "number"
+    },
+    "objectProp": {
+      "bsonType": "object",
+      "required": [],
+      "properties": {
+        "nestedProp": {
+          "bsonType": "string",
+          "required": [],
+          "​$path": [
+            "$['first_name']",
+            " ",
+            "$['last_name']"
+          ]
+        }
+      }
+    },
+    "arrayProp": {
+      "bsonType": "array",
+      "items": {
+        "bsonType": "object",
+        "properties": {
+          "booleanProp": {
+            "bsonType": "boolean"
+          },
+          "integerProp": {
+            "bsonType": "integer"
+          },
+          "numberProp": {
+            "bsonType": "number"
+          },
+          "objectProp": {
+            "bsonType": "object",
+            "required": [],
+            "properties": {
+              "nestedProp": {
+                "bsonType": "string",
+                "required": [],
+                "$fixed": "SimpleUser"
+              }
+            }
+          }
+        }
+      }
+    }
+  }
+}
