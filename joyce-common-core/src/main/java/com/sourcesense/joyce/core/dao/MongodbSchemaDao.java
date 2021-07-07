@@ -10,14 +10,18 @@ import com.sourcesense.joyce.core.enumeration.ImportAction;
 import com.sourcesense.joyce.core.enumeration.KafkaCustomHeaders;
 import com.sourcesense.joyce.core.mapper.SchemaMapper;
 import com.sourcesense.joyce.core.model.SchemaEntity;
+import com.sourcesense.joyce.core.utililty.KafkaUtility;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import org.apache.kafka.common.config.TopicConfig;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnProperty;
+import org.springframework.kafka.core.KafkaAdmin;
 import org.springframework.kafka.core.KafkaTemplate;
 import org.springframework.kafka.support.KafkaHeaders;
 import org.springframework.messaging.support.MessageBuilder;
 import org.springframework.stereotype.Component;
 
+import javax.annotation.PostConstruct;
 import java.util.List;
 import java.util.Optional;
 import java.util.stream.Collectors;
@@ -34,6 +38,21 @@ public class MongodbSchemaDao implements SchemaDao {
 	private final ObjectMapper objectMapper;
 	private final KafkaTemplate<String,JsonNode> kafkaTemplate;
 	private final SchemaServiceProperties schemaServiceProperties;
+	private final KafkaAdmin kafkaAdmin;
+
+	@PostConstruct
+	void init() {
+		try {
+			KafkaUtility.addTopicIfNeeded(kafkaAdmin,
+					schemaServiceProperties.getTopic(),
+					schemaServiceProperties.getPartitions(),
+					schemaServiceProperties.getReplicas(),
+					schemaServiceProperties.getRetention(),
+					TopicConfig.CLEANUP_POLICY_COMPACT);
+		} catch (Exception e) {
+			throw new RuntimeException(e.getMessage());
+		}
+	}
 
 	@Override
 	public Optional<SchemaEntity> get(String id) {
