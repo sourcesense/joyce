@@ -12,9 +12,11 @@ RUN curl -fSL -o /tmp/plugin.tar.gz \
     rm -f /tmp/plugin.tar.gz;
 
 RUN mkdir -p /usr/share/java/camel && \
-  wget https://repo1.maven.org/maven2/org/apache/camel/kafkaconnector/camel-file-kafka-connector/0.7.0/camel-file-kafka-connector-0.7.0-package.tar.gz -O /usr/share/java/camel/camel-file-kafka-connector-0.7.0-package.tar.gz && \
-  tar -xvzf /usr/share/java/camel/camel-file-kafka-connector-0.7.0-package.tar.gz --directory /usr/share/java/camel && \
-  rm /usr/share/java/camel/camel-file-kafka-connector-0.7.0-package.tar.gz
+  wget https://repo1.maven.org/maven2/org/apache/camel/kafkaconnector/camel-rss-kafka-connector/0.9.0/camel-rss-kafka-connector-0.9.0-package.tar.gz -O /usr/share/java/camel/camel-rss-kafka-connector.tar.gz && \
+  tar -xvzf /usr/share/java/camel/camel-rss-kafka-connector.tar.gz --directory /usr/share/java/camel && \
+  rm /usr/share/java/camel/camel-rss-kafka-connector.tar.gz
+
+RUN wget https://repo1.maven.org/maven2/org/apache/camel/camel-jackson/3.9.0/camel-jackson-3.9.0.jar -O /usr/share/java/camel/camel-jackson-3.9.0.jar
 
 RUN mkdir -p /usr/share/java/joyce
 COPY InsertJoyceMessageKey/target/InsertJoyceMessageKey-*-SNAPSHOT.jar /usr/share/java/joyce/
@@ -22,7 +24,7 @@ COPY InsertJoyceMessageKey/target/InsertJoyceMessageKey-*-SNAPSHOT.jar /usr/shar
 
 
 # ENV CONNECT_PLUGIN_PATH=/usr/share/java/,/usr/share/confluent-hub-components/,/opt/plugins/camel/
-ENV CONNECT_BOOTSTRAP_SERVERS=afka:9092
+ENV CONNECT_BOOTSTRAP_SERVERS=kafka:9092
 ENV CONNECT_REST_PORT=6682
 ENV CONNECT_KEY_CONVERTER=org.apache.kafka.connect.json.JsonConverter
 ENV CONNECT_VALUE_CONVERTER=org.apache.kafka.connect.json.JsonConverter
