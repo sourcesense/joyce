@@ -31,7 +31,7 @@ import org.springframework.context.annotation.Configuration;
 						url = "https://joyce.sourcesense.com",
 						email = "joyce@sourcesense.com")
 		),
-		servers = @Server(url = "http://localhost:6651"))
+		servers = {@Server(url = "http://localhost:6651"), @Server(url = "http://import-gateway.joyce.oc.corp.sourcesense.com")})
 @Configuration
 public class OpenApiConfiguration {
 }

@@ -12,17 +12,18 @@ joyce:
     jar-path: /app/custom-handlers
   schema-service:
     enabled: true
-    database: kafka
+    database: mongodb
     subtype: import
   notification-service:
     enabled: true
     topic: joyce_notification
     source: ImportGateway
+  data:
+    mongodb:
+      uri: mongodb://user:password@localhost:27017/joyce
+      database: joyce
   content-producer:
     enabled: true
-  ksql:
-    host: localhost
-    port: 8088
   kafka:
     bootstrapAddress: kafka:9092
     consumer:
