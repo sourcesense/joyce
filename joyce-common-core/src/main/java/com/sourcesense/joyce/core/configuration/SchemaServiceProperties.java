@@ -23,7 +23,7 @@ import org.springframework.stereotype.Component;
 
 @Getter
 @Setter
-@Component
+@Component("schemaServiceProperties")
 @ConfigurationProperties("joyce.schema-service")
 public class SchemaServiceProperties {
     Boolean enabled = false;
@@ -32,4 +32,8 @@ public class SchemaServiceProperties {
     String topic = "joyce_schema";
     Integer partitions = 10;
     Integer replicas = 1;
+
+    public String getCollection(){
+    	return String.format("joyce_schema_%s", subtype);
+		}
 }

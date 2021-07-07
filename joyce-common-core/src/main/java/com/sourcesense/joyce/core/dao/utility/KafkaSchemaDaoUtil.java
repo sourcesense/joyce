@@ -6,10 +6,12 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 import com.sourcesense.joyce.core.exception.handler.CustomExceptionHandler;
 import com.sourcesense.joyce.core.model.SchemaEntity;
 import lombok.RequiredArgsConstructor;
+import org.springframework.boot.autoconfigure.condition.ConditionalOnProperty;
 import org.springframework.stereotype.Component;
 
 import java.util.Optional;
 
+@ConditionalOnProperty(value = "joyce.schema-service.database", havingValue = "kafka")
 @Component
 @RequiredArgsConstructor
 public class KafkaSchemaDaoUtil implements SchemaDaoUtil{
