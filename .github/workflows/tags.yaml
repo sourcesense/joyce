@@ -37,5 +37,5 @@ jobs:
         run: |
           docker build . -t sourcesense/joyce-mongodb-sink:${{steps.vars.outputs.VERSION}}
           docker push sourcesense/joyce-mongodb-sink:${{steps.vars.outputs.VERSION}}
-          docker tag sourcesense/joyce-mongodb-sink:${{steps.vars.outputs.VERSION}} sourcesense/joyce-import-gateway:latest
+          docker tag sourcesense/joyce-mongodb-sink:${{steps.vars.outputs.VERSION}} sourcesense/joyce-mongodb-sink:latest
           docker push sourcesense/joyce-mongodb-sink:latest
