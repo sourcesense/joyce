@@ -21,10 +21,11 @@ import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.databind.node.*;
 import com.networknt.schema.*;
-import com.sourcesense.joyce.schemaengine.model.JoyceMetaSchema;
 import com.sourcesense.joyce.schemaengine.exception.InvalidSchemaException;
 import com.sourcesense.joyce.schemaengine.exception.JoyceSchemaEngineException;
 import com.sourcesense.joyce.schemaengine.handler.SchemaTransformerHandler;
+import com.sourcesense.joyce.schemaengine.model.JoyceMetaSchema;
+import org.apache.commons.lang.StringUtils;
 import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.stereotype.Service;
 
@@ -140,15 +141,14 @@ public class SchemaEngine {
 	/**
 	 * Detects if the changes in the schema are breaking changes or not, throws Exception if the schema changes are unacceptable
 	 *
-	 * @param previousSchema
-	 * @param newSchema
+	 * @param prevJson
+	 * @param newJson
 	 * @return
 	 */
-	public Boolean checkForBreakingChanges(String previousSchema, String newSchema) throws JsonProcessingException {
+	public Boolean checkForBreakingChanges(JsonNode prevJson, JsonNode newJson) throws JsonProcessingException {
 
 		//TODO: enrich tests for required fields
-		JsonNode prevJson = mapper.readValue(previousSchema, JsonNode.class);
-		JsonNode newJson = mapper.readValue(newSchema, JsonNode.class);
+
 		Integer prevDeprecated = 0;
 		Integer newDeprecated = 0;
 
@@ -207,7 +207,10 @@ public class SchemaEngine {
 					tempSchema.remove(transformerHandlers.keySet());
 
 					tempSchema.set("type", schema.get("type"));
-					return this.parse(key, tempSchema, node, metadata, context);
+					JsonNode transformedNode = schema.get("type").asText().equalsIgnoreCase("object")
+							? transformed.get()
+							: node;
+					return this.parse(key, tempSchema, transformedNode, metadata, context);
 				}
 				JsonNode type = Optional.ofNullable(schema.get("type")).orElse(new TextNode("string"));
 				if (type.getNodeType().equals(JsonNodeType.ARRAY)) {
@@ -250,15 +253,19 @@ public class SchemaEngine {
 				arrayNode.add(parsedItem);
 			}
 			return arrayNode;
-		} else if (type.equals("integer")) {
-			return sourceJsonNode.get(key).asText().isEmpty() ? null : JsonNodeFactory.instance.numberNode(Integer.parseInt(sourceJsonNode.get(key).asText()));
-		} else if (type.equals("number")) {
-			return sourceJsonNode.get(key).asText().isEmpty() ? null : JsonNodeFactory.instance.numberNode(Double.parseDouble(sourceJsonNode.get(key).asText()));
-		} else if (type.equals("null")) {
-			return null;
 		} else {
-			//TODO: handle other types and modification ie range and other limitations
-			return sourceJsonNode.get(key);
+			JsonNode result = StringUtils.isNotEmpty(key) ? sourceJsonNode.get(key) : sourceJsonNode;
+			switch (type) {
+				case "integer":
+					return result.asText().isEmpty() ? null : JsonNodeFactory.instance.numberNode(Integer.parseInt(result.asText()));
+				case "number":
+					return result.asText().isEmpty() ? null : JsonNodeFactory.instance.numberNode(Double.parseDouble(result.asText()));
+				case "null":
+					return null;
+				default:
+					//TODO: handle other types and modification ie range and other limitations
+					return result;
+			}
 		}
 	}
 

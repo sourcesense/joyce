@@ -88,15 +88,4 @@ public class ScriptingTransformerHandlerTest implements UtilitySupplier {
 
 		assertEquals(expected, actual);
 	}
-
-	private ApplicationContext initApplicationContext(ObjectMapper mapper) {
-		ApplicationContext context = mock(ApplicationContext.class);
-		JavaScriptScriptingService jsService = new JavaScriptScriptingService(mapper, this.initGraalJSScriptEngine());
-		PythonScriptingService pyService = new PythonScriptingService(mapper, this.initPyScriptEngine());
-		GroovyScriptingService groovyService = new GroovyScriptingService(mapper, this.initGroovyScriptEngine());
-		when(context.getBean(JavaScriptScriptingService.class)).thenReturn(jsService);
-		when(context.getBean(PythonScriptingService.class)).thenReturn(pyService);
-		when(context.getBean(GroovyScriptingService.class)).thenReturn(groovyService);
-		return context;
-	}
 }

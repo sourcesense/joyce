@@ -104,6 +104,12 @@ public class JoyceURI {
         @JsonProperty("csv")
         CSV("csv"),
 
+				/**
+				 * Content produced by fixed content inside a schema
+				 */
+				@JsonProperty("fixed")
+				FIXED("fixed"),
+
         /**
          * Content produced by other sources
          */
@@ -144,11 +150,11 @@ public class JoyceURI {
     private URI uri;
 
     public static JoyceURI make(Type type, Subtype subtype, String collection, String id) {
-        return new JoyceURI(URI.create(String.format("%s://%s/%s/%s/%s", schema, type.getValue(), subtype.getValue(), URLEncoder.encode(collection, StandardCharsets.UTF_8), URLEncoder.encode(id, StandardCharsets.UTF_8))));
+        return new JoyceURI(URI.create(String.format("%s://%s/%s/%s/%s", schema, type.getValue(), subtype.getValue(), URLEncoder.encode(collection, StandardCharsets.UTF_8), URLEncoder.encode(id, StandardCharsets.UTF_8)).toLowerCase()));
     }
 
     public static JoyceURI make(Type type, Subtype subtype, String collection) {
-        return new JoyceURI(URI.create(String.format("%s://%s/%s/%s", schema, type.getValue(), subtype.getValue(), URLEncoder.encode(collection, StandardCharsets.UTF_8))));
+        return new JoyceURI(URI.create(String.format("%s://%s/%s/%s", schema, type.getValue(), subtype.getValue(), URLEncoder.encode(collection, StandardCharsets.UTF_8)).toLowerCase()));
     }
 
     /**

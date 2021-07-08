@@ -17,6 +17,8 @@
 package com.sourcesense.joyce.core.service;
 
 import com.fasterxml.jackson.core.JsonProcessingException;
+import com.fasterxml.jackson.databind.JsonNode;
+import com.fasterxml.jackson.databind.ObjectMapper;
 import com.sourcesense.joyce.core.configuration.SchemaServiceProperties;
 import com.sourcesense.joyce.core.dao.SchemaDao;
 import com.sourcesense.joyce.core.dto.Schema;
@@ -47,6 +49,7 @@ public class SchemaService {
 	private final SchemaMapper schemaMapper;
 	private final SchemaEngine schemaEngine;
 	private final SchemaServiceProperties properties;
+	private final ObjectMapper objectMapper;
 
 
 	private JoyceURI getSchemaUid(String name){
@@ -82,8 +85,8 @@ public class SchemaService {
 					throw new JoyceSchemaEngineException("Previous schema is not in development mode");
 			}
 
-			if (!entity.getMetadata().getDevelopment()) {
-				schemaEngine.checkForBreakingChanges(previous.get().getSchema(), entity.getSchema());
+			if (!entity.getMetadata().getDevelopment() && !previous.get().getMetadata().getDevelopment()) {
+				schemaEngine.checkForBreakingChanges(objectMapper.convertValue( previous.get(), JsonNode.class), objectMapper.convertValue(entity, JsonNode.class));
 			}
 		}
 

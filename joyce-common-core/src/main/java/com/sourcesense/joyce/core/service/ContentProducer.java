@@ -21,11 +21,12 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.databind.node.ObjectNode;
 import com.sourcesense.joyce.core.dto.Schema;
 import com.sourcesense.joyce.core.enumeration.ImportAction;
+import com.sourcesense.joyce.core.enumeration.KafkaCustomHeaders;
 import com.sourcesense.joyce.core.enumeration.NotificationEvent;
 import com.sourcesense.joyce.core.model.JoyceSchemaMetadata;
 import com.sourcesense.joyce.core.model.JoyceURI;
-import com.sourcesense.joyce.core.enumeration.KafkaCustomHeaders;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnProperty;
 import org.springframework.kafka.core.KafkaTemplate;
@@ -34,6 +35,8 @@ import org.springframework.kafka.support.SendResult;
 import org.springframework.messaging.Message;
 import org.springframework.messaging.support.MessageBuilder;
 import org.springframework.stereotype.Service;
+
+import java.util.Optional;
 
 @Slf4j
 @ConditionalOnProperty(value = "joyce.content-producer.enabled", havingValue = "true")
@@ -45,7 +48,7 @@ public class ContentProducer extends KafkaMessageService<JsonNode> {
     private final NotificationService notificationService;
 
     public ContentProducer(
-            ObjectMapper mapper,
+            @Qualifier("jsonMapper") ObjectMapper mapper,
             KafkaTemplate<String, JsonNode> kafkaTemplate,
             NotificationService notificationService) {
 
@@ -98,7 +101,8 @@ public class ContentProducer extends KafkaMessageService<JsonNode> {
         content_metadata.put("schema_uid", schema.getUid());
         content_metadata.put("schema_name", schema.getName());
         content_metadata.put("schema_development", schema.getDevelopment());
-        content_metadata.put("raw_uri", rawUri.toString());
+			Optional.ofNullable(rawUri).ifPresent(joyceURI -> content_metadata.put("raw_uri", rawUri.toString()));
+
 
         ((ObjectNode) content).set("_metadata_", content_metadata);
 

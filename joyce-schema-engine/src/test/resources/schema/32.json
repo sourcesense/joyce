@@ -1,0 +1,33 @@
+{
+  "$schema": "https://joyce.sourcesense.com/v1/schema",
+  "$metadata": {
+    "subtype": "import",
+    "name": "user",
+    "description": "A test schema",
+    "development": true,
+    "uid": "id",
+    "collection": "users"
+  },
+  "type": "object",
+  "properties": {
+    "id": {
+      "type": "integer",
+      "$path": "$.id"
+    },
+    "mappedObject": {
+      "type": "object",
+      "properties": {
+        "field1": {
+          "type": "string"
+        },
+        "field2": {
+          "type": "string"
+        }
+      },
+      "$script": {
+        "language": "javascript",
+        "code": "{'field1': source.object.objectField, 'field2': 'newField'}"
+      }
+    }
+  }
+}

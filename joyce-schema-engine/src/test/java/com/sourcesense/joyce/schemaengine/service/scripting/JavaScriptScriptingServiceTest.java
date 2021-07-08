@@ -143,7 +143,7 @@ public class JavaScriptScriptingServiceTest implements UtilitySupplier {
 		String key = "multilineScript";
 		JsonNode source = this.getResourceAsNode("source/31.json");
 		ScriptData scriptData = mapper.convertValue(
-				this.getResourceAsNode("script/javascript/37.json"),
+				this.getResourceAsNode("script/javascript/38.json"),
 				ScriptData.class
 		);
 
