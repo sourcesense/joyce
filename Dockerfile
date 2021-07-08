@@ -1,4 +1,6 @@
-FROM       node:14-alpine
+FROM       node:14-slim
+
+RUN apt-get update || : && apt-get install python -y
 
 WORKDIR    /usr/joyce
 

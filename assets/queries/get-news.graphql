@@ -1,0 +1,7 @@
+mutation News {
+  record {
+    title
+    section
+    uri
+  }
+}

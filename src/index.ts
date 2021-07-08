@@ -5,11 +5,11 @@ import KafkaProducerPromise from "./plugins/KafkaClient";
 const logger = require("pino")();
 const PORT = process.env.PORT || "6650";
 const mongoURI =
-  process.env.MONGO_URI || "mongodb://user:password@localhost:27017/ingestion";
+  process.env.MONGO_URI || "mongodb://localhost:27017/ingestion";
 
 // Database Name
 const producerKafka = KafkaProducerPromise(logger);
-let server: FastifyInstance;
+
 MongoClient.connect(
   mongoURI,
   { useUnifiedTopology: true },
@@ -23,7 +23,7 @@ MongoClient.connect(
       .then((producer) => {
         return createServer(client.db(), producer);
       })
-      .then((server) => {
+      .then((server: FastifyInstance) => {
         process.on("SIGINT", function () {
           logger.info("Bye");
           client.close();

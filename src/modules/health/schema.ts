@@ -1,4 +1,5 @@
 export const getHealthSchema = {
+  tags: ['health'],
   summary: "health check",
   description: "health check",
   response: {

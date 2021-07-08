@@ -15,6 +15,7 @@ const SCHEMAS_SOURCE = process.env.SCHEMAS_SOURCE || "assets/schemas.json";
 const PRODUCTION_URL = process.env.BASE_URL || "https://<production-url>";
 const INTERNAL_URL = process.env.BASE_URL || "http://localhost:6650";
 const HEALTH_PATH = process.env.HEALTH_PATH || "/health";
+const JOYCE_GRAPHQL = process.env.JOYCE_GRAPHQL || true;
 
 const schemaSources = fs.readFileSync(SCHEMAS_SOURCE, "utf8");
 const schemaConfiguration = new SchemaConfiguration(JSON.parse(schemaSources));
@@ -34,6 +35,7 @@ function createServer(db, producer) {
     server.register(require("fastify-oas"), {
       routePrefix: "/docs",
       exposeRoute: true,
+      hideUntagged: true,
       swagger: {
         info: {
           title: "joyce-rest",
@@ -56,7 +58,9 @@ function createServer(db, producer) {
       "/jrpc",
       {
         schema: {
+          tags: ['jrpc'],
           body: {
+
             type: "object",
             required: ["jsonrpc", "method", "params", "id"],
             properties: {
@@ -111,6 +115,20 @@ function createServer(db, producer) {
         });
       }
     );
+    if (JOYCE_GRAPHQL) {
+      server.register(require('fastify-http-proxy'), {
+        hide: true,
+        upstream: 'http://localhost:4000',
+        prefix: '/graphql',
+        http2: false
+      })
+      server.register(require('fastify-http-proxy'), {
+        hide: true,
+        upstream: 'http://localhost:4000/query',
+        prefix: '/query',
+        http2: false
+      })
+    }
     filteredSchemalist.map((schema: ResponsableSchema) => {
       const tempSchema = new CustomeSchemaParser(schema);
       /**
@@ -121,8 +139,7 @@ function createServer(db, producer) {
         Body: {veditu:string}
        */
       server.get<{ Params: { id: string } }>(
-        `${tempSchema.development ? "/development" : ""}/${
-          tempSchema.collectionName
+        `${tempSchema.development ? "/development" : ""}/${tempSchema.collectionName
         }/:id`,
         SingleEntitySchema(tempSchema),
         async function (req, res) {
@@ -155,8 +172,7 @@ function createServer(db, producer) {
           sortBy: string;
         };
       }>(
-        `${tempSchema.development ? "/development" : ""}/${
-          tempSchema.collectionName
+        `${tempSchema.development ? "/development" : ""}/${tempSchema.collectionName
         }`,
         MultipleEntitySchema(tempSchema),
         async function (req, res) {
