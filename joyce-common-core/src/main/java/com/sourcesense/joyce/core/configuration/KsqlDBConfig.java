@@ -45,16 +45,6 @@ public class KsqlDBConfig {
     int port;
 
 
-    @Value("${joyce.kafka.bootstrapAddress}")
-    String bootstrapAddress;
-
-    @Bean
-    public KafkaAdmin kafkaAdmin() {
-        Map<String, Object> configs = new HashMap<>();
-        configs.put(AdminClientConfig.BOOTSTRAP_SERVERS_CONFIG, bootstrapAddress);
-        return new KafkaAdmin(configs);
-    }
-
     @Bean(destroyMethod = "close")
     public Client intializeClient() {
         ClientOptions options = ClientOptions.create()

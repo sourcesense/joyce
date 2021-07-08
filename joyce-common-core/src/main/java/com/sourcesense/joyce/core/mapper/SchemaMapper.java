@@ -19,6 +19,7 @@ package com.sourcesense.joyce.core.mapper;
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
+import com.sourcesense.joyce.core.dao.mongodb.SchemaDocument;
 import com.sourcesense.joyce.core.dto.Schema;
 import com.sourcesense.joyce.core.dto.SchemaSave;
 import com.sourcesense.joyce.core.dto.SchemaShort;
@@ -51,4 +52,15 @@ public abstract class SchemaMapper {
 		return mapper.convertValue(entity, JsonNode.class);
 	}
 
+	@Mapping(target = "properties", source = "document")
+	public abstract SchemaEntity entityFromDocument(SchemaDocument document);
+	JsonNode propertiesFromString(SchemaDocument document) throws JsonProcessingException {
+		return mapper.readTree(document.getProperties());
+	}
+
+	@Mapping(target = "properties", source = "entity")
+	public abstract SchemaDocument documentFromEntity(SchemaEntity entity);
+	String propertiesToString(SchemaEntity entity) throws JsonProcessingException {
+		return mapper.writeValueAsString(entity.getProperties());
+	}
 }
