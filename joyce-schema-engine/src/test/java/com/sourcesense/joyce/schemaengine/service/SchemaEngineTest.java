@@ -170,15 +170,16 @@ public class SchemaEngineTest implements UtilitySupplier {
 
 		ScriptingTransformerHandler scriptTransformerHandler = new ScriptingTransformerHandler(mapper, applicationContext);
 		FixedValueTransformerHandler fixedValueTransformerHandler = new FixedValueTransformerHandler();
-		JsonPathTransformerHandler jsonPathTransformerHandler = new JsonPathTransformerHandler();
 		MetadataValueTransformerHandler metadataValueTransformerHandler = new MetadataValueTransformerHandler(mapper);
+		JsonPathTransformerHandler jsonPathTransformerHandler = new JsonPathTransformerHandler();
+		jsonPathTransformerHandler.configure();
 
 		Map<String, SchemaTransformerHandler> handlers = Map.of(
 				"$script", scriptTransformerHandler,
-				"$fixed", fixedValueTransformerHandler,
 				"$path", jsonPathTransformerHandler,
-				"$meta", metadataValueTransformerHandler
-		);
+				"$meta", metadataValueTransformerHandler,
+				"$fixed", fixedValueTransformerHandler
+				);
 
 		SchemaEngine schemaEngine = new SchemaEngine(mapper, handlers);
 		schemaEngine.defaultInit();
