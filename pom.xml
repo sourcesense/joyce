@@ -170,7 +170,6 @@
         <artifactId>compiler</artifactId>
         <version>${com.github.spullara.mustache.version}</version>
       </dependency>
-
 		</dependencies>
 	</dependencyManagement>
 

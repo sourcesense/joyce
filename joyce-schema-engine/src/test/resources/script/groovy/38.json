@@ -1,0 +1,5 @@
+{
+  "language": "groovy",
+  "oneLine": false,
+  "code": "def result = 'multiline';\nreturn result;\n"
+}

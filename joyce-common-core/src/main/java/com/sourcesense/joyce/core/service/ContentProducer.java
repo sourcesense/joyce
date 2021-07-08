@@ -21,11 +21,12 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.databind.node.ObjectNode;
 import com.sourcesense.joyce.core.dto.Schema;
 import com.sourcesense.joyce.core.enumeration.ImportAction;
+import com.sourcesense.joyce.core.enumeration.KafkaCustomHeaders;
 import com.sourcesense.joyce.core.enumeration.NotificationEvent;
 import com.sourcesense.joyce.core.model.JoyceSchemaMetadata;
 import com.sourcesense.joyce.core.model.JoyceURI;
-import com.sourcesense.joyce.core.enumeration.KafkaCustomHeaders;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnProperty;
 import org.springframework.kafka.core.KafkaTemplate;
@@ -47,7 +48,7 @@ public class ContentProducer extends KafkaMessageService<JsonNode> {
     private final NotificationService notificationService;
 
     public ContentProducer(
-            ObjectMapper mapper,
+            @Qualifier("jsonMapper") ObjectMapper mapper,
             KafkaTemplate<String, JsonNode> kafkaTemplate,
             NotificationService notificationService) {
 

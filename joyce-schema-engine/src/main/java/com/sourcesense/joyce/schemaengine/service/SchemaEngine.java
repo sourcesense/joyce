@@ -21,10 +21,11 @@ import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.databind.node.*;
 import com.networknt.schema.*;
-import com.sourcesense.joyce.schemaengine.JoyceMetaSchema;
 import com.sourcesense.joyce.schemaengine.exception.InvalidSchemaException;
 import com.sourcesense.joyce.schemaengine.exception.JoyceSchemaEngineException;
 import com.sourcesense.joyce.schemaengine.handler.SchemaTransformerHandler;
+import com.sourcesense.joyce.schemaengine.model.JoyceMetaSchema;
+import org.apache.commons.lang.StringUtils;
 import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.stereotype.Service;
 
@@ -34,7 +35,7 @@ import java.util.stream.Collectors;
 import java.util.stream.StreamSupport;
 
 @Service
-public class SchemaEngine{
+public class SchemaEngine {
 
 	public static final String METADATA = "$metadata";
 
@@ -44,7 +45,7 @@ public class SchemaEngine{
 	private JsonSchemaFactory factory;
 
 	public SchemaEngine(
-			ObjectMapper mapper,
+			@Qualifier("jsonMapper") ObjectMapper mapper,
 			@Qualifier("transformerHandlers") Map<String, SchemaTransformerHandler> transformerHandlers) {
 
 		this.mapper = mapper;
@@ -125,19 +126,21 @@ public class SchemaEngine{
 	/**
 	 * Validate a document against a json schema
 	 * throws if it is not valid
+	 *
 	 * @param schema
 	 * @param content
 	 */
 	public void validate(JsonNode schema, JsonNode content) {
 		JsonSchema jsonSchema = factory.getSchema(schema);
 		ValidationResult validation = jsonSchema.validateAndCollect(content);
-		if(validation.getValidationMessages().size() > 0){
+		if (validation.getValidationMessages().size() > 0) {
 			throw new InvalidSchemaException(validation);
 		}
 	}
 
 	/**
 	 * Detects if the changes in the schema are breaking changes or not, throws Exception if the schema changes are unacceptable
+	 *
 	 * @param prevJson
 	 * @param newJson
 	 * @return
@@ -152,7 +155,7 @@ public class SchemaEngine{
 		List<String> newKeys = new ArrayList<>();
 		for (Iterator<Map.Entry<String, JsonNode>> it = newJson.get("properties").fields(); it.hasNext(); ) {
 			Map.Entry<String, JsonNode> prop = it.next();
-			if(prop.getValue().get("deprecated") != null &&  prop.getValue().get("deprecated").asBoolean()){
+			if (prop.getValue().get("deprecated") != null && prop.getValue().get("deprecated").asBoolean()) {
 				newDeprecated++;
 			}
 			List<String> propsList = getTypesList(prop);
@@ -162,18 +165,18 @@ public class SchemaEngine{
 		List<String> prevKeys = new ArrayList<>();
 		for (Iterator<Map.Entry<String, JsonNode>> it = prevJson.get("properties").fields(); it.hasNext(); ) {
 			Map.Entry<String, JsonNode> prop = it.next();
-			if(prop.getValue().get("deprecated") != null &&  prop.getValue().get("deprecated").asBoolean()){
+			if (prop.getValue().get("deprecated") != null && prop.getValue().get("deprecated").asBoolean()) {
 				prevDeprecated++;
 			}
 			List<String> propsList = getTypesList(prop);
 			prevKeys.addAll(propsList);
 		}
 
-		List<String>missingFromNewSchema = prevKeys.stream()
+		List<String> missingFromNewSchema = prevKeys.stream()
 				.filter(s -> !newKeys.contains(s))
 				.collect(Collectors.toList());
 
-		if (missingFromNewSchema.size() > 0){
+		if (missingFromNewSchema.size() > 0) {
 			throw new JoyceSchemaEngineException(String.format("New Schema is not valid some key were deleted or type changed %s", String.join(", ", missingFromNewSchema)));
 		}
 
@@ -185,6 +188,7 @@ public class SchemaEngine{
 	 * Root key could be null
 	 * the schema is the json-schema definition
 	 * source is the json source node from wich the transformation are applied
+	 *
 	 * @param key
 	 * @param schema
 	 * @param sourceJsonNode
@@ -193,25 +197,27 @@ public class SchemaEngine{
 	 */
 	private JsonNode parse(String key, JsonNode schema, JsonNode sourceJsonNode, Optional<JsonNode> metadata, Optional<Object> context) {
 		try {
-			if (schema.getNodeType().equals(JsonNodeType.OBJECT)){
+			if (schema.getNodeType().equals(JsonNodeType.OBJECT)) {
 				// Apply custom handlers
 				Optional<JsonNode> transformed = this.applyHandlers(key, schema, sourceJsonNode, metadata, context);
-				if(transformed.isPresent()){
+				if (transformed.isPresent()) {
 					ObjectNode node = mapper.createObjectNode();
 					node.set(key, transformed.get());
 					ObjectNode tempSchema = schema.deepCopy();
 					tempSchema.remove(transformerHandlers.keySet());
 
 					tempSchema.set("type", schema.get("type"));
-					return this.parse(key, tempSchema, node, metadata, context);
+					JsonNode transformedNode = schema.get("type").asText().equalsIgnoreCase("object")
+							? transformed.get()
+							: node;
+					return this.parse(key, tempSchema, transformedNode, metadata, context);
 				}
-				// TODO: parse and handle "$ref"
 				JsonNode type = Optional.ofNullable(schema.get("type")).orElse(new TextNode("string"));
-				if (type.getNodeType().equals(JsonNodeType.ARRAY)){
+				if (type.getNodeType().equals(JsonNodeType.ARRAY)) {
 
-					for (JsonNode aType : type){
+					for (JsonNode aType : type) {
 						JsonNode result = parseType(key, schema, sourceJsonNode, metadata, context, aType.asText());
-						if (result != null){
+						if (result != null) {
 							return result;
 						}
 					}
@@ -220,7 +226,7 @@ public class SchemaEngine{
 					return parseType(key, schema, sourceJsonNode, metadata, context, type.asText());
 				}
 			}
-		} catch (Exception e){
+		} catch (Exception e) {
 			throw new JoyceSchemaEngineException(String.format("Cannot parse [%s]: %s", key, e.getMessage()));
 		}
 
@@ -228,7 +234,7 @@ public class SchemaEngine{
 	}
 
 	private JsonNode parseType(String key, JsonNode schema, JsonNode sourceJsonNode, Optional<JsonNode> metadata, Optional<Object> context, String type) {
-		if(type.equals("object")){
+		if (type.equals("object")) {
 			ObjectNode objectNode = mapper.createObjectNode();
 			JsonNode props = schema.get("properties");
 			if (props != null) {
@@ -240,22 +246,26 @@ public class SchemaEngine{
 				}
 			}
 			return objectNode;
-		} else if (type.equals("array")){
+		} else if (type.equals("array")) {
 			ArrayNode arrayNode = mapper.createArrayNode();
-			for (JsonNode item : sourceJsonNode.get(key)){
+			for (JsonNode item : sourceJsonNode.get(key)) {
 				JsonNode parsedItem = this.parse(null, schema.get("items"), item, metadata, context);
 				arrayNode.add(parsedItem);
 			}
 			return arrayNode;
-		} else if (type.equals("integer")){
-			return sourceJsonNode.get(key).asText().isEmpty() ? null :  JsonNodeFactory.instance.numberNode(Integer.parseInt(sourceJsonNode.get(key).asText()));
-		} else if (type.equals("number")){
-			return sourceJsonNode.get(key).asText().isEmpty() ? null :JsonNodeFactory.instance.numberNode(Double.parseDouble(sourceJsonNode.get(key).asText()));
-		} else if (type.equals("null")){
-			return null;
 		} else {
-			//TODO: handle other types and modification ie range and other limitations
-			return sourceJsonNode.get(key);
+			JsonNode result = StringUtils.isNotEmpty(key) ? sourceJsonNode.get(key) : sourceJsonNode;
+			switch (type) {
+				case "integer":
+					return result.asText().isEmpty() ? null : JsonNodeFactory.instance.numberNode(Integer.parseInt(result.asText()));
+				case "number":
+					return result.asText().isEmpty() ? null : JsonNodeFactory.instance.numberNode(Double.parseDouble(result.asText()));
+				case "null":
+					return null;
+				default:
+					//TODO: handle other types and modification ie range and other limitations
+					return result;
+			}
 		}
 	}
 
@@ -270,7 +280,7 @@ public class SchemaEngine{
 	 */
 	private Optional<JsonNode> applyHandlers(String key, JsonNode schema, JsonNode sourceJsonNode, Optional<JsonNode> metadata, Optional<Object> context) {
 
-		if(sourceJsonNode.getNodeType() != JsonNodeType.OBJECT){
+		if (sourceJsonNode.getNodeType() != JsonNodeType.OBJECT) {
 			return Optional.empty();
 		}
 
@@ -280,27 +290,26 @@ public class SchemaEngine{
 				false)
 				.filter(transformerHandlers.keySet()::contains)
 				.collect(Collectors.toList());
-		if (knownHandlerKeys.size() < 1){
+		if (knownHandlerKeys.size() < 1) {
 			return Optional.empty();
 		}
 
 		JsonNode returnNode = sourceJsonNode.deepCopy();
-		for (String handlerKey : knownHandlerKeys){
-				SchemaTransformerHandler handler = transformerHandlers.get(handlerKey);
-				returnNode = handler.process(key, schema.get(handlerKey), returnNode, metadata, context);
-
+		for (String handlerKey : knownHandlerKeys) {
+			SchemaTransformerHandler handler = transformerHandlers.get(handlerKey);
+			returnNode = handler.process(key, schema.get(handlerKey), returnNode, metadata, context);
 		}
 		return Optional.ofNullable(returnNode);
 	}
 
 	private List<String> getTypesList(Map.Entry<String, JsonNode> stringJsonNodeEntry) {
 		List<String> list = new ArrayList<>();
-		if (stringJsonNodeEntry.getValue().get("type").getNodeType().equals(JsonNodeType.ARRAY)){
-			for (JsonNode node : stringJsonNodeEntry.getValue().get("type")){
-				list.add(stringJsonNodeEntry.getKey() +"-"+ node.asText());
+		if (stringJsonNodeEntry.getValue().get("type").getNodeType().equals(JsonNodeType.ARRAY)) {
+			for (JsonNode node : stringJsonNodeEntry.getValue().get("type")) {
+				list.add(stringJsonNodeEntry.getKey() + "-" + node.asText());
 			}
 		} else {
-			list.add(stringJsonNodeEntry.getKey() +"-"+ stringJsonNodeEntry.getValue().get("type").asText());
+			list.add(stringJsonNodeEntry.getKey() + "-" + stringJsonNodeEntry.getValue().get("type").asText());
 		}
 		return list;
 	}
