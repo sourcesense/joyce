@@ -19,6 +19,8 @@ package com.sourcesense.joyce.schemaengine.service;
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.databind.node.TextNode;
+import com.fasterxml.jackson.dataformat.yaml.YAMLFactory;
+import com.fasterxml.jackson.dataformat.yaml.YAMLMapper;
 import com.networknt.schema.JsonSchemaException;
 import com.sourcesense.joyce.schemaengine.exception.JoyceSchemaEngineException;
 import com.sourcesense.joyce.schemaengine.handler.*;
@@ -164,9 +166,27 @@ public class SchemaEngineTest implements UtilitySupplier {
 		this.shouldParseSourceWithHandlers("schema/32.json", "source/31.json", "result/32.json");
 	}
 
+	@Test
+	void shouldProcessWithPythonHandlerOneline() throws URISyntaxException, IOException {
+		this.shouldParseSourceWithHandlers("schema/33.yaml", "source/31.json", "result/32.json");
+	}
+
+	@Test
+	void shouldProcessWithPythonHandlerMultiline() throws URISyntaxException, IOException {
+		this.shouldParseSourceWithHandlers("schema/34.yaml", "source/31.json", "result/33.json");
+	}
+
 	private void shouldParseSourceWithHandlers(String schemaPath, String sourcePath, String resultPath) throws URISyntaxException, IOException {
-		String schema = Files.readString(loadResource(schemaPath));
-		String source = Files.readString(loadResource(sourcePath));
+		String schemaContent = Files.readString(loadResource(schemaPath));
+		String sourceContent = Files.readString(loadResource(sourcePath));
+		JsonNode schema;
+		JsonNode source = mapper.readTree(sourceContent);
+		if (schemaPath.endsWith("yaml")){
+			ObjectMapper yamlMapper = new ObjectMapper(new YAMLFactory());
+			schema = yamlMapper.readTree(schemaContent);
+		} else {
+			schema = mapper.readValue(schemaContent, JsonNode.class);
+		}
 
 		ScriptingTransformerHandler scriptTransformerHandler = new ScriptingTransformerHandler(mapper, applicationContext);
 		FixedValueTransformerHandler fixedValueTransformerHandler = new FixedValueTransformerHandler();
@@ -185,7 +205,7 @@ public class SchemaEngineTest implements UtilitySupplier {
 		schemaEngine.defaultInit();
 
 		JsonNode expected = this.getResourceAsNode(resultPath);
-		JsonNode actual = schemaEngine.process(schema, source);
+		JsonNode actual = schemaEngine.process(schema, source, null);
 
 		assertEquals(expected, actual);
 	}

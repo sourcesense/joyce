@@ -4,6 +4,9 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 import org.python.jsr223.PyScriptEngine;
 import org.springframework.stereotype.Service;
 
+import java.util.Arrays;
+import java.util.stream.Collectors;
+
 @Service
 public class PythonScriptingService extends ScriptingService {
 
@@ -23,20 +26,21 @@ public class PythonScriptingService extends ScriptingService {
 
 	@Override
 	protected String getMultilineScriptingFunction(String scriptCode) {
-		return this.buildScriptFunction(
-				"  def executeCode():\n" +
-						"    return " + scriptCode + "\n" +
-						"  result = executeCode()\n"
-		);
+		String cleanedMultiline = Arrays.stream(scriptCode.split("\n"))
+				.collect(Collectors.joining("\n\t\t"));
+		return this.buildScriptFunction(String.format(
+				"def wrapper(source, metadata, context):\n" +
+				"\t\t%s\n" +
+				"\tresult = wrapper(source, metadata, context)\n", cleanedMultiline));
 	}
 
 	private String buildScriptFunction(String scriptResult) {
-		return "import json" +
+		return "import json\n" +
 				"def executeScript(__source, __metadata, __context):\n" +
-				"  source = json.dumps(__source)\n" +
-				"  metadata = json.dumps(__metadata)\n" +
-				"  context = json.dumps(__context)\n" +
-				"  " + scriptResult +
-				"  return json.loads(result)\n";
+				"\tsource = json.loads(__source)\n" +
+				"\tmetadata = json.loads(__metadata)\n" +
+				"\tcontext = json.loads(__context)\n" +
+				"\t" + scriptResult +
+				"\treturn json.dumps(result)\n";
 	}
 }
