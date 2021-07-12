@@ -2,13 +2,14 @@ package com.sourcesense.joyce.schemaengine.service.scripting;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
 import org.codehaus.groovy.jsr223.GroovyScriptEngineImpl;
+import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.stereotype.Service;
 
 @Service
 public class GroovyScriptingService extends ScriptingService {
 
 	public GroovyScriptingService(
-			ObjectMapper mapper,
+			@Qualifier("permissiveJsonMapper") ObjectMapper mapper,
 			GroovyScriptEngineImpl scriptEngine) {
 
 		super(mapper, scriptEngine);

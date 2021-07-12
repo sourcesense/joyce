@@ -27,7 +27,18 @@ public class SchemaTransformerConfig {
 
     private final ApplicationContext applicationContext;
 
-    @Bean
+	/**
+	 *
+	 * This method builds a map that contains all the transformer handler used in the import process.
+	 * Handlers retrieved from plugins will be included in the map.
+	 * All the handlers must be annotated with {@link SchemaTransformationHandler} annotation and must
+	 * implement {@link SchemaTransformerHandler} interface.
+	 * 	The handlers are retrieved from spring context.
+	 *
+	 *
+	 * @return Map with handler keyword as key and handler as value as a Spring Bean
+	 */
+	@Bean
     public Map<String, SchemaTransformerHandler> transformerHandlers() {
         Map<String, SchemaTransformerHandler> transformerHandlers = applicationContext
                 .getBeansWithAnnotation(SchemaTransformationHandler.class).values().stream()
@@ -46,7 +57,14 @@ public class SchemaTransformerConfig {
         return transformerHandlers;
     }
 
-    private String computeKeyword(SchemaTransformerHandler handler) {
+	/**
+	 * This method retrieves keywords from transformation handlers and normalizes them adding
+	 * $ symbol if it's not present.
+	 *
+	 * @param handler Schema Transformer Handler
+	 * @return Handler keyword
+	 */
+	private String computeKeyword(SchemaTransformerHandler handler) {
         return Optional.ofNullable(handler)
                 .map(SchemaTransformerHandler::getClass)
                 .map(handlerClass -> handlerClass.getAnnotation(SchemaTransformationHandler.class))

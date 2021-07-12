@@ -36,15 +36,7 @@ public enum ScriptingEngine {
 				));
 	}
 
-	public static ScriptingService getScriptingService(
-			String language,
-			ApplicationContext applicationContext) {
-
-			return Optional.of(engineClassSelector)
-					.map(selector -> selector.get(language))
-					.map(applicationContext::getBean)
-					.orElseThrow(
-							() -> new JoyceSchemaEngineException("Impossible to retrieve scripting service from application context")
-					);
+	public static Optional<Class<? extends ScriptingService>> getScriptingServiceClass(String language) {
+			return Optional.ofNullable(engineClassSelector.get(language));
 	}
 }
