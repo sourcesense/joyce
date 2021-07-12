@@ -22,15 +22,22 @@ jobs:
           path: ~/.m2
           key: ${{ runner.os }}-m2-${{ hashFiles('**/pom.xml') }}
           restore-keys: ${{ runner.os }}-m2
+      - name: Cache SonarCloud packages
+        uses: actions/cache@v1
+        with:
+          path: ~/.sonar/cache
+          key: ${{ runner.os }}-sonar
+          restore-keys: ${{ runner.os }}-sonar
       - name: Set VERSION
         id: vars
         run: |
           echo "::set-output name=VERSION::$(echo ${GITHUB_REF:10})"
           echo "VERSION=${{steps.vars.outputs.VERSION}}"
       - name: Build
-        run: mvn --batch-mode --update-snapshots -Drevision=${{steps.vars.outputs.VERSION}} verify
+        run: mvn --batch-mode --update-snapshots -Drevision=${{steps.vars.outputs.VERSION}} verify org.sonarsource.scanner.maven:sonar-maven-plugin:sonar
         env:
           GITHUB_TOKEN: ${{ secrets.PAT }}
+          SONAR_TOKEN: ${{ secrets.SONAR_TOKEN }}
       - name: Docker login
         run: echo ${{ secrets.DOCKER_PASSWORD }} | docker login -u ${{ secrets.DOCKER_USERNAME }} --password-stdin
       - name: Build and Push Docker image
