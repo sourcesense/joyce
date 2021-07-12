@@ -19,6 +19,10 @@
 	<properties>
 		<revision>1.0.0-SNAPSHOT</revision>
 		<java.version>11</java.version>
+    <sonar.projectKey>sourcesense_joyce-parent</sonar.projectKey>
+    <sonar.moduleKey>${project.groupId}:${project.artifactId}</sonar.moduleKey>
+    <sonar.organization>sourcesense</sonar.organization>
+    <sonar.host.url>https://sonarcloud.io</sonar.host.url>
 		<joyce.common-core.version>${revision}</joyce.common-core.version>
 		<joyce.connector-core.version>${revision}</joyce.connector-core.version>
 		<joyce.schema-engine.version>${revision}</joyce.schema-engine.version>
