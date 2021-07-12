@@ -1,2 +1,4 @@
 /node_modules
 /dist
+/assets/*.json
+!/assets/schemas.json
