@@ -7,6 +7,9 @@ import lombok.NoArgsConstructor;
 
 import java.util.Map;
 
+/**
+ * This class is used to normalize mongo indexes
+ */
 @Data
 @Builder
 @NoArgsConstructor

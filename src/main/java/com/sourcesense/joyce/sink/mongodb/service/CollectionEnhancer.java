@@ -35,6 +35,17 @@ public class CollectionEnhancer {
 	private final SchemaDaoUtil schemaDaoUtil;
 	private final MetadataIndexesProperties metadataIndexesProperties;
 
+	/**
+	 *
+	 * This method reads a schema processed by ksqlDB and stored in kafka and converts it into
+	 * a java object.
+	 *
+	 * @param schemaUri         Schema uri
+	 * @param jsonSchema        Schema's body
+	 * @param clazz							Class object of the output java object
+	 * @param <T>								Class of the output java object
+	 * @return									Converted schema
+	 */
 	@Notify(failureEvent = NotificationEvent.SINK_MONGODB_SCHEMA_PARSING_FAILED)
 	public <T> T computeSchema(
 			@ContentUri String schemaUri,
@@ -49,6 +60,14 @@ public class CollectionEnhancer {
 				));
 	}
 
+	/**
+	 *
+	 * This method creates a mongodb collection for the schema if the collection
+	 * doesn't exist
+	 *
+	 * @param schemaUri     Schema uri
+	 * @param schema        Schema's body
+	 */
 	@Notify(
 			successEvent = NotificationEvent.SINK_MONGODB_CREATE_COLLECTION_SUCCESS,
 			failureEvent = NotificationEvent.SINK_MONGODB_CREATE_COLLECTION_FAILED
@@ -63,6 +82,14 @@ public class CollectionEnhancer {
 		}
 	}
 
+	/**
+	 * This method saves a json schema for document validation on the mongo collection
+	 * starting from a joyce schema.
+	 *
+	 * @param schemaUri           Schema uri
+	 * @param schema							Schema's body
+	 * @param schemaObject				Schema's body normalized for mongodb validation
+	 */
 	@Notify(
 			successEvent = NotificationEvent.SINK_MONGODB_UPDATE_VALIDATION_SCHEMA_SUCCESS,
 			failureEvent = NotificationEvent.SINK_MONGODB_UPDATE_VALIDATION_SCHEMA_FAILED
@@ -81,6 +108,16 @@ public class CollectionEnhancer {
 		}
 	}
 
+	/**
+	 *
+	 * This method automatically creates mongo indexes for schema fields and metadata fixed fields.
+	 * An index is created only if it doesn't already exists.
+	 * Schema field indexes that must be created are written in the schema metadata.
+	 * Metadata field indexes that must be created are written in the application yaml.
+	 *
+	 * @param schemaUri      Schema uri
+	 * @param schema         Schema's body
+	 */
 	@Notify(
 			successEvent = NotificationEvent.SINK_MONGODB_CREATE_INDEXES_SUCCESS,
 			failureEvent = NotificationEvent.SINK_MONGODB_CREATE_INDEXES_FAILED
@@ -106,6 +143,14 @@ public class CollectionEnhancer {
 		);
 	}
 
+
+	/**
+	 *
+	 * This method aggregates field and metadata indexes and normalizes them for mongodb.
+	 *
+	 * @param fieldIndexes    Field indexes from metadata
+	 * @return								Normalized Mongo indexes
+	 */
 	private List<MongoIndex> computeMongoIndexes(List<Map<String, Object>> fieldIndexes) {
 		return Stream.of(
 				this.getMongoIndexesOrElseEmptyList(metadataIndexesProperties.getMetadataIndexes()),
@@ -120,14 +165,30 @@ public class CollectionEnhancer {
 		return Optional.ofNullable(indexes).orElse(Collections.emptyList());
 	}
 
-	private Stream<MongoIndex> buildMongoIndex(Map<String, Object> fields) {
-		return fields.keySet().stream()
+
+	/**
+	 *
+	 * This method normalizes indexes for mongodb and generates names for them.
+	 *
+	 * @param indexes     Mongo indexes
+	 * @return						Normalized mongo index
+	 */
+	private Stream<MongoIndex> buildMongoIndex(Map<String, Object> indexes) {
+		return indexes.keySet().stream()
 				.reduce((f1, f2) -> f1.concat("_").concat(f2))
 				.filter(Predicate.not(String::isEmpty))
-				.map(name -> MongoIndex.builder().name(name).fields(fields).build())
+				.map(name -> MongoIndex.builder().name(name).fields(indexes).build())
 				.stream();
 	}
 
+	/**
+	 *
+	 * This method checks if indexes are already present on a mongo collection
+	 * confronting names and if they aren't it creates them.
+	 *
+	 * @param mongoIndexes        Normalized mongo indexes
+	 * @param collection					Mongo collection
+	 */
 	private void insertIndexes(List<MongoIndex> mongoIndexes, String collection) {
 		List<String> existingIndexesNames = this.computeExistingIndexesNames(collection);
 		mongoIndexes.stream()
@@ -141,6 +202,13 @@ public class CollectionEnhancer {
 				);
 	}
 
+	/**
+	 *
+	 * This method retrieves from a collection the names of existing indexes
+	 *
+	 * @param collection    Mongo collection
+	 * @return							Existing indexes names
+	 */
 	private List<String> computeExistingIndexesNames(String collection) {
 		log.debug("Retrieving existing indexes from '{}' collection", collection);
 		List<Document> existingIndexes = new ArrayList<>();
