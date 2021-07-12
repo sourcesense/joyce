@@ -28,7 +28,7 @@
 	<version>${revision}</version>
   <properties>
     <revision>1.0.0-SNAPSHOT</revision>
-    <sonar.projectKey>sourcesense_joyce-import-gateway</sonar.projectKey>
+    <sonar.projectKey>sourcesense_${project.artifactId}</sonar.projectKey>
     <sonar.organization>sourcesense</sonar.organization>
     <sonar.host.url>https://sonarcloud.io</sonar.host.url>
   </properties>
