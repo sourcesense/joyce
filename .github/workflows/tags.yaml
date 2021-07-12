@@ -34,7 +34,7 @@ jobs:
           echo "::set-output name=VERSION::$(echo ${GITHUB_REF:10})"
           echo "VERSION=${{steps.vars.outputs.VERSION}}"
       - name: Build
-        run: mvn --batch-mode --update-snapshots -Drevision=${{steps.vars.outputs.VERSION}} verify org.sonarsource.scanner.maven:sonar-maven-plugin:sonar
+        run: mvn --batch-mode --update-snapshots -Drevision=${{steps.vars.outputs.VERSION}} verify sonar:sonar
         env:
           GITHUB_TOKEN: ${{ secrets.PAT }}
       - name: Docker login
