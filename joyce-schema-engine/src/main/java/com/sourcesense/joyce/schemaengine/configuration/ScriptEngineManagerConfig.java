@@ -37,7 +37,7 @@ public class ScriptEngineManagerConfig {
 	}
 
 	@Bean
-	GroovyScriptEngineImpl groovyScriptEngine(ScriptEngineManager scriptEngineManager) {
+	GroovyScriptEngineImpl groovyScriptEngine() {
 		ImportCustomizer imports = new ImportCustomizer();
 		imports.addStarImports("groovy.json");
 

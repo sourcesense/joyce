@@ -2,6 +2,7 @@ package com.sourcesense.joyce.schemaengine.service.scripting;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
 import org.python.jsr223.PyScriptEngine;
+import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.stereotype.Service;
 
 import java.util.Arrays;
@@ -11,7 +12,7 @@ import java.util.stream.Collectors;
 public class PythonScriptingService extends ScriptingService {
 
 	public PythonScriptingService(
-			ObjectMapper mapper,
+			@Qualifier("permissiveJsonMapper") ObjectMapper mapper,
 			PyScriptEngine scriptEngine) {
 
 		super(mapper, scriptEngine);

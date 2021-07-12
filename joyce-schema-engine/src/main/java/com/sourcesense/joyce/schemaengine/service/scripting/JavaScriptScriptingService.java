@@ -2,13 +2,14 @@ package com.sourcesense.joyce.schemaengine.service.scripting;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.oracle.truffle.js.scriptengine.GraalJSScriptEngine;
+import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.stereotype.Service;
 
 @Service
 public class JavaScriptScriptingService extends ScriptingService {
 
 	public JavaScriptScriptingService(
-			ObjectMapper mapper,
+			@Qualifier("permissiveJsonMapper") ObjectMapper mapper,
 			GraalJSScriptEngine scriptEngine) {
 
 		super(mapper, scriptEngine);

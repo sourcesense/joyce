@@ -16,10 +16,35 @@ public abstract class ScriptingService {
 	private final ObjectMapper mapper;
 	private final ScriptEngine scriptEngine;
 
+	/**
+	 * This method builds the function invoked to process one line script.
+	 * Every language will have his own function.
+	 *
+	 * @param script Script code
+	 * @return Function used to process one line script
+	 */
 	protected abstract String getOneLineScriptingFunction(String script);
 
+	/**
+	 * This method builds the function invoked to process multiline script.
+	 * Every language will have his own function.
+	 *
+	 * @param script Script code
+	 * @return Function used to process multiline script
+	 */
 	protected abstract String getMultilineScriptingFunction(String script);
 
+	/**
+	 *
+	 * This method uses script engine to invoke a function that will run a script.
+	 *
+	 * @param key Schema property key
+	 * @param scriptData All is needed to run the script
+	 * @param source Source
+	 * @param metadata Metadata
+	 * @param context Context
+	 * @return Result of script processing
+	 */
 	public JsonNode eval(
 			String key,
 			ScriptData scriptData,
