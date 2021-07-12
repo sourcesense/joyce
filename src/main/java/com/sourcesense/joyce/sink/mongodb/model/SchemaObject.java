@@ -14,6 +14,18 @@ import org.springframework.data.mongodb.core.mapping.Document;
 import java.util.List;
 import java.util.Map;
 
+
+/**
+ *
+ * This model is used to normalize schema for mongodb json schema validation
+ * using jackson objectMapper convertValue method and annotations.
+ *
+ * Mongodb validator must have the following restrictions:
+ * 1)Type must be called bsonType
+ * 2)Required field must be non empty
+ * 3)Custom transformer handlers must be stripped
+ * 4)Primitive bson type names must be normalized to conform mongodb specs
+ */
 @Data
 @Builder
 @Document

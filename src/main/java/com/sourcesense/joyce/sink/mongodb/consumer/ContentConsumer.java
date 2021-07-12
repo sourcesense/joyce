@@ -26,6 +26,15 @@ public class ContentConsumer {
 	private final SinkService sinkService;
 	private final CustomExceptionHandler customExceptionHandler;
 
+	/**
+	 * This method saves or removes from a mongo collection processed documents coming from kafka.
+	 * Collection name and message key are retrieved from kafka headers.
+	 * If the storeContent param retrieved from kafka headers is set to false, the insert/removal is skipped.
+	 *
+	 * @param message Processed document body
+	 * @param key     Document key
+	 * @param headers Kafka headers
+	 */
 	@KafkaListener(topics = "${joyce.kafka.content-topic:joyce_content}")
 	public void receive(
 			@Payload ObjectNode message,
@@ -50,7 +59,6 @@ public class ContentConsumer {
 						sinkService.deleteDocument(uri, collection);
 				}
 			}
-
 		} catch (Exception exception) {
 			customExceptionHandler.handleException(exception);
 		}
