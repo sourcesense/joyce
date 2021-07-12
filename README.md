@@ -1,9 +1,8 @@
 # Joyce Import gateway
 
-[![Publish Snapshot](https://github.com/sourcesense/joyce-import-gateway/actions/workflows/master.yaml/badge.svg)](https://github.com/sourcesense/joyce-import-gateway/actions/workflows/master.yaml)
+[![Build Release](https://github.com/sourcesense/joyce-import-gateway/actions/workflows/tags.yaml/badge.svg)](https://github.com/sourcesense/joyce-import-gateway/actions/workflows/tags.yaml)
 
-
-The Import Gateway is the single point where you ingest your data into the system.   
+The Import Gateway is the single point where you ingest your data into the system.
 It manages import schemas and applies them to the content you send to it.
 
 ## Documentation
@@ -60,7 +59,7 @@ Refer to [official docs](https://docs.github.com/en/packages/working-with-a-gith
 > Building joyce Gateway requires JDK 11
 
 ```bash
-# build java 
+# build java
 mvn clean package
 
 # build docker image
