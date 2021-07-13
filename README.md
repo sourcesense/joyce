@@ -1,10 +1,6 @@
 # Joyce Mongodb Sink
 
-[![Build Release](https://github.com/sourcesense/joyce-mongodb-sink/actions/workflows/tags.yaml/badge.svg)](https://github.com/sourcesense/joyce-mongodb-sink/actions/workflows/tags.yaml)
-
-[![Quality Gate Status](https://sonarcloud.io/api/project_badges/measure?project=sourcesense_joyce-mongodb-sink&metric=alert_status)](https://sonarcloud.io/dashboard?id=sourcesense_joyce-mongodb-sink)
-
-[![Coverage](https://sonarcloud.io/api/project_badges/measure?project=sourcesense_joyce-mongodb-sink&metric=coverage)](https://sonarcloud.io/dashboard?id=sourcesense_joyce-mongodb-sink)
+[![Build Release](https://github.com/sourcesense/joyce-mongodb-sink/actions/workflows/tags.yaml/badge.svg)](https://github.com/sourcesense/joyce-mongodb-sink/actions/workflows/tags.yaml) [![Quality Gate Status](https://sonarcloud.io/api/project_badges/measure?project=sourcesense_joyce-mongodb-sink&metric=alert_status)](https://sonarcloud.io/dashboard?id=sourcesense_joyce-mongodb-sink) [![Coverage](https://sonarcloud.io/api/project_badges/measure?project=sourcesense_joyce-mongodb-sink&metric=coverage)](https://sonarcloud.io/dashboard?id=sourcesense_joyce-mongodb-sink)
 
 It is a simple Sink that stores transformed content published to joyce-content topic inside Mongodb.
 
