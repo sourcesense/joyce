@@ -11,7 +11,8 @@
     "test": "jest --coverage",
     "test:watch": "npm run test -- --watchAll",
     "commit": "git cz",
-    "start": "node dist/index.js"
+    "start": "concurrently --kill-others \"npm run mesh\" \"npm run start-dist\"",
+    "start-dist": "node dist/index.js"
   },
   "keywords": [],
   "author": "",
