@@ -18,7 +18,7 @@ Modules are the following:
 
 ## Documentation
 
-Joyce Usage documentation is available [here](https://sourcesense.github.io/joyce/docs/import-gateway).
+Joyce Usage documentation is available [here](https://sourcesense.github.io/joyce-docs/).
 
 
 ### Build
