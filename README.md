@@ -1,6 +1,6 @@
 # Joyce Import gateway
 
-[![Build Release](https://github.com/sourcesense/joyce-import-gateway/actions/workflows/tags.yaml/badge.svg)](https://github.com/sourcesense/joyce-import-gateway/actions/workflows/tags.yaml)
+![Docker Image Version (latest semver)](https://img.shields.io/docker/v/sourcesense/joyce-import-gateway) [![Build Release](https://github.com/sourcesense/joyce-import-gateway/actions/workflows/tags.yaml/badge.svg)](https://github.com/sourcesense/joyce-import-gateway/actions/workflows/tags.yaml) [![Quality Gate Status](https://sonarcloud.io/api/project_badges/measure?project=sourcesense_joyce-import-gateway&metric=alert_status)](https://sonarcloud.io/dashboard?id=sourcesense_joyce-import-gateway) [![Coverage](https://sonarcloud.io/api/project_badges/measure?project=sourcesense_joyce-import-gateway&metric=coverage)](https://sonarcloud.io/dashboard?id=sourcesense_joyce-import-gateway)
 
 The Import Gateway is the single point where you ingest your data into the system.
 It manages import schemas and applies them to the content you send to it.
