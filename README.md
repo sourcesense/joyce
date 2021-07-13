@@ -7,7 +7,7 @@ It manages import schemas and applies them to the content you send to it.
 
 ## Documentation
 
-The full documentation is available [here](https://sourcesense.github.io/joyce/docs/import-gateway).
+The full documentation is available [here](https://sourcesense.github.io/joyce-docs/).
 
 ## Install
 
