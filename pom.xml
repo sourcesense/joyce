@@ -19,6 +19,14 @@
 	<properties>
 		<revision>1.0.0-SNAPSHOT</revision>
 		<java.version>11</java.version>
+    <!-- Sonar -->
+    <sonar.projectKey>sourcesense_joyce-parent</sonar.projectKey>
+    <sonar.moduleKey>${project.groupId}:${project.artifactId}</sonar.moduleKey>
+    <sonar.organization>sourcesense</sonar.organization>
+    <sonar.host.url>https://sonarcloud.io</sonar.host.url>
+    <sonar.java.coveragePlugin>jacoco</sonar.java.coveragePlugin>
+    <sonar.dynamicAnalysis>reuseReports</sonar.dynamicAnalysis>
+    <sonar.language>java</sonar.language>
 		<joyce.common-core.version>${revision}</joyce.common-core.version>
 		<joyce.connector-core.version>${revision}</joyce.connector-core.version>
 		<joyce.schema-engine.version>${revision}</joyce.schema-engine.version>
@@ -34,6 +42,7 @@
 		<flatten-maven-plugin.version>1.2.7</flatten-maven-plugin.version>
     <org.elasticsearch.version>7.12.0</org.elasticsearch.version>
     <com.github.spullara.mustache.version>0.9.7</com.github.spullara.mustache.version>
+    <jacoco.version>0.8.7</jacoco.version>
 	</properties>
 
 	<modules>
@@ -170,11 +179,29 @@
         <artifactId>compiler</artifactId>
         <version>${com.github.spullara.mustache.version}</version>
       </dependency>
+      <dependency>
+        <groupId>org.jacoco</groupId>
+        <artifactId>jacoco-maven-plugin</artifactId>
+        <version>${jacoco.version}</version>
+      </dependency>
 		</dependencies>
 	</dependencyManagement>
 
 	<build>
 		<plugins>
+      <plugin>
+        <groupId>org.jacoco</groupId>
+        <artifactId>jacoco-maven-plugin</artifactId>
+        <version>${jacoco.version}</version>
+        <executions>
+          <execution>
+            <goals>
+              <goal>prepare-agent</goal>
+              <goal>report</goal>
+            </goals>
+          </execution>
+        </executions>
+      </plugin>
 			<plugin>
 				<groupId>org.codehaus.mojo</groupId>
 				<artifactId>flatten-maven-plugin</artifactId>
