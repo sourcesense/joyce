@@ -1,6 +1,8 @@
 const fetch = require("node-fetch");
 const yaml = require("js-yaml");
-var fs = require("fs");
+const fs = require("fs");
+
+const SCHEMAS_SOURCE = process.env.SCHEMAS_SOURCE || "assets/schemas.json";
 
 function dl(schemaJson, key) {
   if (
@@ -20,7 +22,7 @@ function dl(schemaJson, key) {
   }
 }
 
-var data = fs.readFileSync(__dirname + "/../../../assets/schemas.json", {
+var data = fs.readFileSync(SCHEMAS_SOURCE, {
   encoding: "utf8",
 });
 var schemaJson = JSON.parse(data);

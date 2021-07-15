@@ -2,3 +2,4 @@
 /dist
 /assets/*.json
 !/assets/schemas.json
+.meshrc.yml

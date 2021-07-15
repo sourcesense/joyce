@@ -58,9 +58,9 @@ function createServer(db, producer) {
       "/jrpc",
       {
         schema: {
+          // @ts-ignore
           tags: ['jrpc'],
           body: {
-
             type: "object",
             required: ["jsonrpc", "method", "params", "id"],
             properties: {

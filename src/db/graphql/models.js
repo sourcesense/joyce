@@ -1,16 +1,19 @@
 const { model, Schema } = require("mongoose");
-var fs = require("fs");
+const fs = require("fs");
 
-var data = fs.readFileSync(__dirname + "/../../../assets/schemas.json", {
+const SCHEMAS_SOURCE = process.env.SCHEMAS_SOURCE || "assets/schemas.json";
+
+var data = fs.readFileSync(SCHEMAS_SOURCE, {
   encoding: "utf8",
 });
 var schemaJson = JSON.parse(data);
+console.log(schemaJson);
 
 var models = new Object();
 
 Object.keys(schemaJson["schemas"]).forEach(function (key) {
   let data = JSON.parse(
-    fs.readFileSync("./assets/" + key + ".json", {
+    fs.readFileSync("assets/" + key + ".json", {
       encoding: "utf8",
       flag: "r",
     })
@@ -18,7 +21,6 @@ Object.keys(schemaJson["schemas"]).forEach(function (key) {
 
   let schema = new Schema(data.properties);
   models[key] = model(key, schema);
-  console.log(models);
 });
 
 module.exports = models;
