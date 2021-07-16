@@ -16,10 +16,10 @@
 
 package com.sourcesense.joyce.schemaengine.service;
 
+import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.databind.node.TextNode;
-import com.fasterxml.jackson.dataformat.yaml.YAMLFactory;
 import com.fasterxml.jackson.dataformat.yaml.YAMLMapper;
 import com.networknt.schema.JsonSchemaException;
 import com.sourcesense.joyce.schemaengine.exception.JoyceSchemaEngineException;
@@ -53,11 +53,13 @@ public class SchemaEngineTest implements UtilitySupplier {
 
 
 	private ObjectMapper mapper;
+	private YAMLMapper yamlMapper;
 	private ApplicationContext applicationContext;
 
 	@BeforeEach
 	void init() {
-		mapper = this.initMapper();
+		mapper = this.initJsonMapper();
+		yamlMapper = this.initYamlMapper();
 		applicationContext = this.initApplicationContext(mapper);
 	}
 
@@ -179,18 +181,15 @@ public class SchemaEngineTest implements UtilitySupplier {
 	private void shouldParseSourceWithHandlers(String schemaPath, String sourcePath, String resultPath) throws URISyntaxException, IOException {
 		String schemaContent = Files.readString(loadResource(schemaPath));
 		String sourceContent = Files.readString(loadResource(sourcePath));
-		JsonNode schema;
+		JsonNode schema = this.computeSchema(schemaPath, schemaContent);
 		JsonNode source = mapper.readTree(sourceContent);
-		if (schemaPath.endsWith("yaml")){
-			ObjectMapper yamlMapper = new ObjectMapper(new YAMLFactory());
-			schema = yamlMapper.readTree(schemaContent);
-		} else {
-			schema = mapper.readValue(schemaContent, JsonNode.class);
-		}
 
 		ScriptingTransformerHandler scriptTransformerHandler = new ScriptingTransformerHandler(mapper, applicationContext);
 		FixedValueTransformerHandler fixedValueTransformerHandler = new FixedValueTransformerHandler();
+
 		MetadataValueTransformerHandler metadataValueTransformerHandler = new MetadataValueTransformerHandler(mapper);
+		metadataValueTransformerHandler.configure();
+
 		JsonPathTransformerHandler jsonPathTransformerHandler = new JsonPathTransformerHandler();
 		jsonPathTransformerHandler.configure();
 
@@ -208,6 +207,17 @@ public class SchemaEngineTest implements UtilitySupplier {
 		JsonNode actual = schemaEngine.process(schema, source, null);
 
 		assertEquals(expected, actual);
+	}
+
+	private JsonNode computeSchema(
+			String schemaPath,
+			String schemaContent) throws JsonProcessingException {
+
+		if (schemaPath.endsWith("yaml")){
+			return yamlMapper.readTree(schemaContent);
+		} else {
+			return mapper.readValue(schemaContent, JsonNode.class);
+		}
 	}
 
 	private JsonNode readNodeFromResource(String resource) throws URISyntaxException, IOException {

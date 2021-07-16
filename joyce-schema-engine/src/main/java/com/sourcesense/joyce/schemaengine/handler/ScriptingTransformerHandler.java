@@ -5,7 +5,7 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 import com.sourcesense.joyce.schemaengine.annotation.SchemaTransformationHandler;
 import com.sourcesense.joyce.schemaengine.enumeration.ScriptingEngine;
 import com.sourcesense.joyce.schemaengine.exception.JoyceSchemaEngineException;
-import com.sourcesense.joyce.schemaengine.model.ScriptData;
+import com.sourcesense.joyce.schemaengine.model.handler.ScriptHandlerData;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.context.ApplicationContext;
@@ -40,12 +40,12 @@ public class ScriptingTransformerHandler implements SchemaTransformerHandler {
 			Optional<JsonNode> metadata,
 			Optional<Object> context) {
 
-		ScriptData scriptData = mapper.convertValue(value, ScriptData.class);
+		ScriptHandlerData scriptHandlerData = mapper.convertValue(value, ScriptHandlerData.class);
 		return ScriptingEngine
-				.getScriptingServiceClass(scriptData.getLanguage())
+				.getScriptingServiceClass(scriptHandlerData.getLanguage())
 				.map(applicationContext::getBean)
 				.orElseThrow(() -> new JoyceSchemaEngineException(
 						"Impossible to retrieve scripting service from application context")
-				).eval(key, scriptData, source, metadata, context);
+				).eval(key, scriptHandlerData, source, metadata, context);
 	}
 }

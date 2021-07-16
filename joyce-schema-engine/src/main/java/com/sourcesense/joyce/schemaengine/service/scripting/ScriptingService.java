@@ -4,7 +4,7 @@ import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.sourcesense.joyce.schemaengine.exception.JoyceSchemaEngineException;
-import com.sourcesense.joyce.schemaengine.model.ScriptData;
+import com.sourcesense.joyce.schemaengine.model.handler.ScriptHandlerData;
 import lombok.RequiredArgsConstructor;
 
 import javax.script.*;
@@ -39,7 +39,7 @@ public abstract class ScriptingService {
 	 * This method uses script engine to invoke a function that will run a script.
 	 *
 	 * @param key Schema property key
-	 * @param scriptData All is needed to run the script
+	 * @param scriptHandlerData All is needed to run the script
 	 * @param source Source
 	 * @param metadata Metadata
 	 * @param context Context
@@ -47,14 +47,14 @@ public abstract class ScriptingService {
 	 */
 	public JsonNode eval(
 			String key,
-			ScriptData scriptData,
+			ScriptHandlerData scriptHandlerData,
 			JsonNode source,
 			Optional<JsonNode> metadata,
 			Optional<Object> context) {
 
 		try {
 			scriptEngine.setContext(new SimpleScriptContext());
-			scriptEngine.eval(this.computeScript(scriptData));
+			scriptEngine.eval(this.computeScript(scriptHandlerData));
 
 			Invocable invocableEngine = (Invocable) scriptEngine;
 
@@ -70,10 +70,10 @@ public abstract class ScriptingService {
 		}
 	}
 
-	private String computeScript(ScriptData scriptData) {
-		return scriptData.isOneLine()
-				? this.getOneLineScriptingFunction(scriptData.getCode())
-				: this.getMultilineScriptingFunction(scriptData.getCode());
+	private String computeScript(ScriptHandlerData scriptHandlerData) {
+		return scriptHandlerData.isOneLine()
+				? this.getOneLineScriptingFunction(scriptHandlerData.getCode())
+				: this.getMultilineScriptingFunction(scriptHandlerData.getCode());
 	}
 
 	private <T> String writeValueAsString(Optional<T> value) throws JsonProcessingException {
