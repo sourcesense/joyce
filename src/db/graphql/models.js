@@ -19,7 +19,7 @@ Object.keys(schemaJson["schemas"]).forEach(function (key) {
     })
   );
 
-  let schema = new Schema(data.properties);
+  let schema = new Schema(data.schema.properties);
   models[key] = model(key, schema);
 });
 

@@ -10,13 +10,9 @@ function dl(schemaJson, key) {
     schemaJson["schemas"][key]["source"] !== undefined
   ) {
     fetch(schemaJson["schemas"][key]["source"]).then((response) =>
-      response.text().then((yml) => {
-        const doc = yaml.load(yml);
-        fs.writeFileSync(
-          "assets/" + key + ".json",
-          JSON.stringify(doc, null, 2),
-          "utf8"
-        );
+      response.text().then((json) => {
+        json = json.replace(/\integer/g, "number");
+        fs.writeFileSync("assets/" + key + ".json", json, "utf8");
       })
     );
   }
