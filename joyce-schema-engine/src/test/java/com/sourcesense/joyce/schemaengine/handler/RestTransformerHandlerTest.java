@@ -24,7 +24,6 @@ import static org.assertj.core.api.Assertions.assertThat;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.springframework.test.web.client.response.MockRestResponseCreators.withSuccess;
 
-@RequiredArgsConstructor
 @ExtendWith(MockitoExtension.class)
 @MockitoSettings(strictness = Strictness.LENIENT)
 public class RestTransformerHandlerTest implements UtilitySupplier {

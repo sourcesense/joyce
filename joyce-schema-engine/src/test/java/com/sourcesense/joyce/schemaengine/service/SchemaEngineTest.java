@@ -33,19 +33,27 @@ import org.mockito.junit.jupiter.MockitoExtension;
 import org.mockito.junit.jupiter.MockitoSettings;
 import org.mockito.quality.Strictness;
 import org.springframework.context.ApplicationContext;
+import org.springframework.http.HttpMethod;
+import org.springframework.http.MediaType;
+import org.springframework.test.web.client.MockRestServiceServer;
+import org.springframework.web.client.RestTemplate;
 
 import java.io.IOException;
 import java.net.URISyntaxException;
 import java.nio.file.Files;
 import java.nio.file.Path;
+import java.util.Arrays;
 import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
 
+import static org.assertj.core.api.Assertions.assertThat;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.ArgumentMatchers.eq;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.when;
+import static org.springframework.test.web.client.response.MockRestResponseCreators.withSuccess;
 
 @ExtendWith(MockitoExtension.class)
 @MockitoSettings(strictness = Strictness.LENIENT)
@@ -54,13 +62,17 @@ public class SchemaEngineTest implements UtilitySupplier {
 
 	private ObjectMapper mapper;
 	private YAMLMapper yamlMapper;
+	private RestTemplate restTemplate;
+	private MockRestServiceServer mockServer;
 	private ApplicationContext applicationContext;
 
 	@BeforeEach
 	void init() {
+		restTemplate = new RestTemplate();
 		mapper = this.initJsonMapper();
 		yamlMapper = this.initYamlMapper();
 		applicationContext = this.initApplicationContext(mapper);
+		mockServer = MockRestServiceServer.createServer(restTemplate);
 	}
 
 	@Test
@@ -146,7 +158,7 @@ public class SchemaEngineTest implements UtilitySupplier {
 		JsonNode newSchema = this.readNodeFromResource("schema/14.json");
 		SchemaEngine schemaEngine = new SchemaEngine(mapper, new HashMap<>());
 		Assertions.assertThrows(JoyceSchemaEngineException.class, () ->
-			schemaEngine.checkForBreakingChanges(schema, newSchema)
+				schemaEngine.checkForBreakingChanges(schema, newSchema)
 		);
 	}
 
@@ -178,6 +190,24 @@ public class SchemaEngineTest implements UtilitySupplier {
 		this.shouldParseSourceWithHandlers("schema/34.yaml", "source/31.json", "result/33.json");
 	}
 
+	@Test
+	void shouldProcessPostRequestWithRestHandler() throws IOException, URISyntaxException {
+		List<String> testHeaders = Arrays.asList("hv1", "hvN");
+
+		mockServer.expect(request -> {
+			assertEquals(request.getURI().toString(), "http://test:8080/posts?test=pv1&test=pvN");
+			assertEquals(request.getMethod(), HttpMethod.POST);
+			assertEquals(request.getBody().toString(), "{\n \"content\": \"test\"\n}\n");
+			assertThat(testHeaders.equals(request.getHeaders().get("test")));
+
+		}).andRespond(withSuccess(
+				this.getResourceAsString("rest/response/35.json"),
+				MediaType.APPLICATION_JSON
+		));
+
+		this.shouldParseSourceWithHandlers("schema/35.yaml", "source/31.json", "result/35.json");
+	}
+
 	private void shouldParseSourceWithHandlers(String schemaPath, String sourcePath, String resultPath) throws URISyntaxException, IOException {
 		String schemaContent = Files.readString(loadResource(schemaPath));
 		String sourceContent = Files.readString(loadResource(sourcePath));
@@ -193,12 +223,16 @@ public class SchemaEngineTest implements UtilitySupplier {
 		JsonPathTransformerHandler jsonPathTransformerHandler = new JsonPathTransformerHandler();
 		jsonPathTransformerHandler.configure();
 
+		RestTransformerHandler restTransformerHandler = new RestTransformerHandler(mapper, restTemplate);
+		restTransformerHandler.configure();
+
 		Map<String, SchemaTransformerHandler> handlers = Map.of(
 				"$script", scriptTransformerHandler,
 				"$path", jsonPathTransformerHandler,
 				"$meta", metadataValueTransformerHandler,
-				"$fixed", fixedValueTransformerHandler
-				);
+				"$fixed", fixedValueTransformerHandler,
+				"$rest", restTransformerHandler
+		);
 
 		SchemaEngine schemaEngine = new SchemaEngine(mapper, handlers);
 		schemaEngine.defaultInit();
@@ -213,7 +247,7 @@ public class SchemaEngineTest implements UtilitySupplier {
 			String schemaPath,
 			String schemaContent) throws JsonProcessingException {
 
-		if (schemaPath.endsWith("yaml")){
+		if (schemaPath.endsWith("yaml")) {
 			return yamlMapper.readTree(schemaContent);
 		} else {
 			return mapper.readValue(schemaContent, JsonNode.class);
