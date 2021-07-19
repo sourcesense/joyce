@@ -33,6 +33,8 @@ const globaleQueryStringPagination = (entitySchema) => ({
 export function SingleEntitySchema(entitySchema: CustomeSchemaParser): object {
   const v = {
     schema: {
+      // @ts-ignore
+      tags: ['custom'],
       params: {
         type: "object",
         properties: {
@@ -57,6 +59,8 @@ export function MultipleEntitySchema(
   return {
     schema: {
       querystring: globaleQueryStringPagination(entitySchema),
+      // @ts-ignore
+      tags: ['custom'],
       response: {
         200: {
           type: "array",
