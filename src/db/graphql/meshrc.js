@@ -32,6 +32,7 @@ let ymlRc = {
   ],
   serve: {
     browser: false,
+    method: "GET",
     endpoint: "/query",
   },
 };
