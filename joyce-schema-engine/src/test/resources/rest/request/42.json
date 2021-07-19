@@ -1,0 +1,11 @@
+{
+  "host": "http://test:8080/posts/1",
+  "method": "GET",
+  "headers": {
+    "Content-Type": "application/json"
+  },
+  "params": {
+    "test": "value1, value2, value3"
+  },
+  "extract": "$.response"
+}

@@ -2,9 +2,6 @@ package com.sourcesense.joyce.schemaengine.handler;
 
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
-import com.sourcesense.joyce.schemaengine.service.scripting.GroovyScriptingService;
-import com.sourcesense.joyce.schemaengine.service.scripting.JavaScriptScriptingService;
-import com.sourcesense.joyce.schemaengine.service.scripting.PythonScriptingService;
 import com.sourcesense.joyce.schemaengine.utility.UtilitySupplier;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
@@ -20,7 +17,6 @@ import java.util.Optional;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.mockito.Mockito.mock;
-import static org.mockito.Mockito.when;
 
 @ExtendWith(MockitoExtension.class)
 @MockitoSettings(strictness = Strictness.LENIENT)
@@ -30,7 +26,7 @@ public class ScriptingTransformerHandlerTest implements UtilitySupplier {
 
 	@BeforeEach
 	void init() {
-		ObjectMapper mapper = initMapper();
+		ObjectMapper mapper = initJsonMapper();
 		ApplicationContext context = initApplicationContext(mapper);
 		scriptingTransformerHandler = new ScriptingTransformerHandler(
 				mapper,

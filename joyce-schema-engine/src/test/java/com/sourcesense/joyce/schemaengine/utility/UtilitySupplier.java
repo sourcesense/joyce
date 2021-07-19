@@ -1,9 +1,8 @@
 package com.sourcesense.joyce.schemaengine.utility;
 
-import com.fasterxml.jackson.databind.DeserializationFeature;
-import com.fasterxml.jackson.databind.JsonNode;
-import com.fasterxml.jackson.databind.ObjectMapper;
-import com.fasterxml.jackson.databind.SerializationFeature;
+import com.fasterxml.jackson.databind.*;
+import com.fasterxml.jackson.dataformat.yaml.YAMLGenerator;
+import com.fasterxml.jackson.dataformat.yaml.YAMLMapper;
 import com.oracle.truffle.js.scriptengine.GraalJSScriptEngine;
 import com.sourcesense.joyce.schemaengine.enumeration.ScriptingEngine;
 import com.sourcesense.joyce.schemaengine.service.scripting.GroovyScriptingService;
@@ -30,19 +29,33 @@ import static org.mockito.Mockito.when;
 
 public interface UtilitySupplier {
 
-	default ObjectMapper initMapper() {
+	default ObjectMapper initJsonMapper() {
 		return new ObjectMapper()
 				.disable(DeserializationFeature.FAIL_ON_UNKNOWN_PROPERTIES)
 				.disable(SerializationFeature.FAIL_ON_EMPTY_BEANS);
 	}
 
+	default YAMLMapper initYamlMapper() {
+		YAMLMapper yamlMapper = new YAMLMapper();
+		yamlMapper.disable(YAMLGenerator.Feature.SPLIT_LINES);
+		yamlMapper.enable(YAMLGenerator.Feature.INDENT_ARRAYS);
+		yamlMapper.enable(YAMLGenerator.Feature.MINIMIZE_QUOTES);
+		yamlMapper.enable(YAMLGenerator.Feature.LITERAL_BLOCK_STYLE);
+		yamlMapper.setPropertyNamingStrategy(PropertyNamingStrategy.KEBAB_CASE);
+		return yamlMapper;
+	}
+
 	default JsonNode getResourceAsNode(String path) throws IOException, URISyntaxException {
 		URL res = this.getClass().getClassLoader().getResource(path);
-
 		return new ObjectMapper().readValue(
 				Files.readAllBytes(Path.of(res.toURI())),
 				JsonNode.class
 		);
+	}
+
+	default String getResourceAsString(String path) throws IOException, URISyntaxException {
+		URL res = this.getClass().getClassLoader().getResource(path);
+		return Files.readString(Path.of(res.toURI()));
 	}
 
 	default Path loadResource(String name) throws URISyntaxException {

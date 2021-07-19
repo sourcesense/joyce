@@ -1,4 +1,4 @@
-package com.sourcesense.joyce.schemaengine.model;
+package com.sourcesense.joyce.schemaengine.model.handler;
 
 import lombok.AllArgsConstructor;
 import lombok.Builder;
@@ -9,7 +9,7 @@ import lombok.NoArgsConstructor;
 @Builder
 @NoArgsConstructor
 @AllArgsConstructor
-public class ScriptData {
+public class ScriptHandlerData {
 
 	private String language;
 	private boolean oneLine = true;
