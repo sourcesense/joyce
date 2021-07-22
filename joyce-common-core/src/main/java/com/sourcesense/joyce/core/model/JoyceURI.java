@@ -20,6 +20,7 @@ import com.fasterxml.jackson.annotation.JsonProperty;
 import com.fasterxml.jackson.annotation.JsonValue;
 import com.fasterxml.jackson.databind.annotation.JsonDeserialize;
 import com.fasterxml.jackson.databind.annotation.JsonSerialize;
+import com.sourcesense.joyce.core.exception.InvalidMetadataException;
 import lombok.EqualsAndHashCode;
 import lombok.Getter;
 
@@ -42,7 +43,33 @@ import java.util.stream.Collectors;
 @JsonSerialize(using = JoyceURISerializer.class)
 public class JoyceURI {
 
-    public enum Type {
+	public static final String NAMESPACE_SEPARATOR = ".";
+	public static final String NAMESPACE_DEFAULT = "default";
+
+	public String getName() {
+		String[] namespaced = collection.split(NAMESPACE_SEPARATOR);
+		if(namespaced.length > 2) {
+			throw new InvalidMetadataException(String.format("Invalid namespace/name %s", collection));
+		}
+
+		if(namespaced.length > 1){
+			return namespaced[1];
+		}
+		return collection;
+	}
+
+	public String getNamespace() {
+		String[] namespaced = collection.split(NAMESPACE_SEPARATOR);
+		if(namespaced.length > 2) {
+			throw new InvalidMetadataException(String.format("Invalid namespace/name %s", collection));
+		}
+		if(namespaced.length > 1){
+			return namespaced[0];
+		}
+		return NAMESPACE_DEFAULT;
+	}
+
+	public enum Type {
         /**
          * This type of content is the id given by The connectors to content they produce
          */
@@ -156,6 +183,10 @@ public class JoyceURI {
     public static JoyceURI make(Type type, Subtype subtype, String collection) {
         return new JoyceURI(URI.create(String.format("%s://%s/%s/%s", schema, type.getValue(), subtype.getValue(), URLEncoder.encode(collection, StandardCharsets.UTF_8)).toLowerCase()));
     }
+
+		public static JoyceURI makeNamespaced(Type type, Subtype subtype, String namespace, String collection) {
+    		return new JoyceURI(URI.create(String.format("%s://%s/%s/%s%s%s", schema, type.getValue(), subtype.getValue(), URLEncoder.encode(namespace, StandardCharsets.UTF_8), NAMESPACE_SEPARATOR, URLEncoder.encode(collection, StandardCharsets.UTF_8)).toLowerCase()));
+		}
 
     /**
      * Main constructor, throws if something is wrong in the uri composition

@@ -34,13 +34,12 @@ public class JoyceSchemaMetadata {
     public static final String KEY_ROOT_QUERY = "root_query";
     public static final String KEY_ROOT_COLLECTION = "root_collection";
 
-
-
     @JsonProperty("uid")
     private String uidKey;
     private JoyceURI.Subtype subtype;
     private String collection;
     private String name;
+    private String namespace = "default";
     private List<Map<String, Object>> indexes;
     private String description;
     private Boolean development = false;
@@ -100,4 +99,12 @@ public class JoyceSchemaMetadata {
         }
         return this;
     }
+
+		public String getNamespacedName() {
+			return String.format("%s%s%s", namespace, JoyceURI.NAMESPACE_SEPARATOR, name);
+		}
+
+		public String getNamespacedCollection() {
+			return String.format("%s%s%s", namespace, JoyceURI.NAMESPACE_SEPARATOR, collection);
+		}
 }

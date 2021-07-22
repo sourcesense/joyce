@@ -20,6 +20,7 @@ import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.sourcesense.joyce.core.configuration.SchemaServiceProperties;
+import com.sourcesense.joyce.core.model.JoyceURI;
 import com.sourcesense.joyce.core.model.SchemaEntity;
 import io.confluent.ksql.api.client.BatchedQueryResult;
 import io.confluent.ksql.api.client.Client;
@@ -32,6 +33,7 @@ import org.springframework.stereotype.Component;
 
 import javax.annotation.PostConstruct;
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.List;
 import java.util.Optional;
 import java.util.concurrent.ExecutionException;
@@ -177,5 +179,10 @@ public class KafkaSchemaDao implements SchemaDao {
 		} catch (InterruptedException | ExecutionException e) {
 			throw new RuntimeException(e.getMessage());
 		}
+	}
+
+	@Override
+	public List<SchemaEntity> getAllBySubtypeAndNamespace(JoyceURI.Subtype subtype, String namespace) {
+		return Collections.emptyList();
 	}
 }
