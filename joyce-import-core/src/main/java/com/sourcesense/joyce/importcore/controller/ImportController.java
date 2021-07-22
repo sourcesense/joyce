@@ -18,6 +18,7 @@ package com.sourcesense.joyce.importcore.controller;
 
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.node.ObjectNode;
+import com.sourcesense.joyce.core.model.SchemaEntity;
 import com.sourcesense.joyce.importcore.api.ImportApi;
 import com.sourcesense.joyce.importcore.service.ImportService;
 import com.sourcesense.joyce.core.dto.Schema;
@@ -26,17 +27,20 @@ import com.sourcesense.joyce.core.model.JoyceURI;
 import com.sourcesense.joyce.core.service.SchemaService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.web.bind.annotation.RestController;
+import org.springframework.web.multipart.MultipartFile;
 
+import java.io.IOException;
 import java.util.Date;
+import java.util.List;
 import java.util.Optional;
 import java.util.UUID;
 
-@RestController
-@RequiredArgsConstructor
 /**
  *  Controller that reads raw messages from request body and processes them.
  * 	There are two types of action that can be executed on a message: Insert and Delete.
  * 	*/
+@RestController
+@RequiredArgsConstructor
 public class ImportController implements ImportApi {
 
 	final private ImportService importService;
@@ -52,10 +56,24 @@ public class ImportController implements ImportApi {
 	@Override
 	public Boolean importDocument(String schemaId, ObjectNode document) {
 		return importService.processImport(
-				this.computeRawUri(),
+				this.computeSingleRestRawUri(),
 				document,
 				this.fetchSchema(schemaId)
 		);
+	}
+
+	@Override
+	public Boolean importDocuments(
+			String schemaId,
+			MultipartFile data,
+			Character columnSeparator,
+			String arraySeparator) throws IOException {
+
+				JoyceURI rawUri = this.computeBulkRestRawUri(data.getOriginalFilename());
+				Schema schema = this.fetchSchema(schemaId);
+				List<JsonNode> documents = importService.computeDocumentsFromFile(rawUri, data, columnSeparator, arraySeparator);
+				documents.parallelStream().forEach(document -> importService.processImport(rawUri, document, schema));
+				return importService.notifyBulkImportSuccess(rawUri, documents);
 	}
 
 	/**
@@ -80,18 +98,28 @@ public class ImportController implements ImportApi {
 	@Override
 	public Boolean removeDocument(String schemaId, ObjectNode document) {
 		importService.removeDocument(
-				this.computeRawUri(),
+				this.computeSingleRestRawUri(),
 				document,
 				this.fetchSchema(schemaId)
 		);
 		return true;
 	}
 
-	private JoyceURI computeRawUri() {
+
+
+	private JoyceURI computeSingleRestRawUri() {
 		String uuid = UUID.randomUUID().toString().substring(0, 6);
 		long timestamp = new Date().toInstant().toEpochMilli();
 		String uid = String.format("%d-%s", timestamp, uuid);
-		return JoyceURI.make(JoyceURI.Type.RAW, JoyceURI.Subtype.OTHER, "rest", uid);
+		return this.computeRawUri("single", uid);
+	}
+
+	private JoyceURI computeBulkRestRawUri(String fileName) {
+		return this.computeRawUri("bulk", fileName);
+	}
+
+	private JoyceURI computeRawUri(String collection, String uid) {
+		return JoyceURI.make(JoyceURI.Type.RAW, JoyceURI.Subtype.REST, collection, uid);
 	}
 
 	private Schema fetchSchema(String schemaId) {

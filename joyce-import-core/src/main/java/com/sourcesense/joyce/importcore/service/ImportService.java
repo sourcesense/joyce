@@ -24,10 +24,11 @@ import com.sourcesense.joyce.core.annotation.EventPayload;
 import com.sourcesense.joyce.core.annotation.Notify;
 import com.sourcesense.joyce.core.annotation.RawUri;
 import com.sourcesense.joyce.core.dto.Schema;
+import com.sourcesense.joyce.core.enumeration.FileExtension;
 import com.sourcesense.joyce.core.enumeration.KafkaCustomHeaders;
 import com.sourcesense.joyce.core.enumeration.NotificationEvent;
-import com.sourcesense.joyce.core.exception.InvalidMetadataException;
 import com.sourcesense.joyce.core.exception.InvalidJoyceUriException;
+import com.sourcesense.joyce.core.exception.InvalidMetadataException;
 import com.sourcesense.joyce.core.exception.SchemaNotFoundException;
 import com.sourcesense.joyce.core.model.JoyceSchemaMetadata;
 import com.sourcesense.joyce.core.model.JoyceURI;
@@ -41,7 +42,10 @@ import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.lang3.StringUtils;
 import org.springframework.stereotype.Service;
+import org.springframework.web.multipart.MultipartFile;
 
+import java.io.IOException;
+import java.util.List;
 import java.util.Map;
 import java.util.Optional;
 
@@ -60,16 +64,16 @@ public class ImportService {
 	final private SchemaEngine schemaEngine;
 	final private SchemaService schemaService;
 	final private ContentProducer contentProducer;
+	final private CsvMappingService csvMappingService;
 
 	/**
-	 *
 	 * Builds an uri for the raw message used to identify the message.
 	 * Mostly used to trace the message if there is an error.
 	 *
 	 * @param messageKey the key associated with the consumed kafka message
-	 * @param headers  headers associated with the consumed kafka message. Obtaining the schema value from the headers
-	 *                 will be suppressed in future releases and only the message key value will be used to calculate
-	 *                 the JoyceURI
+	 * @param headers    headers associated with the consumed kafka message. Obtaining the schema value from the headers
+	 *                   will be suppressed in future releases and only the message key value will be used to calculate
+	 *                   the JoyceURI
 	 * @return The computed raw uri
 	 * @throws JsonProcessingException
 	 */
@@ -96,7 +100,7 @@ public class ImportService {
 	 * @param headers    headers associated with the consumed kafka message. Obtaining the schema value from the headers
 	 *                   will be suppressed in future releases and only the message key value will be used to calculate
 	 *                   the JoyceURI
-	 * @param rawUri Uri used to trace the message if an error happens
+	 * @param rawUri     Uri used to trace the message if an error happens
 	 * @return Uri calculated starting from the schema value present in the message key or in the headers.
 	 * @throws JsonProcessingException
 	 */
@@ -111,14 +115,14 @@ public class ImportService {
 				.orElseThrow(
 						() -> new InvalidJoyceUriException(
 								String.format("Schema is not a valid schema uri. key: %s", messageKey))
-						);
+				);
 	}
 
 	/**
 	 * Uses the schema uri to fetch the schema on ksql.
 	 *
 	 * @param schemaUri Computed schema uri
-	 * @param rawUri Uri used to trace the message if an error happens
+	 * @param rawUri    Uri used to trace the message if an error happens
 	 * @return Schema used to process raw message
 	 */
 	@Notify(failureEvent = NotificationEvent.IMPORT_FAILED_INVALID_SCHEMA)
@@ -137,9 +141,9 @@ public class ImportService {
 	/**
 	 * Process a document with the schema specified and processImport it on joyce_content topic
 	 *
-	 * @param rawUri Uri used to trace the message if an error happens
+	 * @param rawUri   Uri used to trace the message if an error happens
 	 * @param document Raw message payload
-	 * @param schema Schema used to process raw message
+	 * @param schema   Schema used to process raw message
 	 * @return true if the operation succeeded
 	 */
 	@Notify(failureEvent = NotificationEvent.IMPORT_INSERT_FAILED)
@@ -162,14 +166,43 @@ public class ImportService {
 		return true;
 	}
 
+	@Notify(successEvent = NotificationEvent.IMPORT_BULK_INSERT_FAILED_INVALID_FILE)
+	public List<JsonNode> computeDocumentsFromFile(
+			@RawUri JoyceURI rawUri,
+			MultipartFile data,
+			Character columnSeparator,
+			String arraySeparator) throws IOException {
+
+		FileExtension fileExtension = FileExtension.getFileExtensionFromName(data.getOriginalFilename());
+
+		switch (fileExtension) {
+			case CSV:
+				return csvMappingService.computeDocumentsFromCsvFile(data, columnSeparator, arraySeparator);
+			case XLS:
+			case XLSX:
+			default:
+				throw new ImportException(
+						String.format("Impossible to retrieve extension for '%s'.", data.getOriginalFilename())
+				);
+		}
+	}
+
+	@Notify(successEvent = NotificationEvent.IMPORT_BULK_INSERT_SUCCESS)
+	public boolean notifyBulkImportSuccess(
+			@RawUri JoyceURI rawUri,
+			@EventPayload List<JsonNode> documents) {
+
+		return true;
+	}
+
 	/**
 	 * Sends a message to kafka content topic that contains everything is needed to
 	 * trigger document removal.
 	 * Used by {@link com.sourcesense.joyce.importcore.controller.ImportController}
 	 *
-	 * @param rawUri Uri used to trace the message if an error happens
+	 * @param rawUri   Uri used to trace the message if an error happens
 	 * @param document Raw message payload
-	 * @param schema Schema used to process raw message
+	 * @param schema   Schema used to process raw message
 	 */
 	@Notify(failureEvent = NotificationEvent.IMPORT_REMOVE_FAILED)
 	public void removeDocument(
@@ -181,7 +214,8 @@ public class ImportService {
 
 		JsonNode result = schemaEngine.process(schema.getSchema(), document, null);
 
-		computeParentMetadata(metadata, result, false).ifPresent(parentMetadata -> {
+		computeParentMetadata(metadata, result, false)
+				.ifPresent(parentMetadata -> {
 			metadata.setUidKey(parentMetadata.getUidKey());
 			metadata.setCollection(parentMetadata.getCollection());
 		});
@@ -217,7 +251,7 @@ public class ImportService {
 	 * Processes a document with a schema returning it, without doing a real import
 	 *
 	 * @param document Raw message payload
-	 * @param schema Schema used to process raw message
+	 * @param schema   Schema used to process raw message
 	 * @return Processed message
 	 */
 	public JsonNode importDryRun(JsonNode document, Schema schema) {
@@ -343,5 +377,4 @@ public class ImportService {
 			throw new ImportException("Missing [uid] from key");
 		}
 	}
-
 }
