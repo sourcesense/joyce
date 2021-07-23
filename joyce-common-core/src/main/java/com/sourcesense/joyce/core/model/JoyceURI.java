@@ -20,6 +20,7 @@ import com.fasterxml.jackson.annotation.JsonProperty;
 import com.fasterxml.jackson.annotation.JsonValue;
 import com.fasterxml.jackson.databind.annotation.JsonDeserialize;
 import com.fasterxml.jackson.databind.annotation.JsonSerialize;
+import com.sourcesense.joyce.core.exception.InvalidMetadataException;
 import lombok.EqualsAndHashCode;
 import lombok.Getter;
 
@@ -41,6 +42,32 @@ import java.util.stream.Collectors;
 @JsonDeserialize(using = JoyceURIDeserializer.class)
 @JsonSerialize(using = JoyceURISerializer.class)
 public class JoyceURI {
+
+	public static final String NAMESPACE_SEPARATOR = ".";
+	public static final String NAMESPACE_DEFAULT = "default";
+
+	public String getName() {
+		String[] namespaced = collection.split(NAMESPACE_SEPARATOR);
+		if (namespaced.length > 2) {
+			throw new InvalidMetadataException(String.format("Invalid namespace/name %s", collection));
+		}
+
+		if (namespaced.length > 1) {
+			return namespaced[1];
+		}
+		return collection;
+	}
+
+	public String getNamespace() {
+		String[] namespaced = collection.split(NAMESPACE_SEPARATOR);
+		if (namespaced.length > 2) {
+			throw new InvalidMetadataException(String.format("Invalid namespace/name %s", collection));
+		}
+		if (namespaced.length > 1) {
+			return namespaced[0];
+		}
+		return NAMESPACE_DEFAULT;
+	}
 
 	public enum Type {
 		/**
@@ -163,26 +190,29 @@ public class JoyceURI {
 		return new JoyceURI(URI.create(String.format("%s://%s/%s/%s", schema, type.getValue(), subtype.getValue(), URLEncoder.encode(collection, StandardCharsets.UTF_8)).toLowerCase()));
 	}
 
-	/**
-	 * Main constructor, throws if something is wrong in the uri composition
-	 *
-	 * @param uri
-	 */
-	public JoyceURI(URI uri) {
-		this.uri = uri;
-		this.type = Type.get(uri.getHost()).orElseThrow(() -> new IllegalArgumentException(String.format("Invalid type %s", uri.getHost())));
-		List<String> paths = Arrays.stream(uri.getPath().split("/"))
-				.filter(Predicate.not(String::isEmpty))
-				.collect(Collectors.toList());
-		if (paths.size() < 2) {
-			throw new IllegalArgumentException(String.format("Missing class and id in URI %s", uri.getPath()));
+		public static JoyceURI makeNamespaced(Type type, Subtype subtype, String namespace, String collection) {
+    		return new JoyceURI(URI.create(String.format("%s://%s/%s/%s%s%s", schema, type.getValue(), subtype.getValue(), URLEncoder.encode(namespace, StandardCharsets.UTF_8), NAMESPACE_SEPARATOR, URLEncoder.encode(collection, StandardCharsets.UTF_8)).toLowerCase()));
 		}
-		this.subtype = Subtype.get(paths.get(0)).orElseThrow(() -> new IllegalArgumentException(String.format("Invalid subtype %s", paths.get(0))));
-		this.collection = paths.get(1);
-		if (paths.size() > 2) {
-			this.id = paths.get(2);
-		}
-	}
+
+    /**
+     * Main constructor, throws if something is wrong in the uri composition
+     * @param uri
+     */
+    public JoyceURI(URI uri) {
+        this.uri = uri;
+        this.type = Type.get(uri.getHost()).orElseThrow(() -> new IllegalArgumentException(String.format("Invalid type %s", uri.getHost())));
+        List<String> paths = Arrays.stream(uri.getPath().split("/"))
+                .filter(Predicate.not(String::isEmpty))
+                .collect(Collectors.toList());
+        if (paths.size() < 2) {
+            throw new IllegalArgumentException(String.format("Missing class and id in URI %s", uri.getPath()));
+        }
+        this.subtype = Subtype.get(paths.get(0)).orElseThrow(() -> new IllegalArgumentException(String.format("Invalid subtype %s", paths.get(0))));
+        this.collection = paths.get(1);
+        if (paths.size() > 2) {
+            this.id = paths.get(2);
+        }
+    }
 
 	/**
 	 * Static creator handler, returns an optional doesn't throws

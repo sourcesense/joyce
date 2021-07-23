@@ -119,7 +119,7 @@ public class ContentProducer extends KafkaMessageService<JsonNode> {
     }
 
     private void setMetadataHeaders(JoyceSchemaMetadata metadata, MessageBuilder<JsonNode> message) {
-        message.setHeader(KafkaCustomHeaders.COLLECTION, metadata.getCollection());
+        message.setHeader(KafkaCustomHeaders.COLLECTION, metadata.getNamespacedCollection());
         message.setHeader(KafkaCustomHeaders.SCHEMA, metadata.getName());
         message.setHeader(KafkaCustomHeaders.SUBTYPE, metadata.getSubtype().toString());
         message.setHeader(KafkaCustomHeaders.STORE_CONTENT, metadata.getStore().toString());

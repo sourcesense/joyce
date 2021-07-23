@@ -26,6 +26,7 @@ import com.sourcesense.joyce.core.dto.SchemaSave;
 import com.sourcesense.joyce.core.dto.SchemaShort;
 import com.sourcesense.joyce.core.exception.SchemaNotFoundException;
 import com.sourcesense.joyce.core.mapper.SchemaMapper;
+import com.sourcesense.joyce.core.model.JoyceSchemaMetadata;
 import com.sourcesense.joyce.core.model.JoyceURI;
 import com.sourcesense.joyce.core.model.SchemaEntity;
 import com.sourcesense.joyce.schemaengine.exception.JoyceSchemaEngineException;
@@ -52,15 +53,15 @@ public class SchemaService {
 	private final ObjectMapper objectMapper;
 
 
-	private JoyceURI getSchemaUid(String name){
-		return new JoyceURI(URI.create(String.format("joyce://schema/%s/%s", properties.getSubtype(), name)));
+	private JoyceURI getSchemaUid(JoyceURI.Subtype subtype, String namespace, String name){
+		return JoyceURI.makeNamespaced(JoyceURI.Type.SCHEMA, subtype, namespace, name);
 	}
 
 	@CacheEvict(cacheNames = "schemas", allEntries=true)
 	public JoyceURI save(SchemaSave schema) throws JsonProcessingException {
 		SchemaEntity entity = schemaMapper.toEntity(schema);
 
-		JoyceURI uid = getSchemaUid(entity.getMetadata().getName());
+		JoyceURI uid = getSchemaUid(entity.getMetadata().getSubtype(), entity.getMetadata().getNamespace(), entity.getMetadata().getName());
 		entity.setUid(uid.toString());
 
 		// Validate schema
@@ -101,14 +102,27 @@ public class SchemaService {
 				.collect(Collectors.toList());
 	}
 
+	//@Cacheable("schemas")
+	public List<SchemaShort> findBySubtypeAndNamespace(JoyceURI.Subtype subtype, String namespace) {
+		return schemaEntityDao.getAllBySubtypeAndNamespace(subtype, namespace).stream()
+				.map(schemaMapper::toDtoShort)
+				.collect(Collectors.toList());
+	}
+
 	@Cacheable("schemas")
-    public Optional<Schema> findByName(String name) {
-			return schemaEntityDao.get(getSchemaUid(name).toString()).map(schemaMapper::toDto);
+    public Optional<Schema> findByName(JoyceURI.Subtype subtype, String namespace, String name) {
+			return schemaEntityDao.get(getSchemaUid(subtype, namespace, name).toString()).map(schemaMapper::toDto);
     }
 
+	@Cacheable("schemas")
+	public Optional<Schema> findById(String schemaId) {
+		return schemaEntityDao.get(schemaId).map(schemaMapper::toDto);
+	}
+
+
 	@CacheEvict(value = "schemas", allEntries=true)
-	public void delete(String name) {
-		Optional<SchemaEntity> entity = schemaEntityDao.get(getSchemaUid(name).toString());
+	public void delete(JoyceURI.Subtype subtype, String namespace, String name) {
+		Optional<SchemaEntity> entity = schemaEntityDao.get(getSchemaUid(subtype, namespace, name).toString());
 		if(entity.isEmpty()){
 			throw new SchemaNotFoundException(String.format("Schema [%s] does not exists", name));
 		}
@@ -119,4 +133,6 @@ public class SchemaService {
 	public Optional<Schema> get(String schemaUid) {
 		return schemaEntityDao.get(schemaUid).map(schemaMapper::toDto);
 	}
+
+
 }
