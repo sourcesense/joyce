@@ -94,7 +94,7 @@ public class JsonPathTransformerHandler implements SchemaTransformerHandler {
 	 * @param pathExpression
 	 * @return
 	 */
-	private JsonNode read(JsonNode source, String pathExpression){
+	protected JsonNode read(JsonNode source, String pathExpression){
 		Object resolvedPath = JsonPath.read(source, pathExpression);
 		if (resolvedPath.getClass().equals(String.class)){
 			return new TextNode((String) resolvedPath);

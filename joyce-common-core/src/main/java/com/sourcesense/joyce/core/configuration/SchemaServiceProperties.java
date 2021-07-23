@@ -23,13 +23,18 @@ import org.springframework.stereotype.Component;
 
 @Getter
 @Setter
-@Component
+@Component("schemaServiceProperties")
 @ConfigurationProperties("joyce.schema-service")
 public class SchemaServiceProperties {
     Boolean enabled = false;
     String database = "kafka";
     String subtype = "import";
     String topic = "joyce_schema";
+    String collection = "joyce_schema";
     Integer partitions = 10;
     Integer replicas = 1;
+		/**
+		 * Notification topic retention in milliseconds
+		 */
+		private Integer retention = 259200000; // 3 days
 }

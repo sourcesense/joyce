@@ -75,7 +75,6 @@ public class NotificationService {
     private final ObjectMapper mapper;
     private final NotificationServiceProperties properties;
     final private KafkaTemplate<String, JsonNode> kafkaTemplate;
-    private final Client ksql;
     private final KafkaAdmin kafkaAdmin;
 
     @PostConstruct
@@ -86,21 +85,6 @@ public class NotificationService {
                 properties.getReplicas(),
                 properties.getRetention(),
                 TopicConfig.CLEANUP_POLICY_DELETE);
-        String createTable = String.format(
-                "CREATE TABLE IF NOT EXISTS JOYCE_NOTIFICATION (\n" +
-                        "     id VARCHAR PRIMARY KEY,\n" +
-                        "     source VARCHAR\n," +
-                        "     event VARCHAR\n," +
-                        "     rawUri VARCHAR\n," +
-                        "     contentUri VARCHAR\n," +
-                        "     success BOOLEAN\n," +
-                        "     metadata VARCHAR\n," +
-                        "     content VARCHAR\n" +
-                        "   ) WITH (\n" +
-                        "     KAFKA_TOPIC = '%s', \n" +
-                        "     VALUE_FORMAT = 'JSON'\n" +
-                        "   );", properties.getTopic());
-        ksql.executeStatement(createTable).get();
     }
 
     public void ok(String rawUri, String contentUri, NotificationEvent event) {

@@ -1,0 +1,31 @@
+$schema: https://joyce.sourcesense.com/v1/schema
+$metadata:
+  subtype: import
+  name: user
+  description: A test schema
+  development: true
+  uid: id
+  collection: users
+type: object
+properties:
+  id:
+    type: integer
+    "$path": "$.id"
+  mappedObject:
+    type: object
+    properties:
+      rest:
+        type: string
+        $rest:
+          host: http://test:8080/posts
+          method: POST
+          headers:
+            Content-Type: application/json
+            test: hv1, hvN
+          params:
+            test: pv1, pvN
+          body: |
+            {
+             "content": "test"
+            }
+          extract: $.response

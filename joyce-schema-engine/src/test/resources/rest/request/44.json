@@ -1,0 +1,8 @@
+{
+  "host": "http://test:8080/posts",
+  "method": "POST",
+  "headers": {
+    "Content-Type": "application/json"
+  },
+  "body": "{\"content\": \"test\"}"
+}
