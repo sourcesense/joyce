@@ -130,7 +130,7 @@ public class ImportService {
 			JoyceURI schemaUri,
 			@RawUri JoyceURI rawUri) {
 
-		return schemaService.findByName(schemaUri.getCollection())
+		return schemaService.findByName(schemaUri.getSubtype(), schemaUri.getNamespace(), schemaUri.getName())
 				.orElseThrow(
 						() -> new SchemaNotFoundException(
 								String.format("Schema %s does not exists", schemaUri.toString())
@@ -158,6 +158,7 @@ public class ImportService {
 		computeParentMetadata(metadata, result, true).ifPresent(parentMetadata -> {
 			metadata.setUidKey(parentMetadata.getUidKey());
 			metadata.setCollection(parentMetadata.getCollection());
+			metadata.setNamespace(parentMetadata.getNamespace());
 		});
 
 		JoyceURI contentURI = computeContentURI(result, metadata);
@@ -299,7 +300,7 @@ public class ImportService {
 						String.format("Missing [%s] key from document, cannot processImport document", metadata.getUidKey()))
 				).asText();
 
-		return JoyceURI.make(JoyceURI.Type.CONTENT, metadata.getSubtype(), metadata.getCollection(), uid);
+		return JoyceURI.make(JoyceURI.Type.CONTENT, metadata.getSubtype(), metadata.getNamespacedCollection(), uid);
 	}
 
 	/**

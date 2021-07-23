@@ -124,7 +124,7 @@ public class ImportController implements ImportApi {
 
 	private Schema fetchSchema(String schemaId) {
 		return Optional.ofNullable(schemaId)
-				.flatMap(schemaService::findByName)
+				.flatMap(schemaService::findById)
 				.orElseThrow(() -> new SchemaNotFoundException(String.format("Schema %s does not exists", schemaId)));
 	}
 }

@@ -33,9 +33,9 @@ import java.io.IOException;
 @Tag(name = "Joyce Import API", description = "Joyce Import API")
 public interface ImportApi {
 
-	@PostMapping(value = "/{schemaId}", produces = "application/json; charset=utf-8")
+	@PostMapping( produces = "application/json; charset=utf-8")
 	@ResponseStatus(code = HttpStatus.OK)
-	Boolean importDocument(@PathVariable String schemaId, @RequestBody ObjectNode document) throws JsonProcessingException;
+	Boolean importDocument(@RequestHeader("X-Joyce-Schema-Id") String schemaId, @RequestBody ObjectNode document ) throws JsonProcessingException;
 
 	@PostMapping(
 			value = "/{schemaId}",
@@ -43,17 +43,17 @@ public interface ImportApi {
 			consumes = MediaType.MULTIPART_FORM_DATA_VALUE)
 	@ResponseStatus(code = HttpStatus.OK)
 	Boolean importDocuments(
-			@PathVariable String schemaId,
+			@RequestHeader("X-Joyce-Schema-Id") String schemaId,
 			@RequestPart MultipartFile data,
 			@RequestParam(defaultValue = ",") Character columnSeparator,
 			@RequestParam(defaultValue = ";") String arraySeparator
 	) throws IOException;
 
-	@PostMapping(value = "/{schemaId}/test", produces = "application/json; charset=utf-8")
+	@PostMapping(value = "/dryrun", produces = "application/json; charset=utf-8")
 	@ResponseStatus(code = HttpStatus.OK)
-	JsonNode importDryRun(@PathVariable String schemaId, @RequestBody ObjectNode document) throws JsonProcessingException;
+	JsonNode importDryRun(@RequestHeader("X-Joyce-Schema-Id")  String schemaId, @RequestBody ObjectNode document ) throws JsonProcessingException;
 
-	@DeleteMapping(value = "/{schemaId}", produces = "application/json; charset=utf-8")
+	@DeleteMapping( produces = "application/json; charset=utf-8")
 	@ResponseStatus(code = HttpStatus.OK)
-	Boolean removeDocument(@PathVariable String schemaId, @RequestBody ObjectNode document) throws JsonProcessingException;
+	Boolean removeDocument(@RequestHeader("X-Joyce-Schema-Id")  String schemaId, @RequestBody ObjectNode document ) throws JsonProcessingException;
 }
