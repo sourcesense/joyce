@@ -212,7 +212,7 @@ class ImportServiceTest {
 	void shouldThrowSchemaNotFoundExceptionIfMissing() {
 		JoyceURI schemaUri = JoyceURI.createURI(IMPORT_SCHEMA).get();
 
-		when(schemaService.findByName(any())).thenThrow(SchemaNotFoundException.class);
+		when(schemaService.findByName(any(), any(), any())).thenThrow(SchemaNotFoundException.class);
 
 		assertThrows(
 				SchemaNotFoundException.class,
