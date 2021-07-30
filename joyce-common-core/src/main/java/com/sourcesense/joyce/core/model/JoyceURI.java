@@ -20,6 +20,7 @@ import com.fasterxml.jackson.annotation.JsonProperty;
 import com.fasterxml.jackson.annotation.JsonValue;
 import com.fasterxml.jackson.databind.annotation.JsonDeserialize;
 import com.fasterxml.jackson.databind.annotation.JsonSerialize;
+import com.sourcesense.joyce.core.exception.InvalidMetadataException;
 import lombok.EqualsAndHashCode;
 import lombok.Getter;
 
@@ -33,7 +34,7 @@ import java.util.stream.Collectors;
 /**
  * This uri is a unique identifier of content that get passed around topics.
  * It has a semantic that determines the nature of the content it identifies.
- *
+ * <p>
  * joyce://TYPE/SUBTYPE/COLLECTION/ID
  */
 @Getter
@@ -42,120 +43,156 @@ import java.util.stream.Collectors;
 @JsonSerialize(using = JoyceURISerializer.class)
 public class JoyceURI {
 
-    public enum Type {
-        /**
-         * This type of content is the id given by The connectors to content they produce
-         */
-        RAW("raw"),
+	public static final String NAMESPACE_SEPARATOR = ".";
+	public static final String NAMESPACE_DEFAULT = "default";
 
-        /**
-         * This is the type that identifies Schema objects
-         */
-        SCHEMA("schema"),
+	public String getName() {
+		String[] namespaced = collection.split(NAMESPACE_SEPARATOR);
+		if (namespaced.length > 2) {
+			throw new InvalidMetadataException(String.format("Invalid namespace/name %s", collection));
+		}
 
-        /**
-         * This is content that has been transformed
-         */
-        CONTENT("content");
+		if (namespaced.length > 1) {
+			return namespaced[1];
+		}
+		return collection;
+	}
 
-        private final String value;
+	public String getNamespace() {
+		String[] namespaced = collection.split(NAMESPACE_SEPARATOR);
+		if (namespaced.length > 2) {
+			throw new InvalidMetadataException(String.format("Invalid namespace/name %s", collection));
+		}
+		if (namespaced.length > 1) {
+			return namespaced[0];
+		}
+		return NAMESPACE_DEFAULT;
+	}
 
-        Type(String value) {
-            this.value = value;
-        }
+	public enum Type {
+		/**
+		 * This type of content is the id given by The connectors to content they produce
+		 */
+		RAW("raw"),
 
-        public String getValue() {
-            return value;
-        }
+		/**
+		 * This is the type that identifies Schema objects
+		 */
+		SCHEMA("schema"),
 
-        private static final Map<String, Type> lookup = new HashMap<>();
+		/**
+		 * This is content that has been transformed
+		 */
+		CONTENT("content");
 
-        static {
-            for (Type type : Type.values()) {
-                lookup.put(type.getValue(), type);
-            }
-        }
+		private final String value;
 
-        public static Optional<Type> get(String type) {
-            return Optional.ofNullable(lookup.get(type));
-        }
+		Type(String value) {
+			this.value = value;
+		}
 
-    }
+		public String getValue() {
+			return value;
+		}
 
-    /**
-     * Marks the secondary type of messages
-     */
-    public enum Subtype {
-        /**
-         * Content or schema produced by the import phase
-         */
-        @JsonProperty("import")
-        IMPORT("import"),
+		private static final Map<String, Type> lookup = new HashMap<>();
 
-        /**
-         * Content or schema produced by the the schema engine (EE only)
-         */
-        @JsonProperty("model")
-        MODEL("model"),
+		static {
+			for (Type type : Type.values()) {
+				lookup.put(type.getValue(), type);
+			}
+		}
 
-        /**
-         * Content produced by CSV connector
-         */
-        @JsonProperty("csv")
-        CSV("csv"),
+		public static Optional<Type> get(String type) {
+			return Optional.ofNullable(lookup.get(type));
+		}
 
-				/**
-				 * Content produced by fixed content inside a schema
-				 */
-				@JsonProperty("fixed")
-				FIXED("fixed"),
+	}
 
-        /**
-         * Content produced by other sources
-         */
-        @JsonProperty("other")
-        OTHER("other");
+	/**
+	 * Marks the secondary type of messages
+	 */
+	public enum Subtype {
+		/**
+		 * Content or schema produced by the import phase
+		 */
+		@JsonProperty("import")
+		IMPORT("import"),
 
-        private final String value;
+		/**
+		 * Content or schema produced by the the schema engine (EE only)
+		 */
+		@JsonProperty("model")
+		MODEL("model"),
 
-        Subtype(String value) {
-            this.value = value;
-        }
+		/**
+		 * Content produced by CSV connector
+		 */
+		@JsonProperty("csv")
+		CSV("csv"),
 
-        @JsonValue
-        public String getValue() {
-            return value;
-        }
+		/**
+		 * Content produced by fixed content inside a schema
+		 */
+		@JsonProperty("fixed")
+		FIXED("fixed"),
 
-        private static final Map<String, Subtype> lookup = new HashMap<>();
+		/**
+		 * Content produced by rest endpoints
+		 */
+		@JsonProperty("rest")
+		REST("rest"),
 
-        static {
-            for (Subtype type : Subtype.values()) {
-                lookup.put(type.getValue(), type);
-            }
-        }
+		/**
+		 * Content produced by other sources
+		 */
+		@JsonProperty("other")
+		OTHER("other");
 
-        public static Optional<Subtype> get(String type) {
-            return Optional.ofNullable(lookup.get(type));
-        }
+		private final String value;
 
-    }
+		Subtype(String value) {
+			this.value = value;
+		}
 
-    private static final String schema = "joyce";
-    private Type type;
-    private Subtype subtype;
-    private String collection;
-    private String id;
+		@JsonValue
+		public String getValue() {
+			return value;
+		}
 
-    private URI uri;
+		private static final Map<String, Subtype> lookup = new HashMap<>();
 
-    public static JoyceURI make(Type type, Subtype subtype, String collection, String id) {
-        return new JoyceURI(URI.create(String.format("%s://%s/%s/%s/%s", schema, type.getValue(), subtype.getValue(), URLEncoder.encode(collection, StandardCharsets.UTF_8), URLEncoder.encode(id, StandardCharsets.UTF_8)).toLowerCase()));
-    }
+		static {
+			for (Subtype type : Subtype.values()) {
+				lookup.put(type.getValue(), type);
+			}
+		}
 
-    public static JoyceURI make(Type type, Subtype subtype, String collection) {
-        return new JoyceURI(URI.create(String.format("%s://%s/%s/%s", schema, type.getValue(), subtype.getValue(), URLEncoder.encode(collection, StandardCharsets.UTF_8)).toLowerCase()));
-    }
+		public static Optional<Subtype> get(String type) {
+			return Optional.ofNullable(lookup.get(type));
+		}
+
+	}
+
+	private static final String schema = "joyce";
+	private Type type;
+	private Subtype subtype;
+	private String collection;
+	private String id;
+
+	private URI uri;
+
+	public static JoyceURI make(Type type, Subtype subtype, String collection, String id) {
+		return new JoyceURI(URI.create(String.format("%s://%s/%s/%s/%s", schema, type.getValue(), subtype.getValue(), URLEncoder.encode(collection, StandardCharsets.UTF_8), URLEncoder.encode(id, StandardCharsets.UTF_8)).toLowerCase()));
+	}
+
+	public static JoyceURI make(Type type, Subtype subtype, String collection) {
+		return new JoyceURI(URI.create(String.format("%s://%s/%s/%s", schema, type.getValue(), subtype.getValue(), URLEncoder.encode(collection, StandardCharsets.UTF_8)).toLowerCase()));
+	}
+
+		public static JoyceURI makeNamespaced(Type type, Subtype subtype, String namespace, String collection) {
+    		return new JoyceURI(URI.create(String.format("%s://%s/%s/%s%s%s", schema, type.getValue(), subtype.getValue(), URLEncoder.encode(namespace, StandardCharsets.UTF_8), NAMESPACE_SEPARATOR, URLEncoder.encode(collection, StandardCharsets.UTF_8)).toLowerCase()));
+		}
 
     /**
      * Main constructor, throws if something is wrong in the uri composition
@@ -177,28 +214,28 @@ public class JoyceURI {
         }
     }
 
-    /**
-     * Static creator handler, returns an optional doesn't throws
-     *
-     * @param uriString
-     * @return
-     */
-    public static Optional<JoyceURI> createURI(String uriString) {
-        try {
-            URI uri = new URI(uriString);
-            if (!uri.getScheme().equals(schema)) {
-                return Optional.empty();
-            }
-            JoyceURI joyceUri = new JoyceURI(uri);
+	/**
+	 * Static creator handler, returns an optional doesn't throws
+	 *
+	 * @param uriString
+	 * @return
+	 */
+	public static Optional<JoyceURI> createURI(String uriString) {
+		try {
+			URI uri = new URI(uriString);
+			if (!uri.getScheme().equals(schema)) {
+				return Optional.empty();
+			}
+			JoyceURI joyceUri = new JoyceURI(uri);
 
-            return Optional.of(joyceUri);
-        } catch (Exception e) {
-            return Optional.empty();
-        }
-    }
+			return Optional.of(joyceUri);
+		} catch (Exception e) {
+			return Optional.empty();
+		}
+	}
 
-    @Override
-    public String toString() {
-        return uri.toString();
-    }
+	@Override
+	public String toString() {
+		return uri.toString();
+	}
 }

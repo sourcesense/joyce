@@ -31,13 +31,21 @@ import java.util.List;
 @Tag(name = "Schema API", description = "Schema	 Management API")
 public interface SchemaApi {
 
-	@GetMapping(produces = "application/json; charset=utf-8")
+	@GetMapping( produces = "application/json; charset=utf-8")
 	@ResponseStatus(code = HttpStatus.OK)
 	List<SchemaShort> getAllSchema();
 
-	@GetMapping(value = "/{name}", produces = "application/json; charset=utf-8")
+	@GetMapping(value = "/{subtype}/{namespace}", produces = "application/json; charset=utf-8")
 	@ResponseStatus(code = HttpStatus.OK)
-    Schema getSchema(@PathVariable String name);
+	List<SchemaShort> getAllSchemaForNamespace(@PathVariable String subtype, @PathVariable String namespace);
+
+	@GetMapping(value = "/{subtype}/{namespace}/{name}", produces = "application/json; charset=utf-8")
+	@ResponseStatus(code = HttpStatus.OK)
+    Schema getSchema(@PathVariable String subtype, @PathVariable String namespace, @PathVariable String name);
+
+	@DeleteMapping("/{subtype}/{namespace}/{name}")
+	@ResponseStatus(code = HttpStatus.NO_CONTENT)
+	void deleteSchema(@PathVariable String subtype, @PathVariable String namespace, @PathVariable String name);
 
 	@PostMapping(consumes = "application/json")
 	@ResponseStatus(code = HttpStatus.CREATED)
@@ -47,7 +55,5 @@ public interface SchemaApi {
 	@ResponseStatus(code = HttpStatus.CREATED)
 	JoyceURI saveSchemaYaml(@RequestBody SchemaSave schema) throws JsonProcessingException;
 
-	@DeleteMapping("/{name}")
-	@ResponseStatus(code = HttpStatus.NO_CONTENT)
-	void deleteSchema(@PathVariable String name);
+
 }

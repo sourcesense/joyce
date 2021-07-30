@@ -9,6 +9,7 @@ import com.sourcesense.joyce.core.dao.mongodb.SchemaRepository;
 import com.sourcesense.joyce.core.enumeration.ImportAction;
 import com.sourcesense.joyce.core.enumeration.KafkaCustomHeaders;
 import com.sourcesense.joyce.core.mapper.SchemaMapper;
+import com.sourcesense.joyce.core.model.JoyceURI;
 import com.sourcesense.joyce.core.model.SchemaEntity;
 import com.sourcesense.joyce.core.utililty.KafkaUtility;
 import lombok.RequiredArgsConstructor;
@@ -93,5 +94,10 @@ public class MongodbSchemaDao implements SchemaDao {
 
 		kafkaTemplate.send(message.build());
 		//TODO: notification of  schema deletion ???
+	}
+
+	@Override
+	public List<SchemaEntity> getAllBySubtypeAndNamespace(JoyceURI.Subtype subtype, String namespace) {
+		return schemaRepository.findAllByMetadata_SubtypeAndMetadata_Namespace(subtype.name(), namespace).stream().map(schemaMapper::entityFromDocument).collect(Collectors.toList());
 	}
 }

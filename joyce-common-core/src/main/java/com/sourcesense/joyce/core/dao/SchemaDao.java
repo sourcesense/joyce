@@ -16,6 +16,7 @@
 
 package com.sourcesense.joyce.core.dao;
 
+import com.sourcesense.joyce.core.model.JoyceURI;
 import com.sourcesense.joyce.core.model.SchemaEntity;
 
 import java.util.List;
@@ -30,4 +31,6 @@ public interface SchemaDao {
 	void save(SchemaEntity t);
 
 	void delete(SchemaEntity t);
+
+	List<SchemaEntity> getAllBySubtypeAndNamespace(JoyceURI.Subtype subtype, String namespace);
 }
