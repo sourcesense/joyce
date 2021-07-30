@@ -17,6 +17,7 @@
 package unit.com.sourcesense.joyce.importcore.service;
 
 import com.fasterxml.jackson.core.JsonProcessingException;
+import com.fasterxml.jackson.core.type.TypeReference;
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.sourcesense.joyce.core.dto.Schema;
@@ -28,6 +29,7 @@ import com.sourcesense.joyce.core.model.JoyceURI;
 import com.sourcesense.joyce.core.service.ContentProducer;
 import com.sourcesense.joyce.core.service.SchemaService;
 import com.sourcesense.joyce.importcore.exception.ImportException;
+import com.sourcesense.joyce.importcore.service.CsvMappingService;
 import com.sourcesense.joyce.importcore.service.ImportService;
 import com.sourcesense.joyce.schemaengine.exception.InvalidSchemaException;
 import com.sourcesense.joyce.schemaengine.exception.JoyceSchemaEngineException;
@@ -38,14 +40,15 @@ import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
+import org.springframework.mock.web.MockMultipartFile;
+import org.springframework.web.multipart.MultipartFile;
 
 import java.io.IOException;
 import java.io.InputStream;
-import java.util.HashMap;
-import java.util.Map;
-import java.util.Objects;
-import java.util.Optional;
+import java.net.URISyntaxException;
+import java.util.*;
 
+import static org.assertj.core.api.Assertions.assertThat;
 import static org.junit.jupiter.api.Assertions.*;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.Mockito.when;
@@ -60,6 +63,8 @@ class ImportServiceTest {
 	private SchemaService schemaService;
 	@Mock
 	private ContentProducer contentProducer;
+	@Mock
+	private CsvMappingService csvMappingService;
 
 	private final ObjectMapper objectMapper = new ObjectMapper();
 
@@ -68,6 +73,7 @@ class ImportServiceTest {
 
 	// CONSTANTS
 	private static final String MESSAGE_KEY = "joyce://raw/other/user/1";
+	private static final String BULK_CSV_MESSAGE_KEY = "joyce://raw/rest/bulk/01.csv";
 	private static final String INVALID_MESSAGE_KEY = "mississippi://raw/other/user/1";
 	private static final String IMPORT_SCHEMA = "joyce://schema/import/user";
 	private static final String INVALID_IMPORT_SCHEMA = "joyce://schema/not-import/user";
@@ -83,7 +89,7 @@ class ImportServiceTest {
 
 	@BeforeEach
 	void init() {
-		importService = new ImportService(objectMapper, schemaEngine, schemaService, contentProducer);
+		importService = new ImportService(objectMapper, schemaEngine, schemaService, contentProducer, csvMappingService);
 	}
 
 	/*
@@ -102,7 +108,7 @@ class ImportServiceTest {
 	@Test
 	void shouldComputeRawUriWhenImportSchemaIsNull() throws JsonProcessingException {
 		Map<String, String> headers = this.computeHeaders(null);
-		String messageKey = IOUtils.toString(this.computeJsonFromResource(TEST_COMPLEX_MESSAGE_KEY_CORRECT));
+		String messageKey = IOUtils.toString(this.computeResourceAsBytes(TEST_COMPLEX_MESSAGE_KEY_CORRECT));
 
 		JoyceURI expectedRawUri = JoyceURI.createURI(MESSAGE_KEY).get();
 		JoyceURI actualRawUri = importService.computeRawURI(messageKey, headers);
@@ -136,7 +142,7 @@ class ImportServiceTest {
 	@Test
 	void shouldComputeValidSchemaUriWhenImportSchemaIsNull() throws JsonProcessingException {
 		Map<String, String> headers = this.computeHeaders(null);
-		String messageKey = IOUtils.toString(this.computeJsonFromResource(TEST_COMPLEX_MESSAGE_KEY_CORRECT));
+		String messageKey = IOUtils.toString(this.computeResourceAsBytes(TEST_COMPLEX_MESSAGE_KEY_CORRECT));
 
 		JoyceURI expectedSchemaUri = JoyceURI.createURI(IMPORT_SCHEMA).get();
 		JoyceURI actualSchemaUri = importService.computeValidSchemaUri(messageKey, headers, null);
@@ -160,7 +166,7 @@ class ImportServiceTest {
 	@Test
 	void shouldThrowImportExceptionWhenSchemaIsMissing() {
 		Map<String, String> headers = this.computeHeaders(null);
-		String messageKey = IOUtils.toString(this.computeJsonFromResource(TEST_COMPLEX_MESSAGE_KEY_MISSING_SCHEMA));
+		String messageKey = IOUtils.toString(this.computeResourceAsBytes(TEST_COMPLEX_MESSAGE_KEY_MISSING_SCHEMA));
 
 		assertThrows(
 				ImportException.class,
@@ -176,7 +182,7 @@ class ImportServiceTest {
 	@Test
 	void shouldThrowImportExceptionWhenUidIsMissing() {
 		Map<String, String> headers = this.computeHeaders(null);
-		String messageKey = IOUtils.toString(this.computeJsonFromResource(TEST_COMPLEX_MESSAGE_KEY_MISSING_UID));
+		String messageKey = IOUtils.toString(this.computeResourceAsBytes(TEST_COMPLEX_MESSAGE_KEY_MISSING_UID));
 
 		assertThrows(
 				ImportException.class,
@@ -192,7 +198,7 @@ class ImportServiceTest {
 	@Test
 	void shouldThrowImportExceptionWhenSourceIsMissing() {
 		Map<String, String> headers = this.computeHeaders(null);
-		String messageKey = IOUtils.toString(this.computeJsonFromResource(TEST_COMPLEX_MESSAGE_KEY_MISSING_SOURCE));
+		String messageKey = IOUtils.toString(this.computeResourceAsBytes(TEST_COMPLEX_MESSAGE_KEY_MISSING_SOURCE));
 
 		assertThrows(
 				ImportException.class,
@@ -212,7 +218,7 @@ class ImportServiceTest {
 	void shouldThrowSchemaNotFoundExceptionIfMissing() {
 		JoyceURI schemaUri = JoyceURI.createURI(IMPORT_SCHEMA).get();
 
-		when(schemaService.findByName(any())).thenThrow(SchemaNotFoundException.class);
+		when(schemaService.findByName(any(), any(), any())).thenThrow(SchemaNotFoundException.class);
 
 		assertThrows(
 				SchemaNotFoundException.class,
@@ -230,7 +236,7 @@ class ImportServiceTest {
 				.thenReturn(objectMapper.valueToTree(Map.of("code", "1337")));
 
 		// Subject under test
-		boolean result = importService.processImport(rawURI, computeDocument(), schema);
+		boolean result = importService.processImport(rawURI, computeDocument(TEST_USER_JSON), schema);
 
 		// Asserts
 		assertTrue(result);
@@ -279,12 +285,26 @@ class ImportServiceTest {
 				.thenReturn(Optional.of(computeSchema(TEST_SCHEMA_JSON_USER)));
 
 		// asserts
-		assertTrue(importService.processImport(null, null, schema));
+		assertTrue(importService.processImport(rawURI, null, schema));
+	}
+
+	@Test
+	void shouldRetrieveCsvRowsFromFile() throws IOException, URISyntaxException {
+
+		JoyceURI rawURI = JoyceURI.createURI(BULK_CSV_MESSAGE_KEY).orElseThrow();
+		MultipartFile multipartFile = new MockMultipartFile("01", "01.csv", "text/csv", new byte[0]);
+
+		List<JsonNode> expected = this.computeResourceAsNodeList("result/bulk/csv/01.json");
+
+		when(csvMappingService.computeDocumentsFromCsvFile(any(), any(), any())).thenReturn(expected);
+
+		List<JsonNode> actual = importService.computeDocumentsFromFile(rawURI, multipartFile, ',', ";");
+		assertThat(expected.equals(actual));
 	}
 
 	/* UTILITY METHODS */
 	private Schema computeSchema(String jsonSchemaName) throws IOException {
-		return objectMapper.readValue(computeJsonFromResource(jsonSchemaName), Schema.class);
+		return objectMapper.readValue(computeResourceAsBytes(jsonSchemaName), Schema.class);
 	}
 
 	/* UTILITY METHODS */
@@ -294,11 +314,20 @@ class ImportServiceTest {
 				: new HashMap<>();
 	}
 
-	private JsonNode computeDocument() throws IOException {
-		return objectMapper.readTree(computeJsonFromResource(TEST_USER_JSON));
+	private JsonNode computeDocument(String path) throws IOException {
+		return objectMapper.readTree(
+				this.computeResourceAsBytes(path)
+		);
 	}
 
-	private InputStream computeJsonFromResource(String jsonFileName) {
+	private List<JsonNode> computeResourceAsNodeList(String path) throws IOException, URISyntaxException {
+		return objectMapper.readValue(
+				this.computeResourceAsBytes(path),
+				new TypeReference<>() {}
+		);
+	}
+
+	private InputStream computeResourceAsBytes(String jsonFileName) {
 		return this.getClass().getClassLoader().getResourceAsStream(jsonFileName);
 	}
 }

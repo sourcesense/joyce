@@ -19,24 +19,41 @@ package com.sourcesense.joyce.importcore.api;
 
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.JsonNode;
+import com.fasterxml.jackson.databind.node.ArrayNode;
 import com.fasterxml.jackson.databind.node.ObjectNode;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import org.springframework.http.HttpStatus;
+import org.springframework.http.MediaType;
 import org.springframework.web.bind.annotation.*;
+import org.springframework.web.multipart.MultipartFile;
 
-@RequestMapping( value = "/api/import")
+import java.io.IOException;
+
+@RequestMapping(value = "/api/import")
 @Tag(name = "Joyce Import API", description = "Joyce Import API")
 public interface ImportApi {
 
-	@PostMapping(value = "/{schemaId}", produces = "application/json; charset=utf-8")
+	@PostMapping( produces = "application/json; charset=utf-8")
 	@ResponseStatus(code = HttpStatus.OK)
-	Boolean importDocument(@PathVariable String schemaId, @RequestBody ObjectNode document ) throws JsonProcessingException;
+	Boolean importDocument(@RequestHeader("X-Joyce-Schema-Id") String schemaId, @RequestBody ObjectNode document ) throws JsonProcessingException;
 
-	@PostMapping(value = "/{schemaId}/test", produces = "application/json; charset=utf-8")
+	@PostMapping(
+			value = "/{schemaId}",
+			produces = "application/json; charset=utf-8",
+			consumes = MediaType.MULTIPART_FORM_DATA_VALUE)
 	@ResponseStatus(code = HttpStatus.OK)
-	JsonNode importDryRun(@PathVariable String schemaId, @RequestBody ObjectNode document ) throws JsonProcessingException;
+	Boolean importDocuments(
+			@RequestHeader("X-Joyce-Schema-Id") String schemaId,
+			@RequestPart MultipartFile data,
+			@RequestParam(defaultValue = ",") Character columnSeparator,
+			@RequestParam(defaultValue = ";") String arraySeparator
+	) throws IOException;
 
-	@DeleteMapping(value = "/{schemaId}", produces = "application/json; charset=utf-8")
+	@PostMapping(value = "/dryrun", produces = "application/json; charset=utf-8")
 	@ResponseStatus(code = HttpStatus.OK)
-	Boolean removeDocument(@PathVariable String schemaId, @RequestBody ObjectNode document ) throws JsonProcessingException;
+	JsonNode importDryRun(@RequestHeader("X-Joyce-Schema-Id")  String schemaId, @RequestBody ObjectNode document ) throws JsonProcessingException;
+
+	@DeleteMapping( produces = "application/json; charset=utf-8")
+	@ResponseStatus(code = HttpStatus.OK)
+	Boolean removeDocument(@RequestHeader("X-Joyce-Schema-Id")  String schemaId, @RequestBody ObjectNode document ) throws JsonProcessingException;
 }

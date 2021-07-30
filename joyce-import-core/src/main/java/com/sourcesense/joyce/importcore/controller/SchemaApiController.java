@@ -21,9 +21,11 @@ import com.sourcesense.joyce.core.api.SchemaApi;
 import com.sourcesense.joyce.core.dto.Schema;
 import com.sourcesense.joyce.core.dto.SchemaSave;
 import com.sourcesense.joyce.core.dto.SchemaShort;
+import com.sourcesense.joyce.core.exception.InvalidMetadataException;
 import com.sourcesense.joyce.core.exception.SchemaNotFoundException;
 import com.sourcesense.joyce.core.model.JoyceURI;
 import com.sourcesense.joyce.core.service.SchemaService;
+import com.sourcesense.joyce.schemaengine.exception.InvalidSchemaException;
 import lombok.RequiredArgsConstructor;
 import org.springframework.web.bind.annotation.RestController;
 
@@ -41,8 +43,16 @@ public class SchemaApiController implements SchemaApi {
 	}
 
 	@Override
-	public Schema getSchema(String name) {
-		return this.getValidatedSchema(name);
+	public List<SchemaShort> getAllSchemaForNamespace(String subtype, String namespace) {
+		return schemaService.findBySubtypeAndNamespace(JoyceURI.Subtype.get(subtype).orElseThrow(() -> new InvalidMetadataException("Subtype is not valid: " + subtype)), namespace);
+	}
+
+	@Override
+	public Schema getSchema(String subtype, String namespace, String name) {
+		return schemaService.findByName(JoyceURI.Subtype.get(subtype).orElseThrow(() -> new InvalidMetadataException("Subtype is not valid: " + subtype)), namespace, name)
+				.orElseThrow(
+						() -> new SchemaNotFoundException(String.format("Schema [%s] does not exists", name))
+				);
 	}
 
 	@Override
@@ -56,21 +66,13 @@ public class SchemaApiController implements SchemaApi {
 	}
 
 	public JoyceURI saveSchema(SchemaSave schema) throws JsonProcessingException {
-		JoyceURI uri = schemaService.save(schema);
-		this.getValidatedSchema(uri.getCollection());
-		return uri;
+		return schemaService.save(schema);
 	}
 
 	@Override
-	public void deleteSchema(String name) {
+	public void deleteSchema(String subtype, String namespace, String name) {
 
-		schemaService.delete(name);
+		schemaService.delete(JoyceURI.Subtype.get(subtype).orElseThrow(() -> new InvalidMetadataException("Subtype is not valid: " + subtype)), namespace, name);
 	}
 
-	private Schema getValidatedSchema(String name) {
-		return schemaService.findByName(name)
-				.orElseThrow(
-						() -> new SchemaNotFoundException(String.format("Schema [%s] does not exists", name))
-				);
-	}
 }

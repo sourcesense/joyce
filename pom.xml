@@ -52,6 +52,16 @@
       <url>https://maven.pkg.github.com/sourcesense/joyce-parent</url>
     </repository>
   </repositories>
+
+  <distributionManagement>
+    <repository>
+      <id>github</id>
+      <name>GitHub OWNER Apache Maven Packages</name>
+      <url>https://maven.pkg.github.com/sourcesense/joyce-import-gateway</url>
+    </repository>
+  </distributionManagement>
+
+
   <dependencies>
     <dependency>
       <groupId>org.jacoco</groupId>
