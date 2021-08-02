@@ -20,7 +20,7 @@ import com.fasterxml.jackson.databind.JsonNode;
 import lombok.Data;
 
 @Data
-public class Schema {
+public class Schema implements ISchema{
 	private String uid;
 	private String name;
 	private String description;
