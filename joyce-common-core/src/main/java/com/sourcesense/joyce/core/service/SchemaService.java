@@ -49,15 +49,13 @@ public class SchemaService {
 	private final SchemaDao schemaEntityDao;
 	private final SchemaMapper schemaMapper;
 	private final SchemaEngine schemaEngine;
-	private final SchemaServiceProperties properties;
 	private final ObjectMapper objectMapper;
 
-
-	private JoyceURI getSchemaUid(JoyceURI.Subtype subtype, String namespace, String name){
+	private JoyceURI getSchemaUid(JoyceURI.Subtype subtype, String namespace, String name) {
 		return JoyceURI.makeNamespaced(JoyceURI.Type.SCHEMA, subtype, namespace, name);
 	}
 
-	@CacheEvict(cacheNames = "schemas", allEntries=true)
+	@CacheEvict(cacheNames = "schemas", allEntries = true)
 	public JoyceURI save(SchemaSave schema) throws JsonProcessingException {
 		SchemaEntity entity = schemaMapper.toEntity(schema);
 
@@ -68,26 +66,29 @@ public class SchemaService {
 		schema.getMetadata().validate();
 
 		// If schema has a parent it must exists
-		if(schema.getMetadata().getParent() != null){
+		if (schema.getMetadata().getParent() != null) {
 			Optional<SchemaEntity> parent = schemaEntityDao.get(schema.getMetadata().getParent().toString());
-			if (parent.isEmpty()){
+			if (parent.isEmpty()) {
 				throw new JoyceSchemaEngineException(String.format("Parent schema [%s] does not exists", schema.getMetadata().getParent()));
 			}
 		}
 
 		Optional<SchemaEntity> previous = schemaEntityDao.get(uid.toString());
 
-		if (previous.isPresent()){
+		if (previous.isPresent()) {
 			/**
 			 * If schema is in development mode we skip schema checks,
 			 * but we block if previous schema is not in dev mode
 			 */
-			if(entity.getMetadata().getDevelopment() && !previous.get().getMetadata().getDevelopment()){
-					throw new JoyceSchemaEngineException("Previous schema is not in development mode");
+			if (entity.getMetadata().getDevelopment() && !previous.get().getMetadata().getDevelopment()) {
+				throw new JoyceSchemaEngineException("Previous schema is not in development mode");
 			}
 
 			if (!entity.getMetadata().getDevelopment() && !previous.get().getMetadata().getDevelopment()) {
-				schemaEngine.checkForBreakingChanges(objectMapper.convertValue( previous.get(), JsonNode.class), objectMapper.convertValue(entity, JsonNode.class));
+				schemaEngine.checkForBreakingChanges(
+						objectMapper.convertValue(previous.get(), JsonNode.class),
+						objectMapper.convertValue(entity, JsonNode.class)
+				);
 			}
 		}
 
@@ -110,9 +111,9 @@ public class SchemaService {
 	}
 
 	@Cacheable("schemas")
-    public Optional<Schema> findByName(JoyceURI.Subtype subtype, String namespace, String name) {
-			return schemaEntityDao.get(getSchemaUid(subtype, namespace, name).toString()).map(schemaMapper::toDto);
-    }
+	public Optional<Schema> findByName(JoyceURI.Subtype subtype, String namespace, String name) {
+		return schemaEntityDao.get(getSchemaUid(subtype, namespace, name).toString()).map(schemaMapper::toDto);
+	}
 
 	@Cacheable("schemas")
 	public Optional<Schema> findById(String schemaId) {
@@ -120,10 +121,10 @@ public class SchemaService {
 	}
 
 
-	@CacheEvict(value = "schemas", allEntries=true)
+	@CacheEvict(value = "schemas", allEntries = true)
 	public void delete(JoyceURI.Subtype subtype, String namespace, String name) {
 		Optional<SchemaEntity> entity = schemaEntityDao.get(getSchemaUid(subtype, namespace, name).toString());
-		if(entity.isEmpty()){
+		if (entity.isEmpty()) {
 			throw new SchemaNotFoundException(String.format("Schema [%s] does not exists", name));
 		}
 		schemaEntityDao.delete(entity.get());
