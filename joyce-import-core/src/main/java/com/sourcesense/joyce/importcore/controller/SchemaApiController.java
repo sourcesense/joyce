@@ -18,14 +18,13 @@ package com.sourcesense.joyce.importcore.controller;
 
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.sourcesense.joyce.core.api.SchemaApi;
+import com.sourcesense.joyce.core.dto.ISchema;
 import com.sourcesense.joyce.core.dto.Schema;
 import com.sourcesense.joyce.core.dto.SchemaSave;
-import com.sourcesense.joyce.core.dto.SchemaShort;
 import com.sourcesense.joyce.core.exception.InvalidMetadataException;
 import com.sourcesense.joyce.core.exception.SchemaNotFoundException;
 import com.sourcesense.joyce.core.model.JoyceURI;
 import com.sourcesense.joyce.core.service.SchemaService;
-import com.sourcesense.joyce.schemaengine.exception.InvalidSchemaException;
 import lombok.RequiredArgsConstructor;
 import org.springframework.web.bind.annotation.RestController;
 
@@ -38,14 +37,19 @@ public class SchemaApiController implements SchemaApi {
 	final protected SchemaService schemaService;
 
 	@Override
-	public List<SchemaShort> getAllSchema() {
-		return schemaService.findAll();
+	public List<? extends ISchema> getAllSchema(Boolean fullSchema) {
+		return schemaService.findAll(fullSchema);
 	}
 
 	@Override
-	public List<SchemaShort> getAllSchemaForNamespace(String subtype, String namespace) {
-		return schemaService.findBySubtypeAndNamespace(JoyceURI.Subtype.get(subtype).orElseThrow(() -> new InvalidMetadataException("Subtype is not valid: " + subtype)), namespace);
+	public List<? extends ISchema> getAllSchemaForNamespace(
+			String subtype,
+			String namespace,
+			Boolean fullSchema) {
+
+		return schemaService.findBySubtypeAndNamespace(JoyceURI.Subtype.get(subtype).orElseThrow(() -> new InvalidMetadataException("Subtype is not valid: " + subtype)), namespace, fullSchema);
 	}
+
 
 	@Override
 	public Schema getSchema(String subtype, String namespace, String name) {
