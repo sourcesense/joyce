@@ -44,12 +44,12 @@ public class SchemaApiController implements SchemaApi {
 
 	@Override
 	public List<SchemaShort> getAllSchemaForNamespace(String subtype, String namespace) {
-		return schemaService.findBySubtypeAndNamespace(JoyceURI.Subtype.get(subtype).orElseThrow(() -> new InvalidMetadataException("Subtype is not valid: " + subtype)), namespace);
+		return schemaService.findBySubtypeAndNamespace(this.computeSubtype(subtype), namespace);
 	}
 
 	@Override
 	public Schema getSchema(String subtype, String namespace, String name) {
-		return schemaService.findByName(JoyceURI.Subtype.get(subtype).orElseThrow(() -> new InvalidMetadataException("Subtype is not valid: " + subtype)), namespace, name)
+		return schemaService.findByName(this.computeSubtype(subtype), namespace, name)
 				.orElseThrow(
 						() -> new SchemaNotFoundException(String.format("Schema [%s] does not exists", name))
 				);
@@ -71,8 +71,6 @@ public class SchemaApiController implements SchemaApi {
 
 	@Override
 	public void deleteSchema(String subtype, String namespace, String name) {
-
-		schemaService.delete(JoyceURI.Subtype.get(subtype).orElseThrow(() -> new InvalidMetadataException("Subtype is not valid: " + subtype)), namespace, name);
+		schemaService.delete(this.computeSubtype(subtype), namespace,	name);
 	}
-
 }
