@@ -19,7 +19,7 @@ package com.sourcesense.joyce.core.dto;
 import lombok.Data;
 
 @Data
-public class SchemaShort implements ISchema{
+public class SchemaShort {
 	private String uid;
 	private String name;
 	private String description;

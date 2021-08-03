@@ -20,10 +20,8 @@ import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.sourcesense.joyce.core.dao.SchemaDao;
-import com.sourcesense.joyce.core.dto.ISchema;
 import com.sourcesense.joyce.core.dto.Schema;
 import com.sourcesense.joyce.core.dto.SchemaSave;
-import com.sourcesense.joyce.core.dto.SchemaShort;
 import com.sourcesense.joyce.core.exception.SchemaNotFoundException;
 import com.sourcesense.joyce.core.mapper.SchemaMapper;
 import com.sourcesense.joyce.core.model.JoyceURI;
@@ -38,7 +36,6 @@ import org.springframework.stereotype.Service;
 
 import java.util.List;
 import java.util.Optional;
-import java.util.stream.Collectors;
 
 @Service
 @RequiredArgsConstructor
@@ -94,19 +91,13 @@ public class SchemaService {
 	}
 
 	@Cacheable("schemas")
-	public List<? extends ISchema> findAll(Boolean fullSchema) {
-		return this.computeSchemas(
-				schemaEntityDao.getAll(),
-				fullSchema
-		);
+	public List<SchemaEntity> findAll() {
+		return schemaEntityDao.getAll();
 	}
 
 	//@Cacheable("schemas")
-	public List<? extends ISchema> findBySubtypeAndNamespace(JoyceURI.Subtype subtype, String namespace, Boolean fullSchema) {
-		return this.computeSchemas(
-				schemaEntityDao.getAllBySubtypeAndNamespace(subtype, namespace),
-				fullSchema
-		);
+	public List<SchemaEntity> findBySubtypeAndNamespace(JoyceURI.Subtype subtype, String namespace) {
+		return schemaEntityDao.getAllBySubtypeAndNamespace(subtype, namespace);
 	}
 
 	@Cacheable("schemas")
@@ -131,11 +122,5 @@ public class SchemaService {
 	@Cacheable("schemas")
 	public Optional<Schema> get(String schemaUid) {
 		return schemaEntityDao.get(schemaUid).map(schemaMapper::toDto);
-	}
-
-	private List<? extends ISchema> computeSchemas(List<SchemaEntity> schemas, boolean fullSchema) {
-		return schemas.stream()
-				.map(fullSchema ? schemaMapper::toDto : schemaMapper::toDtoShort)
-				.collect(Collectors.toList());
 	}
 }
