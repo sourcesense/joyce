@@ -19,14 +19,11 @@ package com.sourcesense.joyce.core.service;
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
-import com.sourcesense.joyce.core.configuration.SchemaServiceProperties;
 import com.sourcesense.joyce.core.dao.SchemaDao;
 import com.sourcesense.joyce.core.dto.Schema;
 import com.sourcesense.joyce.core.dto.SchemaSave;
-import com.sourcesense.joyce.core.dto.SchemaShort;
 import com.sourcesense.joyce.core.exception.SchemaNotFoundException;
 import com.sourcesense.joyce.core.mapper.SchemaMapper;
-import com.sourcesense.joyce.core.model.JoyceSchemaMetadata;
 import com.sourcesense.joyce.core.model.JoyceURI;
 import com.sourcesense.joyce.core.model.SchemaEntity;
 import com.sourcesense.joyce.schemaengine.exception.JoyceSchemaEngineException;
@@ -37,19 +34,19 @@ import org.springframework.cache.annotation.CacheEvict;
 import org.springframework.cache.annotation.Cacheable;
 import org.springframework.stereotype.Service;
 
-import java.net.URI;
 import java.util.List;
 import java.util.Optional;
-import java.util.stream.Collectors;
 
 @Service
 @RequiredArgsConstructor
 @ConditionalOnProperty(value = "joyce.schema-service.enabled", havingValue = "true")
 public class SchemaService {
+
 	private final SchemaDao schemaEntityDao;
 	private final SchemaMapper schemaMapper;
 	private final SchemaEngine schemaEngine;
 	private final ObjectMapper objectMapper;
+
 
 	private JoyceURI getSchemaUid(JoyceURI.Subtype subtype, String namespace, String name) {
 		return JoyceURI.makeNamespaced(JoyceURI.Type.SCHEMA, subtype, namespace, name);
@@ -97,17 +94,13 @@ public class SchemaService {
 	}
 
 	@Cacheable("schemas")
-	public List<SchemaShort> findAll() {
-		return schemaEntityDao.getAll().stream()
-				.map(schemaMapper::toDtoShort)
-				.collect(Collectors.toList());
+	public List<SchemaEntity> findAll() {
+		return schemaEntityDao.getAll();
 	}
 
 	//@Cacheable("schemas")
-	public List<SchemaShort> findBySubtypeAndNamespace(JoyceURI.Subtype subtype, String namespace) {
-		return schemaEntityDao.getAllBySubtypeAndNamespace(subtype, namespace).stream()
-				.map(schemaMapper::toDtoShort)
-				.collect(Collectors.toList());
+	public List<SchemaEntity> findBySubtypeAndNamespace(JoyceURI.Subtype subtype, String namespace) {
+		return schemaEntityDao.getAllBySubtypeAndNamespace(subtype, namespace);
 	}
 
 	@Cacheable("schemas")
@@ -119,7 +112,6 @@ public class SchemaService {
 	public Optional<Schema> findById(String schemaId) {
 		return schemaEntityDao.get(schemaId).map(schemaMapper::toDto);
 	}
-
 
 	@CacheEvict(value = "schemas", allEntries = true)
 	public void delete(JoyceURI.Subtype subtype, String namespace, String name) {
@@ -134,6 +126,4 @@ public class SchemaService {
 	public Optional<Schema> get(String schemaUid) {
 		return schemaEntityDao.get(schemaUid).map(schemaMapper::toDto);
 	}
-
-
 }
