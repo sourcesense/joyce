@@ -10,5 +10,4 @@ import java.util.List;
 @Repository
 public interface SchemaRepository extends MongoRepository<SchemaDocument, String> {
 	List<SchemaDocument> findAllByMetadata_SubtypeAndMetadata_Namespace(String subtype, String namespace);
-	List<SchemaDocument> findAllByMetadataSubtypeAndMetadataNamespace(String subtype, String namespace);
 }

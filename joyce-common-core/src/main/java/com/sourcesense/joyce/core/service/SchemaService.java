@@ -123,4 +123,8 @@ public class SchemaService {
 	public Optional<Schema> get(String schemaUid) {
 		return schemaEntityDao.get(schemaUid).map(schemaMapper::toDto);
 	}
+
+	public List<String> getAllNamespaces() {
+		return schemaEntityDao.getAllNamespaces();
+	}
 }

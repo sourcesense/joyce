@@ -185,4 +185,9 @@ public class KafkaSchemaDao implements SchemaDao {
 	public List<SchemaEntity> getAllBySubtypeAndNamespace(JoyceURI.Subtype subtype, String namespace) {
 		return Collections.emptyList();
 	}
+
+	@Override
+	public List<String> getAllNamespaces() {
+		return Collections.emptyList();
+	}
 }
