@@ -20,31 +20,40 @@ import com.fasterxml.jackson.core.JsonProcessingException;
 import com.sourcesense.joyce.core.api.SchemaApi;
 import com.sourcesense.joyce.core.dto.Schema;
 import com.sourcesense.joyce.core.dto.SchemaSave;
-import com.sourcesense.joyce.core.dto.SchemaShort;
-import com.sourcesense.joyce.core.exception.InvalidMetadataException;
 import com.sourcesense.joyce.core.exception.SchemaNotFoundException;
+import com.sourcesense.joyce.core.mapper.SchemaMapper;
 import com.sourcesense.joyce.core.model.JoyceURI;
+import com.sourcesense.joyce.core.model.SchemaEntity;
 import com.sourcesense.joyce.core.service.SchemaService;
-import com.sourcesense.joyce.schemaengine.exception.InvalidSchemaException;
 import lombok.RequiredArgsConstructor;
+import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.RestController;
 
 import java.util.List;
+import java.util.function.Function;
+import java.util.stream.Collectors;
 
 @RestController
 @RequiredArgsConstructor
 public class SchemaApiController implements SchemaApi {
 
+	final private SchemaMapper schemaMapper;
 	final protected SchemaService schemaService;
 
 	@Override
-	public List<SchemaShort> getAllSchema() {
-		return schemaService.findAll();
+	public ResponseEntity<?> getAllSchema(Boolean fullSchema) {
+		List<SchemaEntity> schemas = schemaService.findAll();
+		return ResponseEntity.ok(this.computeSchemas(schemas, fullSchema));
 	}
 
 	@Override
-	public List<SchemaShort> getAllSchemaForNamespace(String subtype, String namespace) {
-		return schemaService.findBySubtypeAndNamespace(this.computeSubtype(subtype), namespace);
+	public ResponseEntity<?> getAllSchemaForNamespace(
+			String subtype,
+			String namespace,
+			Boolean fullSchema) {
+
+		List<SchemaEntity> schemas = schemaService.findBySubtypeAndNamespace(this.computeSubtype(subtype), namespace);
+		return ResponseEntity.ok(this.computeSchemas(schemas, fullSchema));
 	}
 
 	@Override
@@ -71,6 +80,12 @@ public class SchemaApiController implements SchemaApi {
 
 	@Override
 	public void deleteSchema(String subtype, String namespace, String name) {
-		schemaService.delete(this.computeSubtype(subtype), namespace,	name);
+		schemaService.delete(this.computeSubtype(subtype), namespace, name);
+	}
+
+	private List<?> computeSchemas(List<SchemaEntity> schemas, Boolean fullSchema) {
+		return schemas.stream()
+				.map(fullSchema ? Function.identity() : schemaMapper::toDtoShort)
+				.collect(Collectors.toList());
 	}
 }
