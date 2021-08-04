@@ -47,7 +47,7 @@ public class JoyceURI {
 	public static final String NAMESPACE_DEFAULT = "default";
 
 	public String getName() {
-		String[] namespaced = collection.split(NAMESPACE_SEPARATOR);
+		String[] namespaced = collection.split("\\" + NAMESPACE_SEPARATOR);
 		if (namespaced.length > 2) {
 			throw new InvalidMetadataException(String.format("Invalid namespace/name %s", collection));
 		}
@@ -59,7 +59,7 @@ public class JoyceURI {
 	}
 
 	public String getNamespace() {
-		String[] namespaced = collection.split(NAMESPACE_SEPARATOR);
+		String[] namespaced = collection.split("\\" + NAMESPACE_SEPARATOR);
 		if (namespaced.length > 2) {
 			throw new InvalidMetadataException(String.format("Invalid namespace/name %s", collection));
 		}
