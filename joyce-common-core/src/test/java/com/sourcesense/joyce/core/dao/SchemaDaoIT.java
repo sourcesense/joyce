@@ -26,8 +26,8 @@ import org.springframework.boot.test.context.runner.ApplicationContextRunner;
 
 @SpringBootTest
 public class SchemaDaoIT {
-	private final ApplicationContextRunner contextRunner
-			= new ApplicationContextRunner();
+
+	private final ApplicationContextRunner contextRunner = new ApplicationContextRunner();
 
 	@Test
 	void schemaDaoShouldBeKafkaWhenPropertySchemaServiceEnabled(){

@@ -4,7 +4,8 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 import com.sourcesense.joyce.core.dto.Schema;
 import com.sourcesense.joyce.core.dto.SchemaSave;
 import com.sourcesense.joyce.core.exception.RestException;
-import com.sourcesense.joyce.core.model.JoyceSchemaMetadata;
+import com.sourcesense.joyce.core.exception.handler.CustomExceptionHandler;
+import com.sourcesense.joyce.core.mapper.SchemaMapper;
 import com.sourcesense.joyce.core.model.JoyceURI;
 import com.sourcesense.joyce.core.model.SchemaEntity;
 import lombok.RequiredArgsConstructor;
@@ -20,7 +21,6 @@ import org.springframework.web.client.RestTemplate;
 
 import java.util.List;
 import java.util.Optional;
-import java.util.stream.Collectors;
 
 @Slf4j
 @RequiredArgsConstructor
@@ -33,6 +33,8 @@ public class RestSchemaDao implements SchemaDao {
 
 	private final ObjectMapper mapper;
 	private final RestTemplate restTemplate;
+	private final SchemaMapper schemaMapper;
+	private final CustomExceptionHandler customExceptionHandler;
 
 
 	@Override
@@ -47,14 +49,16 @@ public class RestSchemaDao implements SchemaDao {
 					.map(schema -> mapper.convertValue(schema, SchemaEntity.class));
 
 		} catch (Exception exception) {
-			throw new RestException(exception.getMessage());
+			customExceptionHandler.handleNonBlockingException(exception);
+			return Optional.empty();
 		}
 	}
 
 	@Override
 	public List<SchemaEntity> getAll() {
 		try {
-			return this.computeFetchedSchemas(this.getSchemaEndpoint());
+			String endpoint = this.getSchemaEndpoint() + "?fullSchema=true";
+			return this.computeFetchedSchemas(endpoint);
 
 		} catch (Exception exception) {
 			throw new RestException(exception.getMessage());
@@ -66,9 +70,9 @@ public class RestSchemaDao implements SchemaDao {
 		try {
 			String endpoint = this.getSchemaEndpoint();
 			Optional.of(schemaEntity)
-					.map(SchemaSave::fromSchemaEntity)
+					.map(schemaMapper::toDtoSave)
 					.map(body -> restTemplate.postForEntity(endpoint, body, JoyceURI.class))
-					.filter(response -> HttpStatus.OK.equals(response.getStatusCode()))
+					.filter(response -> HttpStatus.CREATED.equals(response.getStatusCode()))
 					.orElseThrow(() -> new RuntimeException(
 							String.format("An error happened when calling '%s' to save schema", endpoint))
 					);
@@ -83,7 +87,7 @@ public class RestSchemaDao implements SchemaDao {
 			restTemplate.delete(this.getSchemaEndpoint(
 					schemaEntity.getMetadata().getSubtype(),
 					schemaEntity.getMetadata().getNamespace(),
-					schemaEntity.getMetadata().getCollection())
+					schemaEntity.getMetadata().getName())
 			);
 		} catch (Exception exception) {
 			throw new RestException(exception.getMessage());
@@ -93,7 +97,8 @@ public class RestSchemaDao implements SchemaDao {
 	@Override
 	public List<SchemaEntity> getAllBySubtypeAndNamespace(JoyceURI.Subtype subtype, String namespace) {
 		try {
-			return this.computeFetchedSchemas(this.getSchemaEndpoint(subtype, namespace));
+			String endpoint = this.getSchemaEndpoint(subtype, namespace) + "?fullSchema=true";
+			return this.computeFetchedSchemas(endpoint);
 
 		} catch (Exception exception) {
 			throw new RestException(exception.getMessage());
@@ -105,18 +110,18 @@ public class RestSchemaDao implements SchemaDao {
 	}
 
 	private String getSchemaEndpoint(JoyceURI.Subtype subtype, String namespace) {
-		return String.format("%s/%s/%s", this.getSchemaEndpoint(), subtype, namespace);
+		return String.format("%s/%s/%s", this.getSchemaEndpoint(), subtype.getValue(), namespace);
 	}
 
 	private String getSchemaEndpoint(JoyceURI.Subtype subtype, String namespace, String name) {
-		return String.format("%s/%s/%s/%s", this.getSchemaEndpoint(), subtype, namespace, name);
+		return String.format("%s/%s/%s/%s", this.getSchemaEndpoint(), subtype.getValue(), namespace, name);
 	}
 
 	private String getSchemaEndpoint(JoyceURI joyceURI) {
 		return String.format(
 				"%s/%s/%s/%s",
 				this.getSchemaEndpoint(),
-				joyceURI.getSubtype(),
+				joyceURI.getSubtype().getValue(),
 				joyceURI.getNamespace(),
 				joyceURI.getName()
 		);
@@ -124,18 +129,13 @@ public class RestSchemaDao implements SchemaDao {
 
 	private List<SchemaEntity> computeFetchedSchemas(String endpoint) {
 
-		ParameterizedTypeReference<List<Schema>> responseType = new ParameterizedTypeReference<>() {};
-		List<Schema> schemas = Optional.of(endpoint)
+		ParameterizedTypeReference<List<SchemaEntity>> responseType = new ParameterizedTypeReference<>() {};
+		return Optional.of(endpoint)
 				.map(url -> restTemplate.exchange(url, HttpMethod.GET, null, responseType))
 				.filter(response -> HttpStatus.OK.equals(response.getStatusCode()))
 				.map(ResponseEntity::getBody)
 				.orElseThrow(() -> new RuntimeException(
 						String.format("An error happened when calling '%s' to fetch schemas", endpoint))
 				);
-
-		return schemas.stream()
-				.map(Schema::getSchema)
-				.map(schema -> mapper.convertValue(schema, SchemaEntity.class))
-				.collect(Collectors.toList());
 	}
 }

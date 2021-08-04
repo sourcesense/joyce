@@ -44,13 +44,4 @@ public class SchemaSave {
 
 	private JsonNode properties;
 
-	public static SchemaSave fromSchemaEntity(SchemaEntity schemaEntity) {
-		return SchemaSave.builder()
-				.schema(schemaEntity.getSchema())
-				.metadata(schemaEntity.getMetadata())
-				.type(schemaEntity.getType())
-				.required(schemaEntity.getRequired())
-				.properties(schemaEntity.getProperties())
-				.build();
-	}
 }
