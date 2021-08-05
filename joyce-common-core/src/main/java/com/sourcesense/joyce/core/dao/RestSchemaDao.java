@@ -134,7 +134,7 @@ public class RestSchemaDao implements SchemaDao {
 				.map(url -> restTemplate.exchange(url, HttpMethod.GET, null, responseType))
 				.filter(response -> HttpStatus.OK.equals(response.getStatusCode()))
 				.map(ResponseEntity::getBody)
-				.orElseThrow(() -> new RuntimeException(
+				.orElseThrow(() -> new RestException(
 						String.format("An error happened when calling '%s' to fetch schemas", endpoint))
 				);
 	}
