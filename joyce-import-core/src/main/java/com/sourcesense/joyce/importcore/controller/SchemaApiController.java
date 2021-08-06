@@ -85,7 +85,6 @@ public class SchemaApiController implements SchemaApi {
 
 	@Override
 	public void deleteSchema(String subtype, String namespace, String name) {
-
 		schemaService.delete(this.computeSubtype(subtype), namespace, name);
 	}
 
