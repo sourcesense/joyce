@@ -107,7 +107,11 @@ public class MongodbSchemaDao implements SchemaDao {
 
 	@Override
 	public List<String> getAllNamespaces() {
-		DistinctIterable<String> distinctIterable = mongoTemplate.getCollection(schemaServiceProperties.getCollection()).distinct("metadata.namespace", String.class);
-		return StreamSupport.stream(distinctIterable.spliterator(), false).collect(Collectors.toList());
+		DistinctIterable<String> distinctIterable = mongoTemplate
+				.getCollection(schemaServiceProperties.getCollection())
+				.distinct("metadata.namespace", String.class);
+
+		return StreamSupport.stream(distinctIterable.spliterator(), false)
+				.collect(Collectors.toList());
 	}
 }
