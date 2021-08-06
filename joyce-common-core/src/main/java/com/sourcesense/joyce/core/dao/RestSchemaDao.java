@@ -2,7 +2,6 @@ package com.sourcesense.joyce.core.dao;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.sourcesense.joyce.core.dto.Schema;
-import com.sourcesense.joyce.core.dto.SchemaSave;
 import com.sourcesense.joyce.core.exception.RestException;
 import com.sourcesense.joyce.core.exception.handler.CustomExceptionHandler;
 import com.sourcesense.joyce.core.mapper.SchemaMapper;
@@ -19,6 +18,7 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Component;
 import org.springframework.web.client.RestTemplate;
 
+import java.util.Collections;
 import java.util.List;
 import java.util.Optional;
 
@@ -103,6 +103,12 @@ public class RestSchemaDao implements SchemaDao {
 		} catch (Exception exception) {
 			throw new RestException(exception.getMessage());
 		}
+	}
+
+	@Override
+	public List<String> getAllNamespaces() {
+		//Todo: must be implemented
+		return Collections.emptyList();
 	}
 
 	private String getSchemaEndpoint() {

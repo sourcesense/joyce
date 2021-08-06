@@ -30,11 +30,16 @@ import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
-@RequestMapping(value = "/api/schema")
+import java.util.List;
+
+@RequestMapping(value = "/api")
 @Tag(name = "Schema API", description = "Schema	 Management API")
 public interface SchemaApi {
 
-	@GetMapping(produces = "application/json; charset=utf-8")
+	@GetMapping(value = "/namespace", produces = "application/json; charset=utf-8")
+	List<String> getAllNamespaces();
+
+	@GetMapping(value = "/schema", produces = "application/json; charset=utf-8")
 	@ApiResponse(
 			responseCode = "200",
 			content = @Content(
@@ -48,7 +53,7 @@ public interface SchemaApi {
 	)
 	ResponseEntity<?> getAllSchema(@RequestParam(defaultValue = "false") Boolean fullSchema);
 
-	@GetMapping(value = "/{subtype}/{namespace}", produces = "application/json; charset=utf-8")
+	@GetMapping(value = "/schema/{subtype}/{namespace}", produces = "application/json; charset=utf-8")
 	@ApiResponse(
 			responseCode = "200",
 			content = @Content(
@@ -66,7 +71,7 @@ public interface SchemaApi {
 			@RequestParam(defaultValue = "false") Boolean fullSchema
 	);
 
-	@GetMapping(value = "/{subtype}/{namespace}/{name}", produces = "application/json; charset=utf-8")
+	@GetMapping(value = "/schema/{subtype}/{namespace}/{name}", produces = "application/json; charset=utf-8")
 	@ResponseStatus(code = HttpStatus.OK)
 	Schema getSchema(
 			@PathVariable String subtype,
@@ -74,7 +79,7 @@ public interface SchemaApi {
 			@PathVariable String name
 	);
 
-	@DeleteMapping("/{subtype}/{namespace}/{name}")
+	@DeleteMapping("/schema/{subtype}/{namespace}/{name}")
 	@ResponseStatus(code = HttpStatus.NO_CONTENT)
 	void deleteSchema(
 			@PathVariable String subtype,
@@ -82,11 +87,11 @@ public interface SchemaApi {
 			@PathVariable String name
 	);
 
-	@PostMapping(consumes = "application/json")
+	@PostMapping(value = "/schema", consumes = "application/json")
 	@ResponseStatus(code = HttpStatus.CREATED)
 	JoyceURI saveSchemaJson(@RequestBody SchemaSave schema) throws JsonProcessingException;
 
-	@PostMapping(consumes = "application/x-yaml")
+	@PostMapping(value = "/schema", consumes = "application/x-yaml")
 	@ResponseStatus(code = HttpStatus.CREATED)
 	JoyceURI saveSchemaYaml(@RequestBody SchemaSave schema) throws JsonProcessingException;
 

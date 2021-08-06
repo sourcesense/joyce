@@ -2,6 +2,7 @@ package com.sourcesense.joyce.core.dao;
 
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
+import com.mongodb.client.DistinctIterable;
 import com.sourcesense.joyce.core.configuration.SchemaServiceProperties;
 import com.sourcesense.joyce.core.dao.SchemaDao;
 import com.sourcesense.joyce.core.dao.mongodb.SchemaDocument;
@@ -16,6 +17,7 @@ import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.kafka.common.config.TopicConfig;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnProperty;
+import org.springframework.data.mongodb.core.MongoTemplate;
 import org.springframework.kafka.core.KafkaAdmin;
 import org.springframework.kafka.core.KafkaTemplate;
 import org.springframework.kafka.support.KafkaHeaders;
@@ -26,6 +28,7 @@ import javax.annotation.PostConstruct;
 import java.util.List;
 import java.util.Optional;
 import java.util.stream.Collectors;
+import java.util.stream.StreamSupport;
 
 
 @Slf4j
@@ -35,6 +38,7 @@ import java.util.stream.Collectors;
 public class MongodbSchemaDao implements SchemaDao {
 
 	private final SchemaRepository schemaRepository;
+	private final MongoTemplate mongoTemplate;
 	private final SchemaMapper schemaMapper;
 	private final ObjectMapper objectMapper;
 	private final KafkaTemplate<String,JsonNode> kafkaTemplate;
@@ -99,5 +103,15 @@ public class MongodbSchemaDao implements SchemaDao {
 	@Override
 	public List<SchemaEntity> getAllBySubtypeAndNamespace(JoyceURI.Subtype subtype, String namespace) {
 		return schemaRepository.findAllByMetadata_SubtypeAndMetadata_Namespace(subtype.name(), namespace).stream().map(schemaMapper::entityFromDocument).collect(Collectors.toList());
+	}
+
+	@Override
+	public List<String> getAllNamespaces() {
+		DistinctIterable<String> distinctIterable = mongoTemplate
+				.getCollection(schemaServiceProperties.getCollection())
+				.distinct("metadata.namespace", String.class);
+
+		return StreamSupport.stream(distinctIterable.spliterator(), false)
+				.collect(Collectors.toList());
 	}
 }

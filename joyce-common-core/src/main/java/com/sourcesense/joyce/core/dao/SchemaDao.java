@@ -33,4 +33,6 @@ public interface SchemaDao {
 	void delete(SchemaEntity t);
 
 	List<SchemaEntity> getAllBySubtypeAndNamespace(JoyceURI.Subtype subtype, String namespace);
+
+	List<String> getAllNamespaces();
 }
