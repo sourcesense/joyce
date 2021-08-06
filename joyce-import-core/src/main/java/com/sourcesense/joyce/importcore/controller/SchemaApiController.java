@@ -41,6 +41,11 @@ public class SchemaApiController implements SchemaApi {
 	final protected SchemaService schemaService;
 
 	@Override
+	public List<String> getAllNamespaces() {
+		return schemaService.getAllNamespaces();
+	}
+
+	@Override
 	public ResponseEntity<?> getAllSchema(Boolean fullSchema) {
 		List<SchemaEntity> schemas = schemaService.findAll();
 		return ResponseEntity.ok(this.computeSchemas(schemas, fullSchema));
