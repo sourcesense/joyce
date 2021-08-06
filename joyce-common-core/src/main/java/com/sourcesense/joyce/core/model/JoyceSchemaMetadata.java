@@ -19,6 +19,7 @@ package com.sourcesense.joyce.core.model;
 import com.fasterxml.jackson.annotation.JsonProperty;
 import com.fasterxml.jackson.databind.JsonNode;
 import com.sourcesense.joyce.core.exception.InvalidMetadataException;
+import lombok.EqualsAndHashCode;
 import lombok.Getter;
 import lombok.Setter;
 
@@ -27,6 +28,7 @@ import java.util.Map;
 
 @Getter
 @Setter
+@EqualsAndHashCode
 public class JoyceSchemaMetadata {
     /**
      * key Constants

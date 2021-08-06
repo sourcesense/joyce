@@ -10,10 +10,17 @@ import org.springframework.stereotype.Component;
 @RequiredArgsConstructor
 public class CustomExceptionHandler {
 
-    public void handleException(Exception exception) {
-        log.error(exception.getMessage());
-        if(log.isDebugEnabled()) {
-            log.debug(ExceptionUtils.getStackTrace(exception));
-        }
-    }
+	public void handleException(Exception exception) {
+		log.error(exception.getMessage());
+		if (log.isDebugEnabled()) {
+			log.debug(ExceptionUtils.getStackTrace(exception));
+		}
+	}
+
+	public void handleNonBlockingException(Exception exception) {
+		log.info(exception.getMessage());
+		if (log.isDebugEnabled()) {
+			log.debug(ExceptionUtils.getStackTrace(exception));
+		}
+	}
 }
