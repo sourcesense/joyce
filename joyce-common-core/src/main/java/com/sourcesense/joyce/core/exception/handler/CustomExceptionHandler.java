@@ -21,6 +21,13 @@ public class CustomExceptionHandler {
 		}
 	}
 
+	public void handleNonBlockingException(Exception exception) {
+		log.info(exception.getMessage());
+		if (log.isDebugEnabled()) {
+			log.debug(ExceptionUtils.getStackTrace(exception));
+		}
+	}
+
 	public void handleElasticsearchStatusException(Throwable rootCause, String key) {
 		if (rootCause != null && rootCause.getSuppressed() != null) {
 			log.error("Cannot handle message with key: {} cause: {}",

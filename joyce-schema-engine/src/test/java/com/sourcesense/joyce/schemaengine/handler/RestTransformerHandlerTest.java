@@ -2,7 +2,6 @@ package com.sourcesense.joyce.schemaengine.handler;
 
 import com.fasterxml.jackson.databind.JsonNode;
 import com.sourcesense.joyce.schemaengine.utility.UtilitySupplier;
-import lombok.RequiredArgsConstructor;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;

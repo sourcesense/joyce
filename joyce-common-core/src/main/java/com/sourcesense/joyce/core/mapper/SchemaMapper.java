@@ -46,6 +46,8 @@ public abstract class SchemaMapper {
 	@Mapping(target = "development", source = "metadata.development")
 	public abstract SchemaShort toDtoShort(SchemaEntity entity);
 
+	public abstract SchemaSave toDtoSave(SchemaEntity entity);
+
 	public abstract SchemaEntity toEntity(SchemaSave dto);
 
 	JsonNode schemaAsMap(SchemaEntity entity) throws JsonProcessingException {
@@ -54,12 +56,14 @@ public abstract class SchemaMapper {
 
 	@Mapping(target = "properties", source = "document")
 	public abstract SchemaEntity entityFromDocument(SchemaDocument document);
+
 	JsonNode propertiesFromString(SchemaDocument document) throws JsonProcessingException {
 		return mapper.readTree(document.getProperties());
 	}
 
 	@Mapping(target = "properties", source = "entity")
 	public abstract SchemaDocument documentFromEntity(SchemaEntity entity);
+
 	String propertiesToString(SchemaEntity entity) throws JsonProcessingException {
 		return mapper.writeValueAsString(entity.getProperties());
 	}

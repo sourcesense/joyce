@@ -9,7 +9,7 @@ import java.lang.reflect.Parameter;
 import java.util.Optional;
 
 /**
- * Interface that contains utility methods for aspect
+ * Interface that contains com.sourcesense.joyce.core.utility methods for aspect
  * focused on working on intercepted method signature
  */
 public interface MethodAspect {

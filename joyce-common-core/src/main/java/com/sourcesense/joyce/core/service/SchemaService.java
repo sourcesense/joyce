@@ -82,7 +82,10 @@ public class SchemaService {
 			}
 
 			if (!entity.getMetadata().getDevelopment() && !previous.get().getMetadata().getDevelopment()) {
-				schemaEngine.checkForBreakingChanges(objectMapper.convertValue(previous.get(), JsonNode.class), objectMapper.convertValue(entity, JsonNode.class));
+				schemaEngine.checkForBreakingChanges(
+						objectMapper.convertValue(previous.get(), JsonNode.class),
+						objectMapper.convertValue(entity, JsonNode.class)
+				);
 			}
 		}
 
