@@ -1,5 +1,5 @@
 {
-  "host": "http://test:8080/posts/1",
+  "url": "http://test:8080/posts/1",
   "method": "GET",
   "headers": {
     "Content-Type": "application/json"

@@ -17,13 +17,11 @@ properties:
       rest:
         type: string
         $rest:
-          host: http://test:8080/posts
+          url: http://test:8080/posts?test=pv1
           method: POST
           headers:
             Content-Type: application/json
             test: hv1, hvN
-          params:
-            test: pv1, pvN
           body: |
             {
              "content": "test"

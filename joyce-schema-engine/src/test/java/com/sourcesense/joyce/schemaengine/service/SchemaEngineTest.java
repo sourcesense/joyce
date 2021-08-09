@@ -21,6 +21,8 @@ import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.databind.node.TextNode;
 import com.fasterxml.jackson.dataformat.yaml.YAMLMapper;
+import com.github.mustachejava.DefaultMustacheFactory;
+import com.github.mustachejava.MustacheFactory;
 import com.networknt.schema.JsonSchemaException;
 import com.sourcesense.joyce.schemaengine.exception.JoyceSchemaEngineException;
 import com.sourcesense.joyce.schemaengine.handler.*;
@@ -47,8 +49,8 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
-import static org.assertj.core.api.Assertions.assertThat;
 import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertTrue;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.ArgumentMatchers.eq;
 import static org.mockito.Mockito.mock;
@@ -65,10 +67,12 @@ public class SchemaEngineTest implements UtilitySupplier {
 	private RestTemplate restTemplate;
 	private MockRestServiceServer mockServer;
 	private ApplicationContext applicationContext;
+	private MustacheFactory mustacheFactory;
 
 	@BeforeEach
 	void init() {
 		restTemplate = new RestTemplate();
+		mustacheFactory = new DefaultMustacheFactory();
 		mapper = this.initJsonMapper();
 		yamlMapper = this.initYamlMapper();
 		applicationContext = this.initApplicationContext(mapper);
@@ -149,7 +153,7 @@ public class SchemaEngineTest implements UtilitySupplier {
 		JsonNode newSchema = this.readNodeFromResource("schema/13.json");
 		SchemaEngine schemaEngine = new SchemaEngine(mapper, new HashMap<>());
 		Boolean ret = schemaEngine.checkForBreakingChanges(schema, newSchema);
-		Assertions.assertTrue(ret);
+		assertTrue(ret);
 	}
 
 	@Test
@@ -195,10 +199,10 @@ public class SchemaEngineTest implements UtilitySupplier {
 		List<String> testHeaders = Arrays.asList("hv1", "hvN");
 
 		mockServer.expect(request -> {
-			assertEquals(request.getURI().toString(), "http://test:8080/posts?test=pv1&test=pvN");
+			assertEquals(request.getURI().toString(), "http://test:8080/posts?test=pv1");
 			assertEquals(request.getMethod(), HttpMethod.POST);
 			assertEquals(request.getBody().toString(), "{\n \"content\": \"test\"\n}\n");
-			assertThat(testHeaders.equals(request.getHeaders().get("test")));
+			assertTrue(testHeaders.equals(request.getHeaders().get("test")));
 
 		}).andRespond(withSuccess(
 				this.getResourceAsString("rest/response/35.json"),
@@ -223,7 +227,7 @@ public class SchemaEngineTest implements UtilitySupplier {
 		JsonPathTransformerHandler jsonPathTransformerHandler = new JsonPathTransformerHandler();
 		jsonPathTransformerHandler.configure();
 
-		RestTransformerHandler restTransformerHandler = new RestTransformerHandler(mapper, restTemplate);
+		RestTransformerHandler restTransformerHandler = new RestTransformerHandler(mapper, restTemplate, mustacheFactory);
 		restTransformerHandler.configure();
 
 		Map<String, SchemaTransformerHandler> handlers = Map.of(

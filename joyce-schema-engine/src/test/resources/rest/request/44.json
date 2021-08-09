@@ -1,8 +1,11 @@
 {
-  "host": "http://test:8080/posts",
+  "url": "http://test:8080/posts",
   "method": "POST",
   "headers": {
     "Content-Type": "application/json"
   },
-  "body": "{\"content\": \"test\"}"
+  "vars": {
+    "test": "$.username"
+  },
+  "body": "{\"content\": \"{{test}}\"}"
 }

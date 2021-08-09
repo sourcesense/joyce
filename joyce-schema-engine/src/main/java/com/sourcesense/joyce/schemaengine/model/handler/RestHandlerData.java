@@ -10,19 +10,19 @@ import lombok.NoArgsConstructor;
 import org.springframework.http.HttpMethod;
 import org.springframework.util.MultiValueMap;
 
+import java.util.Map;
+
 @Data
 @Builder
 @NoArgsConstructor
 @AllArgsConstructor
 public class RestHandlerData {
 
-	private String host;
+	private String url;
 	private HttpMethod method;
 	private String body;
 	private TextNode extract;
-
-	@JsonDeserialize(using = MultiValueMapDeserializer.class)
-	private MultiValueMap<String, String> params;
+	private Map<String, String> vars;
 
 	@JsonDeserialize(using = MultiValueMapDeserializer.class)
 	private MultiValueMap<String, String> headers;

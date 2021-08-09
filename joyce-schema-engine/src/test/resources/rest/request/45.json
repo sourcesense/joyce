@@ -1,8 +1,11 @@
 {
-  "host": "http://test:8080/posts/1",
+  "url": "http://test:8080/posts/1",
   "method": "GET",
   "headers": {
     "Content-Type": "application/json",
-    "test": "value1, valueN"
+    "test": "value1, valueN, {{test}}"
+  },
+  "vars": {
+    "test": "$.username"
   }
 }

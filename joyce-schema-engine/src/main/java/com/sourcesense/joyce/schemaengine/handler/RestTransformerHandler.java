@@ -2,7 +2,8 @@ package com.sourcesense.joyce.schemaengine.handler;
 
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
-import com.fasterxml.jackson.databind.node.TextNode;
+import com.github.mustachejava.Mustache;
+import com.github.mustachejava.MustacheFactory;
 import com.sourcesense.joyce.schemaengine.annotation.SchemaTransformationHandler;
 import com.sourcesense.joyce.schemaengine.exception.JoyceSchemaEngineException;
 import com.sourcesense.joyce.schemaengine.model.handler.RestHandlerData;
@@ -13,11 +14,16 @@ import org.springframework.http.HttpEntity;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Component;
+import org.springframework.util.LinkedMultiValueMap;
+import org.springframework.util.MultiValueMap;
 import org.springframework.web.client.RestTemplate;
-import org.springframework.web.util.UriComponentsBuilder;
 
+import java.io.StringReader;
+import java.io.StringWriter;
+import java.util.HashMap;
+import java.util.Map;
 import java.util.Optional;
-import java.util.function.Predicate;
+import java.util.stream.Collectors;
 
 @Slf4j
 @Component
@@ -27,12 +33,20 @@ public class RestTransformerHandler extends JsonPathTransformerHandler {
 
 	private final ObjectMapper mapper;
 	private final RestTemplate restTemplate;
+	private final MustacheFactory mf;
 
 	@Override
 	public JsonNode process(String key, JsonNode value, JsonNode source, Optional<JsonNode> metadata, Optional<Object> context) {
 
 		RestHandlerData restHandlerData = mapper.convertValue(value, RestHandlerData.class);
-		ResponseEntity<JsonNode> response = this.computeResponse(restHandlerData);
+		// Resolve json paths inside vars
+		Optional<Map<String, String>> vars = Optional.ofNullable(restHandlerData.getVars()).map(stringStringMap -> stringStringMap.entrySet().stream()
+				.collect(Collectors.toMap(
+						Map.Entry::getKey,
+						entry -> read(source, entry.getValue()).asText())));
+
+
+		ResponseEntity<JsonNode> response = this.computeResponse(restHandlerData, vars.orElse(new HashMap<>()));
 
 		if (HttpStatus.OK.equals(response.getStatusCode())) {
 			return Optional.of(restHandlerData)
@@ -50,21 +64,32 @@ public class RestTransformerHandler extends JsonPathTransformerHandler {
 		}
 	}
 
-	private ResponseEntity<JsonNode> computeResponse(RestHandlerData restHandlerData) {
+	private String applyTemplate(String template, Map<String, String> context) {
+		if (template == null){
+			return null;
+		}
+		StringWriter writer = new StringWriter();
+		Mustache mustache = mf.compile(new StringReader(template), template);
+		mustache.execute(writer, context);
+		return writer.toString();
+	}
+
+	private ResponseEntity<JsonNode> computeResponse(RestHandlerData restHandlerData, Map<String, String> vars) {
+		// Apply templates
+		String url = applyTemplate(restHandlerData.getUrl(), vars);
+		String body = applyTemplate(restHandlerData.getBody(), vars);
+		MultiValueMap<String,String> headers =  new LinkedMultiValueMap<>(restHandlerData.getHeaders().entrySet().stream()
+				.collect(Collectors.toMap(Map.Entry::getKey, o -> o.getValue().stream()
+						.map(s -> applyTemplate(s, vars))
+						.collect(Collectors.toList()))));
+
 		return restTemplate.exchange(
-				this.computeUriWithParams(restHandlerData),
+				url,
 				restHandlerData.getMethod(),
-				new HttpEntity<>(restHandlerData.getBody(), restHandlerData.getHeaders()),
+				new HttpEntity<>(body, headers),
 				JsonNode.class
 		);
 	}
 
-	private String computeUriWithParams(RestHandlerData restHandlerData) {
-		return UriComponentsBuilder
-				.fromHttpUrl(restHandlerData.getHost())
-				.queryParams(restHandlerData.getParams())
-				.encode()
-				.toUriString();
-	}
 }
 

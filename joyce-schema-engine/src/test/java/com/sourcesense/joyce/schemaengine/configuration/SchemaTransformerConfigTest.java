@@ -17,8 +17,8 @@ import java.util.Collections;
 import java.util.Map;
 import java.util.Optional;
 
-import static org.assertj.core.api.Assertions.assertThat;
 import static org.junit.jupiter.api.Assertions.assertThrows;
+import static org.junit.jupiter.api.Assertions.assertTrue;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.when;
 
@@ -36,7 +36,7 @@ public class SchemaTransformerConfigTest {
 		Map<String, SchemaTransformerHandler> actual = schemaTransformerConfig.transformerHandlers();
 		Map<String, SchemaTransformerHandler> expected = Collections.emptyMap();
 
-		assertThat(actual.equals(expected));
+		assertTrue(actual.equals(expected));
 	}
 
 	@Test
@@ -52,7 +52,7 @@ public class SchemaTransformerConfigTest {
 		Map<String, SchemaTransformerHandler> actual = schemaTransformerConfig.transformerHandlers();
 		Map<String, SchemaTransformerHandler> expected = Map.of("$fixed", transformerHandler);
 
-		assertThat(actual.equals(expected));
+		assertTrue(actual.equals(expected));
 	}
 
 	@Test
@@ -68,7 +68,7 @@ public class SchemaTransformerConfigTest {
 		Map<String, SchemaTransformerHandler> actual = schemaTransformerConfig.transformerHandlers();
 		Map<String, SchemaTransformerHandler> expected = Map.of("$test", transformerHandler);
 
-		assertThat(actual.equals(expected));
+		assertTrue(actual.equals(expected));
 	}
 
 	@Test
