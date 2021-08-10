@@ -33,12 +33,14 @@ import java.io.IOException;
 @Tag(name = "Joyce Import API", description = "Joyce Import API")
 public interface ImportApi {
 
-	@PostMapping( produces = "application/json; charset=utf-8")
+	@PostMapping(
+			produces = "application/json; charset=utf-8",
+			consumes = MediaType.APPLICATION_JSON_VALUE)
 	@ResponseStatus(code = HttpStatus.OK)
 	Boolean importDocument(@RequestHeader("X-Joyce-Schema-Id") String schemaId, @RequestBody ObjectNode document ) throws JsonProcessingException;
 
 	@PostMapping(
-			value = "/{schemaId}",
+			value = "/bulk",
 			produces = "application/json; charset=utf-8",
 			consumes = MediaType.MULTIPART_FORM_DATA_VALUE)
 	@ResponseStatus(code = HttpStatus.OK)
