@@ -20,6 +20,7 @@ Object.keys(schemaJson["schemas"]).forEach(function (key) {
 
 	let schema = new Schema(data.schema.properties);
 	let collection = `${data.schema["$metadata"]["namespace"] || "default"}.${data.schema["$metadata"]["collection"]}`;
+	key = _.upperFirst(_.camelCase(key));
 	models[key] = model(key, schema, collection);
 });
 
