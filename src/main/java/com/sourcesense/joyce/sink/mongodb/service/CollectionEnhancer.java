@@ -77,8 +77,8 @@ public class CollectionEnhancer {
 			@EventPayload SchemaEntity schema) {
 
 		log.debug("Creating collection '{}' for schema '{}'", schema.getMetadata().getCollection(), schemaUri);
-		if (!mongoTemplate.collectionExists(schema.getMetadata().getCollection())) {
-			mongoTemplate.createCollection(schema.getMetadata().getCollection());
+		if (!mongoTemplate.collectionExists(schema.getMetadata().getNamespacedCollection())) {
+			mongoTemplate.createCollection(schema.getMetadata().getNamespacedCollection());
 		}
 	}
 
@@ -102,7 +102,7 @@ public class CollectionEnhancer {
 		if(schema.getMetadata().getValidation()) {
 			log.debug("Updating validation schema for schema: '{}'", schemaUri);
 			LinkedHashMap<String, Object> validatorCommand = new LinkedHashMap<>();
-			validatorCommand.put("collMod", schema.getMetadata().getCollection());
+			validatorCommand.put("collMod", schema.getMetadata().getNamespacedCollection());
 			validatorCommand.put("validator", this.computeValidationSchema(schemaObject));
 			mongoTemplate.executeCommand(new Document(validatorCommand));
 		}
@@ -131,7 +131,7 @@ public class CollectionEnhancer {
 			List<Map<String, Object>> fieldIndexes = schema.getMetadata().getIndexes();
 			this.insertIndexes(
 					this.computeMongoIndexes(fieldIndexes),
-					schema.getMetadata().getCollection()
+					schema.getMetadata().getNamespacedCollection()
 			);
 		}
 	}
