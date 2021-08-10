@@ -9,7 +9,7 @@ export interface SchemaProperties {
 export interface SchemaMetadata {
 	uid: string;
 	collection: string;
-	cassandra_schema: string;
+	namespace: string;
 	subtype: string;
 }
 export interface Schema {

@@ -73,35 +73,12 @@ function createServer(db, producer) {
 				},
 			},
 			async function (req, res) {
-				// const params = req.body.params;
-				// if (
-				//   params &&
-				//   Object.keys(params).length === 0 &&
-				//   params.constructor === Object
-				// ) {
-				//   res.code(400).send({
-				//     error: {
-				//       validation: [
-				//         {
-				//           keyword: "required",
-				//           dataPath: ".jsonrpc",
-				//           schemaPath: "#/properties/jsonrpc/required",
-				//           params: {
-				//             missingProperty: "params",
-				//           },
-				//           message: "should not be empty",
-				//         },
-				//       ],
-				//       validationContext: "body",
-				//     },
-				//   });
-				// }
 				const payload = {
 					topic: JOYCE_API_KAFKA_COMMAND_TOPIC,
 					messages: JSON.stringify(req.body),
 					key: req.body.id,
 				};
-				producer.send([payload], function (err) {
+				producer.send([payload], function (err: any) {
 					if (err) {
 						res.status(500).send("KO");
 						return;
@@ -140,8 +117,12 @@ function createServer(db, producer) {
 				async function (req, res) {
 					const { id: entityID } = req.params;
 					try {
-						const collection = db.collection(schema.schema.$metadata.collection);
-						const _id = `joyce://content/${schema.schema.$metadata.subtype}/${schema.schema.$metadata.collection}/${entityID}`;
+						const namespaced_collection = `${schema.schema.$metadata.namespace || "default"}.${
+							schema.schema.$metadata.collection
+						}`;
+						const collection = db.collection(namespaced_collection);
+
+						const _id = `joyce://content/${schema.schema.$metadata.subtype}/${namespaced_collection}/${entityID}`;
 						const entity = await collection.findOne({ _id });
 
 						if (entity) {
@@ -164,27 +145,26 @@ function createServer(db, producer) {
 					orderBy: "asc" | "desc";
 					sortBy: string;
 				};
-			}>(
-				`/${tempSchema.collectionName}`,
-				MultipleEntitySchema(tempSchema),
-				async function (req, res) {
-					const { page = 0, size = 10, orderBy, sortBy, ...other } = req.query;
-					try {
-						const collection = db.collection(schema.schema.$metadata.collection);
-						const docs = await collection
-							.find(other || {})
-							.project(tempSchema.getSchemaPropertiesMongoProjection()) // è un ottimizzazione. Di fatto fastify già elimina le proprietà non comprese nello schema dichiarato poche righe sopra
-							.sort({ [sortBy || "id"]: orderBy === "asc" ? 1 : -1 })
-							.limit(size)
-							.skip(page * size)
-							.toArray();
-						res.status(200).send(docs);
-					} catch (errore) {
-						req.log.error(errore);
-						res.status(500).send(errore);
-					}
-				},
-			);
+			}>(`/${tempSchema.collectionName}`, MultipleEntitySchema(tempSchema), async function (req, res) {
+				const { page = 0, size = 10, orderBy, sortBy, ...other } = req.query;
+				try {
+					const namespaced_collection = `${schema.schema.$metadata.namespace || "default"}.${
+						schema.schema.$metadata.collection
+					}`;
+					const collection = db.collection(namespaced_collection);
+					const docs = await collection
+						.find(other || {})
+						.project(tempSchema.getSchemaPropertiesMongoProjection()) // è un ottimizzazione. Di fatto fastify già elimina le proprietà non comprese nello schema dichiarato poche righe sopra
+						.sort({ [sortBy || "id"]: orderBy === "asc" ? 1 : -1 })
+						.limit(size)
+						.skip(page * size)
+						.toArray();
+					res.status(200).send(docs);
+				} catch (errore) {
+					req.log.error(errore);
+					res.status(500).send(errore);
+				}
+			});
 		});
 		server.register(healthHandler, { prefix: HEALTH_PATH });
 
