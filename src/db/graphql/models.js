@@ -1,5 +1,6 @@
 const { model, Schema } = require("mongoose");
 const fs = require("fs");
+const _ = require("lodash");
 
 const SCHEMAS_SOURCE = process.env.SCHEMAS_SOURCE || "assets/schemas.json";
 
