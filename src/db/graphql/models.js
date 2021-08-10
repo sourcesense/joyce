@@ -19,7 +19,8 @@ Object.keys(schemaJson["schemas"]).forEach(function (key) {
 	);
 
 	let schema = new Schema(data.schema.properties);
-	models[key] = model(key, schema, data.schema["$metadata"]["collection"]);
+	let collection = `${data.schema["$metadata"]["namespace"] || "default"}.${data.schema["$metadata"]["collection"]}`;
+	models[key] = model(key, schema, collection);
 });
 
 module.exports = models;

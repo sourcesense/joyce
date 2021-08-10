@@ -3,3 +3,4 @@
 /assets/*.json
 !/assets/schemas.json
 .meshrc.yml
+.eslintcache
