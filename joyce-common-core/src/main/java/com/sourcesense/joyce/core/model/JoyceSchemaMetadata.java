@@ -30,83 +30,62 @@ import java.util.Map;
 @Setter
 @EqualsAndHashCode
 public class JoyceSchemaMetadata {
-    /**
-     * key Constants
-     */
-    public static final String KEY_ROOT_QUERY = "root_query";
-    public static final String KEY_ROOT_COLLECTION = "root_collection";
 
-    @JsonProperty("uid")
-    private String uidKey;
-    private JoyceURI.Subtype subtype;
-    private String collection;
-    private String name;
-    private String namespace = "default";
-    private List<Map<String, Object>> indexes;
-    private String description;
-    private Boolean development = false;
-    private Boolean store = true;
-    private Boolean validation = true;
-    private Boolean indexed = true;
-
-    @JsonProperty(KEY_ROOT_QUERY)
-    private JsonNode rootQuery;
-
-    @JsonProperty(KEY_ROOT_COLLECTION)
-    private String rootCollection;
-
-    private JoyceURI parent;
-    private JsonNode extra;
+	@JsonProperty("uid")
+	private String uidKey;
+	private JoyceURI.Subtype subtype;
+	private String collection;
+	private String name;
+	private String namespace = "default";
+	private List<Map<String, Object>> indexes;
+	private String description;
+	private Boolean development = false;
+	private Boolean store = true;
+	private Boolean validation = true;
+	private Boolean indexed = true;
+	private JoyceURI parent;
+	private Map<String, Object> extra;
 
 
-    /**
-     * Validate the object, some keys are required or not given a subtype
-     * throws if it fails to validate
-     *
-     * @return
-     * @throws InvalidMetadataException
-     */
-    public JoyceSchemaMetadata validate() throws InvalidMetadataException {
-        if(name == null){
-            throw new InvalidMetadataException("Missing [name] from metadata");
-        }
-
-        if(subtype == null){
-            throw new InvalidMetadataException("Missing [subtype] from metadata");
-        }
-
-        if(parent != null){
-          return this;
-        }
-
-        if(uidKey == null){
-            throw new InvalidMetadataException("Missing [uid] from metadata");
-        }
-
-        if(collection == null){
-            throw new InvalidMetadataException("Missing [collection] from metadata");
-        }
-
-        switch (subtype){
-            case MODEL:
-                if(rootCollection == null){
-                    throw new InvalidMetadataException("Missing [root_collection] from metadata");
-                }
-                if(rootQuery == null){
-                    throw new InvalidMetadataException("Missing [root_query] from metadata");
-                }
-                break;
-            case IMPORT:
-                break;
-        }
-        return this;
-    }
-
-		public String getNamespacedName() {
-			return String.format("%s%s%s", namespace, JoyceURI.NAMESPACE_SEPARATOR, name);
+	/**
+	 * Validate the object, some keys are required or not given a subtype
+	 * throws if it fails to validate
+	 *
+	 * @return
+	 * @throws InvalidMetadataException
+	 */
+	public JoyceSchemaMetadata validate() throws InvalidMetadataException {
+		if (name == null) {
+			throw new InvalidMetadataException("Missing [name] from metadata");
 		}
 
-		public String getNamespacedCollection() {
-			return String.format("%s%s%s", namespace, JoyceURI.NAMESPACE_SEPARATOR, collection);
+		if (subtype == null) {
+			throw new InvalidMetadataException("Missing [subtype] from metadata");
 		}
+
+		if (parent != null) {
+			return this;
+		}
+
+		if (uidKey == null) {
+			throw new InvalidMetadataException("Missing [uid] from metadata");
+		}
+
+		if (collection == null) {
+			throw new InvalidMetadataException("Missing [collection] from metadata");
+		}
+
+		if (JoyceURI.Subtype.MODEL.equals(subtype) && extra == null) {
+			throw new InvalidMetadataException("Missing [extra] from metadata");
+		}
+		return this;
+	}
+
+	public String getNamespacedName() {
+		return String.format("%s%s%s", namespace, JoyceURI.NAMESPACE_SEPARATOR, name);
+	}
+
+	public String getNamespacedCollection() {
+		return String.format("%s%s%s", namespace, JoyceURI.NAMESPACE_SEPARATOR, collection);
+	}
 }

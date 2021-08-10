@@ -56,7 +56,12 @@ public class SchemaService {
 	public JoyceURI save(SchemaSave schema) throws JsonProcessingException {
 		SchemaEntity entity = schemaMapper.toEntity(schema);
 
-		JoyceURI uid = getSchemaUid(entity.getMetadata().getSubtype(), entity.getMetadata().getNamespace(), entity.getMetadata().getName());
+		JoyceURI uid = getSchemaUid(
+				entity.getMetadata().getSubtype(),
+				entity.getMetadata().getNamespace(),
+				entity.getMetadata().getName()
+		);
+
 		entity.setUid(uid.toString());
 
 		// Validate schema
