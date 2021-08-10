@@ -1,12 +1,12 @@
 import { Schema, SchemaProperties } from "../types";
 
 export class CustomeSchemaParser {
-	readonly collectionName: string = "";
+	readonly endpoint: string = "";
 	readonly properties: SchemaProperties = {};
 	readonly required: string[] = [];
 	readonly nullable: string[] = [];
 	constructor({ schema: { $metadata, properties } }: { schema: Schema }) {
-		this.collectionName = $metadata?.collection;
+		this.endpoint = $metadata?.endpoint;
 		this.properties = properties;
 	}
 

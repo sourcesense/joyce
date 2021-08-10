@@ -135,7 +135,7 @@ function createServer(db, producer) {
 		Body: {veditu:string}
 	   */
 			server.get<{ Params: { id: string } }>(
-				`/${tempSchema.collectionName}/:id`,
+				`/${tempSchema.endpoint}/:id`,
 				SingleEntitySchema(tempSchema),
 				async function (req, res) {
 					const { id: entityID } = req.params;
@@ -165,7 +165,7 @@ function createServer(db, producer) {
 					sortBy: string;
 				};
 			}>(
-				`/${tempSchema.collectionName}`,
+				`/${tempSchema.endpoint}`,
 				MultipleEntitySchema(tempSchema),
 				async function (req, res) {
 					const { page = 0, size = 10, orderBy, sortBy, ...other } = req.query;

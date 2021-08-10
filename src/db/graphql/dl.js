@@ -1,5 +1,6 @@
 const fetch = require("node-fetch");
 const fs = require("fs");
+const _ = require("lodash");
 
 const SCHEMAS_SOURCE = process.env.SCHEMAS_SOURCE || "assets/schemas.json";
 
@@ -8,7 +9,11 @@ function dl(schemaJson, key) {
 		fetch(schemaJson["schemas"][key]["source"]).then((response) =>
 			response.text().then((json) => {
 				json = json.replace(/\integer/g, "number");
-				fs.writeFileSync(`assets/${key}.json`, json, "utf8");
+				json = JSON.parse(json);
+				json.schema["$metadata"]["name"] = _.upperFirst(_.camelCase(json.schema["$metadata"]["name"])); // remember edit in SchemaConfiguration.ts
+				json.schema["$metadata"]["endpoint"] = key;
+				json.name = _.upperFirst(_.camelCase(json.name));
+				fs.writeFileSync(`assets/${key}.json`, JSON.stringify(json), "utf8");
 			}),
 		);
 	}

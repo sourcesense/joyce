@@ -1,5 +1,6 @@
 import fetch from "node-fetch";
 import { ResponsableSchema, SchemaResources } from "../types";
+import _ from "lodash";
 
 export class SchemaConfiguration {
 	readonly sources = [];
@@ -23,6 +24,10 @@ export class SchemaConfiguration {
 				})
 				.then((j) => {
 					logger.info(`SUCCESS: ${resource.label} schema Found`);
+					j.schema["$metadata"]["endpoint"] = resource.label;
+					j.schema["$metadata"]["name"] = _.upperFirst(_.camelCase(j.schema["$metadata"]["name"]));
+					j.name = _.upperFirst(_.camelCase(j.name));
+
 					return {
 						...resource,
 						schema: j.schema,

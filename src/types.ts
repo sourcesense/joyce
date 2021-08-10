@@ -8,6 +8,7 @@ export interface SchemaProperties {
 }
 export interface SchemaMetadata {
 	uid: string;
+	endpoint: string;
 	collection: string;
 	cassandra_schema: string;
 	subtype: string;
