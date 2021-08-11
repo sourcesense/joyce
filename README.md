@@ -1,6 +1,6 @@
 # Joyce Rest
 
-[![Publish Snapshot](https://github.com/sourcesense/joyce-rest/actions/workflows/master.yaml/badge.svg)](https://github.com/sourcesense/joyce-rest/actions/workflows/master.yaml)
+[![Publish Snapshot](https://github.com/sourcesense/joyce-docs/raw/main/static/img/logo-horizontal-dark-blue.png)](https://sourcesense.github.io/joyce-docs/)
 
 Is the REST api from which you can consume the final output of Joyce transofrmations.
 

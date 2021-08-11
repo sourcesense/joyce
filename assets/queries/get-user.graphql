@@ -1,6 +1,0 @@
-mutation User {
-  record {
-    email
-    code
-  }
-}
