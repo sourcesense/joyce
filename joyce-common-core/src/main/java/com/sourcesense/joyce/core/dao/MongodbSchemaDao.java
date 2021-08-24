@@ -102,7 +102,9 @@ public class MongodbSchemaDao implements SchemaDao {
 
 	@Override
 	public List<SchemaEntity> getAllBySubtypeAndNamespace(JoyceURI.Subtype subtype, String namespace) {
-		return schemaRepository.findAllByMetadata_SubtypeAndMetadata_Namespace(subtype.name(), namespace).stream().map(schemaMapper::entityFromDocument).collect(Collectors.toList());
+		return schemaRepository.findAllByMetadata_SubtypeAndMetadata_Namespace(subtype.name(), namespace).stream()
+				.map(schemaMapper::entityFromDocument)
+				.collect(Collectors.toList());
 	}
 
 	@Override

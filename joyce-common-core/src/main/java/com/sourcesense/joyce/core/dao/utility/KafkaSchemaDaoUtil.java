@@ -36,7 +36,7 @@ public class KafkaSchemaDaoUtil implements SchemaDaoUtil {
 
 	@Override
 	public <T> Optional<T> mapFromData(JsonNode json, Class<T> clazz) {
-		return this.getValueFromData(json, clazz);
+			return this.getValueFromData(json, clazz);
 	}
 
 	private <T> Optional<T> getValueFromData(JsonNode json, Class<T> clazz) {
