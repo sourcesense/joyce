@@ -1,6 +1,7 @@
 package com.sourcesense.joyce.core.dao;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
+import com.sourcesense.joyce.core.configuration.SchemaServiceProperties;
 import com.sourcesense.joyce.core.dto.Schema;
 import com.sourcesense.joyce.core.exception.RestException;
 import com.sourcesense.joyce.core.exception.handler.CustomExceptionHandler;
@@ -9,15 +10,16 @@ import com.sourcesense.joyce.core.model.JoyceURI;
 import com.sourcesense.joyce.core.model.SchemaEntity;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import org.apache.commons.codec.binary.Base64;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnProperty;
 import org.springframework.core.ParameterizedTypeReference;
-import org.springframework.http.HttpMethod;
-import org.springframework.http.HttpStatus;
-import org.springframework.http.ResponseEntity;
+import org.springframework.http.*;
 import org.springframework.stereotype.Component;
 import org.springframework.web.client.RestTemplate;
 
+import java.nio.charset.Charset;
+import java.nio.charset.StandardCharsets;
 import java.util.Collections;
 import java.util.List;
 import java.util.Optional;
@@ -28,21 +30,31 @@ import java.util.Optional;
 @Component
 public class RestSchemaDao implements SchemaDao {
 
-	@Value("${joyce.schema-service.rest-endpoint}")
-	private String restEndpoint;
-
 	private final ObjectMapper mapper;
 	private final RestTemplate restTemplate;
 	private final SchemaMapper schemaMapper;
 	private final CustomExceptionHandler customExceptionHandler;
-
+	private final SchemaServiceProperties properties;
+	
+	HttpHeaders createHeaders(){
+		if(properties.getRestCredentials() != null) {
+			return new HttpHeaders() {{
+				String auth = properties.getRestCredentials();
+				byte[] encodedAuth = Base64.encodeBase64(
+						auth.getBytes(StandardCharsets.US_ASCII));
+				String authHeader = "Basic " + new String(encodedAuth);
+				set("Authorization", authHeader);
+			}};
+		}
+		return new HttpHeaders();
+	}
 
 	@Override
 	public Optional<SchemaEntity> get(String id) {
 		try {
 			return JoyceURI.createURI(id)
 					.map(this::getSchemaEndpoint)
-					.map(endpoint -> restTemplate.getForEntity(endpoint, Schema.class))
+					.map(endpoint -> restTemplate.exchange(endpoint, HttpMethod.GET, new HttpEntity<>(createHeaders()), Schema.class))
 					.filter(response -> HttpStatus.OK.equals(response.getStatusCode()))
 					.map(ResponseEntity::getBody)
 					.map(Schema::getSchema)
@@ -71,7 +83,7 @@ public class RestSchemaDao implements SchemaDao {
 			String endpoint = this.getSchemaEndpoint();
 			Optional.of(schemaEntity)
 					.map(schemaMapper::toDtoSave)
-					.map(body -> restTemplate.postForEntity(endpoint, body, JoyceURI.class))
+					.map(body -> restTemplate.exchange(endpoint,HttpMethod.POST,new HttpEntity<>(body, createHeaders()) , JoyceURI.class))
 					.filter(response -> HttpStatus.CREATED.equals(response.getStatusCode()))
 					.orElseThrow(() -> new RuntimeException(
 							String.format("An error happened when calling '%s' to save schema", endpoint))
@@ -84,10 +96,12 @@ public class RestSchemaDao implements SchemaDao {
 	@Override
 	public void delete(SchemaEntity schemaEntity) {
 		try {
-			restTemplate.delete(this.getSchemaEndpoint(
+			restTemplate.exchange(this.getSchemaEndpoint(
 					schemaEntity.getMetadata().getSubtype(),
 					schemaEntity.getMetadata().getNamespace(),
-					schemaEntity.getMetadata().getName())
+					schemaEntity.getMetadata().getName()),
+					HttpMethod.DELETE,
+					new HttpEntity<>(createHeaders()), String.class
 			);
 		} catch (Exception exception) {
 			throw new RestException(exception.getMessage());
@@ -112,7 +126,7 @@ public class RestSchemaDao implements SchemaDao {
 	}
 
 	private String getSchemaEndpoint() {
-		return String.format("%s/api/schema", restEndpoint);
+		return String.format("%s/api/schema", properties.getRestEndpoint());
 	}
 
 	private String getSchemaEndpoint(JoyceURI.Subtype subtype, String namespace) {
@@ -137,7 +151,7 @@ public class RestSchemaDao implements SchemaDao {
 
 		ParameterizedTypeReference<List<SchemaEntity>> responseType = new ParameterizedTypeReference<>() {};
 		return Optional.of(endpoint)
-				.map(url -> restTemplate.exchange(url, HttpMethod.GET, null, responseType))
+				.map(url -> restTemplate.exchange(url, HttpMethod.GET, new HttpEntity<>(createHeaders()), responseType))
 				.filter(response -> HttpStatus.OK.equals(response.getStatusCode()))
 				.map(ResponseEntity::getBody)
 				.orElseThrow(() -> new RestException(

@@ -47,7 +47,6 @@
 
 	<modules>
 		<module>joyce-schema-engine</module>
-		<module>joyce-connector-core</module>
 		<module>joyce-common-core</module>
 	</modules>
 

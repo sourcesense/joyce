@@ -49,7 +49,7 @@ public class MongodbSchemaDao implements SchemaDao {
 	void init() {
 		try {
 			KafkaUtility.addTopicIfNeeded(kafkaAdmin,
-					schemaServiceProperties.getTopic(),
+					schemaServiceProperties.getCollection(),
 					schemaServiceProperties.getPartitions(),
 					schemaServiceProperties.getReplicas(),
 					schemaServiceProperties.getRetention(),
@@ -78,7 +78,7 @@ public class MongodbSchemaDao implements SchemaDao {
 		JsonNode content = objectMapper.convertValue(entity, JsonNode.class);
 		MessageBuilder<JsonNode> message = MessageBuilder
 				.withPayload(content)
-				.setHeader(KafkaHeaders.TOPIC, schemaServiceProperties.getTopic())
+				.setHeader(KafkaHeaders.TOPIC, schemaServiceProperties.getCollection())
 				.setHeader(KafkaHeaders.MESSAGE_KEY, entity.getUid());
 
 		kafkaTemplate.send(message.build());
@@ -93,7 +93,7 @@ public class MongodbSchemaDao implements SchemaDao {
 		JsonNode content = objectMapper.convertValue(entity, JsonNode.class);
 		MessageBuilder<JsonNode> message = MessageBuilder
 				.withPayload((JsonNode) objectMapper.createObjectNode())
-				.setHeader(KafkaHeaders.TOPIC, schemaServiceProperties.getTopic())
+				.setHeader(KafkaHeaders.TOPIC, schemaServiceProperties.getCollection())
 				.setHeader(KafkaHeaders.MESSAGE_KEY, entity.getUid());
 
 		kafkaTemplate.send(message.build());

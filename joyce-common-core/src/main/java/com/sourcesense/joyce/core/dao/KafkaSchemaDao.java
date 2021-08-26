@@ -65,7 +65,7 @@ public class KafkaSchemaDao implements SchemaDao {
 						"     VALUE_FORMAT = 'JSON'\n" +
 						"   );",
 				TABLE_NAME,
-				schemaServiceProperties.getTopic(),
+				schemaServiceProperties.getCollection(),
 				schemaServiceProperties.getPartitions(),
 				schemaServiceProperties.getReplicas());
 		ksql.executeStatement(createTable).get();
@@ -80,7 +80,7 @@ public class KafkaSchemaDao implements SchemaDao {
 						"   ) WITH (\n" +
 						"     KAFKA_TOPIC = '%s', \n" +
 						"     VALUE_FORMAT = 'JSON'\n" +
-						"   );", STREAM_NAME, schemaServiceProperties.getTopic());
+						"   );", STREAM_NAME, schemaServiceProperties.getCollection());
 		ksql.executeStatement(createStream).get();
 	}
 

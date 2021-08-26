@@ -3,6 +3,7 @@ package com.sourcesense.joyce.core.dao;
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.core.type.TypeReference;
 import com.fasterxml.jackson.databind.ObjectMapper;
+import com.sourcesense.joyce.core.configuration.SchemaServiceProperties;
 import com.sourcesense.joyce.core.exception.RestException;
 import com.sourcesense.joyce.core.exception.handler.CustomExceptionHandler;
 import com.sourcesense.joyce.core.mapper.SchemaMapper;
@@ -226,11 +227,13 @@ public class RestSchemaDaoTest implements UtilitySupplier {
 		return mapper.readValue(this.getResourceAsString(path), clazz);
 	}
 
-	private RestSchemaDao initRestSchemaDao(RestTemplate restTemplate, SchemaMapper schemaMapper, CustomExceptionHandler customExceptionHandler) throws NoSuchFieldException, IllegalAccessException {
-		RestSchemaDao restSchemaDao = new RestSchemaDao(mapper, restTemplate, schemaMapper, customExceptionHandler);
-		Field restEndpoint = restSchemaDao.getClass().getDeclaredField("restEndpoint");
-		restEndpoint.setAccessible(true);
-		restEndpoint.set(restSchemaDao, REST_ENDPOINT);
+	private RestSchemaDao initRestSchemaDao(RestTemplate restTemplate, SchemaMapper schemaMapper, CustomExceptionHandler customExceptionHandler) {
+		SchemaServiceProperties props = new SchemaServiceProperties();
+		props.setRestEndpoint(REST_ENDPOINT);
+		RestSchemaDao restSchemaDao = new RestSchemaDao(mapper, restTemplate, schemaMapper, customExceptionHandler, props);
+//		Field restEndpoint = restSchemaDao.getClass().getDeclaredField("restEndpoint");
+//		restEndpoint.setAccessible(true);
+//		restEndpoint.set(restSchemaDao, REST_ENDPOINT);
 		return restSchemaDao;
 	}
 }

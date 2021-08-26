@@ -26,15 +26,52 @@ import org.springframework.stereotype.Component;
 @Component("schemaServiceProperties")
 @ConfigurationProperties("joyce.schema-service")
 public class SchemaServiceProperties {
-    Boolean enabled = false;
-    String database = "kafka";
-    String subtype = "import";
-    String topic = "joyce_schema";
-    String collection = "joyce_schema";
-    Integer partitions = 10;
-    Integer replicas = 1;
-		/**
-		 * Notification topic retention in milliseconds
-		 */
-		private Integer retention = 259200000; // 3 days
+	/**
+	 * Enable the service or not
+ 	 */
+	Boolean enabled = false;
+	/**
+	 * Database that bakes the CRUD of Schema, could be: mongodb | kafka | rest
+	 */
+	String database = "mongodb";
+
+	/**
+	 * Name of the collection topic that bakes scehmas
+	 */
+	String collection = "joyce_schema";
+
+	/**
+	 * Used by the Rest implementation, it is the endpoint
+	 */
+	String restEndpoint;
+
+	/**
+	 * Used by the Rest implementation, if present it is used as Basic Auth credential to authenticate to the
+	 */
+	String restCredentials;
+
+	/**
+	 * Subtype of the managed schema
+	 * DEPRECATED: used only by kafka cbacking mechanism
+	 */
+	@Deprecated
+	String subtype = "import";
+
+	/**
+	 * Used for kafka topics creation
+	 */
+	@Deprecated
+	Integer partitions = 10;
+
+	/**
+	 * Used for kafka topics creation
+	 */
+	@Deprecated
+	Integer replicas = 1;
+
+	/**
+	 * Used for kafka topics creation
+	 */
+	@Deprecated
+	private Integer retention = 259200000; // 3 days
 }
