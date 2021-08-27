@@ -255,6 +255,9 @@ public class SchemaEngine {
 			return arrayNode;
 		} else {
 			JsonNode result = StringUtils.isNotEmpty(key) ? sourceJsonNode.get(key) : sourceJsonNode;
+			if (result == null){
+				return null;
+			}
 			switch (type) {
 				case "integer":
 					return result.asText().isEmpty() ? null : JsonNodeFactory.instance.numberNode(Integer.parseInt(result.asText()));
