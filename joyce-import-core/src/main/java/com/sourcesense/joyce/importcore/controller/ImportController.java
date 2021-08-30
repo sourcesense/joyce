@@ -17,6 +17,7 @@
 package com.sourcesense.joyce.importcore.controller;
 
 import com.fasterxml.jackson.databind.JsonNode;
+import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.databind.node.ObjectNode;
 import com.sourcesense.joyce.core.model.SchemaEntity;
 import com.sourcesense.joyce.importcore.api.ImportApi;
@@ -45,6 +46,7 @@ public class ImportController implements ImportApi {
 
 	final private ImportService importService;
 	final private SchemaService schemaService;
+	final private ObjectMapper objectMapper;
 
 	/**
 	 * Insert raw message using schema found in the endpoint path.
@@ -73,7 +75,9 @@ public class ImportController implements ImportApi {
 				Schema schema = this.fetchSchema(schemaId);
 				List<JsonNode> documents = importService.computeDocumentsFromFile(rawUri, data, columnSeparator, arraySeparator);
 				documents.parallelStream().forEach(document -> importService.processImport(rawUri, document, schema));
-				return importService.notifyBulkImportSuccess(rawUri, documents);
+				ObjectNode bulkImportNotification = objectMapper.createObjectNode();
+				bulkImportNotification.put("processed", documents.size());
+				return importService.notifyBulkImportSuccess(rawUri, bulkImportNotification);
 	}
 
 	/**

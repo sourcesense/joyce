@@ -191,7 +191,7 @@ public class ImportService {
 	@Notify(successEvent = NotificationEvent.IMPORT_BULK_INSERT_SUCCESS)
 	public boolean notifyBulkImportSuccess(
 			@RawUri JoyceURI rawUri,
-			@EventPayload List<JsonNode> documents) {
+			@EventPayload JsonNode note) {
 
 		return true;
 	}

@@ -51,7 +51,7 @@ public class ImportConsumer {
 	 * @param messageKey The key of the kafka message
 	 * @param headers the headers of the kafka message
 	 */
-	@KafkaListener(topics = "${joyce.kafka.import-topic:import}")
+	@KafkaListener(topics = "${joyce.kafka.import.topic:import}")
 	public void consumeMessage(
 			@Payload ObjectNode message,
 			@Header(KafkaHeaders.RECEIVED_MESSAGE_KEY) String messageKey,

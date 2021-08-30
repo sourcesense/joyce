@@ -31,6 +31,12 @@ joyce:
       enabled: true
     producer:
       enabled: true
-    import-topic: joyce_import
-    content-topic: joyce_content
+    import:
+      topic: joyce_import
+    content:
+      topic: joyce_content
+      cleanup: compact
+    notification:
+      topic: joyce_notification
+      retention: 86400000
 
