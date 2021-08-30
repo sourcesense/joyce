@@ -35,7 +35,7 @@ public class ContentConsumer {
 	 * @param key     Document key
 	 * @param headers Kafka headers
 	 */
-	@KafkaListener(topics = "${joyce.kafka.content-topic:joyce_content}")
+	@KafkaListener(topics = "${joyce.kafka.content.topic:joyce_content}")
 	public void receive(
 			@Payload ObjectNode message,
 			@Header(KafkaHeaders.RECEIVED_MESSAGE_KEY) String key,
