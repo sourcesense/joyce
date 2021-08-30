@@ -14,7 +14,7 @@
  * limitations under the License.
  */
 
-package com.sourcesense.joyce.core.configuration;
+package com.sourcesense.joyce.core.configuration.kafka;
 
 import com.fasterxml.jackson.databind.JsonNode;
 import org.apache.kafka.clients.producer.ProducerConfig;
@@ -45,9 +45,12 @@ public class KafkaProducerConfig {
     @Scope("prototype")
     public ProducerFactory<String, JsonNode> producerFactory() {
         Map<String, Object> configProps = new HashMap<>();
+				configProps.put(
+					ProducerConfig.BOOTSTRAP_SERVERS_CONFIG,
+					bootstrapAddress);
         configProps.put(
-                ProducerConfig.BOOTSTRAP_SERVERS_CONFIG,
-                bootstrapAddress);
+                ProducerConfig.MAX_REQUEST_SIZE_CONFIG,
+						2097152);
         configProps.put(
                 ProducerConfig.KEY_SERIALIZER_CLASS_CONFIG,
                 StringSerializer.class);

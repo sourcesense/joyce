@@ -33,26 +33,6 @@ public class NotificationServiceProperties {
     private Boolean enabled;
 
     /**
-     * Notification topic
-     */
-    private String topic = "joyce_notification";
-
-    /**
-     * Notification topic partitions
-     */
-    private Integer partitions = 10;
-
-    /**
-     * Notification topic replicas
-     */
-    private Integer replicas = 1;
-
-    /**
-     * Notification topic retention in milliseconds
-     */
-    private Integer retention = 259200000; // 3 days
-
-    /**
      * Notification Source, the software object that generated the notification
      */
     public String source;

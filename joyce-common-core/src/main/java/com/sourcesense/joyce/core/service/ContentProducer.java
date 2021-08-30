@@ -39,11 +39,11 @@ import org.springframework.stereotype.Service;
 import java.util.Optional;
 
 @Slf4j
-@ConditionalOnProperty(value = "joyce.content-producer.enabled", havingValue = "true")
+@ConditionalOnProperty(value = "joyce.kafka.producer.enabled", havingValue = "true")
 @Service
 public class ContentProducer extends KafkaMessageService<JsonNode> {
 
-    @Value("${joyce.kafka.content-topic:joyce_content}")
+    @Value("${joyce.kafka.content.topic:joyce_content}")
     String contentTopic;
     private final NotificationService notificationService;
 

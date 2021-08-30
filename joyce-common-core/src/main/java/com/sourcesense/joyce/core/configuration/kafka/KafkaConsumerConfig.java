@@ -14,7 +14,7 @@
  * limitations under the License.
  */
 
-package com.sourcesense.joyce.core.configuration;
+package com.sourcesense.joyce.core.configuration.kafka;
 
 import com.fasterxml.jackson.databind.node.ObjectNode;
 import org.apache.kafka.clients.consumer.ConsumerConfig;
@@ -59,6 +59,9 @@ public class KafkaConsumerConfig {
 
         props.put(ErrorHandlingDeserializer.VALUE_DESERIALIZER_CLASS, JsonDeserializer.class.getName());
         props.put(JsonDeserializer.VALUE_DEFAULT_TYPE, "com.fasterxml.jackson.databind.node.ObjectNode");
+			props.put(ConsumerConfig.MAX_POLL_INTERVAL_MS_CONFIG, 900000);
+			props.put(ConsumerConfig.MAX_POLL_RECORDS_CONFIG, 100);
+			props.put(ConsumerConfig.HEARTBEAT_INTERVAL_MS_CONFIG, 3000);
 
         return new DefaultKafkaConsumerFactory<>(props);
     }
@@ -69,6 +72,7 @@ public class KafkaConsumerConfig {
         ConcurrentKafkaListenerContainerFactory<String, ObjectNode> factory =
                 new ConcurrentKafkaListenerContainerFactory<>();
         factory.setConsumerFactory(consumerFactory());
+//        factory.setBatchListener(true);
         return factory;
     }
 }

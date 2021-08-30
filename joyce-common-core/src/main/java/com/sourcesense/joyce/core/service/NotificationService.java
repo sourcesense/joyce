@@ -21,25 +21,20 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.databind.node.ObjectNode;
 import com.sourcesense.joyce.core.configuration.NotificationServiceProperties;
 import com.sourcesense.joyce.core.enumeration.NotificationEvent;
-import com.sourcesense.joyce.core.utililty.KafkaUtility;
-import io.confluent.ksql.api.client.Client;
 import lombok.Builder;
 import lombok.Getter;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
-import org.apache.kafka.common.config.TopicConfig;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnProperty;
-import org.springframework.kafka.core.KafkaAdmin;
 import org.springframework.kafka.core.KafkaTemplate;
 import org.springframework.kafka.support.KafkaHeaders;
 import org.springframework.messaging.Message;
 import org.springframework.messaging.support.MessageBuilder;
 import org.springframework.stereotype.Service;
 
-import javax.annotation.PostConstruct;
 import java.util.Date;
 import java.util.UUID;
-import java.util.concurrent.ExecutionException;
 
 @Builder
 @Getter
@@ -75,19 +70,11 @@ public class NotificationService {
     private final ObjectMapper mapper;
     private final NotificationServiceProperties properties;
     final private KafkaTemplate<String, JsonNode> kafkaTemplate;
-    private final KafkaAdmin kafkaAdmin;
 
-    @PostConstruct
-    void init() throws ExecutionException, InterruptedException {
-        KafkaUtility.addTopicIfNeeded(kafkaAdmin,
-                properties.getTopic(),
-                properties.getPartitions(),
-                properties.getReplicas(),
-                properties.getRetention(),
-                TopicConfig.CLEANUP_POLICY_DELETE);
-    }
+    @Value("${joyce.kafka.notification.topic}")
+		String topic;
 
-    public void ok(String rawUri, String contentUri, NotificationEvent event) {
+	public void ok(String rawUri, String contentUri, NotificationEvent event) {
         this.sendNotification(rawUri, contentUri, event, null, null, true);
     }
 
@@ -139,7 +126,7 @@ public class NotificationService {
         String notificationKey = String.format("%d-%s", timestamp, uuid);
         Message<JsonNode> message = MessageBuilder
                 .withPayload(mapper.convertValue(notification, JsonNode.class))
-                .setHeader(KafkaHeaders.TOPIC, properties.getTopic())
+                .setHeader(KafkaHeaders.TOPIC, topic)
                 .setHeader(KafkaHeaders.MESSAGE_KEY, notificationKey)
                 .build();
 
