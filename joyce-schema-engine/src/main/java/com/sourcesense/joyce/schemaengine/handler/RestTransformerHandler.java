@@ -36,14 +36,14 @@ public class RestTransformerHandler extends JsonPathTransformerHandler {
 	private final MustacheFactory mf;
 
 	@Override
-	public JsonNode process(String key, JsonNode value, JsonNode source, Optional<JsonNode> metadata, Optional<Object> context) {
+	public JsonNode process(String key, String type, JsonNode value, JsonNode source, Optional<JsonNode> metadata, Optional<Object> context) {
 
 		RestHandlerData restHandlerData = mapper.convertValue(value, RestHandlerData.class);
 		// Resolve json paths inside vars
 		Optional<Map<String, String>> vars = Optional.ofNullable(restHandlerData.getVars()).map(stringStringMap -> stringStringMap.entrySet().stream()
 				.collect(Collectors.toMap(
 						Map.Entry::getKey,
-						entry -> read(source, entry.getValue()).asText())));
+						entry -> read(type, source, entry.getValue()).asText())));
 
 
 		ResponseEntity<JsonNode> response = this.computeResponse(restHandlerData, vars.orElse(new HashMap<>()));
@@ -52,7 +52,7 @@ public class RestTransformerHandler extends JsonPathTransformerHandler {
 			return Optional.of(restHandlerData)
 					.map(RestHandlerData::getExtract)
 					.filter(extract -> StringUtils.isNotEmpty(extract.asText()))
-					.map(extract -> super.process(key, extract, response.getBody(), metadata, context))
+					.map(extract -> super.process(key, type, extract, response.getBody(), metadata, context))
 					.orElse(response.getBody());
 
 		} else {

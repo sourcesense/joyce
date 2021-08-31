@@ -300,7 +300,7 @@ public class SchemaEngine {
 		JsonNode returnNode = sourceJsonNode.deepCopy();
 		for (String handlerKey : knownHandlerKeys) {
 			SchemaTransformerHandler handler = transformerHandlers.get(handlerKey);
-			returnNode = handler.process(key, schema.get(handlerKey), returnNode, metadata, context);
+			returnNode = handler.process(key, schema.get("type").asText(), schema.get(handlerKey), returnNode, metadata, context);
 		}
 		return Optional.ofNullable(returnNode);
 	}

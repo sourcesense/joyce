@@ -110,7 +110,7 @@ public class SchemaTransformerConfigTest {
 	@SchemaTransformationHandler
 	private static class TestEmptyKeywordTransformerHandler implements SchemaTransformerHandler {
 		@Override
-		public JsonNode process(String key, JsonNode value, JsonNode source, Optional<JsonNode> metadata, Optional<Object> context) {
+		public JsonNode process(String key, String type, JsonNode value, JsonNode source, Optional<JsonNode> metadata, Optional<Object> context) {
 			return null;
 		}
 	}
@@ -119,7 +119,7 @@ public class SchemaTransformerConfigTest {
 	private static class TestNoDollarTransformerHandler implements SchemaTransformerHandler {
 
 		@Override
-		public JsonNode process(String key, JsonNode value, JsonNode source, Optional<JsonNode> metadata, Optional<Object> context) {
+		public JsonNode process(String key, String type, JsonNode value, JsonNode source, Optional<JsonNode> metadata, Optional<Object> context) {
 			return null;
 		}
 	}

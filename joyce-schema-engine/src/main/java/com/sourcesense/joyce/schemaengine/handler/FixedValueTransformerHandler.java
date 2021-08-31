@@ -29,7 +29,7 @@ import java.util.Optional;
 public class FixedValueTransformerHandler implements SchemaTransformerHandler {
 
 	@Override
-	public JsonNode process(String key, JsonNode value, JsonNode source, Optional<JsonNode> metadata, Optional<Object> context) {
+	public JsonNode process(String key, String type, JsonNode value, JsonNode source, Optional<JsonNode> metadata, Optional<Object> context) {
 		return value;
 	}
 }

@@ -84,7 +84,7 @@ public class SchemaEngineTest implements UtilitySupplier {
 		String schema = Files.readString(loadResource("schema/10.json"));
 		String source = Files.readString(loadResource("source/10.json"));
 		SchemaTransformerHandler dummyHandler = mock(SchemaTransformerHandler.class);
-		when(dummyHandler.process(any(), any(), any(), any(), any())).thenReturn(new TextNode("foobar"));
+		when(dummyHandler.process(any(), any(), any(), any(), any(), any())).thenReturn(new TextNode("foobar"));
 		Map<String, SchemaTransformerHandler> handlers = Map.of(
 				"$path", dummyHandler,
 				"$fixed", dummyHandler,
@@ -119,9 +119,9 @@ public class SchemaEngineTest implements UtilitySupplier {
 		String source = Files.readString(loadResource("source/10.json"));
 
 		SchemaTransformerHandler handler = mock(SchemaTransformerHandler.class);
-		when(handler.process(any(), eq(new TextNode("$.email")), any(), any(), any()))
+		when(handler.process(any(), any(), eq(new TextNode("$.email")), any(), any(), any()))
 				.thenReturn(new TextNode("mario"));
-		when(handler.process(any(), eq(new TextNode("uppercase")), eq(new TextNode("mario")), any(), any()))
+		when(handler.process(any(), any(), eq(new TextNode("uppercase")), eq(new TextNode("mario")), any(), any()))
 				.thenReturn(new TextNode("MARIO"));
 
 		Map<String, SchemaTransformerHandler> handlers = Map.of(

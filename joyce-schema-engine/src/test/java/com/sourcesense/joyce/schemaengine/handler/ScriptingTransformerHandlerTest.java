@@ -79,7 +79,7 @@ public class ScriptingTransformerHandlerTest implements UtilitySupplier {
 		JsonNode value = this.getResourceAsNode(valuePath);
 
 		String actual = scriptingTransformerHandler
-				.process(key, value, source, Optional.empty(), Optional.empty())
+				.process(key, "string", value, source, Optional.empty(), Optional.empty())
 				.asText();
 
 		assertEquals(expected, actual);

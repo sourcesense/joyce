@@ -32,7 +32,7 @@ public class TestApplication {
 
 	@Bean(name = "fooHandler")
 	SchemaTransformerHandler handler(){
-		SchemaTransformerHandler schemaTransformerHandler = (key, schema, sourceJsonNode, metadata, context) -> new TextNode("bar");
+		SchemaTransformerHandler schemaTransformerHandler = (key, type, schema, sourceJsonNode, metadata, context) -> new TextNode("bar");
 		return schemaTransformerHandler;
 	}
 }

@@ -35,6 +35,7 @@ public class ScriptingTransformerHandler implements SchemaTransformerHandler {
 	@Override
 	public JsonNode process(
 			String key,
+			String type,
 			JsonNode value,
 			JsonNode source,
 			Optional<JsonNode> metadata,

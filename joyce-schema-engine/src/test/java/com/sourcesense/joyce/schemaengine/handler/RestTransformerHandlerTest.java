@@ -154,7 +154,7 @@ public class RestTransformerHandlerTest implements UtilitySupplier {
 		JsonNode source = this.getResourceAsNode(sourcePath);
 		assertEquals(
 				this.getResourceAsNode(resultPath).asText(),
-				restTransformerHandler.process(key, value, source, Optional.empty(), Optional.empty()).asText()
+				restTransformerHandler.process(key, "string", value, source, Optional.empty(), Optional.empty()).asText()
 		);
 	}
 }
