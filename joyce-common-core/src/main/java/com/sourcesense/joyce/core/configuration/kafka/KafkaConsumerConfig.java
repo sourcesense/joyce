@@ -43,6 +43,9 @@ public class KafkaConsumerConfig {
     @Value("${joyce.kafka.consumer.groupId:joyce-consumer-local}")
     String groupId;
 
+	@Value("${joyce.kafka.consumer.batch-size:100}")
+	Integer batchSize;
+
     @Bean
     public ConsumerFactory<String, ObjectNode> consumerFactory() {
         Map<String, Object> props = new HashMap<>();
@@ -60,7 +63,7 @@ public class KafkaConsumerConfig {
         props.put(ErrorHandlingDeserializer.VALUE_DESERIALIZER_CLASS, JsonDeserializer.class.getName());
         props.put(JsonDeserializer.VALUE_DEFAULT_TYPE, "com.fasterxml.jackson.databind.node.ObjectNode");
 			props.put(ConsumerConfig.MAX_POLL_INTERVAL_MS_CONFIG, 900000);
-			props.put(ConsumerConfig.MAX_POLL_RECORDS_CONFIG, 100);
+			props.put(ConsumerConfig.MAX_POLL_RECORDS_CONFIG, batchSize);
 			props.put(ConsumerConfig.HEARTBEAT_INTERVAL_MS_CONFIG, 3000);
 
         return new DefaultKafkaConsumerFactory<>(props);
@@ -72,7 +75,17 @@ public class KafkaConsumerConfig {
         ConcurrentKafkaListenerContainerFactory<String, ObjectNode> factory =
                 new ConcurrentKafkaListenerContainerFactory<>();
         factory.setConsumerFactory(consumerFactory());
-//        factory.setBatchListener(true);
         return factory;
     }
+
+	@Bean
+	@ConditionalOnProperty(value = "joyce.kafka.consumer.batch", havingValue = "true")
+	public ConcurrentKafkaListenerContainerFactory<String, ObjectNode>
+	kafkaBatchListenerContainerFactory() {
+		ConcurrentKafkaListenerContainerFactory<String, ObjectNode> factory =
+				new ConcurrentKafkaListenerContainerFactory<>();
+		factory.setConsumerFactory(consumerFactory());
+		factory.setBatchListener(true);
+		return factory;
+	}
 }
