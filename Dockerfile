@@ -18,5 +18,5 @@ ENV        SCHEMAS_SOURCE=/usr/joyce/schemas.json
 EXPOSE     6650
 
 # Running port is configured through API_PORT env variable
-ENTRYPOINT ["node"]
-CMD        ["dist/index.js"]
+ENTRYPOINT ["npm"]
+CMD        ["run", "start"]
