@@ -32,10 +32,14 @@ let ymlRc = {
 			},
 		},
 	],
+	require: [
+		"ts-node/register/transpile-only",
+	],
 	serve: {
-		browser: false,
-		method: "GET",
-		endpoint: "/query",
+		customServerHandler: "./mesh-server.js",
+		// browser: false,
+		// method: "GET",
+		// endpoint: "/query",
 	},
 };
 

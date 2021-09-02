@@ -4,3 +4,4 @@
 !/assets/schemas.json
 .meshrc.yml
 .eslintcache
+.mesh

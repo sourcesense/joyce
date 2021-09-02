@@ -7,6 +7,7 @@ import { SchemaConfiguration } from "./plugins/SchemaConfiguration";
 import { MultipleEntitySchema, SingleEntitySchema } from "./plugins/PrepareFastifySchema";
 import { JRPCParams, ResponsableSchema } from "./types";
 const logger = require("pino")();
+const path = require("path");
 
 const SCHEMAS_SOURCE = process.env.SCHEMAS_SOURCE || "assets/schemas.json";
 const PRODUCTION_URL = process.env.BASE_URL || "https://<production-url>";
@@ -28,6 +29,15 @@ function createServer(db, producer) {
 			},
 		});
 		server.register(require("fastify-cors"));
+
+		server.register(require("fastify-static"), {
+			root: path.join(__dirname, "..", "assets"),
+			// prefix: "/public/", // optional: default '/'
+		});
+		server.get("/playground", function (req, reply) {
+			return reply.sendFile("graphiql.html"); 
+		});
+
 		server.register(require("fastify-oas"), {
 			routePrefix: "/docs",
 			exposeRoute: true,
@@ -88,20 +98,7 @@ function createServer(db, producer) {
 				});
 			},
 		);
-		if (JOYCE_GRAPHQL) {
-			server.register(require("fastify-http-proxy"), {
-				hide: true,
-				upstream: "http://localhost:4000",
-				prefix: "/graphql",
-				http2: false,
-			});
-			server.register(require("fastify-http-proxy"), {
-				hide: true,
-				upstream: "http://localhost:4000/query",
-				prefix: "/query",
-				http2: false,
-			});
-		}
+	
 		filteredSchemalist.map((schema: ResponsableSchema) => {
 			const tempSchema = new CustomeSchemaParser(schema);
 			/**
@@ -118,7 +115,7 @@ function createServer(db, producer) {
 					const { id: entityID } = req.params;
 					try {
 						const namespaced_collection = `${schema.schema.$metadata.namespace || "default"}.${schema.schema.$metadata.collection
-							}`;
+						}`;
 						const collection = db.collection(namespaced_collection);
 
 						const _id = `joyce://content/${schema.schema.$metadata.subtype}/${namespaced_collection}/${entityID}`;
@@ -148,7 +145,7 @@ function createServer(db, producer) {
 				const { page = 0, size = 10, orderBy, sortBy, ...other } = req.query;
 				try {
 					const namespaced_collection = `${schema.schema.$metadata.namespace || "default"}.${schema.schema.$metadata.collection
-						}`;
+					}`;
 					const collection = db.collection(namespaced_collection);
 					const docs = await collection
 						.find(other || {})

@@ -18,7 +18,7 @@ Object.keys(schemaJson["schemas"]).forEach(function (key) {
 			flag: "r",
 		}),
 	);
-
+	data.schema.properties["_id"] = { "type": "string" };
 	let schema = new Schema(data.schema.properties);
 	let collection = `${data.schema["$metadata"]["namespace"] || "default"}.${data.schema["$metadata"]["collection"]}`;
 	key = _.upperFirst(_.camelCase(key));

@@ -1,3 +1,10 @@
-{
-	"schemas": {}
+{   
+  "schemas": {
+      "vaccini": {
+          "source": "http://mario:marione@localhost:6651/api/schema/import/default/vaccini"
+      },
+      "region": {
+        "source": "http://mario:marione@localhost:6651/api/schema/model/default/region-data"
+    }
+  }
 }
