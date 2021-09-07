@@ -1,4 +1,6 @@
 import fastify from "fastify";
+import * as fastifyStatic from "fastify-static";
+
 import healthHandler from "./modules/health/routes";
 import { CustomeSchemaParser } from "./plugins/CustomSchemaParser";
 import fs from "fs";
@@ -30,13 +32,18 @@ function createServer(db, producer) {
 		});
 		server.register(require("fastify-cors"));
 
-		server.register(require("fastify-static"), {
-			root: path.join(__dirname, "..", "assets"),
+		server.register(fastifyStatic.default, {
+			root: path.join(__dirname, "..", "static"),
+			decorateReply: true,
 			// prefix: "/public/", // optional: default '/'
 		});
-		server.get("/playground", function (req, reply) {
-			return reply.sendFile("graphiql.html"); 
+		server.get("/", (_, reply) => {
+			reply.sendFile("index.html");
 		});
+		server.get("/graphiql", (_, reply) => {
+			reply.sendFile("graphiql.html");
+		});
+		
 
 		server.register(require("fastify-oas"), {
 			routePrefix: "/docs",
@@ -109,7 +116,7 @@ function createServer(db, producer) {
 		Body: {veditu:string}
 	   */
 			server.get<{ Params: { id: string } }>(
-				`/${tempSchema.endpoint}/:id`,
+				`/rest/${tempSchema.endpoint}/:id`,
 				SingleEntitySchema(tempSchema),
 				async function (req, res) {
 					const { id: entityID } = req.params;
@@ -141,7 +148,7 @@ function createServer(db, producer) {
 					orderBy: "asc" | "desc";
 					sortBy: string;
 				};
-			}>(`/${tempSchema.endpoint}`, MultipleEntitySchema(tempSchema), async function (req, res) {
+			}>(`/rest/${tempSchema.endpoint}`, MultipleEntitySchema(tempSchema), async function (req, res) {
 				const { page = 0, size = 10, orderBy, sortBy, ...other } = req.query;
 				try {
 					const namespaced_collection = `${schema.schema.$metadata.namespace || "default"}.${schema.schema.$metadata.collection

@@ -1,6 +1,6 @@
 const { ApolloServer } = require("apollo-server-fastify");
-const createServer = require("./src/server");
-const KafkaProducerPromise = require("./src/plugins/KafkaClient");
+const createServer = require("./src/server").default;
+const KafkaProducerPromise = require("./src/plugins/KafkaClient").default;
 const MongoClient = require("mongodb");
 
 const PORT = process.env.PORT || "6650";
@@ -19,11 +19,11 @@ module.exports = async ({ getBuiltMesh, documents, logger }) => {
 	await apolloServer.start();
 	const client = await MongoClient.connect(mongoURI, { useUnifiedTopology: true });
 	
-	const producerKafka = KafkaProducerPromise.default(logger);
+	const producerKafka = KafkaProducerPromise(logger);
 	producerKafka.then(producer => {
 		console.log("kafka ready");
 	});
-	const server = await createServer.default(client.db(), producerKafka);
+	const server = await createServer(client.db(), producerKafka);
 	server.register(apolloServer.createHandler());
 
 	process.on("SIGINT", function () {

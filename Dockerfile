@@ -13,7 +13,7 @@ COPY       tsconfig.json ./
 COPY       .meshrc.yml ./
 COPY       mesh-server.js ./
 COPY       assets/schemas.json /usr/joyce/schemas.json
-
+COPY       static /usr/joyce/static
 RUN        mkdir -p /usr/joyce/assets
 RUN        mkdir -p /usr/joyce/.mesh
 RUN        chown -R node:node /usr/joyce
