@@ -23,7 +23,6 @@ import org.springframework.cache.annotation.EnableCaching;
 @SpringBootApplication(scanBasePackages = "com.sourcesense.joyce")
 @EnableCaching
 public class JoyceImportGatewayApplication {
-
 	public static void main(String[] args) {
 		SpringApplication.run(JoyceImportGatewayApplication.class, args);
 	}

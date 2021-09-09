@@ -38,6 +38,8 @@ import com.sourcesense.joyce.importcore.dto.ConnectKeyPayload;
 import com.sourcesense.joyce.importcore.exception.ImportException;
 import com.sourcesense.joyce.schemaengine.exception.JoyceSchemaEngineException;
 import com.sourcesense.joyce.schemaengine.service.SchemaEngine;
+import io.opentracing.Span;
+import io.opentracing.util.GlobalTracer;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.lang3.StringUtils;
@@ -151,7 +153,8 @@ public class ImportService {
 			@RawUri JoyceURI rawUri,
 			@EventPayload JsonNode document,
 			Schema schema) {
-
+		Span span = GlobalTracer.get().buildSpan("process").start();
+		span.setTag("uri", rawUri.toString());
 		JoyceSchemaMetadata metadata = computeMetadata(schema);
 		JsonNode result = schemaEngine.process(schema.getSchema(), document, null);
 
@@ -162,6 +165,7 @@ public class ImportService {
 		});
 
 		JoyceURI contentURI = computeContentURI(result, metadata);
+		span.finish();
 		contentProducer.publishContent(schema, rawUri, contentURI, result, metadata);
 
 		return true;

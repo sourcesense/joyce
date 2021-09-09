@@ -29,6 +29,7 @@
 	<description>Joyce Import Microservice</description>
 
 	<dependencies>
+
     <dependency>
       <groupId>com.sourcesense.joyce</groupId>
       <artifactId>joyce-import-core</artifactId>
