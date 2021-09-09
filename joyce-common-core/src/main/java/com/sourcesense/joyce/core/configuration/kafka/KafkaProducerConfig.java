@@ -17,6 +17,12 @@
 package com.sourcesense.joyce.core.configuration.kafka;
 
 import com.fasterxml.jackson.databind.JsonNode;
+import io.opentracing.Tracer;
+import io.opentracing.contrib.kafka.TracingConsumerInterceptor;
+import io.opentracing.contrib.kafka.TracingProducerInterceptor;
+import io.opentracing.contrib.kafka.spring.TracingProducerFactory;
+import lombok.RequiredArgsConstructor;
+import org.apache.kafka.clients.consumer.ConsumerConfig;
 import org.apache.kafka.clients.producer.ProducerConfig;
 import org.apache.kafka.common.serialization.StringSerializer;
 import org.springframework.beans.factory.annotation.Value;
@@ -30,14 +36,16 @@ import org.springframework.kafka.core.KafkaTemplate;
 import org.springframework.kafka.core.ProducerFactory;
 import org.springframework.kafka.support.serializer.JsonSerializer;
 
+import java.util.Collections;
 import java.util.HashMap;
 import java.util.Map;
 
 @ConditionalOnProperty(value = "joyce.kafka.producer.enabled", havingValue = "true")
 @Configuration
 @EnableKafka
+@RequiredArgsConstructor
 public class KafkaProducerConfig {
-
+		final private Tracer tracer;
     @Value("${joyce.kafka.bootstrapAddress}")
     String bootstrapAddress;
 
@@ -57,7 +65,9 @@ public class KafkaProducerConfig {
         configProps.put(
                 ProducerConfig.VALUE_SERIALIZER_CLASS_CONFIG,
                 JsonSerializer.class);
-        return new DefaultKafkaProducerFactory<>(configProps);
+				//configProps.put(ProducerConfig.INTERCEPTOR_CLASSES_CONFIG,  Collections.singletonList(TracingProducerInterceptor.class));
+
+			return new TracingProducerFactory<>(new DefaultKafkaProducerFactory<>(configProps), tracer);
     }
 
     @Bean

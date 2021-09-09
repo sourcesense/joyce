@@ -17,6 +17,11 @@
 package com.sourcesense.joyce.core.configuration.kafka;
 
 import com.fasterxml.jackson.databind.node.ObjectNode;
+import io.opentracing.Tracer;
+import io.opentracing.contrib.kafka.TracingConsumerInterceptor;
+import io.opentracing.contrib.kafka.spring.TracingConsumerFactory;
+import io.opentracing.contrib.kafka.spring.TracingKafkaAspect;
+import lombok.RequiredArgsConstructor;
 import org.apache.kafka.clients.consumer.ConsumerConfig;
 import org.apache.kafka.common.serialization.StringDeserializer;
 import org.springframework.beans.factory.annotation.Value;
@@ -30,21 +35,25 @@ import org.springframework.kafka.core.DefaultKafkaConsumerFactory;
 import org.springframework.kafka.support.serializer.ErrorHandlingDeserializer;
 import org.springframework.kafka.support.serializer.JsonDeserializer;
 
+import java.util.Collections;
 import java.util.HashMap;
 import java.util.Map;
 
 @ConditionalOnProperty(value = "joyce.kafka.consumer.enabled", havingValue = "true")
 @Configuration
 @EnableKafka
+@RequiredArgsConstructor
 public class KafkaConsumerConfig {
+		final private Tracer tracer;
+
     @Value("${joyce.kafka.bootstrapAddress}")
     String bootstrapAddress;
 
     @Value("${joyce.kafka.consumer.groupId:joyce-consumer-local}")
     String groupId;
 
-	@Value("${joyce.kafka.consumer.batch-size:100}")
-	Integer batchSize;
+		@Value("${joyce.kafka.consumer.batch-size:100}")
+		Integer batchSize;
 
     @Bean
     public ConsumerFactory<String, ObjectNode> consumerFactory() {
@@ -62,12 +71,22 @@ public class KafkaConsumerConfig {
 
         props.put(ErrorHandlingDeserializer.VALUE_DESERIALIZER_CLASS, JsonDeserializer.class.getName());
         props.put(JsonDeserializer.VALUE_DEFAULT_TYPE, "com.fasterxml.jackson.databind.node.ObjectNode");
-			props.put(ConsumerConfig.MAX_POLL_INTERVAL_MS_CONFIG, 900000);
-			props.put(ConsumerConfig.MAX_POLL_RECORDS_CONFIG, batchSize);
-			props.put(ConsumerConfig.HEARTBEAT_INTERVAL_MS_CONFIG, 3000);
+				props.put(ConsumerConfig.MAX_POLL_INTERVAL_MS_CONFIG, 900000);
+				props.put(ConsumerConfig.MAX_POLL_RECORDS_CONFIG, batchSize);
+				props.put(ConsumerConfig.HEARTBEAT_INTERVAL_MS_CONFIG, 3000);
 
-        return new DefaultKafkaConsumerFactory<>(props);
-    }
+//				props.put(ConsumerConfig.INTERCEPTOR_CLASSES_CONFIG, Collections.singletonList(TracingConsumerInterceptor.class));
+
+
+//			return new DefaultKafkaConsumerFactory<>(props);
+			return new TracingConsumerFactory<>(new DefaultKafkaConsumerFactory<>(props), tracer);
+
+		}
+
+		@Bean
+		public TracingKafkaAspect tracingKafkaAspect() {
+			return new TracingKafkaAspect(tracer);
+		}
 
     @Bean
     public ConcurrentKafkaListenerContainerFactory<String, ObjectNode>
