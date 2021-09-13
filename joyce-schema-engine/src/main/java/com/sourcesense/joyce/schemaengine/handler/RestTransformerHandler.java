@@ -78,10 +78,11 @@ public class RestTransformerHandler extends JsonPathTransformerHandler {
 		// Apply templates
 		String url = applyTemplate(restHandlerData.getUrl(), vars);
 		String body = applyTemplate(restHandlerData.getBody(), vars);
-		MultiValueMap<String,String> headers =  new LinkedMultiValueMap<>(restHandlerData.getHeaders().entrySet().stream()
+		MultiValueMap<String,String> headers =  new LinkedMultiValueMap<>(Optional.ofNullable(restHandlerData.getHeaders()).orElse(new LinkedMultiValueMap<>()).entrySet().stream()
 				.collect(Collectors.toMap(Map.Entry::getKey, o -> o.getValue().stream()
 						.map(s -> applyTemplate(s, vars))
 						.collect(Collectors.toList()))));
+
 
 		return restTemplate.exchange(
 				url,
