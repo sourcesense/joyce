@@ -4,7 +4,7 @@ import com.fasterxml.jackson.annotation.JsonAlias;
 import com.fasterxml.jackson.annotation.JsonInclude;
 import com.fasterxml.jackson.annotation.JsonInclude.Include;
 import com.fasterxml.jackson.databind.annotation.JsonDeserialize;
-import com.sourcesense.joyce.sink.mongodb.serializer.TypeSerializer;
+import com.sourcesense.joyce.sink.mongodb.deserializer.TypeDeserializer;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Data;
@@ -33,7 +33,7 @@ import java.util.Map;
 @AllArgsConstructor
 public class SchemaObject {
 
-	@JsonDeserialize(using = TypeSerializer.class)
+	@JsonDeserialize(using = TypeDeserializer.class)
 	@JsonAlias(value = "type")
 	private String bsonType;
 
