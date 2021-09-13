@@ -17,14 +17,16 @@
 package com.sourcesense.joyce.importcore.controller;
 
 import com.fasterxml.jackson.core.JsonProcessingException;
+import com.fasterxml.jackson.databind.JsonNode;
 import com.sourcesense.joyce.core.api.SchemaApi;
+import com.sourcesense.joyce.core.dto.SaveSchemaStatus;
 import com.sourcesense.joyce.core.dto.Schema;
 import com.sourcesense.joyce.core.dto.SchemaSave;
 import com.sourcesense.joyce.core.exception.SchemaNotFoundException;
 import com.sourcesense.joyce.core.mapper.SchemaMapper;
-import com.sourcesense.joyce.core.model.JoyceURI;
 import com.sourcesense.joyce.core.model.SchemaEntity;
 import com.sourcesense.joyce.core.service.SchemaService;
+import com.sourcesense.joyce.importcore.service.ConnectorService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.RestController;
@@ -38,6 +40,8 @@ import java.util.stream.Collectors;
 public class SchemaApiController implements SchemaApi {
 
 	final private SchemaMapper schemaMapper;
+	final private ConnectorService connectorService;
+
 	final protected SchemaService schemaService;
 
 	@Override
@@ -70,22 +74,80 @@ public class SchemaApiController implements SchemaApi {
 	}
 
 	@Override
-	public JoyceURI saveSchemaJson(SchemaSave schema) throws JsonProcessingException {
+	public SaveSchemaStatus saveSchemaJson(SchemaSave<?> schema) throws JsonProcessingException {
 		return saveSchema(schema);
 	}
 
 	@Override
-	public JoyceURI saveSchemaYaml(SchemaSave schema) throws JsonProcessingException {
+	public SaveSchemaStatus saveSchemaYaml(SchemaSave<?> schema) throws JsonProcessingException {
 		return saveSchema(schema);
-	}
-
-	public JoyceURI saveSchema(SchemaSave schema) throws JsonProcessingException {
-		return schemaService.save(schema);
 	}
 
 	@Override
 	public void deleteSchema(String subtype, String namespace, String name) {
-		schemaService.delete(this.computeSubtype(subtype), namespace, name);
+		schemaService.delete(
+				this.computeSubtype(subtype),
+				namespace,
+				name
+		);
+	}
+
+	@Override
+	public JsonNode getConnectorStatus(
+			String subtype,
+			String namespace,
+			String name,
+			String connector) {
+
+		return connectorService.getConnectorStatus(namespace, name, connector);
+	}
+
+	@Override
+	public Boolean restartConnector(
+			String subtype,
+			String namespace,
+			String name,
+			String connector) {
+
+		return connectorService.restartConnector(namespace, name, connector);
+	}
+
+	@Override
+	public Boolean pauseConnector(
+			String subtype,
+			String namespace,
+			String name,
+			String connector) {
+
+		return connectorService.pauseConnector(namespace, name, connector);
+	}
+
+	@Override
+	public Boolean resumeConnector(
+			String subtype,
+			String namespace,
+			String name,
+			String connector) {
+
+		return connectorService.resumeConnector(namespace, name, connector);
+	}
+
+	@Override
+	public Boolean restartConnectorTask(
+			String subtype,
+			String namespace,
+			String name,
+			String connector,
+			String task) {
+
+		return connectorService.restartConnectorTask(namespace, name, connector, task);
+	}
+
+	public SaveSchemaStatus saveSchema(SchemaSave<?> schema) throws JsonProcessingException {
+		return SaveSchemaStatus.builder()
+				.schemaUri(schemaService.save(schema))
+				.connectors(connectorService.saveOrUpdateConnectors(schema))
+				.build();
 	}
 
 	private List<?> computeSchemas(List<SchemaEntity> schemas, Boolean fullSchema) {
