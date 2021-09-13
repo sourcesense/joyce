@@ -17,7 +17,6 @@
 package com.sourcesense.joyce.core.model;
 
 import com.fasterxml.jackson.annotation.JsonProperty;
-import com.fasterxml.jackson.databind.JsonNode;
 import com.sourcesense.joyce.core.exception.InvalidMetadataException;
 import lombok.EqualsAndHashCode;
 import lombok.Getter;
@@ -29,7 +28,7 @@ import java.util.Map;
 @Getter
 @Setter
 @EqualsAndHashCode
-public class JoyceSchemaMetadata {
+public class JoyceSchemaMetadata<M extends JoyceSchemaMetadataExtra> {
 
 	@JsonProperty("uid")
 	private String uidKey;
@@ -44,8 +43,8 @@ public class JoyceSchemaMetadata {
 	private Boolean validation = true;
 	private Boolean indexed = true;
 	private JoyceURI parent;
-	private Map<String, Object> extra;
-
+	private M extra;
+	private List<JoyceSchemaMetadataConnector> connect;
 
 	/**
 	 * Validate the object, some keys are required or not given a subtype
@@ -54,7 +53,7 @@ public class JoyceSchemaMetadata {
 	 * @return
 	 * @throws InvalidMetadataException
 	 */
-	public JoyceSchemaMetadata validate() throws InvalidMetadataException {
+	public JoyceSchemaMetadata<M> validate() throws InvalidMetadataException {
 		if (name == null) {
 			throw new InvalidMetadataException("Missing [name] from metadata");
 		}

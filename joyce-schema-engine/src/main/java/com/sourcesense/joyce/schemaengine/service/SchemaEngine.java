@@ -145,32 +145,15 @@ public class SchemaEngine {
 	 * @param newJson
 	 * @return
 	 */
-	public Boolean checkForBreakingChanges(JsonNode prevJson, JsonNode newJson) throws JsonProcessingException {
+	public Boolean checkForBreakingChanges(JsonNode prevJson, JsonNode newJson) {
 
 		//TODO: enrich tests for required fields
 
-		Integer prevDeprecated = 0;
-		Integer newDeprecated = 0;
-
 		List<String> newKeys = new ArrayList<>();
-		for (Iterator<Map.Entry<String, JsonNode>> it = newJson.get("properties").fields(); it.hasNext(); ) {
-			Map.Entry<String, JsonNode> prop = it.next();
-			if (prop.getValue().get("deprecated") != null && prop.getValue().get("deprecated").asBoolean()) {
-				newDeprecated++;
-			}
-			List<String> propsList = getTypesList(prop);
-			newKeys.addAll(propsList);
-		}
+		Integer newDeprecated = this.computeDeprecatedCount(newJson, newKeys);
 
 		List<String> prevKeys = new ArrayList<>();
-		for (Iterator<Map.Entry<String, JsonNode>> it = prevJson.get("properties").fields(); it.hasNext(); ) {
-			Map.Entry<String, JsonNode> prop = it.next();
-			if (prop.getValue().get("deprecated") != null && prop.getValue().get("deprecated").asBoolean()) {
-				prevDeprecated++;
-			}
-			List<String> propsList = getTypesList(prop);
-			prevKeys.addAll(propsList);
-		}
+		Integer prevDeprecated = this.computeDeprecatedCount(prevJson, prevKeys);
 
 		List<String> missingFromNewSchema = prevKeys.stream()
 				.filter(s -> !newKeys.contains(s))
@@ -181,6 +164,22 @@ public class SchemaEngine {
 		}
 
 		return newDeprecated > prevDeprecated;
+	}
+
+	private Integer computeDeprecatedCount(
+			JsonNode json,
+			List<String> keys) {
+
+		Integer deprecated = 0;
+		for (Iterator<Map.Entry<String, JsonNode>> it = json.get("properties").fields(); it.hasNext(); ) {
+			Map.Entry<String, JsonNode> prop = it.next();
+			if (prop.getValue().get("deprecated") != null && prop.getValue().get("deprecated").asBoolean()) {
+				deprecated++;
+			}
+			List<String> propsList = getTypesList(prop);
+			keys.addAll(propsList);
+		}
+		return deprecated;
 	}
 
 	/**
@@ -255,7 +254,7 @@ public class SchemaEngine {
 			return arrayNode;
 		} else {
 			JsonNode result = StringUtils.isNotEmpty(key) ? sourceJsonNode.get(key) : sourceJsonNode;
-			if (result == null){
+			if (result == null) {
 				return null;
 			}
 			switch (type) {

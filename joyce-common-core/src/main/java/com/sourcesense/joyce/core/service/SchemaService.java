@@ -53,7 +53,7 @@ public class SchemaService {
 	}
 
 	@CacheEvict(cacheNames = "schemas", allEntries = true)
-	public JoyceURI save(SchemaSave schema) throws JsonProcessingException {
+	public JoyceURI save(SchemaSave<?> schema) throws JsonProcessingException {
 		SchemaEntity entity = schemaMapper.toEntity(schema);
 
 		JoyceURI uid = getSchemaUid(
@@ -78,7 +78,7 @@ public class SchemaService {
 		Optional<SchemaEntity> previous = schemaEntityDao.get(uid.toString());
 
 		if (previous.isPresent()) {
-			/**
+			/*
 			 * If schema is in development mode we skip schema checks,
 			 * but we block if previous schema is not in dev mode
 			 */

@@ -17,6 +17,8 @@
 package com.sourcesense.joyce.core.api;
 
 import com.fasterxml.jackson.core.JsonProcessingException;
+import com.fasterxml.jackson.databind.JsonNode;
+import com.sourcesense.joyce.core.dto.SaveSchemaStatus;
 import com.sourcesense.joyce.core.dto.Schema;
 import com.sourcesense.joyce.core.dto.SchemaSave;
 import com.sourcesense.joyce.core.dto.SchemaShort;
@@ -89,11 +91,57 @@ public interface SchemaApi {
 
 	@PostMapping(value = "/schema", consumes = "application/json")
 	@ResponseStatus(code = HttpStatus.CREATED)
-	JoyceURI saveSchemaJson(@RequestBody SchemaSave schema) throws JsonProcessingException;
+	SaveSchemaStatus saveSchemaJson(@RequestBody SchemaSave<?> schema) throws JsonProcessingException;
 
 	@PostMapping(value = "/schema", consumes = "application/x-yaml")
 	@ResponseStatus(code = HttpStatus.CREATED)
-	JoyceURI saveSchemaYaml(@RequestBody SchemaSave schema) throws JsonProcessingException;
+	SaveSchemaStatus saveSchemaYaml(@RequestBody SchemaSave<?> schema) throws JsonProcessingException;
+
+	@GetMapping(value = "/schema/{subtype}/{namespace}/{name}/connectors/{connector}/status")
+	@ResponseStatus(code = HttpStatus.OK)
+	JsonNode getConnectorStatus(
+			@PathVariable String subtype,
+			@PathVariable String namespace,
+			@PathVariable String name,
+			@PathVariable String connector
+	);
+
+	@PostMapping(value = "/schema/{subtype}/{namespace}/{name}/connectors/{connector}/restart")
+	@ResponseStatus(code = HttpStatus.OK)
+	Boolean restartConnector(
+			@PathVariable String subtype,
+			@PathVariable String namespace,
+			@PathVariable String name,
+			@PathVariable String connector
+	);
+
+	@PutMapping(value = "/schema/{subtype}/{namespace}/{name}/connectors/{connector}/pause")
+	@ResponseStatus(code = HttpStatus.OK)
+	Boolean pauseConnector(
+			@PathVariable String subtype,
+			@PathVariable String namespace,
+			@PathVariable String name,
+			@PathVariable String connector
+	);
+
+	@PutMapping(value = "/schema/{subtype}/{namespace}/{name}/connectors/{connector}/resume")
+	@ResponseStatus(code = HttpStatus.OK)
+	Boolean resumeConnector(
+			@PathVariable String subtype,
+			@PathVariable String namespace,
+			@PathVariable String name,
+			@PathVariable String connector
+	);
+
+	@PostMapping(value = "/schema/{subtype}/{namespace}/{name}/connectors/{connector}/tasks/{task}/restart")
+	@ResponseStatus(code = HttpStatus.OK)
+	Boolean restartConnectorTask(
+			@PathVariable String subtype,
+			@PathVariable String namespace,
+			@PathVariable String name,
+			@PathVariable String connector,
+			@PathVariable String task
+	);
 
 	default JoyceURI.Subtype computeSubtype(String subtype) {
 		return JoyceURI.Subtype.get(subtype)

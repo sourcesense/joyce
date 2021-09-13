@@ -35,9 +35,9 @@ public class RestSchemaDao implements SchemaDao {
 	private final SchemaMapper schemaMapper;
 	private final CustomExceptionHandler customExceptionHandler;
 	private final SchemaServiceProperties properties;
-	
-	HttpHeaders createHeaders(){
-		if(properties.getRestCredentials() != null) {
+
+	HttpHeaders createHeaders() {
+		if (properties.getRestCredentials() != null) {
 			return new HttpHeaders() {{
 				String auth = properties.getRestCredentials();
 				byte[] encodedAuth = Base64.encodeBase64(
@@ -83,7 +83,8 @@ public class RestSchemaDao implements SchemaDao {
 			String endpoint = this.getSchemaEndpoint();
 			Optional.of(schemaEntity)
 					.map(schemaMapper::toDtoSave)
-					.map(body -> restTemplate.exchange(endpoint,HttpMethod.POST,new HttpEntity<>(body, createHeaders()) , JoyceURI.class))
+					.map(body -> new HttpEntity<>(body, createHeaders()))
+					.map(httpEntity -> restTemplate.exchange(endpoint, HttpMethod.POST, httpEntity, JoyceURI.class))
 					.filter(response -> HttpStatus.CREATED.equals(response.getStatusCode()))
 					.orElseThrow(() -> new RuntimeException(
 							String.format("An error happened when calling '%s' to save schema", endpoint))

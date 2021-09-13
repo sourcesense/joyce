@@ -19,6 +19,7 @@ package com.sourcesense.joyce.core.dto;
 import com.fasterxml.jackson.annotation.JsonProperty;
 import com.fasterxml.jackson.databind.JsonNode;
 import com.sourcesense.joyce.core.model.JoyceSchemaMetadata;
+import com.sourcesense.joyce.core.model.JoyceSchemaMetadataExtra;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Data;
@@ -30,13 +31,13 @@ import java.util.List;
 @Builder
 @NoArgsConstructor
 @AllArgsConstructor
-public class SchemaSave {
+public class SchemaSave<M extends JoyceSchemaMetadataExtra> {
 
 	@JsonProperty("$schema")
 	private String schema;
 
 	@JsonProperty("$metadata")
-	private JoyceSchemaMetadata metadata;
+	private JoyceSchemaMetadata<M> metadata;
 
 	private String type;
 	private List<String> required;
