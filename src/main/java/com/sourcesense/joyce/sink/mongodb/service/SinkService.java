@@ -11,6 +11,8 @@ import com.sourcesense.joyce.core.enumeration.KafkaCustomHeaders;
 import com.sourcesense.joyce.core.enumeration.NotificationEvent;
 import com.sourcesense.joyce.core.model.JoyceURI;
 import com.sourcesense.joyce.sink.mongodb.exception.MongodbSinkException;
+import io.opentracing.Tracer;
+import io.opentracing.util.GlobalTracer;
 import lombok.RequiredArgsConstructor;
 import org.bson.Document;
 import org.springframework.data.mongodb.core.MongoTemplate;
@@ -26,7 +28,7 @@ public class SinkService {
 
 	private final ObjectMapper mapper;
 	private final MongoTemplate mongoTemplate;
-
+	private final Tracer tracer;
 
 	/**
 	 * This method saves processed document coming from kafka in mongodb
@@ -44,6 +46,7 @@ public class SinkService {
 			@EventPayload ObjectNode message,
 			@ContentUri JoyceURI uri,
 			String collection) throws MongodbSinkException {
+		var asd = GlobalTracer.get();
 
 		Document doc = new Document(mapper.convertValue(message, new TypeReference<>() {
 		}));

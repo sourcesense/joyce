@@ -1,6 +1,12 @@
 spring:
   main:
     web-application-type: none
+opentracing:
+  jaeger:
+    service-name: mongodb-sink
+    udp-sender:
+      host: localhost
+      port:  6831
 joyce:
   kafka:
     import:
