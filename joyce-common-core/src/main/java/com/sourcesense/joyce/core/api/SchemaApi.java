@@ -91,11 +91,11 @@ public interface SchemaApi {
 
 	@PostMapping(value = "/schema", consumes = "application/json")
 	@ResponseStatus(code = HttpStatus.CREATED)
-	SaveSchemaStatus saveSchemaJson(@RequestBody SchemaSave<?> schema) throws JsonProcessingException;
+	SaveSchemaStatus saveSchemaJson(@RequestBody SchemaSave schema) throws JsonProcessingException;
 
 	@PostMapping(value = "/schema", consumes = "application/x-yaml")
 	@ResponseStatus(code = HttpStatus.CREATED)
-	SaveSchemaStatus saveSchemaYaml(@RequestBody SchemaSave<?> schema) throws JsonProcessingException;
+	SaveSchemaStatus saveSchemaYaml(@RequestBody SchemaSave schema) throws JsonProcessingException;
 
 	@GetMapping(value = "/schema/{subtype}/{namespace}/{name}/connectors/{connector}/status")
 	@ResponseStatus(code = HttpStatus.OK)

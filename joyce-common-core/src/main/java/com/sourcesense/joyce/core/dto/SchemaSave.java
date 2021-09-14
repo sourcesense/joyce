@@ -31,13 +31,13 @@ import java.util.List;
 @Builder
 @NoArgsConstructor
 @AllArgsConstructor
-public class SchemaSave<M extends JoyceSchemaMetadataExtra> {
+public class SchemaSave {
 
 	@JsonProperty("$schema")
 	private String schema;
 
 	@JsonProperty("$metadata")
-	private JoyceSchemaMetadata<M> metadata;
+	private JoyceSchemaMetadata metadata;
 
 	private String type;
 	private List<String> required;

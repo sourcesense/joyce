@@ -28,7 +28,7 @@ import java.util.Map;
 @Getter
 @Setter
 @EqualsAndHashCode
-public class JoyceSchemaMetadata<M extends JoyceSchemaMetadataExtra> {
+public class JoyceSchemaMetadata {
 
 	@JsonProperty("uid")
 	private String uidKey;
@@ -43,8 +43,7 @@ public class JoyceSchemaMetadata<M extends JoyceSchemaMetadataExtra> {
 	private Boolean validation = true;
 	private Boolean indexed = true;
 	private JoyceURI parent;
-	private M extra;
-	private List<JoyceSchemaMetadataConnector> connect;
+	private Map<String, Object> extra;
 
 	/**
 	 * Validate the object, some keys are required or not given a subtype
@@ -53,7 +52,7 @@ public class JoyceSchemaMetadata<M extends JoyceSchemaMetadataExtra> {
 	 * @return
 	 * @throws InvalidMetadataException
 	 */
-	public JoyceSchemaMetadata<M> validate() throws InvalidMetadataException {
+	public JoyceSchemaMetadata validate() throws InvalidMetadataException {
 		if (name == null) {
 			throw new InvalidMetadataException("Missing [name] from metadata");
 		}

@@ -51,6 +51,7 @@ public class MongodbConfig  extends AbstractMongoClientConfiguration {
 
 	@Override
 	public MongoTemplate mongoTemplate(MongoDatabaseFactory databaseFactory, MappingMongoConverter converter) {
+		converter.setMapKeyDotReplacement("_");
 		return new MongoTemplate(databaseFactory, converter);
 	}
 

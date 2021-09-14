@@ -16,7 +16,6 @@
 
 package com.sourcesense.joyce.core.service;
 
-import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.sourcesense.joyce.core.dao.SchemaDao;
@@ -53,7 +52,7 @@ public class SchemaService {
 	}
 
 	@CacheEvict(cacheNames = "schemas", allEntries = true)
-	public JoyceURI save(SchemaSave<?> schema) throws JsonProcessingException {
+	public JoyceURI save(SchemaSave schema) {
 		SchemaEntity entity = schemaMapper.toEntity(schema);
 
 		JoyceURI uid = getSchemaUid(

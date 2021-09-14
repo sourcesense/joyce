@@ -1,5 +1,6 @@
 package com.sourcesense.joyce.core.model;
 
+import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.annotation.JsonDeserialize;
 import com.sourcesense.joyce.core.deserializer.ObjectToStringDeserializer;
 import lombok.AllArgsConstructor;
@@ -12,7 +13,5 @@ import lombok.NoArgsConstructor;
 public class JoyceSchemaMetadataConnector {
 
 	private String name;
-
-	@JsonDeserialize(using = ObjectToStringDeserializer.class)
-	private String config;
+	private JsonNode config;
 }
