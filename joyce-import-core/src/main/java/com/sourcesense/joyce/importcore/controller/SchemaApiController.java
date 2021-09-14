@@ -74,12 +74,12 @@ public class SchemaApiController implements SchemaApi {
 	}
 
 	@Override
-	public SaveSchemaStatus saveSchemaJson(SchemaSave<?> schema) throws JsonProcessingException {
+	public SaveSchemaStatus saveSchemaJson(SchemaSave schema) throws JsonProcessingException {
 		return saveSchema(schema);
 	}
 
 	@Override
-	public SaveSchemaStatus saveSchemaYaml(SchemaSave<?> schema) throws JsonProcessingException {
+	public SaveSchemaStatus saveSchemaYaml(SchemaSave schema) throws JsonProcessingException {
 		return saveSchema(schema);
 	}
 
@@ -143,7 +143,7 @@ public class SchemaApiController implements SchemaApi {
 		return connectorService.restartConnectorTask(namespace, name, connector, task);
 	}
 
-	public SaveSchemaStatus saveSchema(SchemaSave<?> schema) throws JsonProcessingException {
+	public SaveSchemaStatus saveSchema(SchemaSave schema) throws JsonProcessingException {
 		return SaveSchemaStatus.builder()
 				.schemaUri(schemaService.save(schema))
 				.connectors(connectorService.saveOrUpdateConnectors(schema))

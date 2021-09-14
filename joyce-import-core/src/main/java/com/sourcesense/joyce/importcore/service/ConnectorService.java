@@ -11,8 +11,8 @@ import com.sourcesense.joyce.core.exception.RestException;
 import com.sourcesense.joyce.core.model.JoyceSchemaMetadata;
 import com.sourcesense.joyce.core.model.JoyceSchemaMetadataConnector;
 import com.sourcesense.joyce.core.model.JoyceURI;
+import com.sourcesense.joyce.importcore.dto.ImportMetadataExtra;
 import lombok.RequiredArgsConstructor;
-import lombok.SneakyThrows;
 import org.apache.commons.lang3.StringUtils;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.http.HttpEntity;
@@ -102,7 +102,7 @@ public class ConnectorService {
 		return true;
 	}
 
-	public List<ConnectorUpdateStatus> saveOrUpdateConnectors(SchemaSave<?> schema) {
+	public List<ConnectorUpdateStatus> saveOrUpdateConnectors(SchemaSave schema) {
 		Map<String, JoyceSchemaMetadataConnector> newConnectors = this.computeNewConnectors(schema.getMetadata());
 		List<String> existingConnectors = this.executeRestWithResponse(this.computeConnectorsEndpoint(), HttpMethod.GET, HttpStatus.OK);
 		List<String> totalConnectors = this.computeTotalConnectors(existingConnectors, newConnectors.keySet());
@@ -115,9 +115,11 @@ public class ConnectorService {
 				.collect(Collectors.toList());
 	}
 
-	private Map<String, JoyceSchemaMetadataConnector> computeNewConnectors(JoyceSchemaMetadata<?> metadata) {
+	private Map<String, JoyceSchemaMetadataConnector> computeNewConnectors(JoyceSchemaMetadata metadata) {
 		return Optional.of(metadata)
-				.map(JoyceSchemaMetadata::getConnect)
+				.map(JoyceSchemaMetadata::getExtra)
+				.map(extra -> mapper.convertValue(extra, ImportMetadataExtra.class))
+				.map(ImportMetadataExtra::getConnect)
 				.orElse(new ArrayList<>()).stream()
 				.collect(Collectors.toMap(
 						connector -> this.computeConnectorName(metadata.getNamespace(), metadata.getName(), connector.getName()),
@@ -126,7 +128,7 @@ public class ConnectorService {
 	}
 
 	private List<ConnectorUpdateStatus> executeConnectorOperations(
-			JoyceSchemaMetadata<?> metadata,
+			JoyceSchemaMetadata metadata,
 			List<String> totalConnectors,
 			List<String> existingConnectors,
 			Map<String, JoyceSchemaMetadataConnector> newConnectors) {
@@ -166,7 +168,7 @@ public class ConnectorService {
 
 	private JsonNode computeCreateConnectorBody(
 			String connectorName,
-			JoyceSchemaMetadata<?> metadata,
+			JoyceSchemaMetadata metadata,
 			JoyceSchemaMetadataConnector connector) {
 
 		ObjectNode createBody = mapper.createObjectNode();
@@ -175,13 +177,11 @@ public class ConnectorService {
 		return createBody;
 	}
 
-	//TODO: Gestire eccezione
-	@SneakyThrows
 	private JsonNode computeEnrichedConnectorConfig(
-			JoyceSchemaMetadata<?> metadata,
+			JoyceSchemaMetadata metadata,
 			JoyceSchemaMetadataConnector connector) {
 
-		ObjectNode enrichedConfig = mapper.readValue(connector.getConfig(), ObjectNode.class);
+		ObjectNode enrichedConfig = (ObjectNode) connector.getConfig();
 		enrichedConfig.put(TOPIC, "joyce_import");
 		JsonNode transforms = enrichedConfig.path(TRANSFORMS);
 		if (!transforms.isTextual()) {
@@ -196,7 +196,7 @@ public class ConnectorService {
 	private void addJoyceKeyTransformProperties(
 			ObjectNode enrichedConfig,
 			String transforms,
-			JoyceSchemaMetadata<?> metadata,
+			JoyceSchemaMetadata metadata,
 			JoyceSchemaMetadataConnector connector) {
 
 		JoyceURI schemaUri = JoyceURI.makeNamespaced(JoyceURI.Type.SCHEMA, metadata.getSubtype(), metadata.getNamespace(), metadata.getName());
@@ -255,8 +255,6 @@ public class ConnectorService {
 		return response.getBody();
 	}
 
-	//Todo: Gestire Eccezione
-	@SneakyThrows
 	private <REQ> ResponseEntity<JsonNode> executeRest(
 			String endpoint,
 			REQ requestBody,
@@ -268,7 +266,7 @@ public class ConnectorService {
 		} catch (HttpClientErrorException exception) {
 			return ResponseEntity
 					.status(exception.getStatusCode())
-					.body(mapper.readTree(exception.getResponseBodyAsByteArray()));
+					.body(this.computeResponseBody(exception.getResponseBodyAsByteArray()));
 		}
 	}
 
@@ -287,5 +285,15 @@ public class ConnectorService {
 
 	private String computeConnectorName(String namespace, String name, String connector) {
 		return namespace + JoyceURI.NAMESPACE_SEPARATOR + name + JoyceURI.NAMESPACE_SEPARATOR + connector;
+	}
+
+	private JsonNode computeResponseBody(byte[] responseBody) {
+		try {
+			return mapper.readTree(responseBody);
+
+		} catch (Exception exception) {
+			return mapper.createObjectNode()
+					.put("error", "Impossible to read response body.");
+		}
 	}
 }
