@@ -9,9 +9,9 @@ import com.sourcesense.joyce.core.dto.SchemaSave;
 import com.sourcesense.joyce.core.enumeration.ConnectorOperation;
 import com.sourcesense.joyce.core.exception.RestException;
 import com.sourcesense.joyce.core.model.JoyceSchemaMetadata;
-import com.sourcesense.joyce.core.model.JoyceSchemaMetadataConnector;
+import com.sourcesense.joyce.importcore.dto.JoyceSchemaImportMetadataExtraConnector;
 import com.sourcesense.joyce.core.model.JoyceURI;
-import com.sourcesense.joyce.importcore.dto.ImportMetadataExtra;
+import com.sourcesense.joyce.importcore.dto.JoyceSchemaImportMetadataExtra;
 import lombok.RequiredArgsConstructor;
 import org.apache.commons.lang3.StringUtils;
 import org.springframework.beans.factory.annotation.Value;
@@ -103,7 +103,7 @@ public class ConnectorService {
 	}
 
 	public List<ConnectorUpdateStatus> saveOrUpdateConnectors(SchemaSave schema) {
-		Map<String, JoyceSchemaMetadataConnector> newConnectors = this.computeNewConnectors(schema.getMetadata());
+		Map<String, JoyceSchemaImportMetadataExtraConnector> newConnectors = this.computeNewConnectors(schema.getMetadata());
 		List<String> existingConnectors = this.executeRestWithResponse(this.computeConnectorsEndpoint(), HttpMethod.GET, HttpStatus.OK);
 		List<String> totalConnectors = this.computeTotalConnectors(existingConnectors, newConnectors.keySet());
 		return this.executeConnectorOperations(schema.getMetadata(), totalConnectors, existingConnectors, newConnectors);
@@ -115,11 +115,11 @@ public class ConnectorService {
 				.collect(Collectors.toList());
 	}
 
-	private Map<String, JoyceSchemaMetadataConnector> computeNewConnectors(JoyceSchemaMetadata metadata) {
+	private Map<String, JoyceSchemaImportMetadataExtraConnector> computeNewConnectors(JoyceSchemaMetadata metadata) {
 		return Optional.of(metadata)
 				.map(JoyceSchemaMetadata::getExtra)
-				.map(extra -> mapper.convertValue(extra, ImportMetadataExtra.class))
-				.map(ImportMetadataExtra::getConnect)
+				.map(extra -> mapper.convertValue(extra, JoyceSchemaImportMetadataExtra.class))
+				.map(JoyceSchemaImportMetadataExtra::getConnectors)
 				.orElse(new ArrayList<>()).stream()
 				.collect(Collectors.toMap(
 						connector -> this.computeConnectorName(metadata.getNamespace(), metadata.getName(), connector.getName()),
@@ -131,7 +131,7 @@ public class ConnectorService {
 			JoyceSchemaMetadata metadata,
 			List<String> totalConnectors,
 			List<String> existingConnectors,
-			Map<String, JoyceSchemaMetadataConnector> newConnectors) {
+			Map<String, JoyceSchemaImportMetadataExtraConnector> newConnectors) {
 
 		List<ConnectorUpdateStatus> statusList = new ArrayList<>();
 		for (String connectorName : totalConnectors) {
@@ -169,7 +169,7 @@ public class ConnectorService {
 	private JsonNode computeCreateConnectorBody(
 			String connectorName,
 			JoyceSchemaMetadata metadata,
-			JoyceSchemaMetadataConnector connector) {
+			JoyceSchemaImportMetadataExtraConnector connector) {
 
 		ObjectNode createBody = mapper.createObjectNode();
 		createBody.put(NAME, connectorName);
@@ -179,7 +179,7 @@ public class ConnectorService {
 
 	private JsonNode computeEnrichedConnectorConfig(
 			JoyceSchemaMetadata metadata,
-			JoyceSchemaMetadataConnector connector) {
+			JoyceSchemaImportMetadataExtraConnector connector) {
 
 		ObjectNode enrichedConfig = (ObjectNode) connector.getConfig();
 		enrichedConfig.put(TOPIC, "joyce_import");
@@ -197,7 +197,7 @@ public class ConnectorService {
 			ObjectNode enrichedConfig,
 			String transforms,
 			JoyceSchemaMetadata metadata,
-			JoyceSchemaMetadataConnector connector) {
+			JoyceSchemaImportMetadataExtraConnector connector) {
 
 		JoyceURI schemaUri = JoyceURI.makeNamespaced(JoyceURI.Type.SCHEMA, metadata.getSubtype(), metadata.getNamespace(), metadata.getName());
 		enrichedConfig.put(TRANSFORMS, transforms);
