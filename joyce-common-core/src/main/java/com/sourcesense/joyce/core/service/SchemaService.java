@@ -128,7 +128,11 @@ public class SchemaService {
 
 	@Cacheable("schemas")
 	public Optional<Schema> get(String schemaUid) {
-		return schemaEntityDao.get(schemaUid).map(schemaMapper::toDto);
+		return this.getEntity(schemaUid).map(schemaMapper::toDto);
+	}
+
+	public Optional<SchemaEntity> getEntity(String schemaUid) {
+		return schemaEntityDao.get(schemaUid);
 	}
 
 	public List<String> getAllNamespaces() {

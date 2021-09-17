@@ -20,9 +20,7 @@ import org.springframework.web.client.RestTemplate;
 
 import java.io.StringReader;
 import java.io.StringWriter;
-import java.util.HashMap;
-import java.util.Map;
-import java.util.Optional;
+import java.util.*;
 import java.util.stream.Collectors;
 
 @Slf4j
@@ -40,13 +38,9 @@ public class RestTransformerHandler extends JsonPathTransformerHandler {
 
 		RestHandlerData restHandlerData = mapper.convertValue(value, RestHandlerData.class);
 		// Resolve json paths inside vars
-		Optional<Map<String, String>> vars = Optional.ofNullable(restHandlerData.getVars()).map(stringStringMap -> stringStringMap.entrySet().stream()
-				.collect(Collectors.toMap(
-						Map.Entry::getKey,
-						entry -> read(type, source, entry.getValue()).asText())));
 
-
-		ResponseEntity<JsonNode> response = this.computeResponse(restHandlerData, vars.orElse(new HashMap<>()));
+		Map<String, String> vars = this.computeVars(type, source, restHandlerData);
+		ResponseEntity<JsonNode> response = this.computeResponse(restHandlerData, vars);
 
 		if (HttpStatus.OK.equals(response.getStatusCode())) {
 			return Optional.of(restHandlerData)
@@ -65,7 +59,7 @@ public class RestTransformerHandler extends JsonPathTransformerHandler {
 	}
 
 	private String applyTemplate(String template, Map<String, String> context) {
-		if (template == null){
+		if (template == null) {
 			return null;
 		}
 		StringWriter writer = new StringWriter();
@@ -78,10 +72,10 @@ public class RestTransformerHandler extends JsonPathTransformerHandler {
 		// Apply templates
 		String url = applyTemplate(restHandlerData.getUrl(), vars);
 		String body = applyTemplate(restHandlerData.getBody(), vars);
-		MultiValueMap<String,String> headers =  new LinkedMultiValueMap<>(restHandlerData.getHeaders().entrySet().stream()
-				.collect(Collectors.toMap(Map.Entry::getKey, o -> o.getValue().stream()
-						.map(s -> applyTemplate(s, vars))
-						.collect(Collectors.toList()))));
+
+		MultiValueMap<String, String> headers = new LinkedMultiValueMap<>(
+				this.computeHeaders(restHandlerData, vars)
+		);
 
 		return restTemplate.exchange(
 				url,
@@ -91,5 +85,36 @@ public class RestTransformerHandler extends JsonPathTransformerHandler {
 		);
 	}
 
+	private Map<String, String> computeVars(
+			String type,
+			JsonNode source,
+			RestHandlerData restHandlerData) {
+
+		return Optional.ofNullable(restHandlerData.getVars())
+				.stream().map(Map::entrySet)
+				.flatMap(Set::stream)
+				.collect(Collectors.toMap(
+						Map.Entry::getKey,
+						entry -> read(type, source, entry.getValue()).asText())
+				);
+	}
+
+	private Map<String, List<String>> computeHeaders(
+			RestHandlerData restHandlerData,
+			Map<String, String> vars) {
+
+		return restHandlerData.getHeaders()
+				.entrySet().stream()
+				.collect(Collectors.toMap(
+						Map.Entry::getKey,
+						o -> this.computeHeader(o.getValue(), vars)
+				));
+	}
+
+	private List<String> computeHeader(List<String> header, Map<String, String> vars) {
+		return header.stream()
+				.map(headerValue -> this.applyTemplate(headerValue, vars))
+				.collect(Collectors.toList());
+	}
 }
 
