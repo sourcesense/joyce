@@ -19,10 +19,12 @@ package com.sourcesense.joyce.schemaengine.handler;
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.node.ArrayNode;
 import com.fasterxml.jackson.databind.node.JsonNodeType;
+import com.fasterxml.jackson.databind.node.NullNode;
 import com.fasterxml.jackson.databind.node.TextNode;
 import com.jayway.jsonpath.Configuration;
 import com.jayway.jsonpath.JsonPath;
 import com.jayway.jsonpath.Option;
+import com.jayway.jsonpath.PathNotFoundException;
 import com.jayway.jsonpath.spi.json.JacksonJsonNodeJsonProvider;
 import com.jayway.jsonpath.spi.json.JsonProvider;
 import com.jayway.jsonpath.spi.mapper.JacksonMappingProvider;
@@ -96,14 +98,19 @@ public class JsonPathTransformerHandler implements SchemaTransformerHandler {
 	 * @return
 	 */
 	protected JsonNode read(String type, JsonNode source, String pathExpression){
-		Object resolvedPath = JsonPath.read(source, pathExpression);
-		// overcome this limitation of json-path https://github.com/json-path/JsonPath/issues/272
-		// if expression is indefinite it always return an array, we force to extract first element when type declared is not an array
-		if (resolvedPath instanceof ArrayNode && !type.equals("array")){
-			return ((ArrayNode)resolvedPath).get(0);
-		} else if(resolvedPath instanceof String){
-			return new TextNode((String)resolvedPath);
+		try {
+			Object resolvedPath = JsonPath.read(source, pathExpression);
+			// overcome this limitation of json-path https://github.com/json-path/JsonPath/issues/272
+			// if expression is indefinite it always return an array, we force to extract first element when type declared is not an array
+			if (resolvedPath instanceof ArrayNode && !type.equals("array")){
+				return ((ArrayNode)resolvedPath).get(0);
+			} else if(resolvedPath instanceof String){
+				return new TextNode((String)resolvedPath);
+			}
+			return (JsonNode)resolvedPath;
+		} catch (PathNotFoundException exc){
+			return  NullNode.getInstance();
 		}
-		return (JsonNode)resolvedPath;
+
 	}
 }

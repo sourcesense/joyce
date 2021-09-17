@@ -201,6 +201,9 @@ public class SchemaEngine {
 				Optional<JsonNode> transformed = this.applyHandlers(key, schema, sourceJsonNode, metadata, context);
 				if (transformed.isPresent()) {
 					ObjectNode node = mapper.createObjectNode();
+					if(key == null){
+						return transformed.get();
+					}
 					node.set(key, transformed.get());
 					ObjectNode tempSchema = schema.deepCopy();
 					tempSchema.remove(transformerHandlers.keySet());
@@ -249,7 +252,9 @@ public class SchemaEngine {
 			ArrayNode arrayNode = mapper.createArrayNode();
 			for (JsonNode item : sourceJsonNode.get(key)) {
 				JsonNode parsedItem = this.parse(null, schema.get("items"), item, metadata, context);
-				arrayNode.add(parsedItem);
+				if (!parsedItem.isNull()) {
+					arrayNode.add(parsedItem);
+				}
 			}
 			return arrayNode;
 		} else {
