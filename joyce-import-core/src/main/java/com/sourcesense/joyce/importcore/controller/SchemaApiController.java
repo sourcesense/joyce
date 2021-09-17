@@ -26,6 +26,7 @@ import com.sourcesense.joyce.core.exception.SchemaNotFoundException;
 import com.sourcesense.joyce.core.mapper.SchemaMapper;
 import com.sourcesense.joyce.core.model.SchemaEntity;
 import com.sourcesense.joyce.core.service.SchemaService;
+import com.sourcesense.joyce.core.model.JoyceSchemaMetadataExtraConnector;
 import com.sourcesense.joyce.importcore.service.ConnectorService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.ResponseEntity;
@@ -90,6 +91,15 @@ public class SchemaApiController implements SchemaApi {
 				namespace,
 				name
 		);
+	}
+
+	@Override
+	public List<JoyceSchemaMetadataExtraConnector> getConnectors(
+			String subtype,
+			String namespace,
+			String name) {
+
+		return connectorService.getConnectors(subtype, namespace, name);
 	}
 
 	@Override

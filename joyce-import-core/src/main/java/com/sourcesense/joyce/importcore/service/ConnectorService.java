@@ -7,11 +7,16 @@ import com.fasterxml.jackson.databind.node.ObjectNode;
 import com.sourcesense.joyce.core.dto.ConnectorUpdateStatus;
 import com.sourcesense.joyce.core.dto.SchemaSave;
 import com.sourcesense.joyce.core.enumeration.ConnectorOperation;
+import com.sourcesense.joyce.core.exception.InvalidMetadataException;
 import com.sourcesense.joyce.core.exception.RestException;
+import com.sourcesense.joyce.core.exception.SchemaNotFoundException;
 import com.sourcesense.joyce.core.model.JoyceSchemaMetadata;
-import com.sourcesense.joyce.importcore.dto.JoyceSchemaImportMetadataExtraConnector;
+import com.sourcesense.joyce.core.model.SchemaEntity;
+import com.sourcesense.joyce.core.service.SchemaService;
+import com.sourcesense.joyce.core.model.JoyceSchemaMetadataExtraConnector;
 import com.sourcesense.joyce.core.model.JoyceURI;
 import com.sourcesense.joyce.importcore.dto.JoyceSchemaImportMetadataExtra;
+import com.sourcesense.joyce.importcore.exception.ImportException;
 import lombok.RequiredArgsConstructor;
 import org.apache.commons.lang3.StringUtils;
 import org.springframework.beans.factory.annotation.Value;
@@ -20,7 +25,7 @@ import org.springframework.http.HttpMethod;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Service;
-import org.springframework.web.client.HttpClientErrorException;
+import org.springframework.web.client.RestClientResponseException;
 import org.springframework.web.client.RestTemplate;
 
 import java.util.*;
@@ -41,12 +46,37 @@ public class ConnectorService {
 	private final static String TRANSFORMS_JOYCE_KEY_SCHEMA = "transforms.joyceKey.schema";
 	private final static String TRANSFORMS_JOYCE_KEY_TYPE = "transforms.joyceKey.type";
 
-	@Value("${joyce.connector-service.kafka-connect-url}")
-	private String kafkaConnectUrl;
+	@Value("${joyce.connector-service.kafka-connect-host}")
+	private String kafkaConnectHost;
 
 	private final ObjectMapper mapper;
 	private final RestTemplate restTemplate;
+	private final SchemaService schemaService;
 
+
+	public List<JoyceSchemaMetadataExtraConnector> getConnectors(
+			String subtype,
+			String namespace,
+			String name) {
+
+		JoyceURI.Subtype joyceUriSubtype = JoyceURI.Subtype.get(subtype)
+				.orElseThrow(() -> new ImportException(
+						String.format("Subtype is not valid: '%s'", subtype)
+				));
+
+		JoyceURI schemaUri = JoyceURI.makeNamespaced(JoyceURI.Type.SCHEMA, joyceUriSubtype, namespace, name);
+		SchemaEntity schema = schemaService.getEntity(schemaUri.toString())
+				.orElseThrow(() -> new SchemaNotFoundException(
+						String.format("Impossible to find schema with uri: '%s'", schemaUri)
+				));
+
+		return Optional.of(schema)
+				.map(SchemaEntity::getMetadata)
+				.map(JoyceSchemaMetadata::getExtra)
+				.map(extra -> mapper.convertValue(extra, JoyceSchemaImportMetadataExtra.class))
+				.map(JoyceSchemaImportMetadataExtra::getConnectors)
+				.orElse(new ArrayList<>());
+	}
 
 	public JsonNode getConnectorStatus(
 			String namespace,
@@ -103,7 +133,7 @@ public class ConnectorService {
 	}
 
 	public List<ConnectorUpdateStatus> saveOrUpdateConnectors(SchemaSave schema) {
-		Map<String, JoyceSchemaImportMetadataExtraConnector> newConnectors = this.computeNewConnectors(schema.getMetadata());
+		Map<String, JoyceSchemaMetadataExtraConnector> newConnectors = this.computeNewConnectors(schema.getMetadata());
 		List<String> existingConnectors = this.executeRestWithResponse(this.computeConnectorsEndpoint(), HttpMethod.GET, HttpStatus.OK);
 		List<String> totalConnectors = this.computeTotalConnectors(existingConnectors, newConnectors.keySet());
 		return this.executeConnectorOperations(schema.getMetadata(), totalConnectors, existingConnectors, newConnectors);
@@ -115,7 +145,7 @@ public class ConnectorService {
 				.collect(Collectors.toList());
 	}
 
-	private Map<String, JoyceSchemaImportMetadataExtraConnector> computeNewConnectors(JoyceSchemaMetadata metadata) {
+	private Map<String, JoyceSchemaMetadataExtraConnector> computeNewConnectors(JoyceSchemaMetadata metadata) {
 		return Optional.of(metadata)
 				.map(JoyceSchemaMetadata::getExtra)
 				.map(extra -> mapper.convertValue(extra, JoyceSchemaImportMetadataExtra.class))
@@ -131,7 +161,7 @@ public class ConnectorService {
 			JoyceSchemaMetadata metadata,
 			List<String> totalConnectors,
 			List<String> existingConnectors,
-			Map<String, JoyceSchemaImportMetadataExtraConnector> newConnectors) {
+			Map<String, JoyceSchemaMetadataExtraConnector> newConnectors) {
 
 		List<ConnectorUpdateStatus> statusList = new ArrayList<>();
 		for (String connectorName : totalConnectors) {
@@ -169,7 +199,7 @@ public class ConnectorService {
 	private JsonNode computeCreateConnectorBody(
 			String connectorName,
 			JoyceSchemaMetadata metadata,
-			JoyceSchemaImportMetadataExtraConnector connector) {
+			JoyceSchemaMetadataExtraConnector connector) {
 
 		ObjectNode createBody = mapper.createObjectNode();
 		createBody.put(NAME, connectorName);
@@ -179,7 +209,7 @@ public class ConnectorService {
 
 	private JsonNode computeEnrichedConnectorConfig(
 			JoyceSchemaMetadata metadata,
-			JoyceSchemaImportMetadataExtraConnector connector) {
+			JoyceSchemaMetadataExtraConnector connector) {
 
 		ObjectNode enrichedConfig = (ObjectNode) connector.getConfig();
 		enrichedConfig.put(TOPIC, "joyce_import");
@@ -187,7 +217,7 @@ public class ConnectorService {
 		if (!transforms.isTextual()) {
 			this.addJoyceKeyTransformProperties(enrichedConfig, "joyceKey", metadata, connector);
 
-		} else if(transforms.isTextual() && this.isJoyceKeyNotPresent(transforms)) {
+		} else if (transforms.isTextual() && this.isJoyceKeyNotPresent(transforms)) {
 			this.addJoyceKeyTransformProperties(enrichedConfig, String.format("%s,joyceKey", transforms.asText()), metadata, connector);
 		}
 		return enrichedConfig;
@@ -197,7 +227,7 @@ public class ConnectorService {
 			ObjectNode enrichedConfig,
 			String transforms,
 			JoyceSchemaMetadata metadata,
-			JoyceSchemaImportMetadataExtraConnector connector) {
+			JoyceSchemaMetadataExtraConnector connector) {
 
 		JoyceURI schemaUri = JoyceURI.makeNamespaced(JoyceURI.Type.SCHEMA, metadata.getSubtype(), metadata.getNamespace(), metadata.getName());
 		enrichedConfig.put(TRANSFORMS, transforms);
@@ -238,7 +268,8 @@ public class ConnectorService {
 
 		return mapper.convertValue(
 				this.executeRest(endpoint, method, requiredStatus),
-				new TypeReference<>() {}
+				new TypeReference<>() {
+				}
 		);
 	}
 
@@ -263,28 +294,11 @@ public class ConnectorService {
 		try {
 			return restTemplate.exchange(endpoint, method, new HttpEntity<>(requestBody), JsonNode.class);
 
-		} catch (HttpClientErrorException exception) {
+		} catch (RestClientResponseException exception) {
 			return ResponseEntity
-					.status(exception.getStatusCode())
+					.status(HttpStatus.valueOf(exception.getRawStatusCode()))
 					.body(this.computeResponseBody(exception.getResponseBodyAsByteArray()));
 		}
-	}
-
-	private String computeConnectorsEndpoint(String... parts) {
-		switch (parts.length) {
-			case 0:
-				return String.format("%s/connectors", kafkaConnectUrl);
-			case 1:
-				return String.format("%s/connectors/%s", kafkaConnectUrl, parts[0]);
-			case 3:
-				return String.format("%s/connectors/%s", kafkaConnectUrl, this.computeConnectorName(parts[0], parts[1], parts[2]));
-			default:
-				return StringUtils.EMPTY;
-		}
-	}
-
-	private String computeConnectorName(String namespace, String name, String connector) {
-		return namespace + JoyceURI.NAMESPACE_SEPARATOR + name + JoyceURI.NAMESPACE_SEPARATOR + connector;
 	}
 
 	private JsonNode computeResponseBody(byte[] responseBody) {
@@ -292,8 +306,24 @@ public class ConnectorService {
 			return mapper.readTree(responseBody);
 
 		} catch (Exception exception) {
-			return mapper.createObjectNode()
-					.put("error", "Impossible to read response body.");
+			return mapper.createObjectNode().put("error", "Impossible to read response body.");
 		}
+	}
+
+	private String computeConnectorsEndpoint(String... parts) {
+		switch (parts.length) {
+			case 0:
+				return String.format("http://%s/connectors", kafkaConnectHost);
+			case 1:
+				return String.format("http://%s/connectors/%s", kafkaConnectHost, parts[0]);
+			case 3:
+				return String.format("http://%s/connectors/%s", kafkaConnectHost, this.computeConnectorName(parts[0], parts[1], parts[2]));
+			default:
+				return StringUtils.EMPTY;
+		}
+	}
+
+	private String computeConnectorName(String namespace, String name, String connector) {
+		return namespace + JoyceURI.NAMESPACE_SEPARATOR + name + JoyceURI.NAMESPACE_SEPARATOR + connector;
 	}
 }

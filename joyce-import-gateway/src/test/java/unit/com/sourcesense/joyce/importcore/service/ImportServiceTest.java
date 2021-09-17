@@ -299,7 +299,7 @@ class ImportServiceTest {
 		when(csvMappingService.computeDocumentsFromCsvFile(any(), any(), any())).thenReturn(expected);
 
 		List<JsonNode> actual = importService.computeDocumentsFromFile(rawURI, multipartFile, ',', ";");
-		assertThat(expected.equals(actual));
+		assertThat(expected).hasSameElementsAs(actual);
 	}
 
 	/* UTILITY METHODS */
