@@ -18,6 +18,7 @@ import java.io.IOException;
 import java.net.URISyntaxException;
 import java.nio.file.Files;
 import java.util.Collections;
+import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
 
@@ -58,7 +59,9 @@ class CollectionEnhancerTest implements ResourceLoader {
 	void shouldComputeMetadataIndexes() {
 		Map<String, Object> rawUri = Map.of("raw_uri", 1);
 		Map<String, Object> schemaUid = Map.of("schema_uid", 1);
-		Map<String, Object> rawUriSchemaUid = Map.of("raw_uri", 1, "schema_uid", 1);
+		Map<String, Object> rawUriSchemaUid = new LinkedHashMap<>();
+		rawUriSchemaUid.put("raw_uri", 1);
+		rawUriSchemaUid.put("schema_uid", 1);
 
 		MetadataIndexesProperties metadataIndexesProperties = new MetadataIndexesProperties(
 				List.of(rawUri, schemaUid, rawUriSchemaUid)
@@ -75,17 +78,18 @@ class CollectionEnhancerTest implements ResourceLoader {
 				new MongoIndex("raw_uri_schema_uid", rawUriSchemaUid)
 		);
 
-		assertThat(expected.equals(actual));
+		assertThat(expected).hasSameElementsAs(actual);
 	}
 
 	@Test
 	void shouldComputeFieldIndexes() {
 		Map<String, Object> rawUri = Map.of("raw_uri", 1);
 		Map<String, Object> schemaUid = Map.of("schema_uid", 1);
-		Map<String, Object> rawUriSchemaUid = Map.of("raw_uri", 1, "schema_uid", 1);
+		Map<String, Object> rawUriSchemaUid = new LinkedHashMap<>();
+		rawUriSchemaUid.put("raw_uri", 1);
+		rawUriSchemaUid.put("schema_uid", 1);
 
 		List<Map<String, Object>> fieldIndexes = List.of(rawUri, schemaUid, rawUriSchemaUid);
-
 		List<MongoIndex> actual = this.computeMongoIndexes(fieldIndexes, new MetadataIndexesProperties());
 
 		List<MongoIndex> expected = List.of(
@@ -94,7 +98,7 @@ class CollectionEnhancerTest implements ResourceLoader {
 				new MongoIndex("raw_uri_schema_uid", rawUriSchemaUid)
 		);
 
-		assertThat(expected.equals(actual));
+		assertThat(expected).hasSameElementsAs(actual);
 
 	}
 
@@ -115,7 +119,7 @@ class CollectionEnhancerTest implements ResourceLoader {
 				new MongoIndex("raw_uri", rawUri)
 		);
 
-		assertThat(expected.equals(actual));
+		assertThat(expected).hasSameElementsAs(actual);
 	}
 
 	private void compareSchemaAndValidator(String schemaPath, String validatorPath) throws URISyntaxException, IOException {
