@@ -23,6 +23,7 @@ import com.sourcesense.joyce.core.dto.Schema;
 import com.sourcesense.joyce.core.dto.SchemaSave;
 import com.sourcesense.joyce.core.dto.SchemaShort;
 import com.sourcesense.joyce.core.exception.InvalidMetadataException;
+import com.sourcesense.joyce.core.model.JoyceSchemaMetadataExtraConnector;
 import com.sourcesense.joyce.core.model.JoyceURI;
 import com.sourcesense.joyce.core.model.SchemaEntity;
 import io.swagger.v3.oas.annotations.media.Content;
@@ -96,6 +97,14 @@ public interface SchemaApi {
 	@PostMapping(value = "/schema", consumes = "application/x-yaml")
 	@ResponseStatus(code = HttpStatus.CREATED)
 	SaveSchemaStatus saveSchemaYaml(@RequestBody SchemaSave schema) throws JsonProcessingException;
+
+	@GetMapping(value = "/schema/{subtype}/{namespace}/{name}/connectors")
+	@ResponseStatus(code = HttpStatus.OK)
+	List<JoyceSchemaMetadataExtraConnector> getConnectors(
+			@PathVariable String subtype,
+			@PathVariable String namespace,
+			@PathVariable String name
+	);
 
 	@GetMapping(value = "/schema/{subtype}/{namespace}/{name}/connectors/{connector}/status")
 	@ResponseStatus(code = HttpStatus.OK)
