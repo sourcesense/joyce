@@ -21,8 +21,7 @@ public interface MethodAspect {
      * @return method reflection class
      */
     default Method computeMethod(ProceedingJoinPoint joinPoint) {
-        MethodSignature signature = (MethodSignature) joinPoint.getSignature();
-        return signature.getMethod();
+        return ((MethodSignature) joinPoint.getSignature()).getMethod();
     }
 
     /**
