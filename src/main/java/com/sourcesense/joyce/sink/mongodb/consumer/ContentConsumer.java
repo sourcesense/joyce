@@ -6,6 +6,11 @@ import com.sourcesense.joyce.core.enumeration.KafkaCustomHeaders;
 import com.sourcesense.joyce.core.exception.handler.CustomExceptionHandler;
 import com.sourcesense.joyce.core.model.JoyceURI;
 import com.sourcesense.joyce.sink.mongodb.service.SinkService;
+import io.opentracing.SpanContext;
+import io.opentracing.Tracer;
+import io.opentracing.contrib.kafka.TracingKafkaUtils;
+import io.opentracing.contrib.spring.cloud.websocket.TextMapExtractAdapter;
+import io.opentracing.propagation.Format;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.kafka.annotation.KafkaListener;
@@ -25,7 +30,7 @@ public class ContentConsumer {
 
 	private final SinkService sinkService;
 	private final CustomExceptionHandler customExceptionHandler;
-
+	private final Tracer tracer;
 	/**
 	 * This method saves or removes from a mongo collection processed documents coming from kafka.
 	 * Collection name and message key are retrieved from kafka headers.
@@ -42,9 +47,8 @@ public class ContentConsumer {
 			@Headers Map<String, String> headers) {
 
 		try {
-
+			// https://github.com/opentracing-contrib/java-kafka-client/issues/59
 			String collection = sinkService.getCollection(key, headers);
-
 			ImportAction action = ImportAction.valueOf(headers.getOrDefault(KafkaCustomHeaders.MESSAGE_ACTION, ImportAction.INSERT.name()));
 			boolean storeContent = Boolean.parseBoolean(headers.getOrDefault(KafkaCustomHeaders.STORE_CONTENT, "true"));
 
