@@ -4,7 +4,7 @@ import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.core.type.TypeReference;
 import com.fasterxml.jackson.databind.JsonNode;
 import com.sourcesense.joyce.core.dao.SchemaDao;
-import com.sourcesense.joyce.core.dto.ConnectorUpdateStatus;
+import com.sourcesense.joyce.core.dto.ConnectorOperationStatus;
 import com.sourcesense.joyce.core.dto.SchemaSave;
 import com.sourcesense.joyce.core.exception.RestException;
 import com.sourcesense.joyce.core.exception.SchemaNotFoundException;
@@ -56,8 +56,9 @@ public class ConnectorServiceTest implements UtilitySupplier {
 	private static final String NAMESPACE = "test";
 	private static final String NAME = "schema";
 	private static final String CONNECTOR = "connector";
-	private static final String NAMESPACED_CONNECTOR = computeNamespacedConnector();
 	private static final String TASK_ID = "0";
+	private static final String NAMESPACED_CONNECTOR = computeNamespacedConnector();
+	private static final String JOYCE_SCHEMA_URI = computeSchemaUri();
 
 	private MockRestServiceServer mockServer;
 	private SchemaDao schemaDao;
@@ -80,13 +81,12 @@ public class ConnectorServiceTest implements UtilitySupplier {
 
 	@Test
 	void shouldGetConnectors() throws IOException, URISyntaxException {
-		JoyceURI schemaUri = JoyceURI.makeNamespaced(JoyceURI.Type.SCHEMA, JoyceURI.Subtype.IMPORT, NAMESPACE, NAME);
-
 		SchemaEntity schema = this.computeResourceAsObject("schema/save/01.json", SchemaEntity.class);
-		when(schemaDao.get(schemaUri.toString())).thenReturn(Optional.of(schema));
+		when(schemaDao.get(JOYCE_SCHEMA_URI)).thenReturn(Optional.of(schema));
 
 		List<JoyceSchemaMetadataExtraConnector> actual = connectorService.getConnectors(SUBTYPE, NAMESPACE, NAME);
-		List<JoyceSchemaMetadataExtraConnector> expected = this.computeResourceAsObject("connector/saved/01.json", new TypeReference<>() {});
+		List<JoyceSchemaMetadataExtraConnector> expected = this.computeResourceAsObject("connector/saved/01.json", new TypeReference<>() {
+		});
 
 		assertThat(expected).hasSameElementsAs(actual);
 	}
@@ -169,7 +169,24 @@ public class ConnectorServiceTest implements UtilitySupplier {
 	}
 
 	@Test
-	void shouldThrowImportExceptionWhenWrongSubtype()  {
+	void shouldDeleteSchemaConnectors() throws IOException, URISyntaxException {
+
+		String operationEndpoint = this.computeEndpoint(ConnectorEndpoint.CONNECTOR);
+
+		SchemaEntity schema = this.computeResourceAsObject("schema/existing/04.json", SchemaEntity.class);
+		when(schemaDao.get(JOYCE_SCHEMA_URI)).thenReturn(Optional.of(schema));
+
+		String connectorConfig = this.computeResourceAsString("connector/save/04.json");
+		this.mockRestCall(operationEndpoint, connectorConfig, new byte[0], HttpMethod.DELETE, HttpStatus.NO_CONTENT);
+
+		List<ConnectorOperationStatus> expected = this.computeResourceAsObject("connector/status/04.json", new TypeReference<>() {});
+		List<ConnectorOperationStatus> actual = connectorService.deleteConnectors(SUBTYPE, NAMESPACE, NAME);
+
+		assertThat(expected).hasSameElementsAs(actual);
+	}
+
+	@Test
+	void shouldThrowImportExceptionWhenWrongSubtype() {
 		assertThrows(
 				ImportException.class,
 				() -> connectorService.getConnectors("wrong subtype", NAMESPACE, NAME)
@@ -177,9 +194,8 @@ public class ConnectorServiceTest implements UtilitySupplier {
 	}
 
 	@Test
-	void shouldThrowSchemaNotFoundExceptionWhenMissingSchema()  {
-		JoyceURI schemaUri = JoyceURI.makeNamespaced(JoyceURI.Type.SCHEMA, JoyceURI.Subtype.IMPORT, NAMESPACE, NAME);
-		when(schemaDao.get(schemaUri.toString())).thenReturn(Optional.empty());
+	void shouldThrowSchemaNotFoundExceptionWhenMissingSchema() {
+		when(schemaDao.get(JOYCE_SCHEMA_URI)).thenReturn(Optional.empty());
 		assertThrows(
 				SchemaNotFoundException.class,
 				() -> connectorService.getConnectors(SUBTYPE, NAMESPACE, NAME)
@@ -251,8 +267,8 @@ public class ConnectorServiceTest implements UtilitySupplier {
 		String connectorConfig = this.computeResourceAsString(newConnectorPath);
 		this.mockRestCall(operationEndpoint, connectorConfig, new byte[0], operationMethod, operationStatus);
 
-		List<ConnectorUpdateStatus> expected = this.computeResourceAsObject(statusPath, new TypeReference<>() {});
-		List<ConnectorUpdateStatus> actual = connectorService.saveOrUpdateConnectors(schema);
+		List<ConnectorOperationStatus> expected = this.computeResourceAsObject(statusPath, new TypeReference<>() {});
+		List<ConnectorOperationStatus> actual = connectorService.computeConnectors(schema);
 
 		assertThat(expected).hasSameElementsAs(actual);
 	}
@@ -324,6 +340,10 @@ public class ConnectorServiceTest implements UtilitySupplier {
 
 	private static String computeNamespacedConnector() {
 		return NAMESPACE + JoyceURI.NAMESPACE_SEPARATOR + NAME + JoyceURI.NAMESPACE_SEPARATOR + CONNECTOR;
+	}
+
+	private static String computeSchemaUri() {
+		return JoyceURI.makeNamespaced(JoyceURI.Type.SCHEMA, JoyceURI.Subtype.IMPORT, NAMESPACE, NAME).toString();
 	}
 
 	public enum ConnectorEndpoint {

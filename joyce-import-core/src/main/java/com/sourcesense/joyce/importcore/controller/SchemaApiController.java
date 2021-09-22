@@ -19,7 +19,8 @@ package com.sourcesense.joyce.importcore.controller;
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.JsonNode;
 import com.sourcesense.joyce.core.api.SchemaApi;
-import com.sourcesense.joyce.core.dto.SaveSchemaStatus;
+import com.sourcesense.joyce.core.dto.ConnectorOperationStatus;
+import com.sourcesense.joyce.core.dto.SchemaInfo;
 import com.sourcesense.joyce.core.dto.Schema;
 import com.sourcesense.joyce.core.dto.SchemaSave;
 import com.sourcesense.joyce.core.exception.SchemaNotFoundException;
@@ -75,22 +76,20 @@ public class SchemaApiController implements SchemaApi {
 	}
 
 	@Override
-	public SaveSchemaStatus saveSchemaJson(SchemaSave schema) throws JsonProcessingException {
+	public SchemaInfo saveSchemaJson(SchemaSave schema) throws JsonProcessingException {
 		return saveSchema(schema);
 	}
 
 	@Override
-	public SaveSchemaStatus saveSchemaYaml(SchemaSave schema) throws JsonProcessingException {
+	public SchemaInfo saveSchemaYaml(SchemaSave schema) throws JsonProcessingException {
 		return saveSchema(schema);
 	}
 
 	@Override
-	public void deleteSchema(String subtype, String namespace, String name) {
-		schemaService.delete(
-				this.computeSubtype(subtype),
-				namespace,
-				name
-		);
+	public SchemaInfo deleteSchema(String subtype, String namespace, String name) {
+		List<ConnectorOperationStatus> connectors = connectorService.deleteConnectors(subtype, namespace, name);
+		schemaService.delete(this.computeSubtype(subtype), namespace,	name);
+		return SchemaInfo.builder().connectors(connectors).build();
 	}
 
 	@Override
@@ -153,10 +152,10 @@ public class SchemaApiController implements SchemaApi {
 		return connectorService.restartConnectorTask(namespace, name, connector, task);
 	}
 
-	public SaveSchemaStatus saveSchema(SchemaSave schema) throws JsonProcessingException {
-		return SaveSchemaStatus.builder()
+	public SchemaInfo saveSchema(SchemaSave schema) throws JsonProcessingException {
+		return SchemaInfo.builder()
 				.schemaUri(schemaService.save(schema))
-				.connectors(connectorService.saveOrUpdateConnectors(schema))
+				.connectors(connectorService.computeConnectors(schema))
 				.build();
 	}
 

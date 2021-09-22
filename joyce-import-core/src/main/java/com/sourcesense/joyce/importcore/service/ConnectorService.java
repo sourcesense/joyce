@@ -3,19 +3,20 @@ package com.sourcesense.joyce.importcore.service;
 import com.fasterxml.jackson.core.type.TypeReference;
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
+import com.fasterxml.jackson.databind.node.JsonNodeFactory;
 import com.fasterxml.jackson.databind.node.ObjectNode;
-import com.sourcesense.joyce.core.dto.ConnectorUpdateStatus;
+import com.sourcesense.joyce.core.dto.ConnectorOperationStatus;
 import com.sourcesense.joyce.core.dto.SchemaSave;
 import com.sourcesense.joyce.core.enumeration.ConnectorOperation;
-import com.sourcesense.joyce.core.exception.InvalidMetadataException;
 import com.sourcesense.joyce.core.exception.RestException;
 import com.sourcesense.joyce.core.exception.SchemaNotFoundException;
 import com.sourcesense.joyce.core.model.JoyceSchemaMetadata;
-import com.sourcesense.joyce.core.model.SchemaEntity;
-import com.sourcesense.joyce.core.service.SchemaService;
 import com.sourcesense.joyce.core.model.JoyceSchemaMetadataExtraConnector;
 import com.sourcesense.joyce.core.model.JoyceURI;
+import com.sourcesense.joyce.core.model.SchemaEntity;
+import com.sourcesense.joyce.core.service.SchemaService;
 import com.sourcesense.joyce.importcore.dto.JoyceSchemaImportMetadataExtra;
+import com.sourcesense.joyce.importcore.exception.ConnectorOperationException;
 import com.sourcesense.joyce.importcore.exception.ImportException;
 import lombok.RequiredArgsConstructor;
 import org.apache.commons.lang3.StringUtils;
@@ -33,6 +34,8 @@ import java.util.function.Function;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
+import static com.sourcesense.joyce.core.model.JoyceURI.NAMESPACE_SEPARATOR;
+
 @Service
 @RequiredArgsConstructor
 public class ConnectorService {
@@ -40,6 +43,7 @@ public class ConnectorService {
 	private final static String NAME = "name";
 	private final static String TOPIC = "topic";
 	private final static String CONFIG = "config";
+	private final static String JOYCE_KEY = "joyceKey";
 	private final static String TRANSFORMS = "transforms";
 	private final static String TRANSFORMS_JOYCE_KEY_UID = "transforms.joyceKey.uid";
 	private final static String TRANSFORMS_JOYCE_KEY_SOURCE = "transforms.joyceKey.source";
@@ -59,23 +63,8 @@ public class ConnectorService {
 			String namespace,
 			String name) {
 
-		JoyceURI.Subtype joyceUriSubtype = JoyceURI.Subtype.get(subtype)
-				.orElseThrow(() -> new ImportException(
-						String.format("Subtype is not valid: '%s'", subtype)
-				));
-
-		JoyceURI schemaUri = JoyceURI.makeNamespaced(JoyceURI.Type.SCHEMA, joyceUriSubtype, namespace, name);
-		SchemaEntity schema = schemaService.getEntity(schemaUri.toString())
-				.orElseThrow(() -> new SchemaNotFoundException(
-						String.format("Impossible to find schema with uri: '%s'", schemaUri)
-				));
-
-		return Optional.of(schema)
-				.map(SchemaEntity::getMetadata)
-				.map(JoyceSchemaMetadata::getExtra)
-				.map(extra -> mapper.convertValue(extra, JoyceSchemaImportMetadataExtra.class))
-				.map(JoyceSchemaImportMetadataExtra::getConnectors)
-				.orElse(new ArrayList<>());
+		SchemaEntity schema = this.computeSchema(subtype, namespace, name);
+		return this.computeSchemaConnectors(schema);
 	}
 
 	public JsonNode getConnectorStatus(
@@ -132,11 +121,20 @@ public class ConnectorService {
 		return true;
 	}
 
-	public List<ConnectorUpdateStatus> saveOrUpdateConnectors(SchemaSave schema) {
+	public List<ConnectorOperationStatus> computeConnectors(SchemaSave schema) {
 		Map<String, JoyceSchemaMetadataExtraConnector> newConnectors = this.computeNewConnectors(schema.getMetadata());
-		List<String> existingConnectors = this.executeRestWithResponse(this.computeConnectorsEndpoint(), HttpMethod.GET, HttpStatus.OK);
+		List<String> existingConnectors = this.computeExistingConnectors(schema.getMetadata());
 		List<String> totalConnectors = this.computeTotalConnectors(existingConnectors, newConnectors.keySet());
-		return this.executeConnectorOperations(schema.getMetadata(), totalConnectors, existingConnectors, newConnectors);
+		return this.executeConnectorOperation(schema.getMetadata(), totalConnectors, existingConnectors, newConnectors);
+	}
+
+	public List<ConnectorOperationStatus> deleteConnectors(
+			String subtype,
+			String namespace,
+			String name) {
+
+		SchemaEntity schema = this.computeSchema(subtype, namespace, name);
+		return this.deleteSchemaConnectors(schema);
 	}
 
 	private List<String> computeTotalConnectors(Collection<String> existingConnectors, Collection<String> newConnectors) {
@@ -157,42 +155,91 @@ public class ConnectorService {
 				));
 	}
 
-	private List<ConnectorUpdateStatus> executeConnectorOperations(
+	private List<String> computeExistingConnectors(JoyceSchemaMetadata metadata) {
+		String connectorPrefix = this.computeConnectorPrefix(metadata.getNamespace(), metadata.getName());
+		List<String> existingConnectors = this.executeRestWithResponse(this.computeConnectorsEndpoint(), HttpMethod.GET, HttpStatus.OK);
+		return existingConnectors.stream()
+				.filter(connector -> connector.startsWith(connectorPrefix))
+				.collect(Collectors.toList());
+	}
+
+	private SchemaEntity computeSchema(String subtype, String namespace, String name) {
+		JoyceURI.Subtype joyceUriSubtype = JoyceURI.Subtype.get(subtype)
+				.orElseThrow(() -> new ImportException(
+						String.format("Subtype is not valid: '%s'", subtype)
+				));
+
+		JoyceURI schemaUri = JoyceURI.makeNamespaced(JoyceURI.Type.SCHEMA, joyceUriSubtype, namespace, name);
+		return schemaService.getEntity(schemaUri.toString())
+				.orElseThrow(() -> new SchemaNotFoundException(
+						String.format("Impossible to find schema with uri: '%s'", schemaUri)
+				));
+	}
+
+	private List<JoyceSchemaMetadataExtraConnector> computeSchemaConnectors(SchemaEntity schema) {
+		return Optional.ofNullable(schema)
+				.map(SchemaEntity::getMetadata)
+				.map(JoyceSchemaMetadata::getExtra)
+				.map(extra -> mapper.convertValue(extra, JoyceSchemaImportMetadataExtra.class))
+				.map(JoyceSchemaImportMetadataExtra::getConnectors)
+				.orElse(new ArrayList<>());
+	}
+
+	private List<ConnectorOperationStatus> executeConnectorOperation(
 			JoyceSchemaMetadata metadata,
 			List<String> totalConnectors,
 			List<String> existingConnectors,
 			Map<String, JoyceSchemaMetadataExtraConnector> newConnectors) {
 
-		List<ConnectorUpdateStatus> statusList = new ArrayList<>();
+		List<ConnectorOperationStatus> statusList = new ArrayList<>();
 		for (String connectorName : totalConnectors) {
-			boolean exists = existingConnectors.contains(connectorName);
-			boolean inSchema = newConnectors.containsKey(connectorName);
-			if (!exists && inSchema) {
-				this.executeConnectorOperation(
-						connectorName,
-						this.computeConnectorsEndpoint(),
-						this.computeCreateConnectorBody(connectorName, metadata, newConnectors.get(connectorName)),
-						statusList,
-						ConnectorOperation.CREATE
-				);
-			} else if (exists && inSchema) {
-				this.executeConnectorOperation(
-						connectorName,
-						String.format("%s/config", this.computeConnectorsEndpoint(connectorName)),
-						this.computeEnrichedConnectorConfig(metadata, newConnectors.get(connectorName)),
-						statusList,
-						ConnectorOperation.UPDATE
-				);
-			} else if (exists) {
-				this.executeConnectorOperation(
-						connectorName,
-						this.computeConnectorsEndpoint(connectorName),
-						mapper.createObjectNode(),
-						statusList,
-						ConnectorOperation.DELETE
+			try {
+				boolean exists = existingConnectors.contains(connectorName);
+				boolean inSchema = newConnectors.containsKey(connectorName);
+				JoyceSchemaMetadataExtraConnector connector = newConnectors.get(connectorName);
+
+				if (!exists && inSchema) {
+					String endpoint = this.computeConnectorsEndpoint();
+					JsonNode requestBody = this.computeCreateConnectorBody(connectorName, metadata, connector);
+					this.executeConnectorOperation(endpoint, connectorName, requestBody, statusList, ConnectorOperation.CREATE);
+
+				} else if (exists && inSchema) {
+					String endpoint = String.format("%s/config", this.computeConnectorsEndpoint(connectorName));
+					JsonNode requestBody = this.computeEnrichedConnectorConfig(connectorName, metadata, connector, ConnectorOperation.UPDATE);
+					this.executeConnectorOperation(endpoint, connectorName, requestBody, statusList, ConnectorOperation.UPDATE);
+
+				} else if (exists) {
+					String endpoint = this.computeConnectorsEndpoint(connectorName);
+					JsonNode emptyBody = mapper.createObjectNode();
+					this.executeConnectorOperation(endpoint, connectorName, emptyBody, statusList, ConnectorOperation.DELETE);
+				}
+			} catch (ConnectorOperationException exception) {
+				statusList.add(ConnectorOperationStatus.builder()
+						.name(exception.getConnector())
+						.body(exception.getErrorMessage())
+						.status(exception.getErrorStatus())
+						.connectorOperation(exception.getConnectorOperation())
+						.build()
 				);
 			}
 		}
+		return statusList;
+	}
+
+	private List<ConnectorOperationStatus> deleteSchemaConnectors(SchemaEntity schema) {
+		JoyceSchemaMetadata metadata = schema.getMetadata();
+		List<JoyceSchemaMetadataExtraConnector> connectors = this.computeSchemaConnectors(schema);
+		List<ConnectorOperationStatus> statusList = new ArrayList<>();
+		connectors.stream()
+				.map(JoyceSchemaMetadataExtraConnector::getName)
+				.map(connector -> this.computeConnectorName(metadata.getNamespace(), metadata.getName(), connector))
+				.forEach(connectorName -> this.executeConnectorOperation(
+						this.computeConnectorsEndpoint(connectorName),
+						connectorName,
+						mapper.createObjectNode(),
+						statusList,
+						ConnectorOperation.DELETE
+				));
 		return statusList;
 	}
 
@@ -202,25 +249,50 @@ public class ConnectorService {
 			JoyceSchemaMetadataExtraConnector connector) {
 
 		ObjectNode createBody = mapper.createObjectNode();
+		JsonNode config = this.computeEnrichedConnectorConfig(connectorName, metadata, connector, ConnectorOperation.CREATE);
 		createBody.put(NAME, connectorName);
-		createBody.putPOJO(CONFIG, this.computeEnrichedConnectorConfig(metadata, connector));
+		createBody.putPOJO(CONFIG, config);
 		return createBody;
 	}
 
 	private JsonNode computeEnrichedConnectorConfig(
+			String connectorName,
 			JoyceSchemaMetadata metadata,
-			JoyceSchemaMetadataExtraConnector connector) {
+			JoyceSchemaMetadataExtraConnector connector,
+			ConnectorOperation connectorOperation) {
 
-		ObjectNode enrichedConfig = (ObjectNode) connector.getConfig();
+		ObjectNode enrichedConfig = connector.getConfig().deepCopy();
 		enrichedConfig.put(TOPIC, "joyce_import");
 		JsonNode transforms = enrichedConfig.path(TRANSFORMS);
-		if (!transforms.isTextual()) {
-			this.addJoyceKeyTransformProperties(enrichedConfig, "joyceKey", metadata, connector);
+		boolean isJoyceKeyPresent = this.isJoyceKeyPresent(transforms);
+		if (transforms.isTextual() && isJoyceKeyPresent) {
+			return enrichedConfig;
 
-		} else if (transforms.isTextual() && this.isJoyceKeyNotPresent(transforms)) {
-			this.addJoyceKeyTransformProperties(enrichedConfig, String.format("%s,joyceKey", transforms.asText()), metadata, connector);
+		} else if (connector.getImportKeyUid() != null
+				&& transforms.isTextual()
+				&& !isJoyceKeyPresent) {
+
+			String transform = String.format("%s,%s", transforms.asText(), JOYCE_KEY);
+			this.addJoyceKeyTransformProperties(enrichedConfig, transform, metadata, connector);
+
+		} else if(connector.getImportKeyUid() != null) {
+			this.addJoyceKeyTransformProperties(enrichedConfig, JOYCE_KEY, metadata, connector);
+
+		} else {
+			throw new ConnectorOperationException(
+					"Field import uid key wasn't found for connector",
+					connectorName,
+					connectorOperation
+			);
 		}
 		return enrichedConfig;
+	}
+
+	private boolean isJoyceKeyPresent(JsonNode transforms) {
+		String[] transformations = transforms.asText().split(",");
+		return Arrays.stream(transformations)
+				.map(String::trim)
+				.anyMatch(JOYCE_KEY::equals);
 	}
 
 	private void addJoyceKeyTransformProperties(
@@ -231,30 +303,23 @@ public class ConnectorService {
 
 		JoyceURI schemaUri = JoyceURI.makeNamespaced(JoyceURI.Type.SCHEMA, metadata.getSubtype(), metadata.getNamespace(), metadata.getName());
 		enrichedConfig.put(TRANSFORMS, transforms);
-		enrichedConfig.put(TRANSFORMS_JOYCE_KEY_UID, metadata.getUidKey());
+		enrichedConfig.put(TRANSFORMS_JOYCE_KEY_UID, connector.getImportKeyUid());
 		enrichedConfig.put(TRANSFORMS_JOYCE_KEY_SOURCE, connector.getName());
 		enrichedConfig.put(TRANSFORMS_JOYCE_KEY_SCHEMA, schemaUri.toString());
 		enrichedConfig.put(TRANSFORMS_JOYCE_KEY_TYPE, "com.sourcesense.joyce.connect.custom.InsertJoyceMessageKey");
 	}
 
-	private boolean isJoyceKeyNotPresent(JsonNode transforms) {
-		String[] transformations = transforms.asText().split(",");
-		return Arrays.stream(transformations)
-				.map(String::trim)
-				.noneMatch("joyceKey"::equals);
-	}
-
-	private <REQ> void executeConnectorOperation(
-			String connector,
+	private void executeConnectorOperation(
 			String endpoint,
-			REQ requestBody,
-			List<ConnectorUpdateStatus> statusList,
-			ConnectorOperation operation) {
+			String connectorName,
+			JsonNode requestBody,
+			List<ConnectorOperationStatus> statusList,
+			ConnectorOperation connectorOperation) {
 
-		ResponseEntity<JsonNode> response = this.executeRest(endpoint, requestBody, operation.getMethod());
-		statusList.add(ConnectorUpdateStatus.builder()
-				.name(connector)
-				.connectorOperation(operation)
+		ResponseEntity<JsonNode> response = this.executeRest(endpoint, requestBody, connectorOperation.getMethod());
+		statusList.add(ConnectorOperationStatus.builder()
+				.name(connectorName)
+				.connectorOperation(connectorOperation)
 				.status(response.getStatusCode())
 				.body(response.getBody())
 				.build()
@@ -268,8 +333,7 @@ public class ConnectorService {
 
 		return mapper.convertValue(
 				this.executeRest(endpoint, method, requiredStatus),
-				new TypeReference<>() {
-				}
+				new TypeReference<>() {}
 		);
 	}
 
@@ -286,9 +350,9 @@ public class ConnectorService {
 		return response.getBody();
 	}
 
-	private <REQ> ResponseEntity<JsonNode> executeRest(
+	private ResponseEntity<JsonNode> executeRest(
 			String endpoint,
-			REQ requestBody,
+			JsonNode requestBody,
 			HttpMethod method) {
 
 		try {
@@ -306,7 +370,7 @@ public class ConnectorService {
 			return mapper.readTree(responseBody);
 
 		} catch (Exception exception) {
-			return mapper.createObjectNode().put("error", "Impossible to read response body.");
+			return JsonNodeFactory.instance.textNode("Impossible to read response body.");
 		}
 	}
 
@@ -324,6 +388,10 @@ public class ConnectorService {
 	}
 
 	private String computeConnectorName(String namespace, String name, String connector) {
-		return namespace + JoyceURI.NAMESPACE_SEPARATOR + name + JoyceURI.NAMESPACE_SEPARATOR + connector;
+		return this.computeConnectorPrefix(namespace, name) + connector;
+	}
+
+	private String computeConnectorPrefix(String namespace, String name) {
+		return namespace + NAMESPACE_SEPARATOR + name + NAMESPACE_SEPARATOR;
 	}
 }

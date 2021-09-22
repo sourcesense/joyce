@@ -11,6 +11,7 @@
       "connectors": [
         {
           "name": "connector",
+          "importKeyUid": "id",
           "config": {
             "tasks.max": 3,
             "connector.class": "org.kaliy.kafka.connect.rss.RssSourceConnector",
