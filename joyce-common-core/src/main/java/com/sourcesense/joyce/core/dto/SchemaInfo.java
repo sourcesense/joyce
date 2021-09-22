@@ -12,8 +12,8 @@ import java.util.List;
 @Builder
 @AllArgsConstructor
 @NoArgsConstructor
-public class SaveSchemaStatus {
+public class SchemaInfo {
 
 	private JoyceURI schemaUri;
-	private List<ConnectorUpdateStatus> connectors;
+	private List<ConnectorOperationStatus> connectors;
 }
