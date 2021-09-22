@@ -1,6 +1,13 @@
 server:
   port: 6651
-
+opentracing:
+  jaeger:
+    enabled: false
+    loglog-spans: false
+    service-name: import-gateway
+    udp-sender:
+      host: localhost
+      port:  6831
 springdoc:
   swagger-ui:
     path: /docs
