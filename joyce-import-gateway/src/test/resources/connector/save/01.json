@@ -1,0 +1,14 @@
+{
+  "name": "test.schema.connector",
+  "config": {
+    "tasks.max": 3,
+    "connector.class": "org.kaliy.kafka.connect.rss.RssSourceConnector",
+    "rss.urls": "http://someurl/rss/homepage.xml",
+    "topic": "joyce_import",
+    "transforms": "joyceKey",
+    "transforms.joyceKey.uid": "id",
+    "transforms.joyceKey.source": "connector",
+    "transforms.joyceKey.schema": "joyce://schema/import/test.schema",
+    "transforms.joyceKey.type": "com.sourcesense.joyce.connect.custom.InsertJoyceMessageKey"
+  }
+}

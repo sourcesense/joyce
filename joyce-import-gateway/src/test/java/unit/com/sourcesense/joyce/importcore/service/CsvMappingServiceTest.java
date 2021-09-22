@@ -44,7 +44,7 @@ public class CsvMappingServiceTest implements UtilitySupplier {
 		List<JsonNode> actual = csvMappingService.computeDocumentsFromCsvFile(multipartFile, ',', ";");
 		List<JsonNode> expected = this.computeResourceAsNodeList("result/bulk/csv/01.json");
 
-		assertThat(expected.equals(actual));
+		assertThat(expected).hasSameElementsAs(actual);
 	}
 
 	private List<JsonNode> computeResourceAsNodeList(String path) throws IOException {

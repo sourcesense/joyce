@@ -18,12 +18,14 @@ joyce:
     enabled: true
     topic: joyce_notification
     source: ImportGateway
+  content-producer:
+    enabled: true
+  connector-service:
+    kafka-connect-host: localhost:6682
   data:
     mongodb:
       uri: mongodb://user:password@localhost:27017/joyce
       database: joyce
-  content-producer:
-    enabled: true
   kafka:
     bootstrapAddress: kafka:9092
     consumer:
