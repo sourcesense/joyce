@@ -12,7 +12,7 @@ import org.springframework.http.HttpStatus;
 @Builder
 @NoArgsConstructor
 @AllArgsConstructor
-public class ConnectorUpdateStatus {
+public class ConnectorOperationStatus {
 
 	private String name;
 	private ConnectorOperation connectorOperation;

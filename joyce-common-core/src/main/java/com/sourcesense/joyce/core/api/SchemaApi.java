@@ -18,7 +18,7 @@ package com.sourcesense.joyce.core.api;
 
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.JsonNode;
-import com.sourcesense.joyce.core.dto.SaveSchemaStatus;
+import com.sourcesense.joyce.core.dto.SchemaInfo;
 import com.sourcesense.joyce.core.dto.Schema;
 import com.sourcesense.joyce.core.dto.SchemaSave;
 import com.sourcesense.joyce.core.dto.SchemaShort;
@@ -83,8 +83,8 @@ public interface SchemaApi {
 	);
 
 	@DeleteMapping("/schema/{subtype}/{namespace}/{name}")
-	@ResponseStatus(code = HttpStatus.NO_CONTENT)
-	void deleteSchema(
+	@ResponseStatus(code = HttpStatus.ACCEPTED)
+	SchemaInfo deleteSchema(
 			@PathVariable String subtype,
 			@PathVariable String namespace,
 			@PathVariable String name
@@ -92,11 +92,11 @@ public interface SchemaApi {
 
 	@PostMapping(value = "/schema", consumes = "application/json")
 	@ResponseStatus(code = HttpStatus.CREATED)
-	SaveSchemaStatus saveSchemaJson(@RequestBody SchemaSave schema) throws JsonProcessingException;
+	SchemaInfo saveSchemaJson(@RequestBody SchemaSave schema) throws JsonProcessingException;
 
 	@PostMapping(value = "/schema", consumes = "application/x-yaml")
 	@ResponseStatus(code = HttpStatus.CREATED)
-	SaveSchemaStatus saveSchemaYaml(@RequestBody SchemaSave schema) throws JsonProcessingException;
+	SchemaInfo saveSchemaYaml(@RequestBody SchemaSave schema) throws JsonProcessingException;
 
 	@GetMapping(value = "/schema/{subtype}/{namespace}/{name}/connectors")
 	@ResponseStatus(code = HttpStatus.OK)
