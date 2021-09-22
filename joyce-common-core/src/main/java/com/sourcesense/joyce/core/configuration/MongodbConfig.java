@@ -4,6 +4,8 @@ import com.mongodb.ConnectionString;
 import com.mongodb.MongoClientSettings;
 import com.mongodb.client.MongoClient;
 import com.mongodb.client.MongoClients;
+import io.opentracing.Tracer;
+import io.opentracing.contrib.mongo.common.TracingCommandListener;
 import lombok.RequiredArgsConstructor;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
@@ -25,6 +27,7 @@ import org.springframework.data.mongodb.repository.config.EnableMongoRepositorie
 public class MongodbConfig  extends AbstractMongoClientConfiguration {
 
 	private final ApplicationContext applicationContext;
+	private final Tracer tracer;
 
 	@Value("${joyce.data.mongodb.uri:mongodb://localhost:27017/joyce}")
 	String mongoUri;
@@ -34,8 +37,11 @@ public class MongodbConfig  extends AbstractMongoClientConfiguration {
 
 	@Override
 	public MongoClient mongoClient() {
+		// Instantiate TracingCommandListener
+		TracingCommandListener listener = new TracingCommandListener.Builder(tracer).build();
 		ConnectionString connectionString = new ConnectionString(mongoUri);
 		MongoClientSettings mongoClientSettings = MongoClientSettings.builder()
+				.addCommandListener(listener)
 				.applyConnectionString(connectionString)
 				.build();
 
