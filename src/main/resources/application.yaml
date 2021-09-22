@@ -3,6 +3,8 @@ spring:
     web-application-type: none
 opentracing:
   jaeger:
+    enabled: false
+    log-spans: false
     service-name: mongodb-sink
     udp-sender:
       host: localhost
