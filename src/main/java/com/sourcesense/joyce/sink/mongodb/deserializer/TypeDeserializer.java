@@ -1,7 +1,6 @@
-package com.sourcesense.joyce.sink.mongodb.serializer;
+package com.sourcesense.joyce.sink.mongodb.deserializer;
 
 import com.fasterxml.jackson.core.JsonParser;
-import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.core.ObjectCodec;
 import com.fasterxml.jackson.databind.DeserializationContext;
 import com.fasterxml.jackson.databind.JsonDeserializer;
@@ -13,7 +12,7 @@ import java.io.IOException;
  * Adapts type field to Mongodb BsonType specs.
  */
 @Component
-public class TypeSerializer extends JsonDeserializer<String> {
+public class TypeDeserializer extends JsonDeserializer<String> {
 
 	@Override
 	public String deserialize(
