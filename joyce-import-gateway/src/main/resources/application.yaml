@@ -3,7 +3,7 @@ server:
 opentracing:
   jaeger:
     enabled: false
-    loglog-spans: false
+    log-spans: false
     service-name: import-gateway
     udp-sender:
       host: localhost
