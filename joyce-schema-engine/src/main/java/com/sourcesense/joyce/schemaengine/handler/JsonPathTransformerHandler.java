@@ -34,9 +34,8 @@ import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Component;
 
 import javax.annotation.PostConstruct;
-import java.util.EnumSet;
-import java.util.Optional;
-import java.util.Set;
+import java.util.*;
+import java.util.stream.Collectors;
 
 
 @Slf4j
@@ -75,7 +74,7 @@ public class JsonPathTransformerHandler implements SchemaTransformerHandler {
 			for (JsonNode jsonNode : value) {
 				if(jsonNode.getNodeType().equals(JsonNodeType.STRING)){
 					if(jsonNode.asText().startsWith("$")){
-						JsonNode resolvedPath = this.read(type, source, jsonNode.asText());
+						JsonNode resolvedPath = this.computeValueOrDefault(type, source, jsonNode.asText());
 						stringBuffer.append(resolvedPath.asText());
 					} else {
 						stringBuffer.append(jsonNode.asText());
@@ -86,8 +85,23 @@ public class JsonPathTransformerHandler implements SchemaTransformerHandler {
 			}
 			return new TextNode(stringBuffer.toString());
 		} else {
-			return this.read(type, source, value.asText());
+			return this.computeValueOrDefault(type, source, value.asText());
 		}
+	}
+
+	protected JsonNode computeValueOrDefault(String type, JsonNode source, String pathExpression) {
+		List<String> pathExpressionComponents = Arrays.stream(pathExpression.split("\\?\\?"))
+				.map(String::trim)
+				.collect(Collectors.toList());
+
+		String pathExpr = pathExpressionComponents.get(0);
+
+		JsonNode defaultValue = pathExpressionComponents.size() > 1
+				? new TextNode(pathExpressionComponents.get(1))
+				: NullNode.getInstance();
+
+		JsonNode result = this.read(type, source, pathExpr);
+		return ! result.isNull() ? result : defaultValue;
 	}
 
 	/**
@@ -111,6 +125,5 @@ public class JsonPathTransformerHandler implements SchemaTransformerHandler {
 		} catch (PathNotFoundException exc){
 			return  NullNode.getInstance();
 		}
-
 	}
 }

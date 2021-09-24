@@ -34,7 +34,7 @@ import java.util.Optional;
 
 @ExtendWith(MockitoExtension.class)
 public class JsonPathTransformerTest {
-	private ObjectMapper mapper = new ObjectMapper();
+	private final ObjectMapper mapper = new ObjectMapper();
 
 	@Test
 	void testSimpleJsonPath() throws URISyntaxException, IOException {
@@ -42,9 +42,26 @@ public class JsonPathTransformerTest {
 		JsonNode source = getSourceJsonNode();
 		JsonNode value = new TextNode("$.email");
 		JsonNode result = handler.process("test", "string", value, source, Optional.empty(), Optional.empty());
-		Assertions.assertEquals(result.asText(), "Sincere@april.biz");
+		Assertions.assertEquals("Sincere@april.biz", result.asText());
 	}
 
+	@Test
+	void testSimpleJsonPathWithValueAndDefaultValue() throws IOException, URISyntaxException {
+		JsonPathTransformerHandler handler = getJsonPathTransformerHandler();
+		JsonNode source = getSourceJsonNode();
+		JsonNode value = new TextNode("$.email ?? default@mail.com");
+		JsonNode result = handler.process("test", "string", value, source, Optional.empty(), Optional.empty());
+		Assertions.assertEquals("Sincere@april.biz", result.asText());
+	}
+
+	@Test
+	void testSimpleJsonPathWithoutValueButWithDefaultValue() {
+		JsonPathTransformerHandler handler = getJsonPathTransformerHandler();
+		JsonNode source = mapper.createObjectNode();
+		JsonNode value = new TextNode("$.email ?? default@mail.com");
+		JsonNode result = handler.process("test", "string", value, source, Optional.empty(), Optional.empty());
+		Assertions.assertEquals("default@mail.com", result.asText());
+	}
 
 	@Test
 	void testSimpleConcatJsonPath() throws IOException, URISyntaxException {
