@@ -12,7 +12,11 @@ springdoc:
   swagger-ui:
     path: /docs
     disable-swagger-default-url: true
-
+spring:
+  servlet:
+    multipart:
+      max-file-size: 10MB
+      max-request-size: 10MB
 joyce:
   schema-transformer-plugin:
     enabled: true
