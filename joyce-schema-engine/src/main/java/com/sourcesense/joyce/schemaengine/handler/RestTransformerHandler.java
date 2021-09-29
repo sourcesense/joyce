@@ -96,7 +96,7 @@ public class RestTransformerHandler extends JsonPathTransformerHandler {
 				.flatMap(Set::stream)
 				.collect(Collectors.toMap(
 						Map.Entry::getKey,
-						entry -> read(type, source, entry.getValue()).asText())
+						entry -> this.computeValueOrDefault(type, source, entry.getValue()).asText())
 				);
 	}
 
