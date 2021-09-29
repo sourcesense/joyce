@@ -73,7 +73,7 @@ public class ImportController implements ImportApi {
 				JoyceURI rawUri = this.computeBulkRestRawUri(data.getOriginalFilename());
 				Schema schema = this.fetchSchema(schemaId);
 				List<JsonNode> documents = importService.computeDocumentsFromFile(rawUri, data, columnSeparator, arraySeparator);
-				documents.parallelStream().forEach(document -> importService.processImport(rawUri, document, schema));
+				documents.stream().forEach(document -> importService.processImport(rawUri, document, schema));
 				ObjectNode bulkImportNotification = objectMapper.createObjectNode();
 				bulkImportNotification.put("processed", documents.size());
 				return importService.notifyBulkImportSuccess(rawUri, bulkImportNotification);
