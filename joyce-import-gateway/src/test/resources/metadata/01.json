@@ -1,0 +1,24 @@
+{
+  "extra": {
+    "filter": {
+      "and": [
+        {
+          "==": [
+            {
+              "var": "id"
+            },
+            1
+          ]
+        },
+        {
+          "==": [
+            {
+              "var": "user"
+            },
+            "Nicolas D. Wolfwood"
+          ]
+        }
+      ]
+    }
+  }
+}

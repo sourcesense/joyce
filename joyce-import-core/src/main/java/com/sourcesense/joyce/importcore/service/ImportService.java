@@ -35,9 +35,11 @@ import com.sourcesense.joyce.core.model.JoyceURI;
 import com.sourcesense.joyce.core.service.ContentProducer;
 import com.sourcesense.joyce.core.service.SchemaService;
 import com.sourcesense.joyce.importcore.dto.ConnectKeyPayload;
+import com.sourcesense.joyce.importcore.dto.JoyceSchemaImportMetadataExtra;
 import com.sourcesense.joyce.importcore.exception.ImportException;
 import com.sourcesense.joyce.schemaengine.exception.JoyceSchemaEngineException;
 import com.sourcesense.joyce.schemaengine.service.SchemaEngine;
+import io.github.jamsesso.jsonlogic.JsonLogic;
 import io.opentracing.Span;
 import io.opentracing.util.GlobalTracer;
 import lombok.RequiredArgsConstructor;
@@ -66,6 +68,7 @@ public class ImportService {
 	final private SchemaEngine schemaEngine;
 	final private SchemaService schemaService;
 	final private ContentProducer contentProducer;
+	final private JsonLogicService jsonLogicService;
 	final private CsvMappingService csvMappingService;
 
 	/**
@@ -153,22 +156,32 @@ public class ImportService {
 			@RawUri JoyceURI rawUri,
 			@EventPayload JsonNode document,
 			Schema schema) {
-		Span span = GlobalTracer.get().buildSpan("process").start();
-		span.setTag("uri", Optional.ofNullable(rawUri).map(JoyceURI::toString).orElse(""));
-		JoyceSchemaMetadata metadata = computeMetadata(schema);
-		JsonNode result = schemaEngine.process(schema.getSchema(), document, null);
 
-		computeParentMetadata(metadata, result, true).ifPresent(parentMetadata -> {
-			metadata.setUidKey(parentMetadata.getUidKey());
-			metadata.setCollection(parentMetadata.getCollection());
-			metadata.setNamespace(parentMetadata.getNamespace());
-		});
+			JoyceSchemaMetadata metadata = computeMetadata(schema);
 
-		JoyceURI contentURI = computeContentURI(result, metadata);
-		span.finish();
-		contentProducer.publishContent(schema, rawUri, contentURI, result, metadata);
+		if (jsonLogicService.filter(rawUri, document, metadata)) {
 
-		return true;
+			Span span = GlobalTracer.get().buildSpan("process").start();
+			span.setTag("uri", this.computeTracerUri(rawUri));
+
+			JsonNode result = schemaEngine.process(schema.getSchema(), document, null);
+
+			computeParentMetadata(metadata, result, true)
+					.ifPresent(parentMetadata -> {
+						metadata.setUidKey(parentMetadata.getUidKey());
+						metadata.setCollection(parentMetadata.getCollection());
+						metadata.setNamespace(parentMetadata.getNamespace());
+					});
+
+			JoyceURI contentURI = computeContentURI(result, metadata);
+			span.finish();
+
+			contentProducer.publishContent(schema, rawUri, contentURI, result, metadata);
+			return true;
+
+		} else {
+			return false;
+		}
 	}
 
 	@Notify(successEvent = NotificationEvent.IMPORT_BULK_INSERT_FAILED_INVALID_FILE)
@@ -221,9 +234,9 @@ public class ImportService {
 
 		computeParentMetadata(metadata, result, false)
 				.ifPresent(parentMetadata -> {
-			metadata.setUidKey(parentMetadata.getUidKey());
-			metadata.setCollection(parentMetadata.getCollection());
-		});
+					metadata.setUidKey(parentMetadata.getUidKey());
+					metadata.setCollection(parentMetadata.getCollection());
+				});
 
 		JoyceURI contentURI = computeContentURI(result, metadata);
 
@@ -366,6 +379,12 @@ public class ImportService {
 								String.format("Parent schema [%s] does not exists", metadata.getParent())
 						)
 				);
+	}
+
+	private String computeTracerUri(JoyceURI rawUri) {
+		return Optional.ofNullable(rawUri)
+				.map(JoyceURI::toString)
+				.orElse("");
 	}
 
 	/**************** UTILITY METHODS *******************/

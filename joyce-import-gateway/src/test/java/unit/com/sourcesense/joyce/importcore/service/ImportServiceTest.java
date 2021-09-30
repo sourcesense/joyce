@@ -31,6 +31,7 @@ import com.sourcesense.joyce.core.service.SchemaService;
 import com.sourcesense.joyce.importcore.exception.ImportException;
 import com.sourcesense.joyce.importcore.service.CsvMappingService;
 import com.sourcesense.joyce.importcore.service.ImportService;
+import com.sourcesense.joyce.importcore.service.JsonLogicService;
 import com.sourcesense.joyce.schemaengine.exception.InvalidSchemaException;
 import com.sourcesense.joyce.schemaengine.exception.JoyceSchemaEngineException;
 import com.sourcesense.joyce.schemaengine.service.SchemaEngine;
@@ -64,6 +65,8 @@ class ImportServiceTest {
 	@Mock
 	private ContentProducer contentProducer;
 	@Mock
+	private JsonLogicService jsonLogicService;
+	@Mock
 	private CsvMappingService csvMappingService;
 
 	private final ObjectMapper objectMapper = new ObjectMapper();
@@ -89,7 +92,7 @@ class ImportServiceTest {
 
 	@BeforeEach
 	void init() {
-		importService = new ImportService(objectMapper, schemaEngine, schemaService, contentProducer, csvMappingService);
+		importService = new ImportService(objectMapper, schemaEngine, schemaService, contentProducer, jsonLogicService, csvMappingService);
 	}
 
 	/*
@@ -232,6 +235,7 @@ class ImportServiceTest {
 		// mocking and stubbing data for test execution
 		Schema schema = computeSchema(TEST_SCHEMA_JSON_USER);
 		JoyceURI rawURI = JoyceURI.createURI(MESSAGE_KEY).orElseThrow();
+		when(jsonLogicService.filter(any(), any(), any())).thenReturn(true);
 		when(schemaEngine.process(any(), any(), any()))
 				.thenReturn(objectMapper.valueToTree(Map.of("code", "1337")));
 
@@ -258,6 +262,7 @@ class ImportServiceTest {
 	void shouldThrowSchemaIsNotValidExceptionIfSchemaIsNotValidated() throws IOException {
 		// mocking and stubbing data for test execution
 		Schema schema = computeSchema(TEST_SCHEMA_JSON_USER);
+		when(jsonLogicService.filter(any(), any(), any())).thenReturn(true);
 		when(schemaEngine.process(any(), any(), any()))
 				.thenThrow(InvalidSchemaException.class);
 
@@ -269,6 +274,7 @@ class ImportServiceTest {
 	void shouldThrowInvalidSchemaExceptionIfSchemaHasParentButParentSchemaIsNotAlreadyPresentInDb() throws IOException {
 		// mocking and stubbing data for test execution
 		Schema schema = computeSchema(TEST_SCHEMA_JSON_ENHANCED_USER);
+		when(jsonLogicService.filter(any(), any(), any())).thenReturn(true);
 
 		// asserts
 		assertThrows(JoyceSchemaEngineException.class, () -> importService.processImport(null, null, schema));
@@ -279,6 +285,7 @@ class ImportServiceTest {
 		// mocking and stubbing data for test execution
 		Schema schema = computeSchema(TEST_SCHEMA_JSON_ENHANCED_USER);
 		JoyceURI rawURI = JoyceURI.createURI(MESSAGE_KEY).orElseThrow();
+		when(jsonLogicService.filter(any(), any(), any())).thenReturn(true);
 		when(schemaEngine.process(any(), any(), any()))
 				.thenReturn(objectMapper.valueToTree(Map.of("code", "1337")));
 		when(schemaService.get(any()))
@@ -323,7 +330,8 @@ class ImportServiceTest {
 	private List<JsonNode> computeResourceAsNodeList(String path) throws IOException, URISyntaxException {
 		return objectMapper.readValue(
 				this.computeResourceAsBytes(path),
-				new TypeReference<>() {}
+				new TypeReference<>() {
+				}
 		);
 	}
 

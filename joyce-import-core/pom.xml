@@ -60,6 +60,10 @@
       <artifactId>pf4j-spring</artifactId>
     </dependency>
 
+    <dependency>
+      <groupId>io.github.jamsesso</groupId>
+      <artifactId>json-logic-java</artifactId>
+    </dependency>
   </dependencies>
 
   <build>
