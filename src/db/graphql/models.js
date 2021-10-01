@@ -1,6 +1,7 @@
 const { model, Schema } = require("mongoose");
 const fs = require("fs");
 const _ = require("lodash");
+const createMongooseSchema = require("./json-schema").default;
 
 const SCHEMAS_SOURCE = process.env.SCHEMAS_SOURCE || "assets/schemas.json";
 
@@ -18,8 +19,12 @@ Object.keys(schemaJson["schemas"]).forEach(function (key) {
 			flag: "r",
 		}),
 	);
+	/**
+	 * the "_ID" field is added to define the presence of the properties in the rest api
+	 */
 	data.schema.properties["_id"] = { "type": "string" };
-	let schema = new Schema(data.schema.properties);
+	const convertedSchema = createMongooseSchema(data.schema.properties, data.schema);
+	let schema = new Schema(convertedSchema);
 	let collection = `${data.schema["$metadata"]["namespace"] || "default"}.${data.schema["$metadata"]["collection"]}`;
 	key = _.upperFirst(_.camelCase(key));
 	models[key] = model(key, schema, collection);
