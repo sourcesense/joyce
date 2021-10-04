@@ -96,7 +96,7 @@ var convertV = function (version, refSchemas, jsonSchema) {
 								[convertV(version, refSchemas, jsonSchema.items)] :
 								[]
 							:
-							!_.has(jsonSchema, "type") ?
+							!_.has(jsonSchema, "type") || Array.isArray(jsonSchema.type) ?
 								mongoose.Schema.Types.Mixed :
 								unsupportedJsonSchema(jsonSchema));
 };
