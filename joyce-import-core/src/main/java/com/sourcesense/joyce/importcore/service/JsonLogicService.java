@@ -3,6 +3,7 @@ package com.sourcesense.joyce.importcore.service;
 import com.fasterxml.jackson.core.type.TypeReference;
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
+import com.fasterxml.jackson.databind.node.TextNode;
 import com.sourcesense.joyce.core.model.JoyceSchemaMetadata;
 import com.sourcesense.joyce.core.model.JoyceURI;
 import com.sourcesense.joyce.importcore.dto.JoyceSchemaImportMetadataExtra;
@@ -43,6 +44,6 @@ public class JsonLogicService {
 				.map(JoyceSchemaMetadata::getExtra)
 				.map(extra -> mapper.convertValue(extra, JoyceSchemaImportMetadataExtra.class))
 				.map(JoyceSchemaImportMetadataExtra::getFilter)
-				.map(JsonNode::toString);
+				.map(TextNode::asText);
 	}
 }
