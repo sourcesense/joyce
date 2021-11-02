@@ -16,22 +16,39 @@
 
 package com.sourcesense.joyce.importcore.configuration;
 
-import io.swagger.v3.oas.annotations.OpenAPIDefinition;
-import io.swagger.v3.oas.annotations.info.Contact;
-import io.swagger.v3.oas.annotations.info.Info;
-import io.swagger.v3.oas.annotations.servers.Server;
+import io.swagger.v3.oas.models.OpenAPI;
+import io.swagger.v3.oas.models.info.Contact;
+import io.swagger.v3.oas.models.info.Info;
+import io.swagger.v3.oas.models.servers.Server;
+import org.springframework.beans.factory.annotation.Value;
+import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 
-@OpenAPIDefinition(
-		info = @Info(
-				title = "Joyce Import Api",
-				description = "Api to import documents through Joyce, and to manage associated schemas",
-				version = "0.1.0",
-				contact = @Contact(
-						url = "https://joyce.sourcesense.com",
-						email = "joyce@sourcesense.com")
-		),
-		servers = {@Server(url = "http://localhost:6651"), @Server(url = "http://import-gateway.joyce.oc.corp.sourcesense.com")})
+
 @Configuration
 public class OpenApiConfiguration {
+
+	@Value("${springdoc.swagger-ui.server.url}")
+	String serverUrl;
+
+	@Value("${springdoc.swagger-ui.server.description}")
+	String serverDescription;
+
+	@Bean
+	public OpenAPI customOpenAPI() {
+		return new OpenAPI()
+				.info(new Info()
+						.title("Joyce Import Api")
+						.description("Api to import documents through Joyce, and to manage associated schemas")
+						.version("0.1.0")
+						.contact(new Contact()
+								.url("https://joyce.sourcesense.com")
+								.email("joyce@sourcesense.com")
+						)
+				)
+				.addServersItem(new Server()
+						.url(serverUrl)
+						.description(serverDescription)
+				);
+	}
 }

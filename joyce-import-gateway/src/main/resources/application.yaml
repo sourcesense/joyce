@@ -12,6 +12,9 @@ springdoc:
   swagger-ui:
     path: /docs
     disable-swagger-default-url: true
+    server:
+      url: http://localhost:${server.port}
+      description: Local Server
 spring:
   servlet:
     multipart:
