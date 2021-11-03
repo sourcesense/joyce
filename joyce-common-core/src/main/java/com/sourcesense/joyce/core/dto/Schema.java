@@ -25,5 +25,7 @@ public class Schema {
 	private String name;
 	private String description;
 	private Boolean development;
+	private Boolean connectors;
+	private Boolean export;
 	private JsonNode schema;
 }

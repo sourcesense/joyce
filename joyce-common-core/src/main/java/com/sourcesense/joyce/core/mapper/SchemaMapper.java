@@ -39,11 +39,15 @@ public abstract class SchemaMapper {
 	@Mapping(target = "name", source = "metadata.name")
 	@Mapping(target = "description", source = "metadata.description")
 	@Mapping(target = "development", source = "metadata.development")
+	@Mapping(target = "connectors", source = "metadata.connectors")
+	@Mapping(target = "export", source = "metadata.export")
 	public abstract Schema toDto(SchemaEntity entity);
 
 	@Mapping(target = "name", source = "metadata.name")
 	@Mapping(target = "description", source = "metadata.description")
 	@Mapping(target = "development", source = "metadata.development")
+	@Mapping(target = "connectors", source = "metadata.connectors")
+	@Mapping(target = "export", source = "metadata.export")
 	public abstract SchemaShort toDtoShort(SchemaEntity entity);
 
 	public abstract SchemaSave toDtoSave(SchemaEntity entity);
