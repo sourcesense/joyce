@@ -18,6 +18,8 @@ spring:
       max-file-size: 10MB
       max-request-size: 10MB
 joyce:
+  cors:
+    origin: http://localhost:3000
   schema-transformer-plugin:
     enabled: true
     jar-path: /app/custom-handlers
