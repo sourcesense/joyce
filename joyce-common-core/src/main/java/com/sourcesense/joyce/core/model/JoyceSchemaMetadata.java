@@ -42,6 +42,8 @@ public class JoyceSchemaMetadata {
 	private Boolean store = true;
 	private Boolean validation = true;
 	private Boolean indexed = true;
+	private Boolean connectors = false;
+	private Boolean export = false;
 	private JoyceURI parent;
 	private Map<String, Object> extra;
 
