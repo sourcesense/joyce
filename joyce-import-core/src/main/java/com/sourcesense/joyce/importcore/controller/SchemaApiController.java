@@ -25,6 +25,7 @@ import com.sourcesense.joyce.core.dto.Schema;
 import com.sourcesense.joyce.core.dto.SchemaSave;
 import com.sourcesense.joyce.core.exception.SchemaNotFoundException;
 import com.sourcesense.joyce.core.mapper.SchemaMapper;
+import com.sourcesense.joyce.core.model.JoyceURI;
 import com.sourcesense.joyce.core.model.SchemaEntity;
 import com.sourcesense.joyce.core.service.SchemaService;
 import com.sourcesense.joyce.core.model.JoyceSchemaMetadataExtraConnector;
@@ -52,8 +53,11 @@ public class SchemaApiController implements SchemaApi {
 	}
 
 	@Override
-	public ResponseEntity<?> getAllSchema(Boolean fullSchema) {
-		List<SchemaEntity> schemas = schemaService.findAll();
+	public ResponseEntity<?> getAllSchema(
+			Boolean fullSchema,
+			Boolean rootOnly) {
+
+		List<SchemaEntity> schemas = schemaService.findAll(rootOnly);
 		return ResponseEntity.ok(this.computeSchemas(schemas, fullSchema));
 	}
 
@@ -61,9 +65,11 @@ public class SchemaApiController implements SchemaApi {
 	public ResponseEntity<?> getAllSchemaForNamespace(
 			String subtype,
 			String namespace,
-			Boolean fullSchema) {
+			Boolean fullSchema,
+			Boolean rootOnly) {
 
-		List<SchemaEntity> schemas = schemaService.findBySubtypeAndNamespace(this.computeSubtype(subtype), namespace);
+		JoyceURI.Subtype uriSubtype = this.computeSubtype(subtype);
+		List<SchemaEntity> schemas = schemaService.findBySubtypeAndNamespace(uriSubtype, namespace, rootOnly);
 		return ResponseEntity.ok(this.computeSchemas(schemas, fullSchema));
 	}
 
