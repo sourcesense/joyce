@@ -130,8 +130,8 @@ public class KafkaSchemaDao implements SchemaDao {
 	}
 
 	@Override
-	public List<SchemaEntity> getAll() {
-
+	public List<SchemaEntity> getAll(Boolean rootOnly) {
+		//Todo: il parametro rootOnly non viene usato al momento
 		String query = String.format("SELECT uid, value FROM %s ;", getSchemaTableName());
 		try {
 			List<Row> result = ksql.executeQuery(query).get();
@@ -182,7 +182,7 @@ public class KafkaSchemaDao implements SchemaDao {
 	}
 
 	@Override
-	public List<SchemaEntity> getAllBySubtypeAndNamespace(JoyceURI.Subtype subtype, String namespace) {
+	public List<SchemaEntity> getAllBySubtypeAndNamespace(JoyceURI.Subtype subtype, String namespace, Boolean rootOnly) {
 		return Collections.emptyList();
 	}
 

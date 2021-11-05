@@ -91,12 +91,12 @@ public class RestSchemaDaoTest implements UtilitySupplier {
 
 	@Test
 	void getAllMethodShouldReturnSchemaEntityListOnSuccessfulRestCall() throws IOException {
-		String endpoint = String.format("%s/api/schema?fullSchema=true", REST_ENDPOINT);
+		String endpoint = String.format("%s/api/schema?root_only=false&full_schema=true", REST_ENDPOINT);
 		byte[] responseBody = this.getResourceAsBytes("schema/entity/02.json");
 
 		this.mockRestCall(endpoint, null, responseBody, HttpMethod.GET, HttpStatus.OK);
 
-		List<SchemaEntity> actual = restSchemaDao.getAll();
+		List<SchemaEntity> actual = restSchemaDao.getAll(false);
 		List<SchemaEntity> expected = mapper.readValue(
 				this.getResourceAsBytes("schema/entity/02.json"),
 				new TypeReference<>() {	}
@@ -107,24 +107,24 @@ public class RestSchemaDaoTest implements UtilitySupplier {
 
 	@Test
 	void getAllMethodShouldThrowOnFailedRestCall() {
-		String endpoint = String.format("%s/api/schema?fullSchema=true", REST_ENDPOINT);
+		String endpoint = String.format("%s/api/schema?root_only=false&full_schema=true", REST_ENDPOINT);
 
 		this.mockRestCall(endpoint, null, new byte[0], HttpMethod.GET, HttpStatus.INTERNAL_SERVER_ERROR);
 
 		assertThrows(
 				RestException.class,
-				() -> restSchemaDao.getAll()
+				() -> restSchemaDao.getAll(false)
 		);
 	}
 
 	@Test
 	void getAllBySubtypeAndNamespaceMethodShouldReturnSchemaEntityListOnSuccessfulRestCall() throws IOException {
-		String endpoint = String.format("%s/api/schema/%s/%s?fullSchema=true", REST_ENDPOINT, SUBTYPE, NAMESPACE);
+		String endpoint = String.format("%s/api/schema/%s/%s?root_only=false&full_schema=true", REST_ENDPOINT, SUBTYPE, NAMESPACE);
 		byte[] responseBody = this.getResourceAsBytes("schema/entity/02.json");
 
 		this.mockRestCall(endpoint, null, responseBody, HttpMethod.GET, HttpStatus.OK);
 
-		List<SchemaEntity> actual = restSchemaDao.getAllBySubtypeAndNamespace(JoyceURI.Subtype.IMPORT, NAMESPACE);
+		List<SchemaEntity> actual = restSchemaDao.getAllBySubtypeAndNamespace(JoyceURI.Subtype.IMPORT, NAMESPACE, false);
 		List<SchemaEntity> expected = mapper.readValue(
 				this.getResourceAsBytes("schema/entity/02.json"),
 				new TypeReference<>() {
@@ -163,13 +163,13 @@ public class RestSchemaDaoTest implements UtilitySupplier {
 
 	@Test
 	void getAllBySubtypeAndNamespaceMethodShouldThrowOnFailedRestCall() {
-		String endpoint = String.format("%s/api/schema/%s/%s?fullSchema=true", REST_ENDPOINT, SUBTYPE, NAMESPACE);
+		String endpoint = String.format("%s/api/schema/%s/%s?root_only=false&full_schema=true", REST_ENDPOINT, SUBTYPE, NAMESPACE);
 
 		this.mockRestCall(endpoint, null, new byte[0], HttpMethod.GET, HttpStatus.INTERNAL_SERVER_ERROR);
 
 		assertThrows(
 				RestException.class,
-				() -> restSchemaDao.getAllBySubtypeAndNamespace(JoyceURI.Subtype.IMPORT, NAMESPACE)
+				() -> restSchemaDao.getAllBySubtypeAndNamespace(JoyceURI.Subtype.IMPORT, NAMESPACE, false)
 		);
 	}
 
