@@ -28,6 +28,7 @@ import com.sourcesense.joyce.core.exception.SchemaNotFoundException;
 import com.sourcesense.joyce.core.model.JoyceURI;
 import com.sourcesense.joyce.core.service.ContentProducer;
 import com.sourcesense.joyce.core.service.SchemaService;
+import com.sourcesense.joyce.importcore.dto.SingleImportResult;
 import com.sourcesense.joyce.importcore.exception.ImportException;
 import com.sourcesense.joyce.importcore.service.CsvMappingService;
 import com.sourcesense.joyce.importcore.service.ImportService;
@@ -50,7 +51,8 @@ import java.net.URISyntaxException;
 import java.util.*;
 
 import static org.assertj.core.api.Assertions.assertThat;
-import static org.junit.jupiter.api.Assertions.*;
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.Mockito.when;
 
@@ -240,10 +242,11 @@ class ImportServiceTest {
 				.thenReturn(objectMapper.valueToTree(Map.of("code", "1337")));
 
 		// Subject under test
-		boolean result = importService.processImport(rawURI, computeDocument(TEST_USER_JSON), schema);
+		SingleImportResult expected = new SingleImportResult(rawURI, true, null);
+		SingleImportResult actual = importService.processImport(rawURI, computeDocument(TEST_USER_JSON), schema);
 
 		// Asserts
-		assertTrue(result);
+		assertEquals(expected, actual);
 	}
 
 	@Test
@@ -291,8 +294,11 @@ class ImportServiceTest {
 		when(schemaService.get(any()))
 				.thenReturn(Optional.of(computeSchema(TEST_SCHEMA_JSON_USER)));
 
+		SingleImportResult expected = new SingleImportResult(rawURI, true, null);
+		SingleImportResult actual = importService.processImport(rawURI, null, schema);
+
 		// asserts
-		assertTrue(importService.processImport(rawURI, null, schema));
+		assertEquals(expected, actual);
 	}
 
 	@Test

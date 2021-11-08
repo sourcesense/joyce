@@ -24,6 +24,8 @@ import com.sourcesense.joyce.core.exception.SchemaNotFoundException;
 import com.sourcesense.joyce.core.model.JoyceURI;
 import com.sourcesense.joyce.core.service.SchemaService;
 import com.sourcesense.joyce.importcore.api.ImportApi;
+import com.sourcesense.joyce.importcore.dto.BulkImportResult;
+import com.sourcesense.joyce.importcore.dto.SingleImportResult;
 import com.sourcesense.joyce.importcore.service.ImportService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.web.bind.annotation.RestController;
@@ -34,6 +36,7 @@ import java.util.Date;
 import java.util.List;
 import java.util.Optional;
 import java.util.UUID;
+import java.util.stream.Collectors;
 
 /**
  *  Controller that reads raw messages from request body and processes them.
@@ -55,7 +58,7 @@ public class ImportController implements ImportApi {
 	 * @return true if the operation succeed
 	 */
 	@Override
-	public Boolean importDocument(String schemaId, ObjectNode document) {
+	public SingleImportResult importDocument(String schemaId, ObjectNode document) {
 		return importService.processImport(
 				this.computeSingleRestRawUri(),
 				document,
@@ -64,7 +67,7 @@ public class ImportController implements ImportApi {
 	}
 
 	@Override
-	public Boolean importDocuments(
+	public BulkImportResult importDocuments(
 			String schemaId,
 			MultipartFile data,
 			Character columnSeparator,
@@ -73,10 +76,19 @@ public class ImportController implements ImportApi {
 				JoyceURI rawUri = this.computeBulkRestRawUri(data.getOriginalFilename());
 				Schema schema = this.fetchSchema(schemaId);
 				List<JsonNode> documents = importService.computeDocumentsFromFile(rawUri, data, columnSeparator, arraySeparator);
-				documents.stream().forEach(document -> importService.processImport(rawUri, document, schema));
+
+				List<SingleImportResult> results = documents.stream()
+						.map(document -> importService.processImport(rawUri, document, schema))
+						.collect(Collectors.toList());
+
 				ObjectNode bulkImportNotification = objectMapper.createObjectNode();
 				bulkImportNotification.put("processed", documents.size());
-				return importService.notifyBulkImportSuccess(rawUri, bulkImportNotification);
+				importService.notifyBulkImportSuccess(rawUri, bulkImportNotification);
+
+				return BulkImportResult.builder()
+						.processedDocuments(documents.size())
+						.results(results)
+						.build();
 	}
 
 	/**
@@ -87,8 +99,12 @@ public class ImportController implements ImportApi {
 	 * @return Processed message
 	 */
 	@Override
-	public JsonNode importDryRun(String schemaId, ObjectNode document) {
-		return importService.importDryRun(document, this.fetchSchema(schemaId));
+	public SingleImportResult importDryRun(String schemaId, ObjectNode document) {
+		return importService.importDryRun(
+				this.computeSingleRestRawUri(),
+				document,
+				this.fetchSchema(schemaId)
+		);
 	}
 
 	/**
@@ -99,13 +115,12 @@ public class ImportController implements ImportApi {
 	 * @return true if the operation succeed
 	 */
 	@Override
-	public Boolean removeDocument(String schemaId, ObjectNode document) {
-		importService.removeDocument(
+	public SingleImportResult removeDocument(String schemaId, ObjectNode document) {
+		return importService.removeDocument(
 				this.computeSingleRestRawUri(),
 				document,
 				this.fetchSchema(schemaId)
 		);
-		return true;
 	}
 
 
