@@ -38,6 +38,8 @@ public abstract class SchemaMapper {
 	@Mapping(target = "schema", source = "entity")
 	@Mapping(target = "name", source = "metadata.name")
 	@Mapping(target = "description", source = "metadata.description")
+	@Mapping(target = "uidKey", source = "metadata.uidKey")
+	@Mapping(target = "collection", source = "metadata.collection")
 	@Mapping(target = "development", source = "metadata.development")
 	@Mapping(target = "connectors", source = "metadata.connectors")
 	@Mapping(target = "export", source = "metadata.export")
@@ -45,6 +47,8 @@ public abstract class SchemaMapper {
 
 	@Mapping(target = "name", source = "metadata.name")
 	@Mapping(target = "description", source = "metadata.description")
+	@Mapping(target = "uidKey", source = "metadata.uidKey")
+	@Mapping(target = "collection", source = "metadata.collection")
 	@Mapping(target = "development", source = "metadata.development")
 	@Mapping(target = "connectors", source = "metadata.connectors")
 	@Mapping(target = "export", source = "metadata.export")

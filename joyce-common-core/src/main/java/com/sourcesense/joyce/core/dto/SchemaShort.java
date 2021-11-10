@@ -23,6 +23,8 @@ public class SchemaShort {
 	private String uid;
 	private String name;
 	private String description;
+	private String uidKey;
+	private String collection;
 	private Boolean development;
 	private Boolean connectors;
 	private Boolean export;
