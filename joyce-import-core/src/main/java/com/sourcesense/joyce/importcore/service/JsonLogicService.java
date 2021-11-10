@@ -7,6 +7,7 @@ import com.fasterxml.jackson.databind.node.TextNode;
 import com.sourcesense.joyce.core.model.JoyceSchemaMetadata;
 import com.sourcesense.joyce.core.model.JoyceURI;
 import com.sourcesense.joyce.importcore.dto.JoyceSchemaImportMetadataExtra;
+import com.sourcesense.joyce.importcore.exception.JsonLogicException;
 import io.github.jamsesso.jsonlogic.JsonLogic;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.log4j.Log4j2;
@@ -23,19 +24,15 @@ public class JsonLogicService {
 	private final ObjectMapper mapper;
 	private final JsonLogic jsonLogic;
 
-	public Boolean filter(JoyceURI rawUri, JsonNode document, JoyceSchemaMetadata metadata) {
+	public Boolean filter(JsonNode document, JoyceSchemaMetadata metadata) {
 		try {
-
 			Optional<String> filter = this.computeFilterFromMetadata(metadata);
 			Map<String, Object> data = mapper.convertValue(document, new TypeReference<>() {});
 
-			return filter.isPresent()
-					? (Boolean) jsonLogic.apply(filter.get(), data)
-					: true;
+			return filter.isPresent()	? (Boolean) jsonLogic.apply(filter.get(), data)	: true;
 
 		} catch (Exception exception) {
-			log.error("Impossible to filter document '{}', there has been an error parsing metadata filter config.", rawUri);
-			return true;
+			throw new JsonLogicException(exception.getMessage());
 		}
 	}
 

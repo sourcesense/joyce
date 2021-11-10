@@ -28,6 +28,8 @@ import com.sourcesense.joyce.core.exception.SchemaNotFoundException;
 import com.sourcesense.joyce.core.model.JoyceURI;
 import com.sourcesense.joyce.core.service.ContentProducer;
 import com.sourcesense.joyce.core.service.SchemaService;
+import com.sourcesense.joyce.importcore.dto.SingleImportResult;
+import com.sourcesense.joyce.importcore.enumeration.ProcessStatus;
 import com.sourcesense.joyce.importcore.exception.ImportException;
 import com.sourcesense.joyce.importcore.service.CsvMappingService;
 import com.sourcesense.joyce.importcore.service.ImportService;
@@ -50,7 +52,8 @@ import java.net.URISyntaxException;
 import java.util.*;
 
 import static org.assertj.core.api.Assertions.assertThat;
-import static org.junit.jupiter.api.Assertions.*;
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.Mockito.when;
 
@@ -235,15 +238,16 @@ class ImportServiceTest {
 		// mocking and stubbing data for test execution
 		Schema schema = computeSchema(TEST_SCHEMA_JSON_USER);
 		JoyceURI rawURI = JoyceURI.createURI(MESSAGE_KEY).orElseThrow();
-		when(jsonLogicService.filter(any(), any(), any())).thenReturn(true);
+		when(jsonLogicService.filter(any(), any())).thenReturn(true);
 		when(schemaEngine.process(any(), any(), any()))
 				.thenReturn(objectMapper.valueToTree(Map.of("code", "1337")));
 
 		// Subject under test
-		boolean result = importService.processImport(rawURI, computeDocument(TEST_USER_JSON), schema);
+		SingleImportResult expected = new SingleImportResult(rawURI, ProcessStatus.IMPORTED, null);
+		SingleImportResult actual = importService.processImport(rawURI, computeDocument(TEST_USER_JSON), schema);
 
 		// Asserts
-		assertTrue(result);
+		assertEquals(expected, actual);
 	}
 
 	@Test
@@ -262,7 +266,7 @@ class ImportServiceTest {
 	void shouldThrowSchemaIsNotValidExceptionIfSchemaIsNotValidated() throws IOException {
 		// mocking and stubbing data for test execution
 		Schema schema = computeSchema(TEST_SCHEMA_JSON_USER);
-		when(jsonLogicService.filter(any(), any(), any())).thenReturn(true);
+		when(jsonLogicService.filter(any(), any())).thenReturn(true);
 		when(schemaEngine.process(any(), any(), any()))
 				.thenThrow(InvalidSchemaException.class);
 
@@ -274,7 +278,7 @@ class ImportServiceTest {
 	void shouldThrowInvalidSchemaExceptionIfSchemaHasParentButParentSchemaIsNotAlreadyPresentInDb() throws IOException {
 		// mocking and stubbing data for test execution
 		Schema schema = computeSchema(TEST_SCHEMA_JSON_ENHANCED_USER);
-		when(jsonLogicService.filter(any(), any(), any())).thenReturn(true);
+		when(jsonLogicService.filter(any(), any())).thenReturn(true);
 
 		// asserts
 		assertThrows(JoyceSchemaEngineException.class, () -> importService.processImport(null, null, schema));
@@ -285,14 +289,17 @@ class ImportServiceTest {
 		// mocking and stubbing data for test execution
 		Schema schema = computeSchema(TEST_SCHEMA_JSON_ENHANCED_USER);
 		JoyceURI rawURI = JoyceURI.createURI(MESSAGE_KEY).orElseThrow();
-		when(jsonLogicService.filter(any(), any(), any())).thenReturn(true);
+		when(jsonLogicService.filter(any(), any())).thenReturn(true);
 		when(schemaEngine.process(any(), any(), any()))
 				.thenReturn(objectMapper.valueToTree(Map.of("code", "1337")));
 		when(schemaService.get(any()))
 				.thenReturn(Optional.of(computeSchema(TEST_SCHEMA_JSON_USER)));
 
+		SingleImportResult expected = new SingleImportResult(rawURI, ProcessStatus.IMPORTED, null);
+		SingleImportResult actual = importService.processImport(rawURI, null, schema);
+
 		// asserts
-		assertTrue(importService.processImport(rawURI, null, schema));
+		assertEquals(expected, actual);
 	}
 
 	@Test

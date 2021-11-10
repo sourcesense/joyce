@@ -34,7 +34,10 @@ import com.sourcesense.joyce.core.model.JoyceSchemaMetadata;
 import com.sourcesense.joyce.core.model.JoyceURI;
 import com.sourcesense.joyce.core.service.ContentProducer;
 import com.sourcesense.joyce.core.service.SchemaService;
+import com.sourcesense.joyce.importcore.dto.BulkImportResult;
 import com.sourcesense.joyce.importcore.dto.ConnectKeyPayload;
+import com.sourcesense.joyce.importcore.dto.SingleImportResult;
+import com.sourcesense.joyce.importcore.enumeration.ProcessStatus;
 import com.sourcesense.joyce.importcore.exception.ImportException;
 import com.sourcesense.joyce.schemaengine.exception.JoyceSchemaEngineException;
 import com.sourcesense.joyce.schemaengine.service.SchemaEngine;
@@ -150,14 +153,13 @@ public class ImportService {
 	 * @return true if the operation succeeded
 	 */
 	@Notify(failureEvent = NotificationEvent.IMPORT_INSERT_FAILED)
-	public boolean processImport(
+	public SingleImportResult processImport(
 			@RawUri JoyceURI rawUri,
 			@EventPayload JsonNode document,
 			Schema schema) {
 
-			JoyceSchemaMetadata metadata = computeMetadata(schema);
-
-		if (jsonLogicService.filter(rawUri, document, metadata)) {
+		JoyceSchemaMetadata metadata = computeMetadata(schema);
+		if (jsonLogicService.filter(document, metadata)) {
 
 			Span span = GlobalTracer.get().buildSpan("process").start();
 			span.setTag("uri", this.computeTracerUri(rawUri));
@@ -175,10 +177,11 @@ public class ImportService {
 			span.finish();
 
 			contentProducer.publishContent(schema, rawUri, contentURI, result, metadata);
-			return true;
+			return SingleImportResult.builder().uri(rawUri).processStatus(ProcessStatus.IMPORTED).build();
 
 		} else {
-			return false;
+			log.info("Document with uri {} wasn't processed cause it didn't pass metadata filter.", rawUri);
+			return SingleImportResult.builder().uri(rawUri).processStatus(ProcessStatus.SKIPPED).build();
 		}
 	}
 
@@ -204,11 +207,11 @@ public class ImportService {
 	}
 
 	@Notify(successEvent = NotificationEvent.IMPORT_BULK_INSERT_SUCCESS)
-	public boolean notifyBulkImportSuccess(
+	public BulkImportResult notifyBulkImportSuccess(
 			@RawUri JoyceURI rawUri,
-			@EventPayload JsonNode note) {
+			@EventPayload BulkImportResult report) {
 
-		return true;
+		return report;
 	}
 
 	/**
@@ -221,13 +224,12 @@ public class ImportService {
 	 * @param schema   Schema used to process raw message
 	 */
 	@Notify(failureEvent = NotificationEvent.IMPORT_REMOVE_FAILED)
-	public void removeDocument(
+	public SingleImportResult removeDocument(
 			@RawUri JoyceURI rawUri,
 			@EventPayload ObjectNode document,
 			Schema schema) {
 
 		JoyceSchemaMetadata metadata = computeMetadata(schema);
-
 		JsonNode result = schemaEngine.process(schema.getSchema(), document, null);
 
 		computeParentMetadata(metadata, result, false)
@@ -239,6 +241,10 @@ public class ImportService {
 		JoyceURI contentURI = computeContentURI(result, metadata);
 
 		contentProducer.removeContent(rawUri, contentURI, metadata);
+		return SingleImportResult.builder()
+				.uri(rawUri)
+				.processStatus(ProcessStatus.DELETED)
+				.build();
 	}
 
 	/**
@@ -270,9 +276,23 @@ public class ImportService {
 	 * @param schema   Schema used to process raw message
 	 * @return Processed message
 	 */
-	public JsonNode importDryRun(JsonNode document, Schema schema) {
-		JsonNode result = schemaEngine.process(schema.getSchema(), document, null);
-		return mapper.createObjectNode().putPOJO("result", result);
+	public SingleImportResult importDryRun(
+			JoyceURI rawUri,
+			JsonNode document,
+			Schema schema) {
+
+		JoyceSchemaMetadata metadata = computeMetadata(schema);
+		if (jsonLogicService.filter(document, metadata)) {
+			return SingleImportResult.builder()
+					.uri(rawUri)
+					.processStatus(ProcessStatus.IMPORTED)
+					.result(schemaEngine.process(schema.getSchema(), document, null))
+					.build();
+
+		} else {
+			log.info("Document with uri {} wasn't processed cause it didn't pass metadata filter.", rawUri);
+			return SingleImportResult.builder().uri(rawUri).processStatus(ProcessStatus.SKIPPED).build();
+		}
 	}
 
 	/**

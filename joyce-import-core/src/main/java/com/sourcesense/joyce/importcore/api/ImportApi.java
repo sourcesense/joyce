@@ -21,6 +21,8 @@ import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.node.ArrayNode;
 import com.fasterxml.jackson.databind.node.ObjectNode;
+import com.sourcesense.joyce.importcore.dto.BulkImportResult;
+import com.sourcesense.joyce.importcore.dto.SingleImportResult;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.MediaType;
@@ -37,14 +39,17 @@ public interface ImportApi {
 			produces = "application/json; charset=utf-8",
 			consumes = MediaType.APPLICATION_JSON_VALUE)
 	@ResponseStatus(code = HttpStatus.OK)
-	Boolean importDocument(@RequestHeader("X-Joyce-Schema-Id") String schemaId, @RequestBody ObjectNode document ) throws JsonProcessingException;
+	SingleImportResult importDocument(
+			@RequestHeader("X-Joyce-Schema-Id") String schemaId,
+			@RequestBody ObjectNode document
+	) throws JsonProcessingException;
 
 	@PostMapping(
 			value = "/bulk",
 			produces = "application/json; charset=utf-8",
 			consumes = MediaType.MULTIPART_FORM_DATA_VALUE)
 	@ResponseStatus(code = HttpStatus.OK)
-	Boolean importDocuments(
+	BulkImportResult importDocuments(
 			@RequestHeader("X-Joyce-Schema-Id") String schemaId,
 			@RequestPart MultipartFile data,
 			@RequestParam(defaultValue = ",") Character columnSeparator,
@@ -53,9 +58,15 @@ public interface ImportApi {
 
 	@PostMapping(value = "/dryrun", produces = "application/json; charset=utf-8")
 	@ResponseStatus(code = HttpStatus.OK)
-	JsonNode importDryRun(@RequestHeader("X-Joyce-Schema-Id")  String schemaId, @RequestBody ObjectNode document ) throws JsonProcessingException;
+	SingleImportResult importDryRun(
+			@RequestHeader("X-Joyce-Schema-Id")  String schemaId,
+			@RequestBody ObjectNode document
+	) throws JsonProcessingException;
 
 	@DeleteMapping( produces = "application/json; charset=utf-8")
 	@ResponseStatus(code = HttpStatus.OK)
-	Boolean removeDocument(@RequestHeader("X-Joyce-Schema-Id")  String schemaId, @RequestBody ObjectNode document ) throws JsonProcessingException;
+	SingleImportResult removeDocument(
+			@RequestHeader("X-Joyce-Schema-Id")  String schemaId,
+			@RequestBody ObjectNode document
+	) throws JsonProcessingException;
 }

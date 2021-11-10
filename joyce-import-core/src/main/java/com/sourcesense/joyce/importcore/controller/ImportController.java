@@ -24,21 +24,22 @@ import com.sourcesense.joyce.core.exception.SchemaNotFoundException;
 import com.sourcesense.joyce.core.model.JoyceURI;
 import com.sourcesense.joyce.core.service.SchemaService;
 import com.sourcesense.joyce.importcore.api.ImportApi;
+import com.sourcesense.joyce.importcore.dto.BulkImportResult;
+import com.sourcesense.joyce.importcore.dto.SingleImportResult;
+import com.sourcesense.joyce.importcore.enumeration.ProcessStatus;
 import com.sourcesense.joyce.importcore.service.ImportService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.web.bind.annotation.RestController;
 import org.springframework.web.multipart.MultipartFile;
 
 import java.io.IOException;
-import java.util.Date;
-import java.util.List;
-import java.util.Optional;
-import java.util.UUID;
+import java.util.*;
+import java.util.stream.Collectors;
 
 /**
- *  Controller that reads raw messages from request body and processes them.
- * 	There are two types of action that can be executed on a message: Insert and Delete.
- * 	*/
+ * Controller that reads raw messages from request body and processes them.
+ * There are two types of action that can be executed on a message: Insert and Delete.
+ */
 @RestController
 @RequiredArgsConstructor
 public class ImportController implements ImportApi {
@@ -55,7 +56,7 @@ public class ImportController implements ImportApi {
 	 * @return true if the operation succeed
 	 */
 	@Override
-	public Boolean importDocument(String schemaId, ObjectNode document) {
+	public SingleImportResult importDocument(String schemaId, ObjectNode document) {
 		return importService.processImport(
 				this.computeSingleRestRawUri(),
 				document,
@@ -64,19 +65,28 @@ public class ImportController implements ImportApi {
 	}
 
 	@Override
-	public Boolean importDocuments(
+	public BulkImportResult importDocuments(
 			String schemaId,
 			MultipartFile data,
 			Character columnSeparator,
 			String arraySeparator) throws IOException {
 
-				JoyceURI rawUri = this.computeBulkRestRawUri(data.getOriginalFilename());
-				Schema schema = this.fetchSchema(schemaId);
-				List<JsonNode> documents = importService.computeDocumentsFromFile(rawUri, data, columnSeparator, arraySeparator);
-				documents.stream().forEach(document -> importService.processImport(rawUri, document, schema));
-				ObjectNode bulkImportNotification = objectMapper.createObjectNode();
-				bulkImportNotification.put("processed", documents.size());
-				return importService.notifyBulkImportSuccess(rawUri, bulkImportNotification);
+		JoyceURI rawUri = this.computeBulkRestRawUri(data.getOriginalFilename());
+		Schema schema = this.fetchSchema(schemaId);
+		List<JsonNode> documents = importService.computeDocumentsFromFile(rawUri, data, columnSeparator, arraySeparator);
+
+		Map<ProcessStatus, List<SingleImportResult>> results = documents.stream()
+				.map(document -> this.importSingleDocument(rawUri, document, schema))
+				.collect(Collectors.groupingBy(SingleImportResult::getProcessStatus));
+
+		BulkImportResult finalReport = BulkImportResult.builder()
+				.total(documents.size())
+				.imported(this.computeCardinalityForProcessStatus(results, ProcessStatus.IMPORTED))
+				.skipped(this.computeCardinalityForProcessStatus(results, ProcessStatus.SKIPPED))
+				.failed(this.computeCardinalityForProcessStatus(results, ProcessStatus.FAILED))
+				.build();
+
+		return importService.notifyBulkImportSuccess(rawUri, finalReport);
 	}
 
 	/**
@@ -87,8 +97,12 @@ public class ImportController implements ImportApi {
 	 * @return Processed message
 	 */
 	@Override
-	public JsonNode importDryRun(String schemaId, ObjectNode document) {
-		return importService.importDryRun(document, this.fetchSchema(schemaId));
+	public SingleImportResult importDryRun(String schemaId, ObjectNode document) {
+		return importService.importDryRun(
+				this.computeSingleRestRawUri(),
+				document,
+				this.fetchSchema(schemaId)
+		);
 	}
 
 	/**
@@ -99,15 +113,13 @@ public class ImportController implements ImportApi {
 	 * @return true if the operation succeed
 	 */
 	@Override
-	public Boolean removeDocument(String schemaId, ObjectNode document) {
-		importService.removeDocument(
+	public SingleImportResult removeDocument(String schemaId, ObjectNode document) {
+		return importService.removeDocument(
 				this.computeSingleRestRawUri(),
 				document,
 				this.fetchSchema(schemaId)
 		);
-		return true;
 	}
-
 
 
 	private JoyceURI computeSingleRestRawUri() {
@@ -129,5 +141,25 @@ public class ImportController implements ImportApi {
 		return Optional.ofNullable(schemaId)
 				.flatMap(schemaService::findById)
 				.orElseThrow(() -> new SchemaNotFoundException(String.format("Schema %s does not exists", schemaId)));
+	}
+
+	private SingleImportResult importSingleDocument(
+			JoyceURI rawUri,
+			JsonNode document,
+			Schema schema) {
+
+		try {
+			return importService.processImport(rawUri, document, schema);
+
+		} catch (Exception exception) {
+			return SingleImportResult.builder().uri(rawUri).processStatus(ProcessStatus.FAILED).build();
+		}
+	}
+
+	private Integer computeCardinalityForProcessStatus(
+			Map<ProcessStatus, List<SingleImportResult>> results,
+			ProcessStatus status) {
+
+		return results.getOrDefault(status, new ArrayList<>()).size();
 	}
 }
