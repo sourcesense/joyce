@@ -39,7 +39,6 @@ import com.sourcesense.joyce.importcore.dto.ConnectKeyPayload;
 import com.sourcesense.joyce.importcore.dto.SingleImportResult;
 import com.sourcesense.joyce.importcore.enumeration.ProcessStatus;
 import com.sourcesense.joyce.importcore.exception.ImportException;
-import com.sourcesense.joyce.importcore.exception.JsonLogicException;
 import com.sourcesense.joyce.schemaengine.exception.JoyceSchemaEngineException;
 import com.sourcesense.joyce.schemaengine.service.SchemaEngine;
 import io.opentracing.Span;
