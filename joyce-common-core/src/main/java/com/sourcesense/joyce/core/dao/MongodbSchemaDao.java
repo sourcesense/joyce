@@ -43,8 +43,14 @@ public class MongodbSchemaDao implements SchemaDao {
 	}
 
 	@Override
-	public List<SchemaEntity> getAll() {
-		return schemaRepository.findAll().stream().map(schemaMapper::entityFromDocument).collect(Collectors.toList());
+	public List<SchemaEntity> getAll(Boolean rootOnly) {
+		List<SchemaDocument> schemas = rootOnly
+				? schemaRepository.findAllWhereMetadata_ParentIsNull()
+				: schemaRepository.findAll();
+
+		return schemas.stream()
+				.map(schemaMapper::entityFromDocument)
+				.collect(Collectors.toList());
 	}
 
 	@Override
@@ -75,12 +81,16 @@ public class MongodbSchemaDao implements SchemaDao {
 				.setHeader(KafkaHeaders.MESSAGE_KEY, entity.getUid());
 
 		kafkaTemplate.send(message.build());
-		//TODO: notification of  schema deletion ???
+		//TODO: notification of schema deletion ???
 	}
 
 	@Override
-	public List<SchemaEntity> getAllBySubtypeAndNamespace(JoyceURI.Subtype subtype, String namespace) {
-		return schemaRepository.findAllByMetadata_SubtypeAndMetadata_Namespace(subtype.name(), namespace).stream()
+	public List<SchemaEntity> getAllBySubtypeAndNamespace(JoyceURI.Subtype subtype, String namespace, Boolean rootOnly) {
+		List<SchemaDocument> schemas = rootOnly
+				? schemaRepository.findAllByMetadata_SubtypeAndMetadata_NamespaceWhereMetadata_ParentIsNull(subtype.name(), namespace)
+				: schemaRepository.findAllByMetadata_SubtypeAndMetadata_Namespace(subtype.name(), namespace);
+
+		return schemas.stream()
 				.map(schemaMapper::entityFromDocument)
 				.collect(Collectors.toList());
 	}

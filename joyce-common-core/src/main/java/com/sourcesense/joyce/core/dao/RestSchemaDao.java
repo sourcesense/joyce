@@ -67,9 +67,9 @@ public class RestSchemaDao implements SchemaDao {
 	}
 
 	@Override
-	public List<SchemaEntity> getAll() {
+	public List<SchemaEntity> getAll(Boolean rootOnly) {
 		try {
-			String endpoint = this.getSchemaEndpoint() + "?fullSchema=true";
+			String endpoint = String.format("%s?root_only=%s&full_schema=true", this.getSchemaEndpoint(), rootOnly);
 			return this.computeFetchedSchemas(endpoint);
 
 		} catch (Exception exception) {
@@ -110,9 +110,9 @@ public class RestSchemaDao implements SchemaDao {
 	}
 
 	@Override
-	public List<SchemaEntity> getAllBySubtypeAndNamespace(JoyceURI.Subtype subtype, String namespace) {
+	public List<SchemaEntity> getAllBySubtypeAndNamespace(JoyceURI.Subtype subtype, String namespace, Boolean rootOnly) {
 		try {
-			String endpoint = this.getSchemaEndpoint(subtype, namespace) + "?fullSchema=true";
+			String endpoint = String.format("%s?root_only=%s&full_schema=true", this.getSchemaEndpoint(subtype, namespace), rootOnly);
 			return this.computeFetchedSchemas(endpoint);
 
 		} catch (Exception exception) {

@@ -97,14 +97,14 @@ public class SchemaService {
 		return uid;
 	}
 
-	@Cacheable("schemas")
-	public List<SchemaEntity> findAll() {
-		return schemaEntityDao.getAll();
+//	@Cacheable("schemas")
+	public List<SchemaEntity> findAll(Boolean rootOnly) {
+		return schemaEntityDao.getAll(rootOnly);
 	}
 
 	//@Cacheable("schemas")
-	public List<SchemaEntity> findBySubtypeAndNamespace(JoyceURI.Subtype subtype, String namespace) {
-		return schemaEntityDao.getAllBySubtypeAndNamespace(subtype, namespace);
+	public List<SchemaEntity> findBySubtypeAndNamespace(JoyceURI.Subtype subtype, String namespace, Boolean rootOnly) {
+		return schemaEntityDao.getAllBySubtypeAndNamespace(subtype, namespace, rootOnly);
 	}
 
 	@Cacheable("schemas")

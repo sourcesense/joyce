@@ -26,13 +26,13 @@ public interface SchemaDao {
 
 	Optional<SchemaEntity> get(String id);
 
-	List<SchemaEntity> getAll();
+	List<SchemaEntity> getAll(Boolean rootOnly);
 
 	void save(SchemaEntity t);
 
 	void delete(SchemaEntity t);
 
-	List<SchemaEntity> getAllBySubtypeAndNamespace(JoyceURI.Subtype subtype, String namespace);
+	List<SchemaEntity> getAllBySubtypeAndNamespace(JoyceURI.Subtype subtype, String namespace, Boolean rootOnly);
 
 	List<String> getAllNamespaces();
 }

@@ -54,7 +54,10 @@ public interface SchemaApi {
 					)
 			)
 	)
-	ResponseEntity<?> getAllSchema(@RequestParam(defaultValue = "false") Boolean fullSchema);
+	ResponseEntity<?> getAllSchema(
+			@RequestParam(defaultValue = "false", name = "full_schema") Boolean fullSchema,
+			@RequestParam(defaultValue = "false", name = "root_only") Boolean rootOnly
+			);
 
 	@GetMapping(value = "/schema/{subtype}/{namespace}", produces = "application/json; charset=utf-8")
 	@ApiResponse(
@@ -71,7 +74,8 @@ public interface SchemaApi {
 	ResponseEntity<?> getAllSchemaForNamespace(
 			@PathVariable String subtype,
 			@PathVariable String namespace,
-			@RequestParam(defaultValue = "false") Boolean fullSchema
+			@RequestParam(defaultValue = "false", name = "full_schema") Boolean fullSchema,
+			@RequestParam(defaultValue = "false", name = "root_only") Boolean rootOnly
 	);
 
 	@GetMapping(value = "/schema/{subtype}/{namespace}/{name}", produces = "application/json; charset=utf-8")
