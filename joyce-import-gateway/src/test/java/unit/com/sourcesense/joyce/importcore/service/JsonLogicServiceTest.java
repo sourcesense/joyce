@@ -25,8 +25,6 @@ public class JsonLogicServiceTest implements UtilitySupplier {
 
 	private JsonLogicService jsonLogicService;
 
-	private final static String DOCUMENT_JOYCE_URI = "joyce://content/rest/single/test/1";
-
 	@BeforeEach
 	public void init() {
 		JsonLogic jsonLogic = new JsonLogic();
@@ -36,30 +34,27 @@ public class JsonLogicServiceTest implements UtilitySupplier {
 	@Test
 	void shouldAllowMatchingDocument() throws IOException, URISyntaxException {
 
-		JoyceURI rawUri = JoyceURI.createURI(DOCUMENT_JOYCE_URI).get();
 		JsonNode document = this.computeResourceAsObject("document/01.json", JsonNode.class);
 		JoyceSchemaMetadata metadata = this.computeResourceAsObject("metadata/01.json", JoyceSchemaMetadata.class);
 
-		assertTrue(jsonLogicService.filter(rawUri, document, metadata));
+		assertTrue(jsonLogicService.filter(document, metadata));
 	}
 
 	@Test
 	void shouldAllowMissingFilter() throws IOException, URISyntaxException {
 
-		JoyceURI rawUri = JoyceURI.createURI(DOCUMENT_JOYCE_URI).get();
 		JsonNode document = this.computeResourceAsObject("document/01.json", JsonNode.class);
 		JoyceSchemaMetadata metadata = new JoyceSchemaMetadata();
 
-		assertTrue(jsonLogicService.filter(rawUri, document, metadata));
+		assertTrue(jsonLogicService.filter(document, metadata));
 	}
 
 	@Test
 	void shouldFilterNotMatchingDocument() throws IOException, URISyntaxException {
 
-		JoyceURI rawUri = JoyceURI.createURI(DOCUMENT_JOYCE_URI).get();
 		JsonNode document = this.computeResourceAsObject("document/02.json", JsonNode.class);
 		JoyceSchemaMetadata metadata = this.computeResourceAsObject("metadata/02.json", JoyceSchemaMetadata.class);
 
-		assertFalse(jsonLogicService.filter(rawUri, document, metadata));
+		assertFalse(jsonLogicService.filter(document, metadata));
 	}
 }

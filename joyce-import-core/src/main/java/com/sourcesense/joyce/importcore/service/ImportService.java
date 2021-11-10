@@ -34,9 +34,12 @@ import com.sourcesense.joyce.core.model.JoyceSchemaMetadata;
 import com.sourcesense.joyce.core.model.JoyceURI;
 import com.sourcesense.joyce.core.service.ContentProducer;
 import com.sourcesense.joyce.core.service.SchemaService;
+import com.sourcesense.joyce.importcore.dto.BulkImportResult;
 import com.sourcesense.joyce.importcore.dto.ConnectKeyPayload;
 import com.sourcesense.joyce.importcore.dto.SingleImportResult;
+import com.sourcesense.joyce.importcore.enumeration.ProcessStatus;
 import com.sourcesense.joyce.importcore.exception.ImportException;
+import com.sourcesense.joyce.importcore.exception.JsonLogicException;
 import com.sourcesense.joyce.schemaengine.exception.JoyceSchemaEngineException;
 import com.sourcesense.joyce.schemaengine.service.SchemaEngine;
 import io.opentracing.Span;
@@ -157,7 +160,7 @@ public class ImportService {
 			Schema schema) {
 
 		JoyceSchemaMetadata metadata = computeMetadata(schema);
-		if (jsonLogicService.filter(rawUri, document, metadata)) {
+		if (jsonLogicService.filter(document, metadata)) {
 
 			Span span = GlobalTracer.get().buildSpan("process").start();
 			span.setTag("uri", this.computeTracerUri(rawUri));
@@ -175,17 +178,11 @@ public class ImportService {
 			span.finish();
 
 			contentProducer.publishContent(schema, rawUri, contentURI, result, metadata);
-			return SingleImportResult.builder()
-					.uri(rawUri)
-					.processed(true)
-					.build();
+			return SingleImportResult.builder().uri(rawUri).processStatus(ProcessStatus.IMPORTED).build();
 
 		} else {
 			log.info("Document with uri {} wasn't processed cause it didn't pass metadata filter.", rawUri);
-			return SingleImportResult.builder()
-					.uri(rawUri)
-					.processed(false)
-					.build();
+			return SingleImportResult.builder().uri(rawUri).processStatus(ProcessStatus.SKIPPED).build();
 		}
 	}
 
@@ -211,9 +208,11 @@ public class ImportService {
 	}
 
 	@Notify(successEvent = NotificationEvent.IMPORT_BULK_INSERT_SUCCESS)
-	public void notifyBulkImportSuccess(
+	public BulkImportResult notifyBulkImportSuccess(
 			@RawUri JoyceURI rawUri,
-			@EventPayload JsonNode note) {
+			@EventPayload BulkImportResult report) {
+
+		return report;
 	}
 
 	/**
@@ -245,7 +244,7 @@ public class ImportService {
 		contentProducer.removeContent(rawUri, contentURI, metadata);
 		return SingleImportResult.builder()
 				.uri(rawUri)
-				.processed(true)
+				.processStatus(ProcessStatus.DELETED)
 				.build();
 	}
 
@@ -284,19 +283,16 @@ public class ImportService {
 			Schema schema) {
 
 		JoyceSchemaMetadata metadata = computeMetadata(schema);
-		if (jsonLogicService.filter(rawUri, document, metadata)) {
+		if (jsonLogicService.filter(document, metadata)) {
 			return SingleImportResult.builder()
 					.uri(rawUri)
-					.processed(true)
+					.processStatus(ProcessStatus.IMPORTED)
 					.result(schemaEngine.process(schema.getSchema(), document, null))
 					.build();
 
 		} else {
 			log.info("Document with uri {} wasn't processed cause it didn't pass metadata filter.", rawUri);
-			return SingleImportResult.builder()
-					.uri(rawUri)
-					.processed(false)
-					.build();
+			return SingleImportResult.builder().uri(rawUri).processStatus(ProcessStatus.SKIPPED).build();
 		}
 	}
 
