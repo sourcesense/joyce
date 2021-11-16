@@ -21,7 +21,7 @@
 	<parent>
 		<groupId>com.sourcesense.joyce</groupId>
 		<artifactId>joyce-parent</artifactId>
-		<version>1.0.0-SNAPSHOT</version>
+		<version>1.3.0a</version>
 	</parent>
   <artifactId>joyce-import-parent</artifactId>
 	<version>${revision}</version>
