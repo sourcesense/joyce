@@ -1,0 +1,93 @@
+/* stylelint-disable docusaurus/copyright-header */
+/**
+ * Any CSS included here will be global. The classic template
+ * bundles Infima by default. Infima is a CSS framework designed to
+ * work well for content-centric websites.
+ */
+
+/* You can override the default Infima variables here. */
+:root {
+  --ifm-color-primary: #ec1b23;
+  --ifm-color-primary-dark: rgb(226, 18, 25);
+  --ifm-color-primary-darker: rgb(208, 17, 23);
+  --ifm-color-primary-darkest: rgb(132, 11, 15);
+  --ifm-color-primary-light: rgb(238, 47, 54);
+  --ifm-color-primary-lighter: rgb(240, 66, 72);
+  --ifm-color-primary-lightest: rgb(246, 142, 145);
+  --ifm-code-font-size: 95%;
+
+ /* --ifm-color-primary: #ec1b23;
+  --ifm-color-primary: #ef5329;
+  --ifm-color-primary: #edf0f5;9197a1
+  --ifm-color-primary: #e73b3c;
+
+  --ifm-color-primary: #e94730;
+  --ifm-color-primary: #f05844; */
+}
+.footer--dark{
+  --ifm-footer-background-color: #22333B;
+}
+
+.docusaurus-highlight-code-line {
+  background-color: rgb(72, 77, 91);
+  display: block;
+  margin: 0 calc(-1 * var(--ifm-pre-padding));
+  padding: 0 var(--ifm-pre-padding);
+}
+
+.box-icon > svg{
+  width: 120px;
+  height: 120px;
+  margin: 1em 0 2em;
+  color: var(--ifm-heading-color);
+}
+
+.footer__col{
+  display: flex;
+  align-items: center;
+}
+.row .footer__col{
+  flex: none;
+  width: auto;
+  --ifm-col-width: auto;
+}
+.footer__title{
+  margin-bottom: 0;
+  line-height: 1;
+}
+.footer__items{
+  line-height: 1;
+}
+.footer__item{
+  display: inline-block;
+  margin-left: 1em;
+  line-height: 1;
+}
+
+@media (max-width: 414px){
+  .hero > .container{
+    padding: 0;
+  }
+}
+@media (max-width: 996px){
+  .footer__col {
+    margin-bottom: calc(var(--ifm-spacing-vertical) * 1);
+    justify-content: center;
+  }
+}
+@media (min-width: 996px) {
+  .footer > .container {
+    display: flex;
+    align-items: center;
+  }
+  .footer__bottom{
+    margin-left: auto;
+  }
+  .footer__links{
+    margin-bottom: 0;
+  }
+  .hero{
+    background: var(--ifm-color-primary) url(/img/joyce-visual.png) no-repeat center right;
+    background-size: 30%;
+  }
+}
