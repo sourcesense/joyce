@@ -1,0 +1,41 @@
+{
+  "bsonType": "object",
+  "properties": {
+    "id": {
+      "bsonType": "int"
+    },
+    "missingRequired": {
+      "bsonType": "object",
+      "properties": {
+        "id": {
+          "bsonType": "string"
+        }
+      }
+    },
+    "nullRequired": {
+      "bsonType": "object",
+      "properties": {
+        "id": {
+          "bsonType": "string"
+        }
+      }
+    },
+    "emptyRequired": {
+      "bsonType": "object",
+      "properties": {
+        "id": {
+          "bsonType": "string"
+        }
+      }
+    },
+    "validRequired": {
+      "bsonType": "object",
+      "required": ["id"],
+      "properties": {
+        "id": {
+          "bsonType": "string"
+        }
+      }
+    }
+  }
+}

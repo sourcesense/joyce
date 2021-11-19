@@ -1,0 +1,28 @@
+[tool.poetry]
+name = "joyce-it"
+version = "0.1.0"
+description = ""
+authors = ["niko.usai <niko.usai@sourcesense.com>"]
+
+[tool.poetry.dependencies]
+python = "^3.9"
+grpcio = "^1.41.1"
+protobuf = "^3.19.1"
+pytest = "^6.2.5"
+requests = "^2.26.0"
+pytest-dependency = "^0.5.1"
+python-on-whales = "^0.31.0"
+sh = "^1.14.2"
+
+[tool.poetry.dev-dependencies]
+
+[build-system]
+requires = ["poetry-core>=1.0.0"]
+build-backend = "poetry.core.masonry.api"
+
+[tool.pytest.ini_options]
+markers = [
+    "slow: marks tests as slow (deselect with '-m \"not slow\"')",
+    "serial",
+    "miau"
+]

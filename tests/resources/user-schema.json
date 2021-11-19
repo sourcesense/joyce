@@ -1,0 +1,38 @@
+{
+  "$schema": "https://joyce.sourcesense.com/v1/schema",
+  "$metadata": {
+    "subtype": "import",
+    "collection": "users",
+    "name": "user",
+    "namespace": "default",
+    "description": "A test schema",
+    "development": true,
+    "validation": false,
+    "uid": "code"
+  },
+  "type": "object",
+  "properties": {
+    "code": {
+      "type": "integer",
+      "$path": "$.user_id"
+    },
+    "name": {
+      "type": "string",
+      "$path": "$.first_name"
+    },
+    "surname": {
+      "type": "string",
+      "$path": "$.last_name"
+    },
+    "full_name": {
+      "type": "string",
+      "$script": {
+        "language": "python",
+        "code": "'_'.join([source['first_name'].upper(), source['last_name'].upper()])"
+      }
+    },
+    "email": {
+      "type": "string"
+    }
+  }
+}

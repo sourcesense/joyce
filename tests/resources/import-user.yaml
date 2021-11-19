@@ -1,0 +1,48 @@
+$schema: https://joyce.sourcesense.com/v1/schema
+$metadata:
+  subtype: import
+  namespace: default
+  name: user
+  description: A test schema
+  development: true
+  uid: code
+  collection: users
+type: object
+properties:
+  code:
+    type: integer
+    $path: $.user_id
+  name:
+    type: string
+    $path: $.first_name
+  surname:
+    type: string
+    $path: $.last_name
+  full_name:
+    type: string
+    $script: 
+      language: python
+      code: "'_'.join([source['first_name'].upper(), source['last_name'].upper()])"
+  email:
+    type: string
+  email_checks:
+    type: object
+    $rest:
+      url: "https://api.eva.pingutil.com/email?email={{email}}"
+      method: GET
+      headers:
+        Content-Type: application/json
+      vars:
+        email: "$.email"
+      extract: "$.data"
+    properties:
+      valid:
+        type: boolean
+        $path: $.valid_syntax
+      disposable:
+        type: boolean
+      spam:
+        type: boolean
+  kind:
+    type: string
+    $fixed: "SimpleUser"

@@ -1,0 +1,42 @@
+spring:
+  main:
+    web-application-type: none
+opentracing:
+  jaeger:
+    enabled: false
+    log-spans: false
+    service-name: mongodb-sink
+    udp-sender:
+      host: localhost
+      port:  6831
+joyce:
+  kafka:
+    import:
+      topic: joyce_import
+    content:
+      topic: joyce_content
+      cleanup: compact
+    notification:
+      topic: joyce_notification
+      retention: 86400000
+    schema-topic: joyce_schema
+    bootstrapAddress: kafka:9092
+    producer:
+      enabled: true
+    consumer:
+      groupId: joyce-mongodb-projector-local
+      enabled: true
+  notification-service:
+    enabled: true
+    source: MongodbSink
+  schema-service:
+    enabled: false
+    database: mongodb
+  data:
+    mongodb:
+      uri: mongodb://user:password@localhost:27017/joyce
+      database: joyce
+      metadata-indexes:
+        - raw_uri: 1
+        - schema_uid: 1
+        - schema_name: 1

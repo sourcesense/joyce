@@ -1,0 +1,1 @@
+{"schemas": {"test-users": {"source": "http://import-gateway:6651/api/schema/import/default/user"}}}

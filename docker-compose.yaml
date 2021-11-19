@@ -1,0 +1,91 @@
+version: "3.6"
+
+services:
+  kafka-connect:
+    image: sourcesense/joyce-kafka-connect:1.1.0
+    ports:
+      - '6682:6682'
+    environment:
+      - CONNECT_BOOTSTRAP_SERVERS=kafka:9092
+    links:
+      - kafka
+    # volumes:
+    #   - ./data/connect:/opt/data
+  import-gateway:
+    image: sourcesense/joyce-import-gateway:1.2.1
+    environment:
+      - JOYCE_KAFKA_BOOTSTRAPADDRESS=kafka:9092
+      - JOYCE_DATA_MONGODB_URI=mongodb://user:password@mongodb:27017/joyce
+      - JOYCE_DATA_MONGODB_DATABASE=joyce
+      - JOYCE_CONNECTOR_SERVICE_KAFKA_CONNECT_HOST=kafka-connect:6682
+    ports:
+      - "6651:6651"
+    links:
+      - kafka
+  mongodb-sink:
+    image: sourcesense/joyce-mongodb-sink:1.2.0
+    environment:
+      - JOYCE_DATA_MONGODB_URI=mongodb://user:password@mongodb:27017/joyce
+      - JOYCE_DATA_MONGODB_DATABASE=joyce
+      - JOYCE_PROJECTION_KAFKA_BOOTSTRAPADDRESS=kafka:9092
+    links:
+      - kafka
+      - mongodb
+  rest:
+    image: sourcesense/joyce-rest:1.1.0
+    ports:
+      - "6650:6650"
+    environment:
+      - MONGO_URI=mongodb://user:password@mongodb:27017/joyce
+    #   - SCHEMAS_SOURCE=/opt/schemas.json
+    # volumes:
+    #   - ./schemas.json:/opt/schemas.json
+    links:
+      - mongodb
+      - import-gateway
+  mongodb:
+    image: "bitnami/mongodb:4.4.5"
+    environment:
+      - MONGODB_ROOT_PASSWORD=toor
+      - MONGODB_USERNAME=user
+      - MONGODB_PASSWORD=password
+      - MONGODB_DATABASE=joyce
+    ports:
+      - "27017:27017"
+    # volumes:
+    #   - "./data/mongodb:/bitnami/mongodb"
+  akhq:
+    image: tchiotludo/akhq:0.18.0
+    ports:
+      - "6680:8080"
+    links:
+      - kafka
+    environment:
+      AKHQ_CONFIGURATION: |
+        akhq:
+          connections:
+            kafka:
+              properties:
+                bootstrap.servers: "kafka:9092"
+  zookeeper:
+    image: "bitnami/zookeeper:3.7.0"
+    ports:
+      - "2181:2181"
+    environment:
+      - ALLOW_ANONYMOUS_LOGIN=yes
+  kafka:
+    image: "bitnami/kafka:1.1.1"
+    ports:
+      - "9092:9092"
+    # volumes:
+    #   - ./data/kafka:/bitnami/kafka
+    environment:
+      - KAFKA_ZOOKEEPER_CONNECT=zookeeper:2181
+      - ALLOW_PLAINTEXT_LISTENER=yes
+      - KAFKA_MESSAGE_MAX_BYTES=2000000
+      - KAFKA_ADVERTISED_LISTENERS=PLAINTEXT://kafka:9092
+      - KAFKA_LISTENERS=PLAINTEXT://:9092
+    links:
+      - zookeeper
+  
+  

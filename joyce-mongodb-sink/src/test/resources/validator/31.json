@@ -1,0 +1,31 @@
+{
+  "bsonType": "object",
+  "properties": {
+    "integer": {
+      "bsonType": "int"
+    },
+    "number": {
+      "bsonType": "double"
+    },
+    "boolean": {
+      "bsonType": "bool"
+    },
+    "string": {
+      "bsonType": "string"
+    },
+    "object": {
+      "bsonType": "object",
+      "properties": {
+        "field": {
+          "bsonType": "string"
+        }
+      }
+    },
+    "array": {
+      "bsonType": "array",
+      "items": {
+        "bsonType": "string"
+      }
+    }
+  }
+}
