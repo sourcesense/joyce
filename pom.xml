@@ -19,6 +19,8 @@
   <modules>
     <module>joyce-schema-engine</module>
     <module>joyce-common-core</module>
+    <module>joyce-import-core</module>
+    <module>joyce-import-gateway</module>
     <module>joyce-mongodb-sink</module>
   </modules>
 
@@ -33,10 +35,6 @@
     <sonar.java.coveragePlugin>jacoco</sonar.java.coveragePlugin>
     <sonar.dynamicAnalysis>reuseReports</sonar.dynamicAnalysis>
     <sonar.language>java</sonar.language>
-    <joyce.common-core.version>${revision}</joyce.common-core.version>
-    <joyce.connector-core.version>${revision}</joyce.connector-core.version>
-    <joyce.schema-engine.version>${revision}</joyce.schema-engine.version>
-    <joyce.import.core.version>0.0.1-SNAPSHOT</joyce.import.core.version>
     <org.mapstruct.version>1.4.1.Final</org.mapstruct.version>
     <org.springdoc.version>1.5.5</org.springdoc.version>
     <ksqldb.version>0.17.0</ksqldb.version>
@@ -92,22 +90,17 @@
       <dependency>
         <groupId>com.sourcesense.joyce</groupId>
         <artifactId>joyce-common-core</artifactId>
-        <version>${joyce.common-core.version}</version>
+        <version>${revision}</version>
       </dependency>
       <dependency>
         <groupId>com.sourcesense.joyce</groupId>
         <artifactId>joyce-import-core</artifactId>
-        <version>${joyce.import.core.version}</version>
-      </dependency>
-      <dependency>
-        <groupId>com.sourcesense.joyce</groupId>
-        <artifactId>joyce-connector-core</artifactId>
-        <version>${joyce.connector-core.version}</version>
+        <version>${revision}</version>
       </dependency>
       <dependency>
         <groupId>com.sourcesense.joyce</groupId>
         <artifactId>joyce-schema-engine</artifactId>
-        <version>${joyce.schema-engine.version}</version>
+        <version>${revision}</version>
       </dependency>
       <dependency>
         <groupId>org.mapstruct</groupId>

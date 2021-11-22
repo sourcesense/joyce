@@ -5,15 +5,15 @@
 	<parent>
 		<groupId>com.sourcesense.joyce</groupId>
 		<artifactId>joyce-parent</artifactId>
-		<version>1.2.0</version>
+		<version>${revision}</version>
 	</parent>
 
 	<name>joyce-mongodb-sink</name>
 	<description>Joyce Mongodb Sink</description>
 	<artifactId>joyce-mongodb-sink</artifactId>
   <version>${revision}</version>
+	
   <properties>
-    <revision>1.0.0-SNAPSHOT</revision>
     <sonar.projectKey>sourcesense_joyce-mongodb-sink</sonar.projectKey>
     <sonar.organization>sourcesense</sonar.organization>
     <sonar.host.url>https://sonarcloud.io</sonar.host.url>

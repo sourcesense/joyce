@@ -20,19 +20,19 @@
 	<modelVersion>4.0.0</modelVersion>
 	<parent>
 		<groupId>com.sourcesense.joyce</groupId>
-		<artifactId>joyce-import-parent</artifactId>
+		<artifactId>joyce-parent</artifactId>
 		<version>${revision}</version>
 	</parent>
 
-  <artifactId>joyce-import-gateway</artifactId>
-	<name>joyce-import-gateway</name>
+  <name>joyce-import-gateway</name>
 	<description>Joyce Import Microservice</description>
-
+  <artifactId>joyce-import-gateway</artifactId>
+  <version>${revision}</version>
+	
 	<dependencies>
     <dependency>
       <groupId>com.sourcesense.joyce</groupId>
       <artifactId>joyce-import-core</artifactId>
-      <version>${project.version}</version>
     </dependency>
 
 		<dependency>
@@ -57,6 +57,11 @@
       <scope>test</scope>
     </dependency>
     <dependency>
+      <groupId>org.jacoco</groupId>
+      <artifactId>jacoco-maven-plugin</artifactId>
+      <scope>test</scope>
+    </dependency>
+    <dependency>
       <groupId>org.springframework.data</groupId>
       <artifactId>spring-data-mongodb</artifactId>
     </dependency>
@@ -78,7 +83,19 @@
 
 	<build>
 		<plugins>
-
+      <plugin>
+        <groupId>org.jacoco</groupId>
+        <artifactId>jacoco-maven-plugin</artifactId>
+        <version>${jacoco.version}</version>
+        <executions>
+          <execution>
+            <goals>
+              <goal>prepare-agent</goal>
+              <goal>report</goal>
+            </goals>
+          </execution>
+        </executions>
+      </plugin>
 			<plugin>
 				<groupId>org.springframework.boot</groupId>
 				<artifactId>spring-boot-maven-plugin</artifactId>
