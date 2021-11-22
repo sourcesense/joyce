@@ -1,0 +1,26 @@
+{
+	"uid": "joyce://schema/import/enhanced-user",
+	"name": "enhanced-user",
+	"description": "A test schema",
+	"development": true,
+	"schema": {
+		"uid": "joyce://schema/import/enhanced-user",
+		"type": "object",
+		"required": null,
+		"properties": {
+			"tel": {
+				"type": "string"
+			}
+		},
+		"$schema": "https://joyce.sourcesensce.com/v1/schema",
+		"$metadata": {
+			"subtype": "import",
+			"collection": "enhanced-users",
+			"name": "enhanced-user",
+			"description": "A test schema",
+			"development": true,
+			"parent": "joyce://schema/import/user",
+			"uid": "code"
+		}
+	}
+}

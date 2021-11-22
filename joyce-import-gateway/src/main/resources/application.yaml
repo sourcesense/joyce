@@ -1,0 +1,60 @@
+server:
+  port: 6651
+opentracing:
+  jaeger:
+    enabled: false
+    log-spans: false
+    service-name: import-gateway
+    udp-sender:
+      host: localhost
+      port:  6831
+springdoc:
+  swagger-ui:
+    path: /docs
+    disable-swagger-default-url: true
+    server:
+      url: http://localhost:${server.port}
+      description: Local Server
+spring:
+  servlet:
+    multipart:
+      max-file-size: 10MB
+      max-request-size: 10MB
+joyce:
+  cors:
+    origin: http://localhost:3000
+  schema-transformer-plugin:
+    enabled: true
+    jar-path: /app/custom-handlers
+  schema-service:
+    enabled: true
+    database: mongodb
+    subtype: import
+  notification-service:
+    enabled: true
+    topic: joyce_notification
+    source: ImportGateway
+  content-producer:
+    enabled: true
+  connector-service:
+    kafka-connect-host: localhost:6682
+  data:
+    mongodb:
+      uri: mongodb://user:password@localhost:27017/joyce
+      database: joyce
+  kafka:
+    bootstrapAddress: kafka:9092
+    consumer:
+      groupId: joyce-import-consumer-local
+      enabled: true
+    producer:
+      enabled: true
+    import:
+      topic: joyce_import
+    content:
+      topic: joyce_content
+      cleanup: compact
+    notification:
+      topic: joyce_notification
+      retention: 86400000
+

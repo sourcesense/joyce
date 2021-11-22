@@ -1,0 +1,6 @@
+version: "3.6"
+
+services:
+  import-gateway:
+    build: .
+    image: "sourcesense/import-gateway:latest"

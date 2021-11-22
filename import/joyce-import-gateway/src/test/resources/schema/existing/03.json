@@ -1,0 +1,47 @@
+{
+  "$schema": "https://joyce.sourcesense.com/v1/schema",
+  "$metadata": {
+    "subtype": "import",
+    "uid": "id",
+    "namespace": "test",
+    "name": "schema",
+    "collection": "schema",
+    "description": "Notizie feed del corriere",
+    "extra": {
+      "connectors": [
+        {
+          "name": "connector",
+          "importKeyUid": "id",
+          "config": {
+            "tasks.max": 3,
+            "connector.class": "org.kaliy.kafka.connect.rss.RssSourceConnector",
+            "rss.urls": "http://someurl/rss/homepage.xml"
+          }
+        }
+      ]
+    }
+  },
+  "type": "object",
+  "properties": {
+    "uid": {
+      "type": "string",
+      "$path": "$.id"
+    },
+    "titolo": {
+      "type": "string",
+      "$path": "$.title"
+    },
+    "data": {
+      "type": "string",
+      "$path": "$.date"
+    },
+    "sommario": {
+      "type": "string",
+      "$path": "$.content"
+    },
+    "url": {
+      "type": "string",
+      "$path": "$.link"
+    }
+  }
+}

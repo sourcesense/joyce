@@ -1,0 +1,5 @@
+{
+  "extra": {
+    "filter": "{'and': [{'==': [{'var': 'id'}, 1]}, {'==': [{'var': 'user'},'Vash the Stampede']}]}"
+  }
+}
