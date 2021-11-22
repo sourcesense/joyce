@@ -1,0 +1,5 @@
+joyce:
+  schemaengine:
+    yaml: true
+    handlers:
+      foo: fooHandler

@@ -1,0 +1,37 @@
+{
+  "$schema": "https://joyce.sourcesense.com/v1/schema",
+  "$metadata": {
+    "subtype": "import",
+    "uid": "uid",
+    "collection": "users",
+    "cassandra_schema": "short_users"
+  },
+  "type": "object",
+  "properties": {
+    "uid": {
+      "type": "string",
+      "$path": ["asd-", "$.id"]
+    },
+    "name": {
+      "type": "string",
+      "required": true
+    },
+    "mail": {
+      "type": "string",
+      "required": true,
+      "$path": "$.email"
+    },
+    "docType": {
+      "type": ["string", "null"],
+      "$fixed": "simpleUser"
+    },
+    "address": {
+      "type": "string",
+      "$path": [
+        "$.address.city",
+        ", ",
+        "$.address.street"
+      ]
+    }
+  }
+}

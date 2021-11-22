@@ -1,0 +1,4 @@
+{
+  "language": "javascript",
+  "code": "source.complexArray[0]['complexArrayField'].toUpperCase()"
+}

@@ -1,4 +1,4 @@
-# Joyce Compose
+# Joyce 
 
 | Component          | docker                                         | latest version|
 | --- | --- | --- |

@@ -1,0 +1,4 @@
+{
+  "language": "javascript",
+  "code": "source.stringArray.reduce((a,b) => `${a}-${b}`, 'start')"
+}

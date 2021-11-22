@@ -1,0 +1,30 @@
+{
+  "$metadata": {
+    "collection": "test.object",
+    "description": "Atestschema",
+    "development": true,
+    "extra": null,
+    "indexed": true,
+    "indexes": null,
+    "name": "object",
+    "namespace": "default",
+    "namespacedCollection": "default.test.object",
+    "namespacedName": "default.object",
+    "parent": null,
+    "root_collection": null,
+    "root_query": null,
+    "store": true,
+    "subtype": "import",
+    "uid": "id",
+    "validation": true
+  },
+  "$schema": "https://joyce.sourcesense.com/v1/schema",
+  "properties": {
+    "id": {
+      "$path": "$.id",
+      "type": "integer"
+    }
+  },
+  "required": null,
+  "type": "object"
+}

@@ -1,0 +1,28 @@
+{
+  "$schema": "https://joyce.sourcesense.com/v1/schema",
+  "$metadata": {
+    "subtype": "import",
+    "name": "user",
+    "description": "A test schema",
+    "development": true,
+    "uid": "id",
+    "collection": "users"
+  },
+  "type": "object",
+  "properties": {
+    "id": {
+      "type": "integer",
+      "$path": "$.id"
+    },
+    "mappedArray": {
+      "type": "array",
+      "items": {
+        "type": "string"
+      },
+      "$script": {
+        "language": "javascript",
+        "code": "source.stringArray.map(s => s.toUpperCase())"
+      }
+    }
+  }
+}

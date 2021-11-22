@@ -1,0 +1,4 @@
+{
+  "language": "javascript",
+  "code": "source.object.nestedObject.nestedObjectComplexArray.map(e => e.nestedObjectComplexArrayField)"
+}

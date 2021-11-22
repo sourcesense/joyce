@@ -1,0 +1,11 @@
+{
+  "url": "http://test:8080/posts/{{test}}",
+  "method": "GET",
+  "headers": {
+    "Content-Type": "application/json"
+  },
+  "vars": {
+    "test": "$.username"
+  },
+  "extract": "$.response"
+}
