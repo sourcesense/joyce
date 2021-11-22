@@ -10,7 +10,7 @@ services:
     links:
       - kafka
   import-gateway:
-    image: sourcesense/joyce-import-gateway:1.3.0a0
+    image: sourcesense/joyce-import-gateway:1.3.0
     environment:
       - JOYCE_KAFKA_BOOTSTRAPADDRESS=kafka:9092
       - JOYCE_DATA_MONGODB_URI=mongodb://user:password@mongodb:27017/joyce

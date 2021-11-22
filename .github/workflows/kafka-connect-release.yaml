@@ -1,13 +1,17 @@
-name: Docker Image Version
+name: Kafka Connect Docker Release
 
 on:
   push:
     tags:
-      - "*"
+      - "connect-*"
+    paths:
+        - "joyce-kafka-connect/**"
 jobs:
   build:
     runs-on: ubuntu-latest
-
+    defaults:
+      run:
+        working-directory: ./joyce-kafka-connect
     steps:
       - uses: actions/checkout@v2
       - name: Set up JDK 11

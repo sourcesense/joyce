@@ -3,12 +3,16 @@ name: Build Release
 on:
   push:
     tags:
-      - "*"
+      - "sink-*"
+    paths:
+        - "joyce-mongodb-sink/**"
 
 jobs:
   build:
     runs-on: ubuntu-latest
-
+    defaults:
+      run:
+        working-directory: ./joyce-mongodb-sink
     steps:
       - uses: actions/checkout@v2
         with:
