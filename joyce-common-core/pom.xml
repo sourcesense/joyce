@@ -2,13 +2,13 @@
 <project xmlns="http://maven.apache.org/POM/4.0.0"
          xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
          xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
+    <modelVersion>4.0.0</modelVersion>
     <parent>
         <artifactId>joyce-parent</artifactId>
         <groupId>com.sourcesense.joyce</groupId>
         <version>${revision}</version>
     </parent>
 
-    <modelVersion>4.0.0</modelVersion>
     <artifactId>joyce-common-core</artifactId>
     <packaging>jar</packaging>
 
@@ -25,14 +25,6 @@
             <comments>A business-friendly OSS license</comments>
         </license>
     </licenses>
-
-    <distributionManagement>
-        <repository>
-            <id>github</id>
-            <name>GitHub OWNER Apache Maven Packages</name>
-            <url>https://maven.pkg.github.com/sourcesense/joyce-parent</url>
-        </repository>
-    </distributionManagement>
 
     <dependencies>
         <dependency>
@@ -67,27 +59,22 @@
         <dependency>
           <groupId>io.opentracing.contrib</groupId>
           <artifactId>opentracing-spring-jaeger-cloud-starter</artifactId>
-          <version>3.3.1</version>
         </dependency>
-      <dependency>
-        <groupId>io.opentracing.contrib</groupId>
-        <artifactId>opentracing-kafka-spring</artifactId>
-        <version>0.1.15</version>
-      </dependency>
-      <dependency>
-        <groupId>io.opentracing.contrib</groupId>
-        <artifactId>opentracing-mongo-driver</artifactId>
-        <version>0.1.5</version>
-      </dependency>
-      <dependency>
-        <groupId>io.opentracing.contrib</groupId>
-        <artifactId>opentracing-elasticsearch-client-common</artifactId>
-        <version>0.1.6</version>
-      </dependency>
+        <dependency>
+          <groupId>io.opentracing.contrib</groupId>
+          <artifactId>opentracing-kafka-spring</artifactId>
+        </dependency>
+        <dependency>
+          <groupId>io.opentracing.contrib</groupId>
+          <artifactId>opentracing-mongo-driver</artifactId>
+        </dependency>
+        <dependency>
+          <groupId>io.opentracing.contrib</groupId>
+          <artifactId>opentracing-elasticsearch-client-common</artifactId>
+        </dependency>
         <dependency>
           <groupId>io.jaegertracing</groupId>
           <artifactId>jaeger-client</artifactId>
-          <version>1.6.0</version>
         </dependency>
 
         <dependency>

@@ -25,6 +25,8 @@
   </parent>
 
   <artifactId>joyce-import-core</artifactId>
+  <packaging>jar</packaging>
+
   <name>joyce-import-core</name>
   <description>Joyce Import Core</description>
 
