@@ -4,16 +4,23 @@ inputs:
   module:
     description: 'module to build and publish'
     required: true
+  version:
+    required: true
+  docker_user:
+    required: true
+    default: sourcesense
+  docker_pwd:
+    required: true
 
 runs:
   using: "composite"
   steps:
     - name: Docker login
-      run: echo ${{ secrets.DOCKER_PASSWORD }} | docker login -u ${{ secrets.DOCKER_USERNAME }} --password-stdin
+      run: echo ${{ inputs.docker_pwd }} | docker login -u ${{ inputs.docker_user }} --password-stdin
     - name: Build and Push Docker image
       run: |
-        docker build . -t sourcesense/${{inputs.module}}:${{steps.vars.outputs.VERSION}}
-        docker push sourcesense/${{inputs.module}}:${{steps.vars.outputs.VERSION}}
-        docker tag sourcesense/${{inputs.module}}:${{steps.vars.outputs.VERSION}} sourcesense/${{inputs.module}}:latest
+        docker build . -t sourcesense/${{inputs.module}}:${{inputs.version}}
+        docker push sourcesense/${{inputs.module}}:${{inputs.version}}
+        docker tag sourcesense/${{inputs.module}}:${{inputs.version}} sourcesense/${{inputs.module}}:latest
         docker push sourcesense/${{inputs.module}}:latest
       working-directory: ${{inputs.module}}

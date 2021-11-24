@@ -27,3 +27,5 @@ jobs:
       - uses: ./.github/actions/docker-publish
         with:
           module: joyce-mongodb-sink
+          version: steps.vars.outputs.VERSION
+          docker_pwd: secrets.DOCKER_PASSWORD
