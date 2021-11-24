@@ -28,4 +28,4 @@ jobs:
         with:
           module: joyce-mongodb-sink
           tag: steps.vars.outputs.VERSION
-          docker_pwd: secrets.DOCKER_PASSWORD
+          docker_pwd: ${{ secrets.DOCKER_PASSWORD }}
