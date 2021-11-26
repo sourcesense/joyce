@@ -10,7 +10,7 @@ COPY       src src/
 COPY       package*.json ./
 COPY       tsconfig.json ./
 
-COPY       .meshrc.yml ./
+# COPY       .meshrc.yml ./
 COPY       mesh-server.js ./
 COPY       assets/schemas.json /usr/joyce/schemas.json
 COPY       static /usr/joyce/static
