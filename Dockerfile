@@ -24,7 +24,7 @@ USER       node
 ENV        NODE_ENV="production"
 ENV        SCHEMAS_SOURCE=/usr/joyce/schemas.json
 EXPOSE     6650
-
+RUN touch .meshrc.yml
 # Running port is configured through API_PORT env variable
 ENTRYPOINT ["npm"]
 CMD        ["run", "mesh"]
