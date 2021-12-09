@@ -1,9 +1,9 @@
-name: Build and Publish Mongodb Sink
+name: Build and Publish Import Gateway
 
 on:
   push:
     tags:
-      - "sink-*"
+      - "import-*"
 
 jobs:
   build:
@@ -26,6 +26,6 @@ jobs:
           SONAR_TOKEN: ${{ secrets.SONAR_TOKEN }}
       - uses: ./.github/actions/docker-publish
         with:
-          module: joyce-mongodb-sink
+          module: joyce-import-gateway
           tag: ${{ steps.vars.outputs.VERSION }}
           docker_pwd: ${{ secrets.DOCKER_PASSWORD }}
