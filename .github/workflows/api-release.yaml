@@ -1,0 +1,21 @@
+name: Joyce API Docker Release
+
+on:
+  push:
+    tags:
+      - "api-*"
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v2
+      - name: Set VERSION
+        id: vars
+        run: |
+          echo "::set-output name=VERSION::$(echo ${GITHUB_REF#connect-})"
+          echo "VERSION=${{steps.vars.outputs.VERSION}}"
+      - uses: ./.github/actions/docker-publish
+        with:
+          module: joyce-api
+          tag: ${{ steps.vars.outputs.VERSION }}
+          docker_pwd: ${{ secrets.DOCKER_PASSWORD }}
