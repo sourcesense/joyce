@@ -12,7 +12,7 @@ jobs:
       - name: Set VERSION
         id: vars
         run: |
-          echo "::set-output name=VERSION::$(echo ${GITHUB_REF#api-})"
+          echo "::set-output name=VERSION::$(echo ${GITHUB_REF#refs/tags/api-})"
           echo "VERSION=${{steps.vars.outputs.VERSION}}"
       - uses: ./.github/actions/docker-publish
         with:

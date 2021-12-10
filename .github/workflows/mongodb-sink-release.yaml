@@ -17,7 +17,7 @@ jobs:
       - name: Set VERSION
         id: vars
         run: |
-          echo "::set-output name=VERSION::$(echo ${GITHUB_REF#sink-})"
+          echo "::set-output name=VERSION::$(echo ${GITHUB_REF#refs/tags/sink-})"
           echo "VERSION=${{steps.vars.outputs.VERSION}}"
       - name: Build
         run: mvn --batch-mode --update-snapshots -Drevision=${{steps.vars.outputs.VERSION}} verify org.sonarsource.scanner.maven:sonar-maven-plugin:sonar
