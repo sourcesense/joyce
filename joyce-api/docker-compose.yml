@@ -1,0 +1,26 @@
+version: "3.6"
+
+services:
+  mongodb:
+    image: "bitnami/mongodb:4.4.5"
+    environment:
+      - MONGODB_ROOT_PASSWORD=toor
+      - MONGODB_USERNAME=user
+      - MONGODB_PASSWORD=password
+      - MONGODB_DATABASE=joyce
+    ports:
+      - "27017:27017"
+  joyce-api:
+    build: ./
+    environment:
+      - MONGO_URI=mongodb://user:password@mongodb:27017/joyce
+      - WORKDIR=/usr/joyce/workdir
+      - SCHEMAS_SOURCE=/opt/schemas.json
+    ports:
+      - "6650:6650"
+    volumes:
+      - ./schemas.json:/opt/schemas.json
+      - ./data:/usr/joyce/workdir
+    depends_on:
+      - mongodb
+

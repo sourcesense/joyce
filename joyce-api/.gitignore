@@ -1,0 +1,9 @@
+/node_modules
+/dist
+/assets/*.json
+!/assets/schemas.json
+.meshrc.yml
+.eslintcache
+.mesh
+workdir
+data
