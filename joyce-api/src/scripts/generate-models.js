@@ -106,7 +106,7 @@ async function run() {
 	}
 
 	// compare computed schemas hashes, if they differ we exit with a code to let npm script do a mesh build
-	if (schemas_hash !== new_hash.digest("hex")) {
+	if (Object.keys(schemaJson["schemas"]).length == 0 || schemas_hash !== new_hash.digest("hex")) {
 		console.log("hash differs");
 		fs.writeFileSync(HASHES_FILE, JSON.stringify(hashes), "utf8");
 		saveMeshrc(Object.keys(schemaJson["schemas"]), mongoURI);
