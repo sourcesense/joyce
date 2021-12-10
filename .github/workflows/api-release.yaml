@@ -1,4 +1,4 @@
-name: Joyce API Docker Release
+name: API Docker Release
 
 on:
   push:
@@ -12,7 +12,7 @@ jobs:
       - name: Set VERSION
         id: vars
         run: |
-          echo "::set-output name=VERSION::$(echo ${GITHUB_REF#connect-})"
+          echo "::set-output name=VERSION::$(echo ${GITHUB_REF#api-})"
           echo "VERSION=${{steps.vars.outputs.VERSION}}"
       - uses: ./.github/actions/docker-publish
         with:
