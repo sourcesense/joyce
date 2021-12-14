@@ -4,7 +4,7 @@
 	"description": "",
 	"main": "index.js",
 	"scripts": {
-		"mesh:build": "cross-env WORKDIR=${WORKDIR:=./workdir} node src/scripts/generate-models.js && mesh build --dir $WORKDIR",
+		"mesh:build": "cross-env WORKDIR=${WORKDIR:=./workdir} node src/scripts/generate-models.js || mesh build --dir $WORKDIR",
 		"mesh:clean": "cross-env WORKDIR=${WORKDIR:=./workdir} rm $WORKDIR/*",
 		"mesh:start": "cross-env WORKDIR=${WORKDIR:=./workdir} mesh start --dir $WORKDIR",
 		"build": "tsc",
