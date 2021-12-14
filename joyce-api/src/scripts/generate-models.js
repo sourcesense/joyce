@@ -37,10 +37,18 @@ function writeModel(data, key, template) {
 }
 
 function saveMeshrc(keys, mongoURI) {
-
-	// Write meshrc
-	let ymlRc = {
-		sources: [
+	let sources = [
+		{
+			name: "Dummy",
+			handler: {
+				openapi: {
+					source: "https://raw.githubusercontent.com/grokify/api-specs/master/stackexchange/stackexchange-api-v2.2_openapi-v3.0.yaml"
+				}
+			}
+		}
+	];
+	if (keys != null) {
+		sources = [
 			{
 				name: "Mongoose",
 				handler: {
@@ -56,15 +64,16 @@ function saveMeshrc(keys, mongoURI) {
 					},
 				},
 			},
-		],
+		];
+	}
+	// Write meshrc
+	let ymlRc = {
+		sources: sources,
 		require: [
 			"ts-node/register/transpile-only",
 		],
 		serve: {
 			customServerHandler: path.resolve("./src/scripts/mesh-server.js"),
-		// browser: false,
-		// method: "GET",
-		// endpoint: "/query",
 		},
 	};
 
@@ -106,11 +115,13 @@ async function run() {
 	}
 
 	// compare computed schemas hashes, if they differ we exit with a code to let npm script do a mesh build
-	if (Object.keys(schemaJson["schemas"]).length == 0 || schemas_hash !== new_hash.digest("hex")) {
-		console.log("hash differs");
+	if (Object.keys(schemaJson["schemas"]).length == 0) {
+		console.log("Empty schema");
+		saveMeshrc(null, mongoURI);
+		process.exit(1);
+	} else if (schemas_hash !== new_hash.digest("hex")) {
 		fs.writeFileSync(HASHES_FILE, JSON.stringify(hashes), "utf8");
 		saveMeshrc(Object.keys(schemaJson["schemas"]), mongoURI);
-		process.exit(1);
 	} else {
 		console.log("hash are THE SAME");
 		process.exit(0);

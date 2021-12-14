@@ -11,7 +11,7 @@ import { JRPCParams, ResponsableSchema } from "./types";
 const logger = require("pino")();
 const path = require("path");
 
-const SCHEMAS_SOURCE = process.env.SCHEMAS_SOURCE || "assets/schemas.json";
+const SCHEMAS_SOURCE = process.env.SCHEMAS_SOURCE || "schemas.json";
 const PRODUCTION_URL = process.env.BASE_URL || "https://<production-url>";
 const INTERNAL_URL = process.env.BASE_URL || "http://localhost:6650";
 const HEALTH_PATH = process.env.HEALTH_PATH || "/health";
