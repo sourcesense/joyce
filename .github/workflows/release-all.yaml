@@ -1,0 +1,52 @@
+name: Release Joyce new version
+
+on:
+  push:
+    tags:
+      - "v*"
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v2
+        with:
+          # Disabling shallow clone is recommended for improving relevancy of reporting
+          fetch-depth: 0
+      - uses: ./.github/actions/prepare-java
+      - name: Set VERSION
+        id: vars
+        run: |
+          echo "::set-output name=VERSION::$(echo ${GITHUB_REF#refs/tags/v})"
+          echo "VERSION=${{steps.vars.outputs.VERSION}}"
+      - name: Build all modules
+        run: mvn --batch-mode -Drevision=${{steps.vars.outputs.VERSION}} package deploy sonar:sonar
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          SONAR_TOKEN: ${{ secrets.SONAR_TOKEN }}
+      - uses: ./.github/actions/docker-publish
+        name: Publish Import Gateway
+        with:
+          module: joyce-import-gateway
+          tag: ${{ steps.vars.outputs.VERSION }}
+          docker_pwd: ${{ secrets.DOCKER_PASSWORD }}
+      - uses: ./.github/actions/docker-publish
+        name: Publish mongodb Sink
+        with:
+          module: joyce-mongodb-sink
+          tag: ${{ steps.vars.outputs.VERSION }}
+          docker_pwd: ${{ secrets.DOCKER_PASSWORD }}
+      - name: Build Kafka Connect
+        run: mvn -f InsertJoyceMessageKey/pom.xml clean package
+        working-directory: ./joyce-kafka-connect
+      - uses: ./.github/actions/docker-publish
+        name: Publish Kafka Connect
+        with:
+          module: joyce-kafka-connect
+          tag: ${{ steps.vars.outputs.VERSION }}
+          docker_pwd: ${{ secrets.DOCKER_PASSWORD }}
+      - uses: ./.github/actions/docker-publish
+        with:
+          module: joyce-api
+          tag: ${{ steps.vars.outputs.VERSION }}
+          docker_pwd: ${{ secrets.DOCKER_PASSWORD }}
