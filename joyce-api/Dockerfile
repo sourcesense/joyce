@@ -13,9 +13,7 @@ COPY       src src/
 
 RUN        npm run build
 
-USER       node
 ENV        NODE_ENV="production"
-
 EXPOSE     6650
 
 # Running port is configured through API_PORT env variable

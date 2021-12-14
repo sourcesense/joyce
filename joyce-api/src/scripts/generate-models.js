@@ -37,34 +37,33 @@ function writeModel(data, key, template) {
 }
 
 function saveMeshrc(keys, mongoURI) {
-	let sources = [
-		{
-			name: "Dummy",
+	
+	let sources = [];
+	if (keys.length == 0) {
+		sources.push({
+			name: "Sample Stackoverflow api",
 			handler: {
 				openapi: {
 					source: "https://raw.githubusercontent.com/grokify/api-specs/master/stackexchange/stackexchange-api-v2.2_openapi-v3.0.yaml"
 				}
 			}
-		}
-	];
-	if (keys != null) {
-		sources = [
-			{
-				name: "Mongoose",
-				handler: {
-					mongoose: {
-						connectionString: mongoURI,
-						models: keys.map((key) => {
-							const name = _.upperFirst(_.camelCase(key));
-							return { 
-								name: name, 
-								path: path.resolve(`${WORKDIR}/${name}.model.js`) 
-							}; 
-						}),
-					},
+		});
+	} else {
+		sources.push({
+			name: "Mongoose",
+			handler: {
+				mongoose: {
+					connectionString: mongoURI,
+					models: keys.map((key) => {
+						const name = _.upperFirst(_.camelCase(key));
+						return { 
+							name: name, 
+							path: path.resolve(`${WORKDIR}/${name}.model.js`) 
+						}; 
+					}),
 				},
 			},
-		];
+		});
 	}
 	// Write meshrc
 	let ymlRc = {
@@ -115,13 +114,11 @@ async function run() {
 	}
 
 	// compare computed schemas hashes, if they differ we exit with a code to let npm script do a mesh build
-	if (Object.keys(schemaJson["schemas"]).length == 0) {
-		console.log("Empty schema");
-		saveMeshrc(null, mongoURI);
-		process.exit(1);
-	} else if (schemas_hash !== new_hash.digest("hex")) {
+	
+	if (Object.keys(schemaJson["schemas"]).length == 0 || schemas_hash !== new_hash.digest("hex")) {
 		fs.writeFileSync(HASHES_FILE, JSON.stringify(hashes), "utf8");
 		saveMeshrc(Object.keys(schemaJson["schemas"]), mongoURI);
+		process.exit(1);
 	} else {
 		console.log("hash are THE SAME");
 		process.exit(0);
