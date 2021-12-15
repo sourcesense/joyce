@@ -1,11 +1,15 @@
 # Joyce 
 
-| Component          | docker                                         | latest version|
-| --- | --- | --- |
-| Import Gateway     | sourcesense/joyce-import-gateway | ![Docker Image Version (latest semver)](https://img.shields.io/docker/v/sourcesense/joyce-import-gateway) |
-| Joyce Kafka Connect | sourcesense/joyce-kafka-connect | ![Docker Image Version (latest semver)](https://img.shields.io/docker/v/sourcesense/joyce-kafka-connect) |
-| Mongodb Sink |  sourcesense/joyce-mongodb-sink | ![Docker Image Version (latest semver)](https://img.shields.io/docker/v/sourcesense/joyce-mongodb-sink) |
-| Rest       | sourcesense/joyce-rest | ![Docker Image Version (latest semver)](https://img.shields.io/docker/v/sourcesense/joyce-rest) |
+[![Joyce Release](https://github.com/sourcesense/joyce/actions/workflows/release-all.yaml/badge.svg)](https://github.com/sourcesense/joyce/actions/workflows/release-all.yaml)  
+[![Documentation Release](https://github.com/sourcesense/joyce/actions/workflows/pages.yaml/badge.svg)](https://github.com/sourcesense/joyce/actions/workflows/pages.yaml)  
+[![Libraries Build](https://github.com/sourcesense/joyce/actions/workflows/parent-release.yaml/badge.svg)](https://github.com/sourcesense/joyce/actions/workflows/parent-release.yaml)
+
+| Component          | docker                                         | latest version | Build |
+| --- | --- | --- |  --- |
+| Import Gateway     | sourcesense/joyce-import-gateway | ![Docker Image Version (latest semver)](https://img.shields.io/docker/v/sourcesense/joyce-import-gateway) |  [![Import Engine Build](https://github.com/sourcesense/joyce/actions/workflows/import-engine-release.yaml/badge.svg)](https://github.com/sourcesense/joyce/actions/workflows/import-engine-release.yaml)     |
+| Joyce Kafka Connect | sourcesense/joyce-kafka-connect | ![Docker Image Version (latest semver)](https://img.shields.io/docker/v/sourcesense/joyce-kafka-connect) | [![Kafka Connect Build](https://github.com/sourcesense/joyce/actions/workflows/kafka-connect-release.yaml/badge.svg)](https://github.com/sourcesense/joyce/actions/workflows/kafka-connect-release.yaml)    |
+| Mongodb Sink |  sourcesense/joyce-mongodb-sink | ![Docker Image Version (latest semver)](https://img.shields.io/docker/v/sourcesense/joyce-mongodb-sink) | [![Mongodb Sink Build](https://github.com/sourcesense/joyce/actions/workflows/mongodb-sink-release.yaml/badge.svg)](https://github.com/sourcesense/joyce/actions/workflows/mongodb-sink-release.yaml) |
+| Rest       | sourcesense/joyce-api | ![Docker Image Version (latest semver)](https://img.shields.io/docker/v/sourcesense/joyce-api) |  [![API Docker Release](https://github.com/sourcesense/joyce/actions/workflows/api-release.yaml/badge.svg)](https://github.com/sourcesense/joyce/actions/workflows/api-release.yaml) |  
 ## Introduction
 
 > 
@@ -39,7 +43,7 @@ This will startup:
   - [AKHQ](https://akhq.io/) to monitor kafka topics exposed at [localhost:6680](http://localhost:6680)
   - **joyce-import-gateway** exposing it's API at [localhost:6651](http://localhost:6651/docs)
   - **joyce-mongodb-sink** to store processed content to mongodb
-  - **joyce-rest** exposed at [localhost:6650](http://localhost:6650/docs) to consume processed content.
+  - **joyce-api** exposed at [localhost:6650](http://localhost:6650/docs) to consume processed content.
 
 ### Save a schema
 
@@ -178,7 +182,7 @@ EOF
 
 Your content should be transformed soon and can be retrieved using the api
 ```bash
-curl http://localhost:6650/test-users
+curl http://localhost:6650/api/test-users
 ```
 
 If anything goes wrong, notification of errors and success during processing are published on the `joyce_notification` topic on kafka, you can inspect easily by using akhq on [localhost:6680](http://localhost:6680).
