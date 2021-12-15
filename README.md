@@ -27,7 +27,7 @@ From a high level perspective Joyce performs 4 tasks:
 
 ## Documentation
 
-Documentation is available [here](https://sourcesense.github.io/joyce-docs)
+Documentation is available [here](https://sourcesense.github.io/joyce)
 
 ## Getting Started
 
