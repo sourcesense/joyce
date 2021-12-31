@@ -41,7 +41,7 @@ import java.util.Optional;
 @ConditionalOnProperty(value = "joyce.schema-service.enabled", havingValue = "true")
 public class SchemaService {
 
-	private final SchemaDao schemaEntityDao;
+	private final SchemaDao schemaDao;
 	private final SchemaMapper schemaMapper;
 	private final SchemaEngine schemaEngine;
 	private final ObjectMapper objectMapper;
@@ -68,13 +68,13 @@ public class SchemaService {
 
 		// If schema has a parent it must exists
 		if (schema.getMetadata().getParent() != null) {
-			Optional<SchemaEntity> parent = schemaEntityDao.get(schema.getMetadata().getParent().toString());
+			Optional<SchemaEntity> parent = schemaDao.get(schema.getMetadata().getParent().toString());
 			if (parent.isEmpty()) {
 				throw new JoyceSchemaEngineException(String.format("Parent schema [%s] does not exists", schema.getMetadata().getParent()));
 			}
 		}
 
-		Optional<SchemaEntity> previous = schemaEntityDao.get(uid.toString());
+		Optional<SchemaEntity> previous = schemaDao.get(uid.toString());
 
 		if (previous.isPresent()) {
 			/*
@@ -93,37 +93,45 @@ public class SchemaService {
 			}
 		}
 
-		schemaEntityDao.save(entity);
+		schemaDao.save(entity);
 		return uid;
 	}
 
 //	@Cacheable("schemas")
 	public List<SchemaEntity> findAll(Boolean rootOnly) {
-		return schemaEntityDao.getAll(rootOnly);
+		return schemaDao.getAll(rootOnly);
 	}
 
 	//@Cacheable("schemas")
-	public List<SchemaEntity> findBySubtypeAndNamespace(JoyceURI.Subtype subtype, String namespace, Boolean rootOnly) {
-		return schemaEntityDao.getAllBySubtypeAndNamespace(subtype, namespace, rootOnly);
+	public List<SchemaEntity> findBySubtypeAndNamespace(
+			JoyceURI.Subtype subtype,
+			String namespace,
+			Boolean rootOnly) {
+
+		return schemaDao.getAllBySubtypeAndNamespace(subtype, namespace, rootOnly);
+	}
+
+	public List<SchemaEntity> findByReportsNotEmpty() {
+		return schemaDao.getAllByReportsNotEmpty();
 	}
 
 	@Cacheable("schemas")
 	public Optional<Schema> findByName(JoyceURI.Subtype subtype, String namespace, String name) {
-		return schemaEntityDao.get(getSchemaUid(subtype, namespace, name).toString()).map(schemaMapper::toDto);
+		return schemaDao.get(getSchemaUid(subtype, namespace, name).toString()).map(schemaMapper::toDto);
 	}
 
 	@Cacheable("schemas")
 	public Optional<Schema> findById(String schemaId) {
-		return schemaEntityDao.get(schemaId).map(schemaMapper::toDto);
+		return schemaDao.get(schemaId).map(schemaMapper::toDto);
 	}
 
 	@CacheEvict(value = "schemas", allEntries = true)
 	public void delete(JoyceURI.Subtype subtype, String namespace, String name) {
-		Optional<SchemaEntity> entity = schemaEntityDao.get(getSchemaUid(subtype, namespace, name).toString());
+		Optional<SchemaEntity> entity = schemaDao.get(getSchemaUid(subtype, namespace, name).toString());
 		if (entity.isEmpty()) {
 			throw new SchemaNotFoundException(String.format("Schema [%s] does not exists", name));
 		}
-		schemaEntityDao.delete(entity.get());
+		schemaDao.delete(entity.get());
 	}
 
 	@Cacheable("schemas")
@@ -132,10 +140,10 @@ public class SchemaService {
 	}
 
 	public Optional<SchemaEntity> getEntity(String schemaUid) {
-		return schemaEntityDao.get(schemaUid);
+		return schemaDao.get(schemaUid);
 	}
 
 	public List<String> getAllNamespaces() {
-		return schemaEntityDao.getAllNamespaces();
+		return schemaDao.getAllNamespaces();
 	}
 }

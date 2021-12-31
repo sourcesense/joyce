@@ -37,7 +37,7 @@ import java.util.List;
 
 @RequestMapping(value = "/api")
 @Tag(name = "Schema API", description = "Schema	 Management API")
-public interface SchemaApi {
+public interface SchemaRestApi {
 
 	@GetMapping(value = "/namespace", produces = "application/json; charset=utf-8")
 	List<String> getAllNamespaces();

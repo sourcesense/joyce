@@ -18,7 +18,6 @@ package com.sourcesense.joyce.core.configuration.kafka;
 
 import com.fasterxml.jackson.databind.node.ObjectNode;
 import io.opentracing.Tracer;
-import io.opentracing.contrib.kafka.TracingConsumerInterceptor;
 import io.opentracing.contrib.kafka.spring.TracingConsumerFactory;
 import io.opentracing.contrib.kafka.spring.TracingKafkaAspect;
 import lombok.RequiredArgsConstructor;
@@ -35,7 +34,6 @@ import org.springframework.kafka.core.DefaultKafkaConsumerFactory;
 import org.springframework.kafka.support.serializer.ErrorHandlingDeserializer;
 import org.springframework.kafka.support.serializer.JsonDeserializer;
 
-import java.util.Collections;
 import java.util.HashMap;
 import java.util.Map;
 

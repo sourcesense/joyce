@@ -1,5 +1,6 @@
 package com.sourcesense.joyce.core.configuration.kafka;
 
+import com.sourcesense.joyce.core.configuration.kafka.topics.CommandTopicConfig;
 import com.sourcesense.joyce.core.configuration.kafka.topics.ContentTopicConfig;
 import com.sourcesense.joyce.core.configuration.kafka.topics.ImportTopicConfig;
 import com.sourcesense.joyce.core.configuration.kafka.topics.NotificationTopicConfig;
@@ -27,12 +28,14 @@ public class KafkaTopicsConfig {
 	private final ContentTopicConfig contentTopicConfig;
 	private final NotificationTopicConfig notificationTopicConfig;
 	private final ImportTopicConfig importTopicConfig;
+	private final CommandTopicConfig commandTopicConfig;
 
 
 	@Value(value = "${joyce.kafka.bootstrapAddress}")
 	private String bootstrapAddress;
 
 	@Bean
+	@ConditionalOnProperty(value = "joyce.kafka.bootstrapAddress")
 	public KafkaAdmin kafkaAdmin() {
 		Map<String, Object> configs = new HashMap<>();
 		configs.put(AdminClientConfig.BOOTSTRAP_SERVERS_CONFIG, bootstrapAddress);
@@ -40,31 +43,35 @@ public class KafkaTopicsConfig {
 	}
 
 	@Bean
+	@ConditionalOnProperty(value = "joyce.kafka.content.topic")
 	public NewTopic contentTopic() {
-		return TopicBuilder.name(contentTopicConfig.getTopic())
-				.partitions(contentTopicConfig.getPartitions())
-				.replicas(contentTopicConfig.getReplicas())
-				.config(TopicConfig.RETENTION_MS_CONFIG, contentTopicConfig.getRetention().toString())
-				.config(TopicConfig.CLEANUP_POLICY_CONFIG, contentTopicConfig.getCleanup())
-				.build();
+		return this.kafkaTopic(contentTopicConfig);
 	}
 
 	@Bean
+	@ConditionalOnProperty(value = "joyce.kafka.import.topic")
 	public NewTopic importTopic() {
-		return TopicBuilder.name(importTopicConfig.getTopic())
-				.partitions(importTopicConfig.getPartitions())
-				.replicas(importTopicConfig.getReplicas())
-				.config(TopicConfig.RETENTION_MS_CONFIG, importTopicConfig.getRetention().toString())
-				.config(TopicConfig.CLEANUP_POLICY_CONFIG, importTopicConfig.getCleanup())
-				.build();
+		return this.kafkaTopic(importTopicConfig);
 	}
+
 	@Bean
+	@ConditionalOnProperty(value = "joyce.kafka.notification.topic")
 	public NewTopic notificationTopic() {
-		return TopicBuilder.name(notificationTopicConfig.getTopic())
-				.partitions(notificationTopicConfig.getPartitions())
-				.replicas(notificationTopicConfig.getReplicas())
-				.config(TopicConfig.RETENTION_MS_CONFIG, notificationTopicConfig.getRetention().toString())
-				.config(TopicConfig.CLEANUP_POLICY_CONFIG, notificationTopicConfig.getCleanup())
+		return this.kafkaTopic(notificationTopicConfig);
+	}
+
+	@Bean
+	@ConditionalOnProperty(value = "joyce.kafka.command.topic")
+	public NewTopic commandTopic() {
+		return this.kafkaTopic(commandTopicConfig);
+	}
+
+	private NewTopic kafkaTopic(KafkaTopic kafkaTopicConfig) {
+		return TopicBuilder.name(kafkaTopicConfig.getTopic())
+				.partitions(kafkaTopicConfig.getPartitions())
+				.replicas(kafkaTopicConfig.getReplicas())
+				.config(TopicConfig.RETENTION_MS_CONFIG, kafkaTopicConfig.getRetention().toString())
+				.config(TopicConfig.CLEANUP_POLICY_CONFIG, kafkaTopicConfig.getCleanup())
 				.build();
 	}
 }

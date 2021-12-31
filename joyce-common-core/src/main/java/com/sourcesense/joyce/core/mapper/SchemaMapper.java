@@ -17,23 +17,34 @@
 package com.sourcesense.joyce.core.mapper;
 
 import com.fasterxml.jackson.core.JsonProcessingException;
+import com.fasterxml.jackson.databind.DeserializationFeature;
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
+import com.fasterxml.jackson.databind.SerializationFeature;
 import com.sourcesense.joyce.core.dao.mongodb.SchemaDocument;
 import com.sourcesense.joyce.core.dto.Schema;
 import com.sourcesense.joyce.core.dto.SchemaSave;
 import com.sourcesense.joyce.core.dto.SchemaShort;
+import com.sourcesense.joyce.core.model.JoyceSchemaMetadata;
+import com.sourcesense.joyce.core.model.JoyceSchemaMetadataExtra;
 import com.sourcesense.joyce.core.model.SchemaEntity;
 import org.mapstruct.Mapper;
 import org.mapstruct.Mapping;
 import org.springframework.stereotype.Component;
+
+import java.util.List;
+import java.util.Optional;
+import java.util.function.Function;
+import java.util.stream.Collectors;
 
 
 @Mapper
 @Component
 public abstract class SchemaMapper {
 
-	ObjectMapper mapper = new ObjectMapper();
+	ObjectMapper mapper = new ObjectMapper()
+			.disable(DeserializationFeature.FAIL_ON_UNKNOWN_PROPERTIES)
+			.disable(SerializationFeature.FAIL_ON_EMPTY_BEANS);
 
 	@Mapping(target = "schema", source = "entity")
 	@Mapping(target = "name", source = "metadata.name")
@@ -74,5 +85,31 @@ public abstract class SchemaMapper {
 
 	String propertiesToString(SchemaEntity entity) throws JsonProcessingException {
 		return mapper.writeValueAsString(entity.getProperties());
+	}
+
+	public List<SchemaEntity> entitiesFromDocuments(List<SchemaDocument> documents) {
+		return documents.stream()
+				.map(this::entityFromDocument)
+				.collect(Collectors.toList());
+	}
+
+	public List<?> entitiesToShortIfFullSchema(List<SchemaEntity> schemas, Boolean fullSchema) {
+		return schemas.stream()
+				.map(fullSchema ? Function.identity() : this::toDtoShort)
+				.collect(Collectors.toList());
+	}
+
+	public SchemaEntity jsonToEntity(JsonNode json) {
+		return mapper.convertValue(json, SchemaEntity.class);
+	}
+
+	public <T extends JoyceSchemaMetadataExtra> Optional<T> metadataExtraFromSchema(
+			SchemaEntity schema,
+			Class<T> clazz) {
+
+		return Optional.of(schema)
+				.map(SchemaEntity::getMetadata)
+				.map(JoyceSchemaMetadata::getExtra)
+				.map(extra -> mapper.convertValue(extra, clazz));
 	}
 }

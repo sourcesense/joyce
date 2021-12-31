@@ -1,6 +1,5 @@
 package com.sourcesense.joyce.core.exception.handler;
 
-import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.lang3.exception.ExceptionUtils;
 import org.springframework.stereotype.Component;
@@ -11,17 +10,16 @@ import java.util.stream.Collectors;
 
 @Slf4j
 @Component
-@RequiredArgsConstructor
 public class CustomExceptionHandler {
 
-	public void handleException(Exception exception) {
+	public void handleException(Throwable exception) {
 		log.error(exception.getMessage());
 		if (log.isDebugEnabled()) {
 			log.debug(ExceptionUtils.getStackTrace(exception));
 		}
 	}
 
-	public void handleNonBlockingException(Exception exception) {
+	public void handleNonBlockingException(Throwable exception) {
 		log.info(exception.getMessage());
 		if (log.isDebugEnabled()) {
 			log.debug(ExceptionUtils.getStackTrace(exception));

@@ -20,9 +20,8 @@ import org.springframework.web.context.request.WebRequest;
 		"com.sourcesense.joyce.connectorcore",
 		"com.sourcesense.joyce.connector",
 		"com.sourcesense.joyce.importcore",
-
 })
-public class ApiExceptionHandler {
+public class RestExceptionHandler {
 
 	private final CustomExceptionHandler exceptionHandler;
 

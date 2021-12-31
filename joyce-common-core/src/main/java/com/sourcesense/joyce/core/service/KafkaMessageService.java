@@ -50,40 +50,35 @@ public abstract class KafkaMessageService<T> {
             JsonNode eventMetadata);
 
     protected ListenableFuture<SendResult<String, T>> sendMessage(String rawUri, String contentUri, Message<T> message) {
-        return this.sendMessageToTopic(rawUri, contentUri, message);
-    }
+			ListenableFuture<SendResult<String, T>> future = kafkaTemplate.send(message);
+			future.addCallback(new ListenableFutureCallback<>() {
 
-    protected ListenableFuture<SendResult<String, T>> sendMessageToTopic(String rawUri, String contentUri, Message<T> message) {
+				@Override
+				public void onSuccess(SendResult<String, T> result) {
+					handleMessageSuccess(
+							message,
+							result,
+							rawUri,
+							contentUri,
+							message.getPayload(),
+							formatRecordMetadata(result.getRecordMetadata())
+					);
+				}
 
-        ListenableFuture<SendResult<String, T>> future = kafkaTemplate.send(message);
-        future.addCallback(new ListenableFutureCallback<>() {
+				@Override
+				public void onFailure(Throwable throwable) {
+					handleMessageFailure(
+							message,
+							throwable,
+							rawUri,
+							contentUri,
+							message.getPayload(),
+							formatError(throwable.getMessage())
+					);
+				}
+			});
 
-            @Override
-            public void onSuccess(SendResult<String, T> result) {
-                handleMessageSuccess(
-                        message,
-                        result,
-                        rawUri,
-                        contentUri,
-                        message.getPayload(),
-                        formatRecordMetadata(result.getRecordMetadata())
-                );
-            }
-
-            @Override
-            public void onFailure(Throwable throwable) {
-                handleMessageFailure(
-                        message,
-                        throwable,
-                        rawUri,
-                        contentUri,
-                        message.getPayload(),
-                        formatError(throwable.getMessage())
-                );
-            }
-        });
-
-        return future;
+			return future;
     }
 
     protected JsonNode formatRecordMetadata(RecordMetadata recordMetadata) {

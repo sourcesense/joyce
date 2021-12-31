@@ -121,6 +121,12 @@ public class RestSchemaDao implements SchemaDao {
 	}
 
 	@Override
+	public List<SchemaEntity> getAllByReportsNotEmpty() {
+		//Todo: i don't know if this must be implemented
+		return Collections.emptyList();
+	}
+
+	@Override
 	public List<String> getAllNamespaces() {
 		//Todo: must be implemented
 		return Collections.emptyList();

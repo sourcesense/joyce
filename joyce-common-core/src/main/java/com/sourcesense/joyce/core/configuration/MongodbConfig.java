@@ -7,7 +7,6 @@ import com.mongodb.client.MongoClients;
 import io.opentracing.Tracer;
 import io.opentracing.contrib.mongo.common.TracingCommandListener;
 import lombok.RequiredArgsConstructor;
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnProperty;
 import org.springframework.context.ApplicationContext;
@@ -20,14 +19,14 @@ import org.springframework.data.mongodb.core.convert.MongoCustomConversions;
 import org.springframework.data.mongodb.core.mapping.MongoMappingContext;
 import org.springframework.data.mongodb.repository.config.EnableMongoRepositories;
 
-@ConditionalOnProperty(value = "joyce.schema-service.database", havingValue = "mongodb")
 @Configuration
-@EnableMongoRepositories(basePackages = "com.sourcesense.joyce.core.dao.mongodb")
 @RequiredArgsConstructor
+@EnableMongoRepositories(basePackages = "com.sourcesense.joyce.core.dao.mongodb")
+@ConditionalOnProperty(value = "joyce.schema-service.database", havingValue = "mongodb")
 public class MongodbConfig  extends AbstractMongoClientConfiguration {
 
-	private final ApplicationContext applicationContext;
 	private final Tracer tracer;
+	private final ApplicationContext applicationContext;
 
 	@Value("${joyce.data.mongodb.uri:mongodb://localhost:27017/joyce}")
 	String mongoUri;
