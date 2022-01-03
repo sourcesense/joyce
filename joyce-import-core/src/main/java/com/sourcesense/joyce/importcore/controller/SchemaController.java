@@ -16,31 +16,28 @@
 
 package com.sourcesense.joyce.importcore.controller;
 
-import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.JsonNode;
-import com.sourcesense.joyce.core.api.SchemaApi;
+import com.sourcesense.joyce.core.api.SchemaRestApi;
 import com.sourcesense.joyce.core.dto.ConnectorOperationStatus;
-import com.sourcesense.joyce.core.dto.SchemaInfo;
 import com.sourcesense.joyce.core.dto.Schema;
+import com.sourcesense.joyce.core.dto.SchemaInfo;
 import com.sourcesense.joyce.core.dto.SchemaSave;
 import com.sourcesense.joyce.core.exception.SchemaNotFoundException;
 import com.sourcesense.joyce.core.mapper.SchemaMapper;
+import com.sourcesense.joyce.core.model.JoyceSchemaMetadataExtraConnector;
 import com.sourcesense.joyce.core.model.JoyceURI;
 import com.sourcesense.joyce.core.model.SchemaEntity;
 import com.sourcesense.joyce.core.service.SchemaService;
-import com.sourcesense.joyce.core.model.JoyceSchemaMetadataExtraConnector;
 import com.sourcesense.joyce.importcore.service.ConnectorService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.RestController;
 
 import java.util.List;
-import java.util.function.Function;
-import java.util.stream.Collectors;
 
 @RestController
 @RequiredArgsConstructor
-public class SchemaApiController implements SchemaApi {
+public class SchemaController implements SchemaRestApi {
 
 	final private SchemaMapper schemaMapper;
 	final private ConnectorService connectorService;
@@ -58,7 +55,8 @@ public class SchemaApiController implements SchemaApi {
 			Boolean rootOnly) {
 
 		List<SchemaEntity> schemas = schemaService.findAll(rootOnly);
-		return ResponseEntity.ok(this.computeSchemas(schemas, fullSchema));
+		return ResponseEntity.ok(
+				schemaMapper.entitiesToShortIfFullSchema(schemas, fullSchema));
 	}
 
 	@Override
@@ -70,7 +68,8 @@ public class SchemaApiController implements SchemaApi {
 
 		JoyceURI.Subtype uriSubtype = this.computeSubtype(subtype);
 		List<SchemaEntity> schemas = schemaService.findBySubtypeAndNamespace(uriSubtype, namespace, rootOnly);
-		return ResponseEntity.ok(this.computeSchemas(schemas, fullSchema));
+		return ResponseEntity.ok(
+				schemaMapper.entitiesToShortIfFullSchema(schemas, fullSchema));
 	}
 
 	@Override
@@ -82,12 +81,12 @@ public class SchemaApiController implements SchemaApi {
 	}
 
 	@Override
-	public SchemaInfo saveSchemaJson(SchemaSave schema) throws JsonProcessingException {
+	public SchemaInfo saveSchemaJson(SchemaSave schema) {
 		return saveSchema(schema);
 	}
 
 	@Override
-	public SchemaInfo saveSchemaYaml(SchemaSave schema) throws JsonProcessingException {
+	public SchemaInfo saveSchemaYaml(SchemaSave schema) {
 		return saveSchema(schema);
 	}
 
@@ -158,16 +157,10 @@ public class SchemaApiController implements SchemaApi {
 		return connectorService.restartConnectorTask(namespace, name, connector, task);
 	}
 
-	public SchemaInfo saveSchema(SchemaSave schema) throws JsonProcessingException {
+	public SchemaInfo saveSchema(SchemaSave schema) {
 		return SchemaInfo.builder()
 				.schemaUri(schemaService.save(schema))
 				.connectors(connectorService.computeConnectors(schema))
 				.build();
-	}
-
-	private List<?> computeSchemas(List<SchemaEntity> schemas, Boolean fullSchema) {
-		return schemas.stream()
-				.map(fullSchema ? Function.identity() : schemaMapper::toDtoShort)
-				.collect(Collectors.toList());
 	}
 }
