@@ -4,15 +4,10 @@ import com.fasterxml.jackson.core.type.TypeReference;
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.dataformat.csv.CsvMapper;
-import com.sourcesense.joyce.importcore.service.CsvMappingService;
+import com.sourcesense.joyce.core.service.CsvMappingService;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
-import org.junit.runner.RunWith;
-import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.beans.factory.annotation.Qualifier;
-import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.mock.web.MockMultipartFile;
-import org.springframework.test.context.junit4.SpringRunner;
 import org.springframework.web.multipart.MultipartFile;
 import unit.com.sourcesense.joyce.importcore.UtilitySupplier;
 
@@ -41,7 +36,7 @@ public class CsvMappingServiceTest implements UtilitySupplier {
 		byte[] data = this.computeResourceAsByteArray("message/bulk/csv/01.csv");
 		MultipartFile multipartFile = new MockMultipartFile("01", "01.csv", "text/csv", data);
 
-		List<JsonNode> actual = csvMappingService.computeDocumentsFromCsvFile(multipartFile, ',', ";");
+		List<JsonNode> actual = csvMappingService.convertCsvFileToDocuments(multipartFile, ',', ";");
 		List<JsonNode> expected = this.computeResourceAsNodeList("result/bulk/csv/01.json");
 
 		assertThat(expected).hasSameElementsAs(actual);
