@@ -34,7 +34,7 @@ public class MongodbSchemaDao implements SchemaDao {
 	private final MongoTemplate mongoTemplate;
 	private final SchemaMapper schemaMapper;
 	private final ObjectMapper objectMapper;
-	private final KafkaTemplate<String,JsonNode> kafkaTemplate;
+	private final KafkaTemplate<String, JsonNode> kafkaTemplate;
 	private final SchemaServiceProperties schemaServiceProperties;
 
 	@Override
@@ -48,9 +48,7 @@ public class MongodbSchemaDao implements SchemaDao {
 				? schemaRepository.findAllWhereMetadata_ParentIsNull()
 				: schemaRepository.findAll();
 
-		return schemas.stream()
-				.map(schemaMapper::entityFromDocument)
-				.collect(Collectors.toList());
+		return schemaMapper.entitiesFromDocuments(schemas);
 	}
 
 	@Override
@@ -74,7 +72,6 @@ public class MongodbSchemaDao implements SchemaDao {
 		SchemaDocument doc = schemaMapper.documentFromEntity(entity);
 		schemaRepository.delete(doc);
 
-		JsonNode content = objectMapper.convertValue(entity, JsonNode.class);
 		MessageBuilder<JsonNode> message = MessageBuilder
 				.withPayload((JsonNode) objectMapper.createObjectNode())
 				.setHeader(KafkaHeaders.TOPIC, schemaServiceProperties.getCollection())
@@ -90,9 +87,13 @@ public class MongodbSchemaDao implements SchemaDao {
 				? schemaRepository.findAllByMetadata_SubtypeAndMetadata_NamespaceWhereMetadata_ParentIsNull(subtype.name(), namespace)
 				: schemaRepository.findAllByMetadata_SubtypeAndMetadata_Namespace(subtype.name(), namespace);
 
-		return schemas.stream()
-				.map(schemaMapper::entityFromDocument)
-				.collect(Collectors.toList());
+		return schemaMapper.entitiesFromDocuments(schemas);
+	}
+
+	@Override
+	public List<SchemaEntity> getAllByReportsNotEmpty() {
+		List<SchemaDocument> schemas = schemaRepository.findAllByReportsNotEmpty();
+		return schemaMapper.entitiesFromDocuments(schemas);
 	}
 
 	@Override

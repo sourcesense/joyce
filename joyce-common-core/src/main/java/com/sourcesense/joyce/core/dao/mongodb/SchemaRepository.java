@@ -19,4 +19,6 @@ public interface SchemaRepository extends MongoRepository<SchemaDocument, String
 	@Query("{'metadata.subtype': ?0, 'metadata.namespace': ?1, 'metadata.parent': null}")
 	List<SchemaDocument> findAllByMetadata_SubtypeAndMetadata_NamespaceWhereMetadata_ParentIsNull(String subtype, String namespace);
 
+	@Query("{'metadata.extra.reports': {'$exists': true, '$ne': []}}")
+	List<SchemaDocument> findAllByReportsNotEmpty();
 }

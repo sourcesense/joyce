@@ -31,7 +31,7 @@ import com.sourcesense.joyce.core.service.SchemaService;
 import com.sourcesense.joyce.importcore.dto.SingleImportResult;
 import com.sourcesense.joyce.importcore.enumeration.ProcessStatus;
 import com.sourcesense.joyce.importcore.exception.ImportException;
-import com.sourcesense.joyce.importcore.service.CsvMappingService;
+import com.sourcesense.joyce.core.service.CsvMappingService;
 import com.sourcesense.joyce.importcore.service.ImportService;
 import com.sourcesense.joyce.importcore.service.JsonLogicService;
 import com.sourcesense.joyce.schemaengine.exception.InvalidSchemaException;
@@ -310,7 +310,7 @@ class ImportServiceTest {
 
 		List<JsonNode> expected = this.computeResourceAsNodeList("result/bulk/csv/01.json");
 
-		when(csvMappingService.computeDocumentsFromCsvFile(any(), any(), any())).thenReturn(expected);
+		when(csvMappingService.convertCsvFileToDocuments(any(), any(), any())).thenReturn(expected);
 
 		List<JsonNode> actual = importService.computeDocumentsFromFile(rawURI, multipartFile, ',', ";");
 		assertThat(expected).hasSameElementsAs(actual);

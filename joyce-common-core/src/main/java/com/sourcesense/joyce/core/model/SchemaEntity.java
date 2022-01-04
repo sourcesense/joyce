@@ -26,6 +26,7 @@ import java.util.List;
 
 @Data
 public class SchemaEntity {
+
 	@Id
 	private String uid;
 

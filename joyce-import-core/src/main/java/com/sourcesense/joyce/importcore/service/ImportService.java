@@ -33,6 +33,7 @@ import com.sourcesense.joyce.core.exception.SchemaNotFoundException;
 import com.sourcesense.joyce.core.model.JoyceSchemaMetadata;
 import com.sourcesense.joyce.core.model.JoyceURI;
 import com.sourcesense.joyce.core.service.ContentProducer;
+import com.sourcesense.joyce.core.service.CsvMappingService;
 import com.sourcesense.joyce.core.service.SchemaService;
 import com.sourcesense.joyce.importcore.dto.BulkImportResult;
 import com.sourcesense.joyce.importcore.dto.ConnectKeyPayload;
@@ -196,7 +197,7 @@ public class ImportService {
 
 		switch (fileExtension) {
 			case CSV:
-				return csvMappingService.computeDocumentsFromCsvFile(data, columnSeparator, arraySeparator);
+				return csvMappingService.convertCsvFileToDocuments(data, columnSeparator, arraySeparator);
 			case XLS:
 			case XLSX:
 			default:

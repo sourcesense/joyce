@@ -187,6 +187,11 @@ public class KafkaSchemaDao implements SchemaDao {
 	}
 
 	@Override
+	public List<SchemaEntity> getAllByReportsNotEmpty() {
+		return Collections.emptyList();
+	}
+
+	@Override
 	public List<String> getAllNamespaces() {
 		return Collections.emptyList();
 	}

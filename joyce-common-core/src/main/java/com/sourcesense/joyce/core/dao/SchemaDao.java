@@ -34,5 +34,7 @@ public interface SchemaDao {
 
 	List<SchemaEntity> getAllBySubtypeAndNamespace(JoyceURI.Subtype subtype, String namespace, Boolean rootOnly);
 
+	List<SchemaEntity> getAllByReportsNotEmpty();
+
 	List<String> getAllNamespaces();
 }
