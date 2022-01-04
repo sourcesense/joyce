@@ -32,7 +32,6 @@ joyce:
     subtype: import
   notification-service:
     enabled: true
-    topic: joyce_notification
     source: ImportGateway
   content-producer:
     enabled: true
@@ -45,10 +44,12 @@ joyce:
   kafka:
     bootstrapAddress: kafka:9092
     consumer:
-      groupId: joyce-import-consumer-local
       enabled: true
+      groupId: joyce-import-consumer-local
     producer:
       enabled: true
+    schema:
+      topic: joyce_schema
     import:
       topic: joyce_import
     content:

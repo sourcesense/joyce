@@ -1,10 +1,8 @@
 package com.sourcesense.joyce.core.configuration.kafka;
 
-import com.sourcesense.joyce.core.configuration.kafka.topics.CommandTopicConfig;
-import com.sourcesense.joyce.core.configuration.kafka.topics.ContentTopicConfig;
-import com.sourcesense.joyce.core.configuration.kafka.topics.ImportTopicConfig;
-import com.sourcesense.joyce.core.configuration.kafka.topics.NotificationTopicConfig;
+import com.sourcesense.joyce.core.configuration.kafka.topic.*;
 import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
 import org.apache.kafka.clients.admin.AdminClientConfig;
 import org.apache.kafka.clients.admin.NewTopic;
 import org.apache.kafka.common.config.TopicConfig;
@@ -19,27 +17,33 @@ import org.springframework.kafka.core.KafkaAdmin;
 import java.util.HashMap;
 import java.util.Map;
 
+@Slf4j
 @ConditionalOnProperty(value = "joyce.kafka.bootstrapAddress")
 @Configuration
 @RequiredArgsConstructor
 @EnableKafka
 public class KafkaTopicsConfig {
 
+	private final SchemaTopicConfig schemaTopicConfig;
 	private final ContentTopicConfig contentTopicConfig;
 	private final NotificationTopicConfig notificationTopicConfig;
 	private final ImportTopicConfig importTopicConfig;
 	private final CommandTopicConfig commandTopicConfig;
 
 
-	@Value(value = "${joyce.kafka.bootstrapAddress}")
-	private String bootstrapAddress;
-
 	@Bean
-	@ConditionalOnProperty(value = "joyce.kafka.bootstrapAddress")
-	public KafkaAdmin kafkaAdmin() {
+	public KafkaAdmin kafkaAdmin(
+			@Value(value = "${joyce.kafka.bootstrapAddress}") String bootstrapAddress) {
+
 		Map<String, Object> configs = new HashMap<>();
 		configs.put(AdminClientConfig.BOOTSTRAP_SERVERS_CONFIG, bootstrapAddress);
 		return new KafkaAdmin(configs);
+	}
+
+	@Bean
+	@ConditionalOnProperty(value = "joyce.kafka.schema.topic")
+	public NewTopic schemaTopic() {
+		return this.kafkaTopic(schemaTopicConfig);
 	}
 
 	@Bean
@@ -67,6 +71,7 @@ public class KafkaTopicsConfig {
 	}
 
 	private NewTopic kafkaTopic(KafkaTopic kafkaTopicConfig) {
+		log.info("Creating kafka topic '{}'", kafkaTopicConfig.getTopic());
 		return TopicBuilder.name(kafkaTopicConfig.getTopic())
 				.partitions(kafkaTopicConfig.getPartitions())
 				.replicas(kafkaTopicConfig.getReplicas())

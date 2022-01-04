@@ -7,14 +7,11 @@ import com.sourcesense.joyce.sink.mongodb.model.SchemaObject;
 import com.sourcesense.joyce.sink.mongodb.service.CollectionEnhancer;
 import io.netty.util.internal.StringUtil;
 import lombok.RequiredArgsConstructor;
-import lombok.extern.slf4j.Slf4j;
 import org.springframework.kafka.annotation.KafkaListener;
 import org.springframework.messaging.handler.annotation.Payload;
 import org.springframework.stereotype.Component;
-import org.springframework.util.StringUtils;
 
 
-@Slf4j
 @Component
 @RequiredArgsConstructor
 public class SchemaConsumer {
@@ -30,7 +27,7 @@ public class SchemaConsumer {
 	 *
 	 * @param jsonSchema The starting json schema
 	 */
-	@KafkaListener(topics = "${joyce.schema-service.topic:joyce_schema}")
+	@KafkaListener(topics = "${joyce.kafka.schema.topic:joyce_schema}")
 	public void receive(@Payload ObjectNode jsonSchema) {
 		try {
 			SchemaEntity schema = collectionEnhancer.computeSchema(StringUtil.EMPTY_STRING, jsonSchema, SchemaEntity.class);
