@@ -1,4 +1,4 @@
-package com.sourcesense.joyce.core.configuration.kafka.topics;
+package com.sourcesense.joyce.core.configuration.kafka.topic;
 
 import com.sourcesense.joyce.core.configuration.kafka.KafkaTopic;
 import org.springframework.boot.context.properties.ConfigurationProperties;
