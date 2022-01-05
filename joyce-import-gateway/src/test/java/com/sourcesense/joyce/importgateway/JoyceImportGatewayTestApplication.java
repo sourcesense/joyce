@@ -1,4 +1,4 @@
-/*
+package com.sourcesense.joyce.importgateway;/*
  * Copyright 2021 Sourcesense Spa
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
@@ -14,12 +14,10 @@
  * limitations under the License.
  */
 
-package unit.com.sourcesense.joyce.importcore;
-
 import org.springframework.boot.autoconfigure.SpringBootApplication;
 
 
 @SpringBootApplication(scanBasePackages = "com.sourcesense.joyce")
-public class TestApplication {
+public class JoyceImportGatewayTestApplication {
 
 }

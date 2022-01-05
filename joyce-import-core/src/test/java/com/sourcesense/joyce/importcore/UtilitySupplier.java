@@ -1,4 +1,4 @@
-package unit.com.sourcesense.joyce.importcore;
+package com.sourcesense.joyce.importcore;
 
 import com.fasterxml.jackson.core.type.TypeReference;
 import com.fasterxml.jackson.databind.DeserializationFeature;
