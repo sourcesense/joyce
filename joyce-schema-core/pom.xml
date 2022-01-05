@@ -1,54 +1,44 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<!--
-  ~ Copyright 2021 Sourcesense Spa
-  ~
-  ~ Licensed under the Apache License, Version 2.0 (the "License");
-  ~ you may not use this file except in compliance with the License.
-  ~ You may obtain a copy of the License at
-  ~
-  ~     http://www.apache.org/licenses/LICENSE-2.0
-  ~
-  ~ Unless required by applicable law or agreed to in writing, software
-  ~ distributed under the License is distributed on an "AS IS" BASIS,
-  ~ WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
-  ~ See the License for the specific language governing permissions and
-  ~ limitations under the License.
-  -->
-
 <project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
-         xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 https://maven.apache.org/xsd/maven-4.0.0.xsd">
-  <modelVersion>4.0.0</modelVersion>
+	xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 https://maven.apache.org/xsd/maven-4.0.0.xsd">
+	<modelVersion>4.0.0</modelVersion>
   <parent>
     <artifactId>joyce-parent</artifactId>
     <groupId>com.sourcesense.joyce</groupId>
     <version>${revision}</version>
   </parent>
 
-  <artifactId>joyce-import-core</artifactId>
+  <artifactId>joyce-schema-core</artifactId>
   <packaging>jar</packaging>
 
-  <name>joyce-import-core</name>
-  <description>Joyce Import Core</description>
+  <organization>
+    <name>Sourcesense</name>
+    <url>https://sourcesense.com</url>
+  </organization>
+
+  <licenses>
+    <license>
+      <name>Apache License version 2.0</name>
+      <url>https://www.apache.org/licenses/LICENSE-2.0.txt</url>
+      <distribution>repo</distribution>
+      <comments>A business-friendly OSS license</comments>
+    </license>
+  </licenses>
 
   <dependencies>
-    <dependency>
-      <groupId>com.sourcesense.joyce</groupId>
-      <artifactId>joyce-schema-core</artifactId>
-    </dependency>
-
     <dependency>
       <groupId>com.sourcesense.joyce</groupId>
       <artifactId>joyce-common-core</artifactId>
     </dependency>
 
     <dependency>
-      <groupId>org.springframework.boot</groupId>
-      <artifactId>spring-boot-starter-actuator</artifactId>
+      <groupId>org.springframework.data</groupId>
+      <artifactId>spring-data-mongodb</artifactId>
     </dependency>
 
     <dependency>
-      <groupId>org.springframework.boot</groupId>
-      <artifactId>spring-boot-starter-web</artifactId>
+      <groupId>org.mongodb</groupId>
+      <artifactId>mongodb-driver-sync</artifactId>
     </dependency>
 
     <dependency>
@@ -56,20 +46,20 @@
       <artifactId>spring-boot-starter-test</artifactId>
       <scope>test</scope>
     </dependency>
-
-    <dependency>
-      <groupId>org.pf4j</groupId>
-      <artifactId>pf4j-spring</artifactId>
-    </dependency>
-
-    <dependency>
-      <groupId>io.github.jamsesso</groupId>
-      <artifactId>json-logic-java</artifactId>
-    </dependency>
   </dependencies>
 
   <build>
     <plugins>
+      <plugin>
+        <groupId>org.apache.maven.plugins</groupId>
+        <artifactId>maven-javadoc-plugin</artifactId>
+        <configuration>
+          <source>11</source>
+          <show>private</show>  <!--javadoc shows all classes and members-->
+          <failOnError>false</failOnError>
+        </configuration>
+      </plugin>
+
       <plugin>
         <groupId>org.apache.maven.plugins</groupId>
         <artifactId>maven-compiler-plugin</artifactId>
@@ -97,4 +87,6 @@
       </plugin>
     </plugins>
   </build>
+
+
 </project>

@@ -295,3 +295,4 @@ yarn-debug.log*
 yarn-error.log*
 .flattened-pom.xml
 *.iml
+/joyce-schema-core/target/

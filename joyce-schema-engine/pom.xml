@@ -16,6 +16,11 @@
 
   <dependencies>
     <dependency>
+      <groupId>com.sourcesense.joyce</groupId>
+      <artifactId>joyce-schema-core</artifactId>
+    </dependency>
+
+    <dependency>
       <groupId>org.springframework.boot</groupId>
       <artifactId>spring-boot-starter</artifactId>
     </dependency>

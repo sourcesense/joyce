@@ -16,7 +16,7 @@
 
 package com.sourcesense.joyce.core.service;
 
-import com.sourcesense.joyce.core.dao.SchemaDao;
+import com.sourcesense.joyce.schemacore.dao.SchemaDao;
 import com.sourcesense.joyce.core.mapper.SchemaMapper;
 import com.sourcesense.joyce.schemaengine.service.SchemaEngine;
 import org.junit.jupiter.api.extension.ExtendWith;

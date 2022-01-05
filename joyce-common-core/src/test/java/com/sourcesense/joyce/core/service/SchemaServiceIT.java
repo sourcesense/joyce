@@ -17,7 +17,7 @@
 package com.sourcesense.joyce.core.service;
 
 import com.sourcesense.joyce.core.TestApplication;
-import com.sourcesense.joyce.core.dao.SchemaDao;
+import com.sourcesense.joyce.schemacore.dao.SchemaDao;
 import org.assertj.core.api.Assertions;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;

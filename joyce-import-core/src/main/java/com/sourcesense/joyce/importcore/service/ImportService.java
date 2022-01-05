@@ -32,9 +32,9 @@ import com.sourcesense.joyce.core.mapper.SchemaMapper;
 import com.sourcesense.joyce.core.model.JoyceSchemaMetadata;
 import com.sourcesense.joyce.core.model.JoyceURI;
 import com.sourcesense.joyce.core.model.SchemaEntity;
-import com.sourcesense.joyce.core.service.ContentProducer;
+import com.sourcesense.joyce.core.producer.ContentProducer;
 import com.sourcesense.joyce.core.service.CsvMappingService;
-import com.sourcesense.joyce.core.service.SchemaService;
+import com.sourcesense.joyce.schemacore.service.SchemaService;
 import com.sourcesense.joyce.importcore.dto.BulkImportResult;
 import com.sourcesense.joyce.importcore.dto.ConnectKeyPayload;
 import com.sourcesense.joyce.importcore.dto.SingleImportResult;
@@ -220,7 +220,6 @@ public class ImportService {
 	/**
 	 * Sends a message to kafka content topic that contains everything is needed to
 	 * trigger document removal.
-	 * Used by {@link com.sourcesense.joyce.importcore.controller.ImportController}
 	 *
 	 * @param rawUri   Uri used to trace the message if an error happens
 	 * @param document Raw message payload
