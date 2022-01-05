@@ -1,4 +1,4 @@
-package unit.com.sourcesense.joyce.importcore.service;
+package com.sourcesense.joyce.importcore.service;
 
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.core.type.TypeReference;
@@ -13,7 +13,6 @@ import com.sourcesense.joyce.core.model.JoyceURI;
 import com.sourcesense.joyce.core.model.SchemaEntity;
 import com.sourcesense.joyce.core.service.SchemaService;
 import com.sourcesense.joyce.importcore.exception.ImportException;
-import com.sourcesense.joyce.importcore.service.ConnectorService;
 import io.netty.util.internal.StringUtil;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
@@ -32,7 +31,7 @@ import org.springframework.test.web.client.MockRestServiceServer;
 import org.springframework.test.web.client.RequestMatcher;
 import org.springframework.test.web.client.ResponseCreator;
 import org.springframework.web.client.RestTemplate;
-import unit.com.sourcesense.joyce.importcore.UtilitySupplier;
+import com.sourcesense.joyce.importcore.UtilitySupplier;
 
 import java.io.IOException;
 import java.lang.reflect.Field;

@@ -1,15 +1,15 @@
-package unit.com.sourcesense.joyce.importcore.service;
+package com.sourcesense.joyce.importcore.service;
 
 import com.fasterxml.jackson.core.type.TypeReference;
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.dataformat.csv.CsvMapper;
 import com.sourcesense.joyce.core.service.CsvMappingService;
+import com.sourcesense.joyce.importcore.UtilitySupplier;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.springframework.mock.web.MockMultipartFile;
 import org.springframework.web.multipart.MultipartFile;
-import unit.com.sourcesense.joyce.importcore.UtilitySupplier;
 
 import java.io.IOException;
 import java.net.URISyntaxException;

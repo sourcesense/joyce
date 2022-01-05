@@ -14,7 +14,7 @@
  * limitations under the License.
  */
 
-package unit.com.sourcesense.joyce.importcore.service;
+package com.sourcesense.joyce.importcore.service;
 
 import com.fasterxml.jackson.databind.node.JsonNodeFactory;
 import com.fasterxml.jackson.databind.node.ObjectNode;

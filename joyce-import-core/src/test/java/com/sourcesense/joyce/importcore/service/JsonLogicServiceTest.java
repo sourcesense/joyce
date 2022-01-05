@@ -1,9 +1,8 @@
-package unit.com.sourcesense.joyce.importcore.service;
+package com.sourcesense.joyce.importcore.service;
 
 import com.fasterxml.jackson.databind.JsonNode;
 import com.sourcesense.joyce.core.model.JoyceSchemaMetadata;
-import com.sourcesense.joyce.core.model.JoyceURI;
-import com.sourcesense.joyce.importcore.service.JsonLogicService;
+import com.sourcesense.joyce.importcore.UtilitySupplier;
 import io.github.jamsesso.jsonlogic.JsonLogic;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.BeforeEach;
@@ -11,7 +10,6 @@ import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.junit.jupiter.MockitoExtension;
 import org.mockito.junit.jupiter.MockitoSettings;
 import org.mockito.quality.Strictness;
-import unit.com.sourcesense.joyce.importcore.UtilitySupplier;
 
 import java.io.IOException;
 import java.net.URISyntaxException;
