@@ -62,15 +62,15 @@ public class RestSchemaDaoTest implements UtilitySupplier {
 	}
 
 	@Test
-	void getMethodShouldReturnSchemaEntityOnSuccessfulRestCall() throws JsonProcessingException {
+	void getMethodShouldReturnSchemaEntityOnSuccessfulRestCall() throws IOException {
 		String endpoint = String.format("%s/api/schema/%s/%s/%s", REST_ENDPOINT, SUBTYPE, NAMESPACE, NAME);
-		byte[] responseBody = this.getResourceAsBytes("schema/full/01.json");
+		byte[] responseBody = this.getResourceAsBytes("schema/01.json");
 
 		this.mockRestCall(endpoint, null, responseBody, HttpMethod.GET, HttpStatus.OK);
 
 		String schemaUri = String.format("joyce://schema/%s/%s.%s", SUBTYPE, NAMESPACE, NAME);
 		SchemaEntity actual = restSchemaDao.get(schemaUri).orElse(null);
-		SchemaEntity expected = this.computeSchema("schema/entity/01.json", SchemaEntity.class);
+		SchemaEntity expected = mapper.readValue(responseBody, SchemaEntity.class);
 
 		assertEquals(expected, actual);
 	}
@@ -92,15 +92,12 @@ public class RestSchemaDaoTest implements UtilitySupplier {
 	@Test
 	void getAllMethodShouldReturnSchemaEntityListOnSuccessfulRestCall() throws IOException {
 		String endpoint = String.format("%s/api/schema?root_only=false&full_schema=true", REST_ENDPOINT);
-		byte[] responseBody = this.getResourceAsBytes("schema/entity/02.json");
+		byte[] responseBody = this.getResourceAsBytes("schema/02.json");
 
 		this.mockRestCall(endpoint, null, responseBody, HttpMethod.GET, HttpStatus.OK);
 
 		List<SchemaEntity> actual = restSchemaDao.getAll(false);
-		List<SchemaEntity> expected = mapper.readValue(
-				this.getResourceAsBytes("schema/entity/02.json"),
-				new TypeReference<>() {	}
-		);
+		List<SchemaEntity> expected = mapper.readValue(responseBody, new TypeReference<>() {});
 
 		assertThat(expected).hasSameElementsAs(actual);
 	}
@@ -120,16 +117,12 @@ public class RestSchemaDaoTest implements UtilitySupplier {
 	@Test
 	void getAllBySubtypeAndNamespaceMethodShouldReturnSchemaEntityListOnSuccessfulRestCall() throws IOException {
 		String endpoint = String.format("%s/api/schema/%s/%s?root_only=false&full_schema=true", REST_ENDPOINT, SUBTYPE, NAMESPACE);
-		byte[] responseBody = this.getResourceAsBytes("schema/entity/02.json");
+		byte[] responseBody = this.getResourceAsBytes("schema/02.json");
 
 		this.mockRestCall(endpoint, null, responseBody, HttpMethod.GET, HttpStatus.OK);
 
 		List<SchemaEntity> actual = restSchemaDao.getAllBySubtypeAndNamespace(JoyceURI.Subtype.IMPORT, NAMESPACE, false);
-		List<SchemaEntity> expected = mapper.readValue(
-				this.getResourceAsBytes("schema/entity/02.json"),
-				new TypeReference<>() {
-				}
-		);
+		List<SchemaEntity> expected = mapper.readValue(responseBody, new TypeReference<>() {});
 
 		assertThat(expected).hasSameElementsAs(actual);
 	}
@@ -137,7 +130,7 @@ public class RestSchemaDaoTest implements UtilitySupplier {
 	@Test
 	void saveMethodShouldFinish() throws JsonProcessingException {
 		String endpoint = String.format("%s/api/schema", REST_ENDPOINT);
-		String requestBody = this.getResourceAsString("schema/entity/03.json");
+		String requestBody = this.getResourceAsString("schema/03.json");
 		SchemaEntity schema = mapper.readValue(requestBody, SchemaEntity.class);
 
 		this.mockRestCall(endpoint, requestBody, new byte[0], HttpMethod.POST, HttpStatus.CREATED);
@@ -150,7 +143,7 @@ public class RestSchemaDaoTest implements UtilitySupplier {
 	@Test
 	void saveMethodShouldThrowOnFailedRestCall() throws JsonProcessingException {
 		String endpoint = String.format("%s/api/schema", REST_ENDPOINT);
-		String requestBody = this.getResourceAsString("schema/entity/03.json");
+		String requestBody = this.getResourceAsString("schema/03.json");
 		SchemaEntity schema = mapper.readValue(requestBody, SchemaEntity.class);
 
 		this.mockRestCall(endpoint, requestBody, new byte[0], HttpMethod.POST, HttpStatus.INTERNAL_SERVER_ERROR);
@@ -222,15 +215,10 @@ public class RestSchemaDaoTest implements UtilitySupplier {
 		};
 	}
 
-	private <T> T computeSchema(String path, Class<T> clazz) throws JsonProcessingException {
-		return mapper.readValue(this.getResourceAsString(path), clazz);
-	}
-
 	private RestSchemaDao initRestSchemaDao(RestTemplate restTemplate, SchemaMapper schemaMapper, CustomExceptionHandler customExceptionHandler) {
 		SchemaServiceProperties props = new SchemaServiceProperties();
 		props.setRestEndpoint(REST_ENDPOINT);
 		return new RestSchemaDao(
-				mapper,
 				restTemplate,
 				schemaMapper,
 				customExceptionHandler,

@@ -20,7 +20,6 @@ import com.fasterxml.jackson.annotation.JsonProperty;
 import com.fasterxml.jackson.annotation.JsonValue;
 import com.fasterxml.jackson.databind.annotation.JsonDeserialize;
 import com.fasterxml.jackson.databind.annotation.JsonSerialize;
-import com.sourcesense.joyce.core.exception.InvalidMetadataException;
 import lombok.EqualsAndHashCode;
 import lombok.Getter;
 
@@ -84,6 +83,12 @@ public class JoyceURI {
 			return Optional.ofNullable(lookup.get(type));
 		}
 
+		public static Type getOrElseThrow(String type) {
+			return get(type)
+					.orElseThrow(() -> new IllegalArgumentException(
+							String.format("Invalid type %s", type)
+					));
+		}
 	}
 
 	/**
@@ -140,15 +145,21 @@ public class JoyceURI {
 		private static final Map<String, Subtype> lookup = new HashMap<>();
 
 		static {
-			for (Subtype type : Subtype.values()) {
-				lookup.put(type.getValue(), type);
+			for (Subtype subtype : Subtype.values()) {
+				lookup.put(subtype.getValue(), subtype);
 			}
 		}
 
-		public static Optional<Subtype> get(String type) {
-			return Optional.ofNullable(lookup.get(type));
+		public static Optional<Subtype> get(String subtype) {
+			return Optional.ofNullable(lookup.get(subtype));
 		}
 
+		public static Subtype getOrElseThrow(String subtype) {
+			return get(subtype)
+					.orElseThrow(() -> new IllegalArgumentException(
+							String.format("Invalid subtype %s", subtype)
+					));
+		}
 	}
 
 	private static final String schema = "joyce";
@@ -188,8 +199,8 @@ public class JoyceURI {
 		}
 
 		this.uri = uri;
-		this.type = this.computeType(uri.getHost());
-		this.subtype = this.computeSubtype(paths.get(0));
+		this.type = Type.getOrElseThrow(uri.getHost());
+		this.subtype = Subtype.getOrElseThrow(paths.get(0));
 		this.collection = paths.get(1);
 
 		String[] namespaced = paths.get(1).split("\\" + NAMESPACE_SEPARATOR);
@@ -202,21 +213,7 @@ public class JoyceURI {
 		}
 	}
 
-	private Type computeType(String host) {
-		return Type.get(host)
-				.orElseThrow(() -> new IllegalArgumentException(
-						String.format("Invalid type %s", uri.getHost())
-				));
-	}
-
-	private Subtype computeSubtype(String subtype) {
-		return Subtype.get(subtype)
-				.orElseThrow(() -> new IllegalArgumentException(
-						String.format("Invalid subtype %s", subtype)
-				));
-	}
-
-	public String computeNamespace(String[] namespaced) {
+	private String computeNamespace(String[] namespaced) {
 		return Arrays.stream(namespaced)
 				.limit(namespaced.length - 1)
 				.reduce((v1, v2) -> v1.concat(".").concat(v2))

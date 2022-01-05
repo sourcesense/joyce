@@ -12,7 +12,7 @@ import com.sourcesense.joyce.core.model.JoyceSchemaMetadataExtraConnector;
 import com.sourcesense.joyce.core.model.JoyceURI;
 import com.sourcesense.joyce.core.model.SchemaEntity;
 import com.sourcesense.joyce.core.service.SchemaService;
-import com.sourcesense.joyce.importcore.exception.ImportException;
+import com.sourcesense.joyce.importcore.UtilitySupplier;
 import io.netty.util.internal.StringUtil;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
@@ -31,7 +31,6 @@ import org.springframework.test.web.client.MockRestServiceServer;
 import org.springframework.test.web.client.RequestMatcher;
 import org.springframework.test.web.client.ResponseCreator;
 import org.springframework.web.client.RestTemplate;
-import com.sourcesense.joyce.importcore.UtilitySupplier;
 
 import java.io.IOException;
 import java.lang.reflect.Field;
@@ -187,7 +186,7 @@ public class ConnectorServiceTest implements UtilitySupplier {
 	@Test
 	void shouldThrowImportExceptionWhenWrongSubtype() {
 		assertThrows(
-				ImportException.class,
+				IllegalArgumentException.class,
 				() -> connectorService.getConnectors("wrong subtype", NAMESPACE, NAME)
 		);
 	}

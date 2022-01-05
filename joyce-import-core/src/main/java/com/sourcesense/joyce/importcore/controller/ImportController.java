@@ -19,9 +19,9 @@ package com.sourcesense.joyce.importcore.controller;
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.databind.node.ObjectNode;
-import com.sourcesense.joyce.core.dto.Schema;
 import com.sourcesense.joyce.core.exception.SchemaNotFoundException;
 import com.sourcesense.joyce.core.model.JoyceURI;
+import com.sourcesense.joyce.core.model.SchemaEntity;
 import com.sourcesense.joyce.core.service.SchemaService;
 import com.sourcesense.joyce.importcore.api.ImportApi;
 import com.sourcesense.joyce.importcore.dto.BulkImportResult;
@@ -72,7 +72,7 @@ public class ImportController implements ImportApi {
 			String arraySeparator) throws IOException {
 
 		JoyceURI rawUri = this.computeBulkRestRawUri(data.getOriginalFilename());
-		Schema schema = this.fetchSchema(schemaId);
+		SchemaEntity schema = this.fetchSchema(schemaId);
 		List<JsonNode> documents = importService.computeDocumentsFromFile(rawUri, data, columnSeparator, arraySeparator);
 
 		Map<ProcessStatus, List<SingleImportResult>> results = documents.stream()
@@ -137,16 +137,18 @@ public class ImportController implements ImportApi {
 		return JoyceURI.make(JoyceURI.Type.RAW, JoyceURI.Subtype.REST, collection, uid);
 	}
 
-	private Schema fetchSchema(String schemaId) {
-		return Optional.ofNullable(schemaId)
+	private SchemaEntity fetchSchema(String schemaUid) {
+		return Optional.ofNullable(schemaUid)
 				.flatMap(schemaService::findById)
-				.orElseThrow(() -> new SchemaNotFoundException(String.format("Schema %s does not exists", schemaId)));
+				.orElseThrow(() -> new SchemaNotFoundException(
+						String.format("Schema %s does not exists", schemaUid)
+				));
 	}
 
 	private SingleImportResult importSingleDocument(
 			JoyceURI rawUri,
 			JsonNode document,
-			Schema schema) {
+			SchemaEntity schema) {
 
 		try {
 			return importService.processImport(rawUri, document, schema);

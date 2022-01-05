@@ -22,12 +22,14 @@ import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.databind.SerializationFeature;
 import com.sourcesense.joyce.core.dao.mongodb.SchemaDocument;
-import com.sourcesense.joyce.core.dto.Schema;
 import com.sourcesense.joyce.core.dto.SchemaSave;
 import com.sourcesense.joyce.core.dto.SchemaShort;
+import com.sourcesense.joyce.core.exception.InvalidMetadataException;
+import com.sourcesense.joyce.core.exception.SchemaParsingException;
 import com.sourcesense.joyce.core.model.JoyceSchemaMetadata;
 import com.sourcesense.joyce.core.model.JoyceSchemaMetadataExtra;
 import com.sourcesense.joyce.core.model.SchemaEntity;
+import com.sourcesense.joyce.schemaengine.exception.InvalidSchemaException;
 import org.mapstruct.Mapper;
 import org.mapstruct.Mapping;
 import org.springframework.stereotype.Component;
@@ -46,16 +48,6 @@ public abstract class SchemaMapper {
 			.disable(DeserializationFeature.FAIL_ON_UNKNOWN_PROPERTIES)
 			.disable(SerializationFeature.FAIL_ON_EMPTY_BEANS);
 
-	@Mapping(target = "schema", source = "entity")
-	@Mapping(target = "name", source = "metadata.name")
-	@Mapping(target = "description", source = "metadata.description")
-	@Mapping(target = "uidKey", source = "metadata.uidKey")
-	@Mapping(target = "collection", source = "metadata.collection")
-	@Mapping(target = "development", source = "metadata.development")
-	@Mapping(target = "connectors", source = "metadata.connectors")
-	@Mapping(target = "export", source = "metadata.export")
-	public abstract Schema toDto(SchemaEntity entity);
-
 	@Mapping(target = "name", source = "metadata.name")
 	@Mapping(target = "description", source = "metadata.description")
 	@Mapping(target = "uidKey", source = "metadata.uidKey")
@@ -69,7 +61,7 @@ public abstract class SchemaMapper {
 
 	public abstract SchemaEntity toEntity(SchemaSave dto);
 
-	JsonNode schemaAsMap(SchemaEntity entity) throws JsonProcessingException {
+	JsonNode schemaAsMap(SchemaEntity entity) {
 		return mapper.convertValue(entity, JsonNode.class);
 	}
 
@@ -99,8 +91,37 @@ public abstract class SchemaMapper {
 				.collect(Collectors.toList());
 	}
 
-	public SchemaEntity jsonToEntity(JsonNode json) {
-		return mapper.convertValue(json, SchemaEntity.class);
+	public <T> Optional<T> jsonToObject(JsonNode json, Class<T> clazz) {
+		return Optional.ofNullable(json).map(data -> mapper.convertValue(data, clazz));
+	}
+
+	public Optional<SchemaEntity> jsonToEntity(JsonNode json) {
+		return Optional.ofNullable(json).map(data -> mapper.convertValue(data, SchemaEntity.class));
+	}
+
+	public SchemaEntity jsonToEntityOrElseThrow(JsonNode jsonNode) {
+		return this.jsonToEntity(jsonNode)
+				.orElseThrow(() -> new SchemaParsingException(
+						"Impossible to convert schema to entity"
+				));
+	}
+
+	/**
+	 * //	 * Retrieves the metadata from the schema
+	 * //	 *
+	 * //	 * @param schema
+	 * //	 * @return Schema metadata
+	 * //
+	 */
+	public Optional<JoyceSchemaMetadata> metadataFromSchema(SchemaEntity schema) {
+		return Optional.ofNullable(schema).map(SchemaEntity::getMetadata);
+	}
+
+	public JoyceSchemaMetadata metadataFromSchemaOrElseThrow(SchemaEntity schema) {
+		return this.metadataFromSchema(schema)
+				.orElseThrow(() -> new InvalidMetadataException(
+						String.format("Schema '%s' has no metadata", schema.getUid())
+				));
 	}
 
 	public <T extends JoyceSchemaMetadataExtra> Optional<T> metadataExtraFromSchema(

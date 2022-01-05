@@ -20,20 +20,19 @@ import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.core.type.TypeReference;
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
-import com.sourcesense.joyce.core.dto.Schema;
 import com.sourcesense.joyce.core.enumeration.KafkaCustomHeaders;
 import com.sourcesense.joyce.core.exception.InvalidJoyceUriException;
 import com.sourcesense.joyce.core.exception.InvalidMetadataException;
 import com.sourcesense.joyce.core.exception.SchemaNotFoundException;
+import com.sourcesense.joyce.core.mapper.SchemaMapper;
 import com.sourcesense.joyce.core.model.JoyceURI;
+import com.sourcesense.joyce.core.model.SchemaEntity;
 import com.sourcesense.joyce.core.service.ContentProducer;
+import com.sourcesense.joyce.core.service.CsvMappingService;
 import com.sourcesense.joyce.core.service.SchemaService;
 import com.sourcesense.joyce.importcore.dto.SingleImportResult;
 import com.sourcesense.joyce.importcore.enumeration.ProcessStatus;
 import com.sourcesense.joyce.importcore.exception.ImportException;
-import com.sourcesense.joyce.core.service.CsvMappingService;
-import com.sourcesense.joyce.importcore.service.ImportService;
-import com.sourcesense.joyce.importcore.service.JsonLogicService;
 import com.sourcesense.joyce.schemaengine.exception.InvalidSchemaException;
 import com.sourcesense.joyce.schemaengine.exception.JoyceSchemaEngineException;
 import com.sourcesense.joyce.schemaengine.service.SchemaEngine;
@@ -61,6 +60,8 @@ import static org.mockito.Mockito.when;
 class ImportServiceTest {
 
 	// Mocked components
+	@Mock
+	private SchemaMapper schemaMapper;
 	@Mock
 	private SchemaEngine schemaEngine;
 	@Mock
@@ -95,7 +96,7 @@ class ImportServiceTest {
 
 	@BeforeEach
 	void init() {
-		importService = new ImportService(objectMapper, schemaEngine, schemaService, contentProducer, jsonLogicService, csvMappingService);
+		importService = new ImportService(objectMapper, schemaMapper, schemaEngine, schemaService, contentProducer, jsonLogicService, csvMappingService);
 	}
 
 	/*
@@ -114,7 +115,7 @@ class ImportServiceTest {
 	@Test
 	void shouldComputeRawUriWhenImportSchemaIsNull() throws JsonProcessingException {
 		Map<String, String> headers = this.computeHeaders(null);
-		String messageKey = IOUtils.toString(this.computeResourceAsBytes(TEST_COMPLEX_MESSAGE_KEY_CORRECT));
+		String messageKey = this.computeResourceAsString(TEST_COMPLEX_MESSAGE_KEY_CORRECT);
 
 		JoyceURI expectedRawUri = JoyceURI.createURI(MESSAGE_KEY).get();
 		JoyceURI actualRawUri = importService.computeRawURI(messageKey, headers);
@@ -148,7 +149,7 @@ class ImportServiceTest {
 	@Test
 	void shouldComputeValidSchemaUriWhenImportSchemaIsNull() throws JsonProcessingException {
 		Map<String, String> headers = this.computeHeaders(null);
-		String messageKey = IOUtils.toString(this.computeResourceAsBytes(TEST_COMPLEX_MESSAGE_KEY_CORRECT));
+		String messageKey = this.computeResourceAsString(TEST_COMPLEX_MESSAGE_KEY_CORRECT);
 
 		JoyceURI expectedSchemaUri = JoyceURI.createURI(IMPORT_SCHEMA).get();
 		JoyceURI actualSchemaUri = importService.computeValidSchemaUri(messageKey, headers, null);
@@ -172,7 +173,7 @@ class ImportServiceTest {
 	@Test
 	void shouldThrowImportExceptionWhenSchemaIsMissing() {
 		Map<String, String> headers = this.computeHeaders(null);
-		String messageKey = IOUtils.toString(this.computeResourceAsBytes(TEST_COMPLEX_MESSAGE_KEY_MISSING_SCHEMA));
+		String messageKey = this.computeResourceAsString(TEST_COMPLEX_MESSAGE_KEY_MISSING_SCHEMA);
 
 		assertThrows(
 				ImportException.class,
@@ -188,7 +189,7 @@ class ImportServiceTest {
 	@Test
 	void shouldThrowImportExceptionWhenUidIsMissing() {
 		Map<String, String> headers = this.computeHeaders(null);
-		String messageKey = IOUtils.toString(this.computeResourceAsBytes(TEST_COMPLEX_MESSAGE_KEY_MISSING_UID));
+		String messageKey = this.computeResourceAsString(TEST_COMPLEX_MESSAGE_KEY_MISSING_UID);
 
 		assertThrows(
 				ImportException.class,
@@ -204,7 +205,7 @@ class ImportServiceTest {
 	@Test
 	void shouldThrowImportExceptionWhenSourceIsMissing() {
 		Map<String, String> headers = this.computeHeaders(null);
-		String messageKey = IOUtils.toString(this.computeResourceAsBytes(TEST_COMPLEX_MESSAGE_KEY_MISSING_SOURCE));
+		String messageKey = this.computeResourceAsString(TEST_COMPLEX_MESSAGE_KEY_MISSING_SOURCE);
 
 		assertThrows(
 				ImportException.class,
@@ -224,7 +225,7 @@ class ImportServiceTest {
 	void shouldThrowSchemaNotFoundExceptionIfMissing() {
 		JoyceURI schemaUri = JoyceURI.createURI(IMPORT_SCHEMA).get();
 
-		when(schemaService.findByName(any(), any(), any())).thenThrow(SchemaNotFoundException.class);
+		when(schemaService.findByNameOrElseThrow(any(), any(), any())).thenThrow(SchemaNotFoundException.class);
 
 		assertThrows(
 				SchemaNotFoundException.class,
@@ -236,8 +237,9 @@ class ImportServiceTest {
 	void shouldProcessImportWhenTheInputDataIsCorrect() throws IOException {
 
 		// mocking and stubbing data for test execution
-		Schema schema = computeSchema(TEST_SCHEMA_JSON_USER);
+		SchemaEntity schema = computeSchema(TEST_SCHEMA_JSON_USER);
 		JoyceURI rawURI = JoyceURI.createURI(MESSAGE_KEY).orElseThrow();
+		when(schemaMapper.metadataFromSchemaOrElseThrow(any())).thenReturn(schema.getMetadata());
 		when(jsonLogicService.filter(any(), any())).thenReturn(true);
 		when(schemaEngine.process(any(), any(), any()))
 				.thenReturn(objectMapper.valueToTree(Map.of("code", "1337")));
@@ -253,7 +255,9 @@ class ImportServiceTest {
 	@Test
 	void shouldThrowInvalidMetadataExceptionIfSchemaHasNotMetadata() throws IOException {
 		// mocking and stubbing data for test execution
-		Schema schema = new Schema();
+		SchemaEntity schema = new SchemaEntity();
+
+		when(schemaMapper.metadataFromSchemaOrElseThrow(any())).thenThrow(InvalidMetadataException.class);
 
 		// asserts
 		assertThrows(
@@ -265,7 +269,7 @@ class ImportServiceTest {
 	@Test
 	void shouldThrowSchemaIsNotValidExceptionIfSchemaIsNotValidated() throws IOException {
 		// mocking and stubbing data for test execution
-		Schema schema = computeSchema(TEST_SCHEMA_JSON_USER);
+		SchemaEntity schema = computeSchema(TEST_SCHEMA_JSON_USER);
 		when(jsonLogicService.filter(any(), any())).thenReturn(true);
 		when(schemaEngine.process(any(), any(), any()))
 				.thenThrow(InvalidSchemaException.class);
@@ -277,7 +281,8 @@ class ImportServiceTest {
 	@Test
 	void shouldThrowInvalidSchemaExceptionIfSchemaHasParentButParentSchemaIsNotAlreadyPresentInDb() throws IOException {
 		// mocking and stubbing data for test execution
-		Schema schema = computeSchema(TEST_SCHEMA_JSON_ENHANCED_USER);
+		SchemaEntity schema = computeSchema(TEST_SCHEMA_JSON_ENHANCED_USER);
+		when(schemaMapper.metadataFromSchemaOrElseThrow(any())).thenReturn(schema.getMetadata());
 		when(jsonLogicService.filter(any(), any())).thenReturn(true);
 
 		// asserts
@@ -287,8 +292,9 @@ class ImportServiceTest {
 	@Test
 	void shouldProcessImportIfSchemaHasParentAndParentSchemaIsAlreadyPresentInDb() throws IOException {
 		// mocking and stubbing data for test execution
-		Schema schema = computeSchema(TEST_SCHEMA_JSON_ENHANCED_USER);
+		SchemaEntity schema = computeSchema(TEST_SCHEMA_JSON_ENHANCED_USER);
 		JoyceURI rawURI = JoyceURI.createURI(MESSAGE_KEY).orElseThrow();
+		when(schemaMapper.metadataFromSchemaOrElseThrow(any())).thenReturn(schema.getMetadata());
 		when(jsonLogicService.filter(any(), any())).thenReturn(true);
 		when(schemaEngine.process(any(), any(), any()))
 				.thenReturn(objectMapper.valueToTree(Map.of("code", "1337")));
@@ -317,8 +323,9 @@ class ImportServiceTest {
 	}
 
 	/* UTILITY METHODS */
-	private Schema computeSchema(String jsonSchemaName) throws IOException {
-		return objectMapper.readValue(computeResourceAsBytes(jsonSchemaName), Schema.class);
+	private SchemaEntity computeSchema(String jsonSchemaName) throws IOException {
+		InputStream resource = this.computeResourceAsBytes(jsonSchemaName);
+		return objectMapper.readValue(resource, SchemaEntity.class);
 	}
 
 	/* UTILITY METHODS */
@@ -337,12 +344,16 @@ class ImportServiceTest {
 	private List<JsonNode> computeResourceAsNodeList(String path) throws IOException, URISyntaxException {
 		return objectMapper.readValue(
 				this.computeResourceAsBytes(path),
-				new TypeReference<>() {
-				}
+				new TypeReference<>() {}
 		);
 	}
 
-	private InputStream computeResourceAsBytes(String jsonFileName) {
-		return this.getClass().getClassLoader().getResourceAsStream(jsonFileName);
+	private String computeResourceAsString(String path) {
+		InputStream resourceStream = this.computeResourceAsBytes(path);
+		return IOUtils.toString(resourceStream);
+	}
+
+	private InputStream computeResourceAsBytes(String path) {
+		return this.getClass().getClassLoader().getResourceAsStream(path);
 	}
 }

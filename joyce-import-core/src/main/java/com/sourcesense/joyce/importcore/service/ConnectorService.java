@@ -9,7 +9,6 @@ import com.sourcesense.joyce.core.dto.ConnectorOperationStatus;
 import com.sourcesense.joyce.core.dto.SchemaSave;
 import com.sourcesense.joyce.core.enumeration.ConnectorOperation;
 import com.sourcesense.joyce.core.exception.RestException;
-import com.sourcesense.joyce.core.exception.SchemaNotFoundException;
 import com.sourcesense.joyce.core.model.JoyceSchemaMetadata;
 import com.sourcesense.joyce.core.model.JoyceSchemaMetadataExtraConnector;
 import com.sourcesense.joyce.core.model.JoyceURI;
@@ -17,7 +16,6 @@ import com.sourcesense.joyce.core.model.SchemaEntity;
 import com.sourcesense.joyce.core.service.SchemaService;
 import com.sourcesense.joyce.importcore.dto.JoyceSchemaImportMetadataExtra;
 import com.sourcesense.joyce.importcore.exception.ConnectorOperationException;
-import com.sourcesense.joyce.importcore.exception.ImportException;
 import lombok.RequiredArgsConstructor;
 import org.apache.commons.lang3.StringUtils;
 import org.springframework.beans.factory.annotation.Value;
@@ -164,16 +162,9 @@ public class ConnectorService {
 	}
 
 	private SchemaEntity computeSchema(String subtype, String namespace, String name) {
-		JoyceURI.Subtype joyceUriSubtype = JoyceURI.Subtype.get(subtype)
-				.orElseThrow(() -> new ImportException(
-						String.format("Subtype is not valid: '%s'", subtype)
-				));
-
+		JoyceURI.Subtype joyceUriSubtype = JoyceURI.Subtype.getOrElseThrow(subtype);
 		JoyceURI schemaUri = JoyceURI.makeNamespaced(JoyceURI.Type.SCHEMA, joyceUriSubtype, namespace, name);
-		return schemaService.getEntity(schemaUri.toString())
-				.orElseThrow(() -> new SchemaNotFoundException(
-						String.format("Impossible to find schema with uri: '%s'", schemaUri)
-				));
+		return schemaService.getOrElseThrow(schemaUri.toString());
 	}
 
 	private List<JoyceSchemaMetadataExtraConnector> computeSchemaConnectors(SchemaEntity schema) {

@@ -19,12 +19,9 @@ package com.sourcesense.joyce.core.api;
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.JsonNode;
 import com.sourcesense.joyce.core.dto.SchemaInfo;
-import com.sourcesense.joyce.core.dto.Schema;
 import com.sourcesense.joyce.core.dto.SchemaSave;
 import com.sourcesense.joyce.core.dto.SchemaShort;
-import com.sourcesense.joyce.core.exception.InvalidMetadataException;
 import com.sourcesense.joyce.core.model.JoyceSchemaMetadataExtraConnector;
-import com.sourcesense.joyce.core.model.JoyceURI;
 import com.sourcesense.joyce.core.model.SchemaEntity;
 import io.swagger.v3.oas.annotations.media.Content;
 import io.swagger.v3.oas.annotations.responses.ApiResponse;
@@ -80,7 +77,7 @@ public interface SchemaRestApi {
 
 	@GetMapping(value = "/schema/{subtype}/{namespace}/{name}", produces = "application/json; charset=utf-8")
 	@ResponseStatus(code = HttpStatus.OK)
-	Schema getSchema(
+	SchemaEntity getSchema(
 			@PathVariable String subtype,
 			@PathVariable String namespace,
 			@PathVariable String name
@@ -155,11 +152,4 @@ public interface SchemaRestApi {
 			@PathVariable String connector,
 			@PathVariable String task
 	);
-
-	default JoyceURI.Subtype computeSubtype(String subtype) {
-		return JoyceURI.Subtype.get(subtype)
-				.orElseThrow(
-						() -> new InvalidMetadataException("Subtype is not valid: " + subtype)
-				);
-	}
 }

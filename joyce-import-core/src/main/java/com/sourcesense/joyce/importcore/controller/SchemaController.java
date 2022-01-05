@@ -19,10 +19,8 @@ package com.sourcesense.joyce.importcore.controller;
 import com.fasterxml.jackson.databind.JsonNode;
 import com.sourcesense.joyce.core.api.SchemaRestApi;
 import com.sourcesense.joyce.core.dto.ConnectorOperationStatus;
-import com.sourcesense.joyce.core.dto.Schema;
 import com.sourcesense.joyce.core.dto.SchemaInfo;
 import com.sourcesense.joyce.core.dto.SchemaSave;
-import com.sourcesense.joyce.core.exception.SchemaNotFoundException;
 import com.sourcesense.joyce.core.mapper.SchemaMapper;
 import com.sourcesense.joyce.core.model.JoyceSchemaMetadataExtraConnector;
 import com.sourcesense.joyce.core.model.JoyceURI;
@@ -66,18 +64,16 @@ public class SchemaController implements SchemaRestApi {
 			Boolean fullSchema,
 			Boolean rootOnly) {
 
-		JoyceURI.Subtype uriSubtype = this.computeSubtype(subtype);
+		JoyceURI.Subtype uriSubtype = JoyceURI.Subtype.getOrElseThrow(subtype);
 		List<SchemaEntity> schemas = schemaService.findBySubtypeAndNamespace(uriSubtype, namespace, rootOnly);
 		return ResponseEntity.ok(
 				schemaMapper.entitiesToShortIfFullSchema(schemas, fullSchema));
 	}
 
 	@Override
-	public Schema getSchema(String subtype, String namespace, String name) {
-		return schemaService.findByName(this.computeSubtype(subtype), namespace, name)
-				.orElseThrow(
-						() -> new SchemaNotFoundException(String.format("Schema [%s] does not exists", name))
-				);
+	public SchemaEntity getSchema(String subtype, String namespace, String name) {
+		JoyceURI.Subtype uriSubtype = JoyceURI.Subtype.getOrElseThrow(subtype);
+		return schemaService.findByNameOrElseThrow(uriSubtype, namespace, name);
 	}
 
 	@Override
@@ -93,7 +89,8 @@ public class SchemaController implements SchemaRestApi {
 	@Override
 	public SchemaInfo deleteSchema(String subtype, String namespace, String name) {
 		List<ConnectorOperationStatus> connectors = connectorService.deleteConnectors(subtype, namespace, name);
-		schemaService.delete(this.computeSubtype(subtype), namespace,	name);
+		JoyceURI.Subtype uriSubtype = JoyceURI.Subtype.getOrElseThrow(subtype);
+		schemaService.delete(uriSubtype, namespace,	name);
 		return SchemaInfo.builder().connectors(connectors).build();
 	}
 

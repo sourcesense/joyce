@@ -19,7 +19,6 @@ package com.sourcesense.joyce.core.service;
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.sourcesense.joyce.core.dao.SchemaDao;
-import com.sourcesense.joyce.core.dto.Schema;
 import com.sourcesense.joyce.core.dto.SchemaSave;
 import com.sourcesense.joyce.core.exception.SchemaNotFoundException;
 import com.sourcesense.joyce.core.mapper.SchemaMapper;
@@ -29,8 +28,6 @@ import com.sourcesense.joyce.schemaengine.exception.JoyceSchemaEngineException;
 import com.sourcesense.joyce.schemaengine.service.SchemaEngine;
 import lombok.RequiredArgsConstructor;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnProperty;
-import org.springframework.cache.annotation.CacheEvict;
-import org.springframework.cache.annotation.Cacheable;
 import org.springframework.stereotype.Service;
 
 import java.util.List;
@@ -51,7 +48,6 @@ public class SchemaService {
 		return JoyceURI.makeNamespaced(JoyceURI.Type.SCHEMA, subtype, namespace, name);
 	}
 
-	@CacheEvict(cacheNames = "schemas", allEntries = true)
 	public JoyceURI save(SchemaSave schema) {
 		SchemaEntity entity = schemaMapper.toEntity(schema);
 
@@ -97,12 +93,10 @@ public class SchemaService {
 		return uid;
 	}
 
-//	@Cacheable("schemas")
 	public List<SchemaEntity> findAll(Boolean rootOnly) {
 		return schemaDao.getAll(rootOnly);
 	}
 
-	//@Cacheable("schemas")
 	public List<SchemaEntity> findBySubtypeAndNamespace(
 			JoyceURI.Subtype subtype,
 			String namespace,
@@ -115,32 +109,41 @@ public class SchemaService {
 		return schemaDao.getAllByReportsNotEmpty();
 	}
 
-	@Cacheable("schemas")
-	public Optional<Schema> findByName(JoyceURI.Subtype subtype, String namespace, String name) {
-		return schemaDao.get(getSchemaUid(subtype, namespace, name).toString()).map(schemaMapper::toDto);
+	public Optional<SchemaEntity> findByName(JoyceURI.Subtype subtype, String namespace, String name) {
+		String schemaUri = this.getSchemaUid(subtype, namespace, name).toString();
+		return schemaDao.get(schemaUri);
 	}
 
-	@Cacheable("schemas")
-	public Optional<Schema> findById(String schemaId) {
-		return schemaDao.get(schemaId).map(schemaMapper::toDto);
+	public SchemaEntity findByNameOrElseThrow(JoyceURI.Subtype subtype, String namespace, String name) {
+		return this.findByName(subtype, namespace, name)
+				.orElseThrow(
+						() -> new SchemaNotFoundException(
+								String.format("Schema [%s/%s/%s] does not exists", subtype, namespace, name))
+				);
 	}
 
-	@CacheEvict(value = "schemas", allEntries = true)
+	public Optional<SchemaEntity> findById(String schemaId) {
+		return schemaDao.get(schemaId);
+	}
+
 	public void delete(JoyceURI.Subtype subtype, String namespace, String name) {
-		Optional<SchemaEntity> entity = schemaDao.get(getSchemaUid(subtype, namespace, name).toString());
-		if (entity.isEmpty()) {
-			throw new SchemaNotFoundException(String.format("Schema [%s] does not exists", name));
-		}
-		schemaDao.delete(entity.get());
+		String schemaUid = this.getSchemaUid(subtype, namespace, name).toString();
+		SchemaEntity entity = schemaDao.get(schemaUid)
+				.orElseThrow(() -> new SchemaNotFoundException(
+						String.format("Schema [%s] does not exists", name)
+				));
+		schemaDao.delete(entity);
 	}
 
-	@Cacheable("schemas")
-	public Optional<Schema> get(String schemaUid) {
-		return this.getEntity(schemaUid).map(schemaMapper::toDto);
-	}
-
-	public Optional<SchemaEntity> getEntity(String schemaUid) {
+	public Optional<SchemaEntity> get(String schemaUid) {
 		return schemaDao.get(schemaUid);
+	}
+
+	public SchemaEntity getOrElseThrow(String schemaUid) {
+		return schemaDao.get(schemaUid)
+				.orElseThrow(() -> new SchemaNotFoundException(
+						String.format("Impossible to find schema with uri: '%s'", schemaUid)
+				));
 	}
 
 	public List<String> getAllNamespaces() {

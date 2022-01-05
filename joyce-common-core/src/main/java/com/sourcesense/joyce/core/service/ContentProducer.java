@@ -19,12 +19,12 @@ package com.sourcesense.joyce.core.service;
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.databind.node.ObjectNode;
-import com.sourcesense.joyce.core.dto.Schema;
 import com.sourcesense.joyce.core.enumeration.ImportAction;
 import com.sourcesense.joyce.core.enumeration.KafkaCustomHeaders;
 import com.sourcesense.joyce.core.enumeration.NotificationEvent;
 import com.sourcesense.joyce.core.model.JoyceSchemaMetadata;
 import com.sourcesense.joyce.core.model.JoyceURI;
+import com.sourcesense.joyce.core.model.SchemaEntity;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.beans.factory.annotation.Value;
@@ -91,7 +91,7 @@ public class ContentProducer extends KafkaMessageService<JsonNode> {
 	 * @return
 	 */
 	public JoyceURI publishContent(
-			Schema schema,
+			SchemaEntity schema,
 			JoyceURI rawUri,
 			JoyceURI contentUri,
 			JsonNode content,
@@ -112,15 +112,15 @@ public class ContentProducer extends KafkaMessageService<JsonNode> {
 	}
 
 	private ObjectNode computeEnrichedContent(
-			Schema schema,
+			SchemaEntity schema,
 			JoyceURI rawUri,
 			JsonNode content) {
 
 		// Set schema version
 		ObjectNode content_metadata = mapper.createObjectNode();
 		content_metadata.put("schema_uid", schema.getUid());
-		content_metadata.put("schema_name", schema.getName());
-		content_metadata.put("schema_development", schema.getDevelopment());
+		content_metadata.put("schema_name", schema.getMetadata().getName());
+		content_metadata.put("schema_development", schema.getMetadata().getDevelopment());
 		Optional.ofNullable(rawUri).ifPresent(joyceURI -> content_metadata.put("raw_uri", rawUri.toString()));
 
 		ObjectNode enrichedContent = content.deepCopy();

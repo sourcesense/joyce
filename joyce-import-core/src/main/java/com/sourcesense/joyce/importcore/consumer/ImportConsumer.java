@@ -17,11 +17,11 @@
 package com.sourcesense.joyce.importcore.consumer;
 
 import com.fasterxml.jackson.databind.node.ObjectNode;
-import com.sourcesense.joyce.core.dto.Schema;
 import com.sourcesense.joyce.core.enumeration.ImportAction;
 import com.sourcesense.joyce.core.enumeration.KafkaCustomHeaders;
 import com.sourcesense.joyce.core.exception.handler.CustomExceptionHandler;
 import com.sourcesense.joyce.core.model.JoyceURI;
+import com.sourcesense.joyce.core.model.SchemaEntity;
 import com.sourcesense.joyce.importcore.service.ImportService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.kafka.annotation.KafkaListener;
@@ -58,7 +58,7 @@ public class ImportConsumer {
 		try {
 			JoyceURI rawURI = importService.computeRawURI(messageKey, headers);
 			JoyceURI schemaURI = importService.computeValidSchemaUri(messageKey, headers, rawURI);
-			Schema schema = importService.computeSchema(schemaURI, rawURI);
+			SchemaEntity schema = importService.computeSchema(schemaURI, rawURI);
 
 			//TODO: understand how to deal with deletion with kafka connect ingested
 			String action = headers.getOrDefault(KafkaCustomHeaders.MESSAGE_ACTION, ImportAction.INSERT.name());
