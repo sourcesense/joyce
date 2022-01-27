@@ -31,11 +31,6 @@
   <dependencies>
     <dependency>
       <groupId>com.sourcesense.joyce</groupId>
-      <artifactId>joyce-schema-core</artifactId>
-    </dependency>
-
-    <dependency>
-      <groupId>com.sourcesense.joyce</groupId>
       <artifactId>joyce-import-core</artifactId>
     </dependency>
 

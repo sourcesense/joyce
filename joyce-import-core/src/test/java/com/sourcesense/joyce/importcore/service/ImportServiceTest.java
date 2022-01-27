@@ -24,7 +24,7 @@ import com.sourcesense.joyce.core.enumeration.KafkaCustomHeaders;
 import com.sourcesense.joyce.core.exception.InvalidJoyceUriException;
 import com.sourcesense.joyce.core.exception.InvalidMetadataException;
 import com.sourcesense.joyce.core.exception.SchemaNotFoundException;
-import com.sourcesense.joyce.core.mapper.SchemaMapper;
+import com.sourcesense.joyce.core.utililty.SchemaUtils;
 import com.sourcesense.joyce.core.model.JoyceURI;
 import com.sourcesense.joyce.core.model.SchemaEntity;
 import com.sourcesense.joyce.core.producer.ContentProducer;
@@ -61,9 +61,9 @@ class ImportServiceTest {
 
 	// Mocked components
 	@Mock
-	private SchemaMapper schemaMapper;
+	private SchemaUtils schemaUtils;
 	@Mock
-	private SchemaEngine schemaEngine;
+	private SchemaEngine<SchemaEntity> schemaEngine;
 	@Mock
 	private SchemaService schemaService;
 	@Mock
@@ -96,7 +96,7 @@ class ImportServiceTest {
 
 	@BeforeEach
 	void init() {
-		importService = new ImportService(objectMapper, schemaMapper, schemaEngine, schemaService, contentProducer, jsonLogicService, csvMappingService);
+		importService = new ImportService(objectMapper, schemaUtils, schemaService, contentProducer, jsonLogicService, csvMappingService, schemaEngine);
 	}
 
 	/*
@@ -225,7 +225,7 @@ class ImportServiceTest {
 	void shouldThrowSchemaNotFoundExceptionIfMissing() {
 		JoyceURI schemaUri = JoyceURI.createURI(IMPORT_SCHEMA).get();
 
-		when(schemaService.findByNameOrElseThrow(any(), any(), any())).thenThrow(SchemaNotFoundException.class);
+		when(schemaService.getOrElseThrow(any(), any(), any())).thenThrow(SchemaNotFoundException.class);
 
 		assertThrows(
 				SchemaNotFoundException.class,
@@ -239,9 +239,9 @@ class ImportServiceTest {
 		// mocking and stubbing data for test execution
 		SchemaEntity schema = computeSchema(TEST_SCHEMA_JSON_USER);
 		JoyceURI rawURI = JoyceURI.createURI(MESSAGE_KEY).orElseThrow();
-		when(schemaMapper.metadataFromSchemaOrElseThrow(any())).thenReturn(schema.getMetadata());
+		when(schemaUtils.metadataFromSchemaOrElseThrow(any())).thenReturn(schema.getMetadata());
 		when(jsonLogicService.filter(any(), any())).thenReturn(true);
-		when(schemaEngine.process(any(), any(), any()))
+		when(schemaEngine.process(any(SchemaEntity.class), any(), any()))
 				.thenReturn(objectMapper.valueToTree(Map.of("code", "1337")));
 
 		// Subject under test
@@ -257,7 +257,7 @@ class ImportServiceTest {
 		// mocking and stubbing data for test execution
 		SchemaEntity schema = new SchemaEntity();
 
-		when(schemaMapper.metadataFromSchemaOrElseThrow(any())).thenThrow(InvalidMetadataException.class);
+		when(schemaUtils.metadataFromSchemaOrElseThrow(any())).thenThrow(InvalidMetadataException.class);
 
 		// asserts
 		assertThrows(
@@ -271,7 +271,7 @@ class ImportServiceTest {
 		// mocking and stubbing data for test execution
 		SchemaEntity schema = computeSchema(TEST_SCHEMA_JSON_USER);
 		when(jsonLogicService.filter(any(), any())).thenReturn(true);
-		when(schemaEngine.process(any(), any(), any()))
+		when(schemaEngine.process(any(SchemaEntity.class), any(), any()))
 				.thenThrow(InvalidSchemaException.class);
 
 		// asserts
@@ -282,7 +282,7 @@ class ImportServiceTest {
 	void shouldThrowInvalidSchemaExceptionIfSchemaHasParentButParentSchemaIsNotAlreadyPresentInDb() throws IOException {
 		// mocking and stubbing data for test execution
 		SchemaEntity schema = computeSchema(TEST_SCHEMA_JSON_ENHANCED_USER);
-		when(schemaMapper.metadataFromSchemaOrElseThrow(any())).thenReturn(schema.getMetadata());
+		when(schemaUtils.metadataFromSchemaOrElseThrow(any())).thenReturn(schema.getMetadata());
 		when(jsonLogicService.filter(any(), any())).thenReturn(true);
 
 		// asserts
@@ -294,9 +294,9 @@ class ImportServiceTest {
 		// mocking and stubbing data for test execution
 		SchemaEntity schema = computeSchema(TEST_SCHEMA_JSON_ENHANCED_USER);
 		JoyceURI rawURI = JoyceURI.createURI(MESSAGE_KEY).orElseThrow();
-		when(schemaMapper.metadataFromSchemaOrElseThrow(any())).thenReturn(schema.getMetadata());
+		when(schemaUtils.metadataFromSchemaOrElseThrow(any())).thenReturn(schema.getMetadata());
 		when(jsonLogicService.filter(any(), any())).thenReturn(true);
-		when(schemaEngine.process(any(), any(), any()))
+		when(schemaEngine.process(any(SchemaEntity.class), any(), any()))
 				.thenReturn(objectMapper.valueToTree(Map.of("code", "1337")));
 		when(schemaService.get(any()))
 				.thenReturn(Optional.of(computeSchema(TEST_SCHEMA_JSON_USER)));
@@ -341,7 +341,7 @@ class ImportServiceTest {
 		);
 	}
 
-	private List<JsonNode> computeResourceAsNodeList(String path) throws IOException, URISyntaxException {
+	private List<JsonNode> computeResourceAsNodeList(String path) throws IOException {
 		return objectMapper.readValue(
 				this.computeResourceAsBytes(path),
 				new TypeReference<>() {}

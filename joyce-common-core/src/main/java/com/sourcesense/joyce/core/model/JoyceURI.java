@@ -20,6 +20,8 @@ import com.fasterxml.jackson.annotation.JsonProperty;
 import com.fasterxml.jackson.annotation.JsonValue;
 import com.fasterxml.jackson.databind.annotation.JsonDeserialize;
 import com.fasterxml.jackson.databind.annotation.JsonSerialize;
+import com.sourcesense.joyce.core.mapping.deserializer.JoyceURIDeserializer;
+import com.sourcesense.joyce.core.mapping.serializer.JoyceURISerializer;
 import lombok.EqualsAndHashCode;
 import lombok.Getter;
 
@@ -106,12 +108,6 @@ public class JoyceURI {
 		 */
 		@JsonProperty("model")
 		MODEL("model"),
-
-		/**
-		 * Content produced by CSV connector
-		 */
-		@JsonProperty("csv")
-		CSV("csv"),
 
 		/**
 		 * Content produced by fixed content inside a schema

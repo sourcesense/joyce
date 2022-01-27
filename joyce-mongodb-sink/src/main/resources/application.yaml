@@ -28,11 +28,9 @@ joyce:
   notification-service:
     enabled: true
     source: MongodbSink
-  schema-service:
-    enabled: false
-    database: mongodb
   data:
     mongodb:
+      enabled: true
       uri: mongodb://user:password@localhost:27017/joyce
       database: joyce
       metadata-indexes:

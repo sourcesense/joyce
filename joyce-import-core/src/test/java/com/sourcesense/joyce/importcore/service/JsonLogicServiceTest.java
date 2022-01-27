@@ -2,7 +2,7 @@ package com.sourcesense.joyce.importcore.service;
 
 import com.fasterxml.jackson.databind.JsonNode;
 import com.sourcesense.joyce.core.model.JoyceSchemaMetadata;
-import com.sourcesense.joyce.importcore.UtilitySupplier;
+import com.sourcesense.joyce.importcore.test.TestUtility;
 import io.github.jamsesso.jsonlogic.JsonLogic;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.BeforeEach;
@@ -19,14 +19,14 @@ import static org.junit.jupiter.api.Assertions.assertTrue;
 
 @ExtendWith(MockitoExtension.class)
 @MockitoSettings(strictness = Strictness.LENIENT)
-public class JsonLogicServiceTest implements UtilitySupplier {
+public class JsonLogicServiceTest implements TestUtility {
 
 	private JsonLogicService jsonLogicService;
 
 	@BeforeEach
 	public void init() {
 		JsonLogic jsonLogic = new JsonLogic();
-		jsonLogicService = new JsonLogicService(mapper, jsonLogic);
+		jsonLogicService = new JsonLogicService(jsonMapper, jsonLogic);
 	}
 
 	@Test

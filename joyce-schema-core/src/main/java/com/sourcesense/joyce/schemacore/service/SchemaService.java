@@ -16,137 +16,163 @@
 
 package com.sourcesense.joyce.schemacore.service;
 
-import com.fasterxml.jackson.databind.JsonNode;
-import com.fasterxml.jackson.databind.ObjectMapper;
-import com.sourcesense.joyce.schemacore.dao.SchemaDao;
-import com.sourcesense.joyce.schemacore.dto.SchemaSave;
+import com.mongodb.client.DistinctIterable;
+import com.sourcesense.joyce.core.configuration.mongo.MongodbProperties;
 import com.sourcesense.joyce.core.exception.SchemaNotFoundException;
-import com.sourcesense.joyce.core.mapper.SchemaMapper;
 import com.sourcesense.joyce.core.model.JoyceURI;
 import com.sourcesense.joyce.core.model.SchemaEntity;
+import com.sourcesense.joyce.core.producer.SchemaProducer;
+import com.sourcesense.joyce.core.service.SchemaClient;
+import com.sourcesense.joyce.schemacore.mapper.SchemaDtoMapper;
+import com.sourcesense.joyce.schemacore.model.dto.SchemaSave;
+import com.sourcesense.joyce.schemacore.model.entity.SchemaDocument;
+import com.sourcesense.joyce.schemacore.repository.SchemaRepository;
 import com.sourcesense.joyce.schemaengine.exception.JoyceSchemaEngineException;
 import com.sourcesense.joyce.schemaengine.service.SchemaEngine;
 import lombok.RequiredArgsConstructor;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnProperty;
+import org.springframework.context.annotation.Primary;
+import org.springframework.data.mongodb.core.MongoTemplate;
 import org.springframework.stereotype.Service;
 
 import java.util.List;
 import java.util.Optional;
+import java.util.stream.Collectors;
+import java.util.stream.StreamSupport;
 
+@Primary
 @Service
 @RequiredArgsConstructor
-@ConditionalOnProperty(value = "joyce.schema-service.enabled", havingValue = "true")
-public class SchemaService {
+@ConditionalOnProperty(value = "joyce.data.mongodb.enabled", havingValue = "true")
+public class SchemaService implements SchemaClient {
 
-	private final SchemaDao schemaDao;
-	private final SchemaMapper schemaMapper;
-	private final SchemaEngine schemaEngine;
-	private final ObjectMapper objectMapper;
+	private final MongoTemplate mongoTemplate;
+	private final SchemaDtoMapper schemaMapper;
+	private final SchemaProducer schemaProducer;
+	private final SchemaRepository schemaRepository;
+	private final MongodbProperties mongodbProperties;
+	private final SchemaEngine<SchemaEntity> schemaEngine;
 
 
-	private JoyceURI getSchemaUid(JoyceURI.Subtype subtype, String namespace, String name) {
-		return JoyceURI.makeNamespaced(JoyceURI.Type.SCHEMA, subtype, namespace, name);
+	public Optional<SchemaEntity> get(String id) {
+		return schemaRepository.findById(id).map(schemaMapper::entityFromDocument);
+	}
+
+	public Optional<SchemaEntity> get(JoyceURI.Subtype subtype, String namespace, String name) {
+		String schemaUri = this.getSchemaUid(subtype, namespace, name).toString();
+		return this.get(schemaUri);
+	}
+
+	public SchemaEntity getOrElseThrow(String id) {
+		return this.get(id)
+				.orElseThrow(() -> new SchemaNotFoundException(
+						String.format("Schema [%s] doesn not exist", id)
+				));
+	}
+
+	public SchemaEntity getOrElseThrow(JoyceURI.Subtype subtype, String namespace, String name) {
+		return this.get(subtype, namespace, name)
+				.orElseThrow(() -> new SchemaNotFoundException(
+						String.format("Schema [%s/%s/%s] does not exist", subtype, namespace, name))
+				);
+	}
+
+	public List<SchemaEntity> getAll(Boolean rootOnly) {
+		List<SchemaDocument> schemas = rootOnly
+				? schemaRepository.findAllByMetadata_ParentIsNull()
+				: schemaRepository.findAll();
+
+		return schemaMapper.entitiesFromDocuments(schemas);
+	}
+
+	public List<SchemaEntity> getAllBySubtypeAndNamespace(
+			JoyceURI.Subtype subtype,
+			String namespace,
+			Boolean rootOnly) {
+
+		List<SchemaDocument> schemas = rootOnly
+				? schemaRepository.findAllByMetadata_SubtypeAndMetadata_NamespaceAndMetadata_ParentIsNull(subtype, namespace)
+				: schemaRepository.findAllByMetadata_SubtypeAndMetadata_Namespace(subtype, namespace);
+
+		return schemaMapper.entitiesFromDocuments(schemas);
+	}
+
+	public List<SchemaEntity> getAllByReportsIsNotEmpty() {
+		List<SchemaDocument> schemas = schemaRepository.findAllByReportsIsNotEmpty();
+		return schemaMapper.entitiesFromDocuments(schemas);
+	}
+
+	public List<String> getAllNamespaces() {
+		DistinctIterable<String> distinctIterable = mongoTemplate
+				.getCollection(mongodbProperties.getSchemaCollection())
+				.distinct("metadata.namespace", String.class);
+
+		return StreamSupport.stream(distinctIterable.spliterator(), false)
+				.collect(Collectors.toList());
 	}
 
 	public JoyceURI save(SchemaSave schema) {
-		SchemaEntity entity = schemaMapper.toEntity(schema);
+		SchemaEntity schemaEntity = schemaMapper.toEntity(schema);
 
-		JoyceURI uid = getSchemaUid(
-				entity.getMetadata().getSubtype(),
-				entity.getMetadata().getNamespace(),
-				entity.getMetadata().getName()
+		JoyceURI schemaUid = getSchemaUid(
+				schemaEntity.getMetadata().getSubtype(),
+				schemaEntity.getMetadata().getNamespace(),
+				schemaEntity.getMetadata().getName()
 		);
 
-		entity.setUid(uid.toString());
+		schemaEntity.setUid(schemaUid.toString());
 
 		// Validate schema
 		schema.getMetadata().validate();
 
 		// If schema has a parent it must exists
-		if (schema.getMetadata().getParent() != null) {
-			Optional<SchemaEntity> parent = schemaDao.get(schema.getMetadata().getParent().toString());
-			if (parent.isEmpty()) {
-				throw new JoyceSchemaEngineException(String.format("Parent schema [%s] does not exists", schema.getMetadata().getParent()));
+		this.validateParent(schemaEntity);
+
+		// Looking for a previous version of the schema.
+		//	If it exists, we check if there are breaking changes
+		this.validateExisting(schemaEntity);
+
+		SchemaDocument document = schemaMapper.documentFromEntity(schemaEntity);
+		schemaRepository.save(document);
+		schemaProducer.publish(schemaEntity);
+		return schemaUid;
+	}
+
+	public void delete(JoyceURI.Subtype subtype, String namespace, String name) {
+		JoyceURI schemaUid = this.getSchemaUid(subtype, namespace, name);
+		SchemaEntity schemaEntity = this.getOrElseThrow(schemaUid.toString());
+		SchemaDocument document = schemaMapper.documentFromEntity(schemaEntity);
+		schemaRepository.delete(document);
+		schemaProducer.delete(schemaEntity);
+	}
+
+	private JoyceURI getSchemaUid(JoyceURI.Subtype subtype, String namespace, String name) {
+		return JoyceURI.makeNamespaced(JoyceURI.Type.SCHEMA, subtype, namespace, name);
+	}
+
+	private void validateParent(SchemaEntity schemaEntity) {
+		if (schemaEntity.getMetadata().getParent() != null) {
+			Optional<SchemaEntity> parentSchema = this.get(schemaEntity.getMetadata().getParent().toString());
+			if (parentSchema.isEmpty()) {
+				throw new JoyceSchemaEngineException(String.format("Parent schema [%s] does not exists", schemaEntity.getMetadata().getParent()));
 			}
 		}
+	}
 
-		Optional<SchemaEntity> previous = schemaDao.get(uid.toString());
-
-		if (previous.isPresent()) {
+	private void validateExisting(SchemaEntity schemaEntity) {
+		Optional<SchemaEntity> existingSchema = this.get(schemaEntity.getUid());
+		if (existingSchema.isPresent()) {
 			/*
 			 * If schema is in development mode we skip schema checks,
 			 * but we block if previous schema is not in dev mode
 			 */
-			if (entity.getMetadata().getDevelopment() && !previous.get().getMetadata().getDevelopment()) {
+			if (schemaEntity.getMetadata().getDevelopment() && !existingSchema.get().getMetadata().getDevelopment()) {
 				throw new JoyceSchemaEngineException("Previous schema is not in development mode");
 			}
 
-			if (!entity.getMetadata().getDevelopment() && !previous.get().getMetadata().getDevelopment()) {
-				schemaEngine.checkForBreakingChanges(
-						objectMapper.convertValue(previous.get(), JsonNode.class),
-						objectMapper.convertValue(entity, JsonNode.class)
-				);
+			if (!schemaEntity.getMetadata().getDevelopment() && !existingSchema.get().getMetadata().getDevelopment()) {
+				schemaEngine.checkForBreakingChanges(existingSchema.get(), schemaEntity);
 			}
 		}
-
-		schemaDao.save(entity);
-		return uid;
-	}
-
-	public List<SchemaEntity> findAll(Boolean rootOnly) {
-		return schemaDao.getAll(rootOnly);
-	}
-
-	public List<SchemaEntity> findBySubtypeAndNamespace(
-			JoyceURI.Subtype subtype,
-			String namespace,
-			Boolean rootOnly) {
-
-		return schemaDao.getAllBySubtypeAndNamespace(subtype, namespace, rootOnly);
-	}
-
-	public List<SchemaEntity> findByReportsNotEmpty() {
-		return schemaDao.getAllByReportsNotEmpty();
-	}
-
-	public Optional<SchemaEntity> findByName(JoyceURI.Subtype subtype, String namespace, String name) {
-		String schemaUri = this.getSchemaUid(subtype, namespace, name).toString();
-		return schemaDao.get(schemaUri);
-	}
-
-	public SchemaEntity findByNameOrElseThrow(JoyceURI.Subtype subtype, String namespace, String name) {
-		return this.findByName(subtype, namespace, name)
-				.orElseThrow(
-						() -> new SchemaNotFoundException(
-								String.format("Schema [%s/%s/%s] does not exists", subtype, namespace, name))
-				);
-	}
-
-	public Optional<SchemaEntity> findById(String schemaId) {
-		return schemaDao.get(schemaId);
-	}
-
-	public void delete(JoyceURI.Subtype subtype, String namespace, String name) {
-		String schemaUid = this.getSchemaUid(subtype, namespace, name).toString();
-		SchemaEntity entity = schemaDao.get(schemaUid)
-				.orElseThrow(() -> new SchemaNotFoundException(
-						String.format("Schema [%s] does not exists", name)
-				));
-		schemaDao.delete(entity);
-	}
-
-	public Optional<SchemaEntity> get(String schemaUid) {
-		return schemaDao.get(schemaUid);
-	}
-
-	public SchemaEntity getOrElseThrow(String schemaUid) {
-		return schemaDao.get(schemaUid)
-				.orElseThrow(() -> new SchemaNotFoundException(
-						String.format("Impossible to find schema with uri: '%s'", schemaUid)
-				));
-	}
-
-	public List<String> getAllNamespaces() {
-		return schemaDao.getAllNamespaces();
 	}
 }

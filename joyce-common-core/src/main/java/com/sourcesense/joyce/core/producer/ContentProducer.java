@@ -25,10 +25,8 @@ import com.sourcesense.joyce.core.enumeration.NotificationEvent;
 import com.sourcesense.joyce.core.model.JoyceSchemaMetadata;
 import com.sourcesense.joyce.core.model.JoyceURI;
 import com.sourcesense.joyce.core.model.SchemaEntity;
-import com.sourcesense.joyce.core.service.KafkaMessageService;
 import com.sourcesense.joyce.core.service.NotificationService;
 import lombok.extern.slf4j.Slf4j;
-import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnProperty;
 import org.springframework.kafka.core.KafkaTemplate;
@@ -43,34 +41,34 @@ import java.util.Optional;
 @Slf4j
 @ConditionalOnProperty(value = "joyce.kafka.producer.enabled", havingValue = "true")
 @Service
-public class ContentProducer extends KafkaMessageService<JsonNode> {
+public class ContentProducer extends KafkaMessageProducer<JsonNode> {
 
 	private final String contentTopic;
 	private final NotificationService notificationService;
 
 	public ContentProducer(
-			@Qualifier("jsonMapper") ObjectMapper mapper,
-			KafkaTemplate<String, JsonNode> kafkaTemplate,
+			ObjectMapper jsonMapper,
 			NotificationService notificationService,
+			KafkaTemplate<String, JsonNode> kafkaTemplate,
 			@Value("${joyce.kafka.content.topic:joyce_content}") String contentTopic) {
 
-		super(mapper, kafkaTemplate);
-		this.notificationService = notificationService;
+		super(jsonMapper, kafkaTemplate);
 		this.contentTopic = contentTopic;
+		this.notificationService = notificationService;
 	}
 
-	public JoyceURI removeContent(JoyceURI rawUri, JoyceSchemaMetadata metadata) {
+	public JoyceURI remove(JoyceURI rawUri, JoyceSchemaMetadata metadata) {
 		return this.sendRemovalMessage(rawUri, rawUri, metadata);
 	}
 
-	public JoyceURI removeContent(JoyceURI rawUri, JoyceURI contentUri, JoyceSchemaMetadata metadata) {
+	public JoyceURI remove(JoyceURI rawUri, JoyceURI contentUri, JoyceSchemaMetadata metadata) {
 		return this.sendRemovalMessage(rawUri, contentUri, metadata);
 	}
 
 	public JoyceURI sendRemovalMessage(JoyceURI rawUri, JoyceURI contentUri, JoyceSchemaMetadata metadata) {
 
 		MessageBuilder<JsonNode> message = MessageBuilder
-				.withPayload((JsonNode) mapper.createObjectNode())
+				.withPayload((JsonNode) jsonMapper.createObjectNode())
 				.setHeader(KafkaHeaders.TOPIC, contentTopic)
 				.setHeader(KafkaHeaders.MESSAGE_KEY, contentUri.toString())
 				.setHeader(KafkaCustomHeaders.MESSAGE_ACTION, ImportAction.DELETE.toString())
@@ -92,7 +90,7 @@ public class ContentProducer extends KafkaMessageService<JsonNode> {
 	 * @param metadata
 	 * @return
 	 */
-	public JoyceURI publishContent(
+	public JoyceURI publish(
 			SchemaEntity schema,
 			JoyceURI rawUri,
 			JoyceURI contentUri,
@@ -119,7 +117,7 @@ public class ContentProducer extends KafkaMessageService<JsonNode> {
 			JsonNode content) {
 
 		// Set schema version
-		ObjectNode content_metadata = mapper.createObjectNode();
+		ObjectNode content_metadata = jsonMapper.createObjectNode();
 		content_metadata.put("schema_uid", schema.getUid());
 		content_metadata.put("schema_name", schema.getMetadata().getName());
 		content_metadata.put("schema_development", schema.getMetadata().getDevelopment());
@@ -139,22 +137,6 @@ public class ContentProducer extends KafkaMessageService<JsonNode> {
 			message.setHeader(KafkaCustomHeaders.PARENT, metadata.getParent().toString());
 		}
 	}
-
-	/**
-	 * //	 * Publish Schema on main log topic
-	 * //	 *
-	 * //	 * @param schema
-	 * //
-	 */
-//	public void publishSchema(Schema schema) {
-//		MessageBuilder<JsonNode> message = MessageBuilder
-//				.withPayload(schema.getSchema())
-//				.setHeader(KafkaHeaders.TOPIC, contentTopic)
-//				.setHeader(KafkaHeaders.MESSAGE_KEY, schema.getUid())
-//				.setHeader(KafkaCustomHeaders.MESSAGE_ACTION, ImportAction.INSERT.toString());
-//
-//		this.sendMessage(schema.getUid(), schema.getUid(), message.build());
-//	}
 
 	@Override
 	public void handleMessageSuccess(

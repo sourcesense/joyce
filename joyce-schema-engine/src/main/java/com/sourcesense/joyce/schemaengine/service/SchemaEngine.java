@@ -36,8 +36,7 @@ import java.util.stream.Collectors;
 import java.util.stream.StreamSupport;
 
 @Service
-@ConditionalOnMissingBean(SchemaEngine.class)
-public class SchemaEngine {
+public class SchemaEngine<T> {
 
 	public static final String METADATA = "$metadata";
 
@@ -47,7 +46,7 @@ public class SchemaEngine {
 	protected JsonSchemaFactory factory;
 
 	public SchemaEngine(
-			@Qualifier("jsonMapper") ObjectMapper jsonMapper,
+			ObjectMapper jsonMapper,
 			@Qualifier("transformerHandlers") Map<String, SchemaTransformerHandler> transformerHandlers) {
 
 		this.jsonMapper = jsonMapper;
@@ -108,6 +107,11 @@ public class SchemaEngine {
 		return process(schemaJsonNode, sourceJsonNode, null);
 	}
 
+	public JsonNode process(T schema, JsonNode source, Object context) {
+		JsonNode jsonSchema = jsonMapper.valueToTree(schema);
+		return this.process(jsonSchema, source, context);
+	}
+
 	/**
 	 * Create a new json described by the json-schema provided, with sourceJson as input for the transformation
 	 *
@@ -125,6 +129,11 @@ public class SchemaEngine {
 		return result;
 	}
 
+	public void validate(T schema, JsonNode content) {
+		JsonNode jsonSchema = jsonMapper.valueToTree(schema);
+		this.validate(jsonSchema, content);
+	}
+
 	/**
 	 * Validate a document against a json schema
 	 * throws if it is not valid
@@ -138,6 +147,13 @@ public class SchemaEngine {
 		if (validation.getValidationMessages().size() > 0) {
 			throw new InvalidSchemaException(validation);
 		}
+	}
+
+	public void checkForBreakingChanges(T existingSchema, T actualSchema) {
+		this.checkForBreakingChanges(
+				jsonMapper.valueToTree(existingSchema),
+				jsonMapper.valueToTree(actualSchema)
+		);
 	}
 
 	/**

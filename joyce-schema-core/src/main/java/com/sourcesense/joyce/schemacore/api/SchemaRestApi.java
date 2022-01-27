@@ -18,9 +18,9 @@ package com.sourcesense.joyce.schemacore.api;
 
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.JsonNode;
-import com.sourcesense.joyce.schemacore.dto.SchemaInfo;
-import com.sourcesense.joyce.schemacore.dto.SchemaSave;
-import com.sourcesense.joyce.schemacore.dto.SchemaShort;
+import com.sourcesense.joyce.schemacore.model.dto.SchemaInfo;
+import com.sourcesense.joyce.schemacore.model.dto.SchemaSave;
+import com.sourcesense.joyce.schemacore.model.dto.SchemaShort;
 import com.sourcesense.joyce.core.model.JoyceSchemaMetadataExtraConnector;
 import com.sourcesense.joyce.core.model.SchemaEntity;
 import io.swagger.v3.oas.annotations.media.Content;

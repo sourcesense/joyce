@@ -1,0 +1,24 @@
+syntax = "proto3";
+
+option java_multiple_files = true;
+option java_outer_classname = "SchemaProto";
+option java_package = "com.sourcesense.joyce.protobuf.model";
+
+import "google/protobuf/struct.proto";
+import "model/schema_metadata.proto";
+
+message Schema {
+  string uid = 1;
+  string schema = 2;
+  SchemaMetadata metadata = 3;
+  string type = 4;
+  repeated string required = 5;
+  string properties = 6;
+}
+
+message OptionalSchema {
+  oneof kind {
+    Schema schema = 1;
+    google.protobuf.NullValue null = 2;
+  }
+}

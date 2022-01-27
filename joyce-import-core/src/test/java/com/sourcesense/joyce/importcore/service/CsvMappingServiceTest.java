@@ -5,7 +5,7 @@ import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.dataformat.csv.CsvMapper;
 import com.sourcesense.joyce.core.service.CsvMappingService;
-import com.sourcesense.joyce.importcore.UtilitySupplier;
+import com.sourcesense.joyce.importcore.test.TestUtility;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.springframework.mock.web.MockMultipartFile;
@@ -18,7 +18,7 @@ import java.util.List;
 import static org.assertj.core.api.Assertions.assertThat;
 
 
-public class CsvMappingServiceTest implements UtilitySupplier {
+public class CsvMappingServiceTest implements TestUtility {
 
 	private ObjectMapper objectMapper;
 	private CsvMappingService csvMappingService;

@@ -3,24 +3,24 @@ package com.sourcesense.joyce.importcore.service;
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.core.type.TypeReference;
 import com.fasterxml.jackson.databind.JsonNode;
-import com.sourcesense.joyce.schemacore.dao.SchemaDao;
 import com.sourcesense.joyce.core.dto.ConnectorOperationStatus;
-import com.sourcesense.joyce.schemacore.dto.SchemaSave;
 import com.sourcesense.joyce.core.exception.RestException;
 import com.sourcesense.joyce.core.exception.SchemaNotFoundException;
 import com.sourcesense.joyce.core.model.JoyceSchemaMetadataExtraConnector;
 import com.sourcesense.joyce.core.model.JoyceURI;
 import com.sourcesense.joyce.core.model.SchemaEntity;
+import com.sourcesense.joyce.importcore.test.TestUtility;
+import com.sourcesense.joyce.schemacore.model.dto.SchemaSave;
 import com.sourcesense.joyce.schemacore.service.SchemaService;
-import com.sourcesense.joyce.importcore.UtilitySupplier;
+import org.apache.commons.lang3.StringUtils;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.junit.jupiter.api.function.Executable;
+import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
 import org.mockito.junit.jupiter.MockitoSettings;
 import org.mockito.quality.Strictness;
-import org.python.netty.util.internal.StringUtil;
 import org.springframework.http.HttpHeaders;
 import org.springframework.http.HttpMethod;
 import org.springframework.http.HttpStatus;
@@ -33,21 +33,18 @@ import org.springframework.test.web.client.ResponseCreator;
 import org.springframework.web.client.RestTemplate;
 
 import java.io.IOException;
-import java.lang.reflect.Field;
 import java.net.URISyntaxException;
 import java.util.Collections;
 import java.util.List;
 import java.util.Objects;
-import java.util.Optional;
 
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.junit.jupiter.api.Assertions.*;
-import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.when;
 
 @ExtendWith(MockitoExtension.class)
 @MockitoSettings(strictness = Strictness.LENIENT)
-public class ConnectorServiceTest implements UtilitySupplier {
+public class ConnectorServiceTest implements TestUtility {
 
 	private static final String KAFKA_CONNECT_HOST = "test:6682";
 	private static final String SUBTYPE = "import";
@@ -58,33 +55,25 @@ public class ConnectorServiceTest implements UtilitySupplier {
 	private static final String NAMESPACED_CONNECTOR = computeNamespacedConnector();
 	private static final String JOYCE_SCHEMA_URI = computeSchemaUri();
 
+	@Mock
+	private SchemaService schemaService;
 	private MockRestServiceServer mockServer;
-	private SchemaDao schemaDao;
 	private ConnectorService connectorService;
 
 	@BeforeEach
-	public void init() throws NoSuchFieldException, IllegalAccessException {
-		schemaDao = mock(SchemaDao.class);
-		SchemaService schemaService = new SchemaService(schemaDao, null, null, null);
-
+	public void init() {
 		RestTemplate restTemplate = new RestTemplate();
 		mockServer = MockRestServiceServer.createServer(restTemplate);
-
-		connectorService = new ConnectorService(mapper, restTemplate, schemaService);
-
-		Field restEndpoint = connectorService.getClass().getDeclaredField("kafkaConnectHost");
-		restEndpoint.setAccessible(true);
-		restEndpoint.set(connectorService, KAFKA_CONNECT_HOST);
+		connectorService = new ConnectorService(jsonMapper, restTemplate, schemaService,  KAFKA_CONNECT_HOST);
 	}
 
 	@Test
 	void shouldGetConnectors() throws IOException, URISyntaxException {
 		SchemaEntity schema = this.computeResourceAsObject("schema/save/01.json", SchemaEntity.class);
-		when(schemaDao.get(JOYCE_SCHEMA_URI)).thenReturn(Optional.of(schema));
+		when(schemaService.getOrElseThrow(JOYCE_SCHEMA_URI)).thenReturn(schema);
 
 		List<JoyceSchemaMetadataExtraConnector> actual = connectorService.getConnectors(SUBTYPE, NAMESPACE, NAME);
-		List<JoyceSchemaMetadataExtraConnector> expected = this.computeResourceAsObject("connector/saved/01.json", new TypeReference<>() {
-		});
+		List<JoyceSchemaMetadataExtraConnector> expected = this.computeResourceAsObject("connector/saved/01.json", new TypeReference<>() {});
 
 		assertThat(expected).hasSameElementsAs(actual);
 	}
@@ -92,8 +81,8 @@ public class ConnectorServiceTest implements UtilitySupplier {
 	@Test
 	void shouldGetConnectorStatus() throws JsonProcessingException {
 		String endpoint = this.computeEndpoint(ConnectorEndpoint.CONNECTOR_STATUS);
-		JsonNode expected = mapper.createObjectNode().put("status", "OK");
-		byte[] responseBody = mapper.writeValueAsBytes(expected);
+		JsonNode expected = jsonMapper.createObjectNode().put("status", "OK");
+		byte[] responseBody = jsonMapper.writeValueAsBytes(expected);
 		this.mockRestCall(endpoint, null, responseBody, HttpMethod.GET, HttpStatus.OK);
 		JsonNode actual = connectorService.getConnectorStatus(NAMESPACE, NAME, CONNECTOR);
 		assertEquals(expected, actual);
@@ -172,7 +161,7 @@ public class ConnectorServiceTest implements UtilitySupplier {
 		String operationEndpoint = this.computeEndpoint(ConnectorEndpoint.CONNECTOR);
 
 		SchemaEntity schema = this.computeResourceAsObject("schema/existing/04.json", SchemaEntity.class);
-		when(schemaDao.get(JOYCE_SCHEMA_URI)).thenReturn(Optional.of(schema));
+		when(schemaService.getOrElseThrow(JOYCE_SCHEMA_URI)).thenReturn(schema);
 
 		String connectorConfig = this.computeResourceAsString("connector/save/04.json");
 		this.mockRestCall(operationEndpoint, connectorConfig, new byte[0], HttpMethod.DELETE, HttpStatus.NO_CONTENT);
@@ -193,7 +182,7 @@ public class ConnectorServiceTest implements UtilitySupplier {
 
 	@Test
 	void shouldThrowSchemaNotFoundExceptionWhenMissingSchema() {
-		when(schemaDao.get(JOYCE_SCHEMA_URI)).thenReturn(Optional.empty());
+		when(schemaService.getOrElseThrow(JOYCE_SCHEMA_URI)).thenThrow(SchemaNotFoundException.class);
 		assertThrows(
 				SchemaNotFoundException.class,
 				() -> connectorService.getConnectors(SUBTYPE, NAMESPACE, NAME)
@@ -298,8 +287,8 @@ public class ConnectorServiceTest implements UtilitySupplier {
 			assertEquals(request.getMethod(), method);
 			if (Objects.nonNull(requestBody)) {
 				assertEquals(
-						mapper.readTree(requestBody),
-						mapper.readTree(request.getBody().toString())
+						jsonMapper.readTree(requestBody),
+						jsonMapper.readTree(request.getBody().toString())
 				);
 			}
 		};
@@ -332,7 +321,7 @@ public class ConnectorServiceTest implements UtilitySupplier {
 			case RESTART_CONNECTOR_TASK:
 				return String.format("http://%s/connectors/%s/tasks/%s/restart", KAFKA_CONNECT_HOST, NAMESPACED_CONNECTOR, TASK_ID);
 			default:
-				return StringUtil.EMPTY_STRING;
+				return StringUtils.EMPTY;
 		}
 	}
 

@@ -2,7 +2,7 @@ package com.sourcesense.joyce.schemaengine.handler;
 
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
-import com.sourcesense.joyce.schemaengine.utility.UtilitySupplier;
+import com.sourcesense.joyce.schemaengine.test.TestUtility;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
@@ -20,7 +20,7 @@ import static org.mockito.Mockito.mock;
 
 @ExtendWith(MockitoExtension.class)
 @MockitoSettings(strictness = Strictness.LENIENT)
-public class ScriptingTransformerHandlerTest implements UtilitySupplier {
+public class ScriptingTransformerHandlerTest implements TestUtility {
 
 	private ScriptingTransformerHandler scriptingTransformerHandler;
 
