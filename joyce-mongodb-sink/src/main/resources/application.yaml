@@ -11,8 +11,8 @@ opentracing:
       port:  6831
 joyce:
   kafka:
-    import:
-      topic: joyce_import
+    schema:
+      topic: joyce_schema
     content:
       topic: joyce_content
       cleanup: compact
@@ -28,11 +28,9 @@ joyce:
   notification-service:
     enabled: true
     source: MongodbSink
-  schema-service:
-    enabled: false
-    database: mongodb
   data:
     mongodb:
+      enabled: true
       uri: mongodb://user:password@localhost:27017/joyce
       database: joyce
       metadata-indexes:

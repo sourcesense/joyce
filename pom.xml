@@ -8,6 +8,7 @@
     <version>2.5.6</version>
     <relativePath/> <!-- lookup parent from repository -->
   </parent>
+
   <groupId>com.sourcesense.joyce</groupId>
   <artifactId>joyce-parent</artifactId>
   <version>${revision}</version>
@@ -17,8 +18,10 @@
   <description>Joyce Parent Project</description>
 
   <modules>
+    <module>joyce-protobuf</module>
     <module>joyce-schema-engine</module>
     <module>joyce-common-core</module>
+    <module>joyce-schema-core</module>
     <module>joyce-import-core</module>
     <module>joyce-import-gateway</module>
     <module>joyce-mongodb-sink</module>
@@ -35,9 +38,9 @@
     <sonar.java.coveragePlugin>jacoco</sonar.java.coveragePlugin>
     <sonar.dynamicAnalysis>reuseReports</sonar.dynamicAnalysis>
     <sonar.language>java</sonar.language>
+
     <org.mapstruct.version>1.4.1.Final</org.mapstruct.version>
     <org.springdoc.version>1.5.5</org.springdoc.version>
-    <ksqldb.version>0.17.0</ksqldb.version>
     <com.jayway.jsonpath.version>2.5.0</com.jayway.jsonpath.version>
     <com.networknt.version>1.0.50</com.networknt.version>
     <commons-codec.version>1.11</commons-codec.version>
@@ -49,6 +52,12 @@
     <com.github.spullara.mustache.version>0.9.7</com.github.spullara.mustache.version>
     <jacoco.version>0.8.7</jacoco.version>
     <io.opentracing.contrib.jaeger>3.3.1</io.opentracing.contrib.jaeger>
+    <grpc.version>1.43.2</grpc.version>
+    <protobuf.version>3.14.0</protobuf.version>
+    <protobuf-plugin.version>0.6.1</protobuf-plugin.version>
+    <net.devh.version>2.13.1.RELEASE</net.devh.version>
+    <kr.motd.maven.version>1.6.2</kr.motd.maven.version>
+    <org.xolstice.maven.plugins.version>0.6.1</org.xolstice.maven.plugins.version>
   </properties>
 
   <organization>
@@ -75,11 +84,6 @@
 
   <repositories>
     <repository>
-      <id>ksqlDB</id>
-      <name>ksqlDB</name>
-      <url>https://ksqldb-maven.s3.amazonaws.com/maven/</url>
-    </repository>
-    <repository>
       <id>confluent</id>
       <name>Confluent</name>
       <url>https://jenkins-confluent-packages-beta-maven.s3.amazonaws.com/6.2.0-beta210310224144-cp8/1/maven/</url>
@@ -90,7 +94,19 @@
     <dependencies>
       <dependency>
         <groupId>com.sourcesense.joyce</groupId>
+        <artifactId>joyce-protobuf</artifactId>
+        <version>${revision}</version>
+      </dependency>
+
+      <dependency>
+        <groupId>com.sourcesense.joyce</groupId>
         <artifactId>joyce-common-core</artifactId>
+        <version>${revision}</version>
+      </dependency>
+
+      <dependency>
+        <groupId>com.sourcesense.joyce</groupId>
+        <artifactId>joyce-schema-core</artifactId>
         <version>${revision}</version>
       </dependency>
 
@@ -116,22 +132,6 @@
         <groupId>org.springdoc</groupId>
         <artifactId>springdoc-openapi-ui</artifactId>
         <version>${org.springdoc.version}</version>
-      </dependency>
-
-      <dependency>
-        <groupId>io.confluent.ksql</groupId>
-        <artifactId>ksqldb-api-client</artifactId>
-        <version>${ksqldb.version}</version>
-        <exclusions>
-          <exclusion>
-            <groupId>org.slf4j</groupId>
-            <artifactId>slf4j-api</artifactId>
-          </exclusion>
-          <exclusion>
-            <groupId>org.slf4j</groupId>
-            <artifactId>slf4j-log4j12</artifactId>
-          </exclusion>
-        </exclusions>
       </dependency>
 
       <dependency>
@@ -230,6 +230,7 @@
         <version>1.6.0</version>
       </dependency>
 
+      <!-- Scripting dependencies -->
       <dependency>
         <groupId>org.python</groupId>
         <artifactId>jython-standalone</artifactId>
@@ -264,6 +265,44 @@
         <groupId>org.codehaus.groovy</groupId>
         <artifactId>groovy-json</artifactId>
         <version>3.0.8</version>
+      </dependency>
+
+      <!-- Grpc and Protobuf dependencies -->
+      <dependency>
+        <groupId>net.devh</groupId>
+        <artifactId>grpc-server-spring-boot-starter</artifactId>
+        <version>${net.devh.version}</version>
+      </dependency>
+
+      <dependency>
+        <groupId>net.devh</groupId>
+        <artifactId>grpc-client-spring-boot-starter</artifactId>
+        <version>${net.devh.version}</version>
+      </dependency>
+
+      <dependency>
+        <groupId>net.devh</groupId>
+        <artifactId>grpc-client-spring-boot-autoconfigure</artifactId>
+        <version>${net.devh.version}</version>
+        <type>pom</type>
+      </dependency>
+
+      <dependency>
+        <groupId>io.grpc</groupId>
+        <artifactId>grpc-api</artifactId>
+        <version>${grpc.version}</version>
+      </dependency>
+
+      <dependency>
+        <groupId>io.grpc</groupId>
+        <artifactId>grpc-protobuf</artifactId>
+        <version>${grpc.version}</version>
+      </dependency>
+
+      <dependency>
+        <groupId>io.grpc</groupId>
+        <artifactId>grpc-stub</artifactId>
+        <version>${grpc.version}</version>
       </dependency>
     </dependencies>
   </dependencyManagement>
@@ -311,5 +350,4 @@
       </plugin>
     </plugins>
   </build>
-
 </project>

@@ -12,10 +12,10 @@ import java.util.stream.Collectors;
 public class PythonScriptingService extends ScriptingService {
 
 	public PythonScriptingService(
-			@Qualifier("permissiveJsonMapper") ObjectMapper mapper,
+			ObjectMapper jsonMapper,
 			PyScriptEngine scriptEngine) {
 
-		super(mapper, scriptEngine);
+		super(jsonMapper, scriptEngine);
 	}
 
 	@Override

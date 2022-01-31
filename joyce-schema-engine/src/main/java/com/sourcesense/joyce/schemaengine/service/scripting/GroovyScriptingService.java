@@ -9,10 +9,10 @@ import org.springframework.stereotype.Service;
 public class GroovyScriptingService extends ScriptingService {
 
 	public GroovyScriptingService(
-			@Qualifier("permissiveJsonMapper") ObjectMapper mapper,
+			ObjectMapper jsonMapper,
 			GroovyScriptEngineImpl scriptEngine) {
 
-		super(mapper, scriptEngine);
+		super(jsonMapper, scriptEngine);
 	}
 
 	@Override

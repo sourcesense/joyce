@@ -6,19 +6,16 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.databind.node.JsonNodeFactory;
 import com.fasterxml.jackson.databind.node.ObjectNode;
 import com.sourcesense.joyce.core.dto.ConnectorOperationStatus;
-import com.sourcesense.joyce.core.dto.SchemaSave;
 import com.sourcesense.joyce.core.enumeration.ConnectorOperation;
 import com.sourcesense.joyce.core.exception.RestException;
-import com.sourcesense.joyce.core.exception.SchemaNotFoundException;
 import com.sourcesense.joyce.core.model.JoyceSchemaMetadata;
 import com.sourcesense.joyce.core.model.JoyceSchemaMetadataExtraConnector;
 import com.sourcesense.joyce.core.model.JoyceURI;
 import com.sourcesense.joyce.core.model.SchemaEntity;
-import com.sourcesense.joyce.core.service.SchemaService;
 import com.sourcesense.joyce.importcore.dto.JoyceSchemaImportMetadataExtra;
 import com.sourcesense.joyce.importcore.exception.ConnectorOperationException;
-import com.sourcesense.joyce.importcore.exception.ImportException;
-import lombok.RequiredArgsConstructor;
+import com.sourcesense.joyce.schemacore.model.dto.SchemaSave;
+import com.sourcesense.joyce.schemacore.service.SchemaService;
 import org.apache.commons.lang3.StringUtils;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.http.HttpEntity;
@@ -37,26 +34,35 @@ import java.util.stream.Stream;
 import static com.sourcesense.joyce.core.model.JoyceURI.NAMESPACE_SEPARATOR;
 
 @Service
-@RequiredArgsConstructor
 public class ConnectorService {
 
 	private final static String NAME = "name";
 	private final static String TOPIC = "topic";
 	private final static String CONFIG = "config";
 	private final static String JOYCE_KEY = "joyceKey";
+
 	private final static String TRANSFORMS = "transforms";
 	private final static String TRANSFORMS_JOYCE_KEY_UID = "transforms.joyceKey.uid";
 	private final static String TRANSFORMS_JOYCE_KEY_SOURCE = "transforms.joyceKey.source";
 	private final static String TRANSFORMS_JOYCE_KEY_SCHEMA = "transforms.joyceKey.schema";
 	private final static String TRANSFORMS_JOYCE_KEY_TYPE = "transforms.joyceKey.type";
 
-	@Value("${joyce.connector-service.kafka-connect-host}")
-	private String kafkaConnectHost;
-
-	private final ObjectMapper mapper;
+	private final String kafkaConnectHost;
+	private final ObjectMapper jsonMapper;
 	private final RestTemplate restTemplate;
 	private final SchemaService schemaService;
 
+	public ConnectorService(
+			ObjectMapper jsonMapper,
+			RestTemplate restTemplate,
+			SchemaService schemaService,
+			@Value("${joyce.connector-service.kafka-connect-host}") String kafkaConnectHost) {
+
+		this.jsonMapper = jsonMapper;
+		this.restTemplate = restTemplate;
+		this.schemaService = schemaService;
+		this.kafkaConnectHost = kafkaConnectHost;
+	}
 
 	public List<JoyceSchemaMetadataExtraConnector> getConnectors(
 			String subtype,
@@ -146,7 +152,7 @@ public class ConnectorService {
 	private Map<String, JoyceSchemaMetadataExtraConnector> computeNewConnectors(JoyceSchemaMetadata metadata) {
 		return Optional.of(metadata)
 				.map(JoyceSchemaMetadata::getExtra)
-				.map(extra -> mapper.convertValue(extra, JoyceSchemaImportMetadataExtra.class))
+				.map(extra -> jsonMapper.convertValue(extra, JoyceSchemaImportMetadataExtra.class))
 				.map(JoyceSchemaImportMetadataExtra::getConnectors)
 				.orElse(new ArrayList<>()).stream()
 				.collect(Collectors.toMap(
@@ -164,23 +170,16 @@ public class ConnectorService {
 	}
 
 	private SchemaEntity computeSchema(String subtype, String namespace, String name) {
-		JoyceURI.Subtype joyceUriSubtype = JoyceURI.Subtype.get(subtype)
-				.orElseThrow(() -> new ImportException(
-						String.format("Subtype is not valid: '%s'", subtype)
-				));
-
+		JoyceURI.Subtype joyceUriSubtype = JoyceURI.Subtype.getOrElseThrow(subtype);
 		JoyceURI schemaUri = JoyceURI.makeNamespaced(JoyceURI.Type.SCHEMA, joyceUriSubtype, namespace, name);
-		return schemaService.getEntity(schemaUri.toString())
-				.orElseThrow(() -> new SchemaNotFoundException(
-						String.format("Impossible to find schema with uri: '%s'", schemaUri)
-				));
+		return schemaService.getOrElseThrow(schemaUri.toString());
 	}
 
 	private List<JoyceSchemaMetadataExtraConnector> computeSchemaConnectors(SchemaEntity schema) {
 		return Optional.ofNullable(schema)
 				.map(SchemaEntity::getMetadata)
 				.map(JoyceSchemaMetadata::getExtra)
-				.map(extra -> mapper.convertValue(extra, JoyceSchemaImportMetadataExtra.class))
+				.map(extra -> jsonMapper.convertValue(extra, JoyceSchemaImportMetadataExtra.class))
 				.map(JoyceSchemaImportMetadataExtra::getConnectors)
 				.orElse(new ArrayList<>());
 	}
@@ -210,7 +209,7 @@ public class ConnectorService {
 
 				} else if (exists) {
 					String endpoint = this.computeConnectorsEndpoint(connectorName);
-					JsonNode emptyBody = mapper.createObjectNode();
+					JsonNode emptyBody = jsonMapper.createObjectNode();
 					this.executeConnectorOperation(endpoint, connectorName, emptyBody, statusList, ConnectorOperation.DELETE);
 				}
 			} catch (ConnectorOperationException exception) {
@@ -236,7 +235,7 @@ public class ConnectorService {
 				.forEach(connectorName -> this.executeConnectorOperation(
 						this.computeConnectorsEndpoint(connectorName),
 						connectorName,
-						mapper.createObjectNode(),
+						jsonMapper.createObjectNode(),
 						statusList,
 						ConnectorOperation.DELETE
 				));
@@ -248,7 +247,7 @@ public class ConnectorService {
 			JoyceSchemaMetadata metadata,
 			JoyceSchemaMetadataExtraConnector connector) {
 
-		ObjectNode createBody = mapper.createObjectNode();
+		ObjectNode createBody = jsonMapper.createObjectNode();
 		JsonNode config = this.computeEnrichedConnectorConfig(connectorName, metadata, connector, ConnectorOperation.CREATE);
 		createBody.put(NAME, connectorName);
 		createBody.putPOJO(CONFIG, config);
@@ -331,7 +330,7 @@ public class ConnectorService {
 			HttpMethod method,
 			HttpStatus requiredStatus) {
 
-		return mapper.convertValue(
+		return jsonMapper.convertValue(
 				this.executeRest(endpoint, method, requiredStatus),
 				new TypeReference<>() {}
 		);
@@ -342,7 +341,7 @@ public class ConnectorService {
 			HttpMethod method,
 			HttpStatus requiredStatus) {
 
-		JsonNode emptyBody = mapper.createObjectNode();
+		JsonNode emptyBody = jsonMapper.createObjectNode();
 		ResponseEntity<JsonNode> response = this.executeRest(endpoint, emptyBody, method);
 		if (!requiredStatus.equals(response.getStatusCode())) {
 			throw new RestException(endpoint, response);
@@ -367,7 +366,7 @@ public class ConnectorService {
 
 	private JsonNode computeResponseBody(byte[] responseBody) {
 		try {
-			return mapper.readTree(responseBody);
+			return jsonMapper.readTree(responseBody);
 
 		} catch (Exception exception) {
 			return JsonNodeFactory.instance.textNode("Impossible to read response body.");

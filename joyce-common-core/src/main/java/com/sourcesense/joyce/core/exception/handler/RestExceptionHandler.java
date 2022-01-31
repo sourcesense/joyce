@@ -15,12 +15,7 @@ import org.springframework.web.context.request.WebRequest;
 
 
 @RequiredArgsConstructor
-@ControllerAdvice(basePackages = {
-		"com.sourcesense.joyce.core",
-		"com.sourcesense.joyce.connectorcore",
-		"com.sourcesense.joyce.connector",
-		"com.sourcesense.joyce.importcore",
-})
+@ControllerAdvice(basePackages = "com.sourcesense.joyce")
 public class RestExceptionHandler {
 
 	private final CustomExceptionHandler exceptionHandler;
@@ -69,31 +64,18 @@ public class RestExceptionHandler {
 
 	@ResponseBody
 	@ResponseStatus(HttpStatus.INTERNAL_SERVER_ERROR)
-	@ExceptionHandler(MappingValidationException.class)
-	ApiError mappingValidationException(MappingValidationException exception) {
-		return this.logExceptionAndComputeErrorResponse(exception);
-	}
-
-	@ResponseBody
-	@ResponseStatus(HttpStatus.NOT_FOUND)
-	@ExceptionHandler(DataInfoNotFoundException.class)
-	ApiError dataInfoNotFoundException(DataInfoNotFoundException exception) {
-		return this.logExceptionAndComputeErrorResponse(exception);
-	}
-
-	@ResponseBody
-	@ResponseStatus(HttpStatus.INTERNAL_SERVER_ERROR)
 	@ExceptionHandler(ProcessingException.class)
-	ApiError processingException(ProcessingException exception) {
+	ApiError handler(ProcessingException exception) {
 		return this.logExceptionAndComputeErrorResponse(exception);
 	}
 
 	@ResponseBody
 	@ResponseStatus(HttpStatus.INTERNAL_SERVER_ERROR)
 	@ExceptionHandler(Exception.class)
-	ApiError exception(Exception exception) {
+	ApiError handler(Exception exception) {
 		return this.logExceptionAndComputeErrorResponse(exception);
 	}
+
 
 	private ApiError logExceptionAndComputeErrorResponse(Exception exception) {
 		exceptionHandler.handleException(exception);

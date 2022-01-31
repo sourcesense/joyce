@@ -29,6 +29,11 @@
   <dependencies>
     <dependency>
       <groupId>com.sourcesense.joyce</groupId>
+      <artifactId>joyce-protobuf</artifactId>
+    </dependency>
+
+    <dependency>
+      <groupId>com.sourcesense.joyce</groupId>
       <artifactId>joyce-schema-engine</artifactId>
     </dependency>
 
@@ -132,9 +137,21 @@
     </dependency>
 
     <dependency>
-      <groupId>io.confluent.ksql</groupId>
-      <artifactId>ksqldb-api-client</artifactId>
-      <scope>provided</scope>
+      <groupId>org.apache.camel</groupId>
+      <artifactId>camel-api</artifactId>
+      <version>3.12.0</version>
+      <scope>compile</scope>
+    </dependency>
+
+    <dependency>
+      <groupId>net.devh</groupId>
+      <artifactId>grpc-client-spring-boot-starter</artifactId>
+    </dependency>
+
+    <dependency>
+      <groupId>net.devh</groupId>
+      <artifactId>grpc-client-spring-boot-autoconfigure</artifactId>
+      <type>pom</type>
     </dependency>
   </dependencies>
 

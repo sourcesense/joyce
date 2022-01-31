@@ -1,7 +1,5 @@
 package com.sourcesense.joyce.core.exception.handler;
 
-import com.sourcesense.joyce.core.exception.DataInfoNotFoundException;
-import com.sourcesense.joyce.core.exception.MappingValidationException;
 import com.sourcesense.joyce.core.exception.NotificationException;
 import com.sourcesense.joyce.core.exception.ProcessingException;
 import lombok.Getter;
@@ -15,10 +13,8 @@ import java.util.Optional;
 @RequiredArgsConstructor
 public enum CustomException {
 
-    MAPPING_VALIDATION_EXCEPTION(MappingValidationException.class),
     PROCESSING_EXCEPTION(ProcessingException.class),
     NOTIFICATION_EXCEPTION(NotificationException.class),
-    DATA_INFO_NOT_FOUND_EXCEPTION(DataInfoNotFoundException.class),
     EXCEPTION(Exception.class);
 
     private final Class<? extends Exception> exceptionClass;
@@ -27,8 +23,6 @@ public enum CustomException {
 
     static {
        customExceptionSelector = Map.of(
-               MAPPING_VALIDATION_EXCEPTION.exceptionClass, MAPPING_VALIDATION_EXCEPTION,
-               DATA_INFO_NOT_FOUND_EXCEPTION.exceptionClass, DATA_INFO_NOT_FOUND_EXCEPTION,
                PROCESSING_EXCEPTION.exceptionClass, PROCESSING_EXCEPTION,
                NOTIFICATION_EXCEPTION.exceptionClass, NOTIFICATION_EXCEPTION,
                EXCEPTION.exceptionClass, EXCEPTION
