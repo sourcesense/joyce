@@ -52,7 +52,7 @@
     <com.github.spullara.mustache.version>0.9.7</com.github.spullara.mustache.version>
     <jacoco.version>0.8.7</jacoco.version>
     <io.opentracing.contrib.jaeger>3.3.1</io.opentracing.contrib.jaeger>
-    <grpc.version>1.43.2</grpc.version>
+    <grpc.version>1.42.2</grpc.version>
     <protobuf.version>3.14.0</protobuf.version>
     <protobuf-plugin.version>0.6.1</protobuf-plugin.version>
     <net.devh.version>2.13.1.RELEASE</net.devh.version>
@@ -302,6 +302,12 @@
       <dependency>
         <groupId>io.grpc</groupId>
         <artifactId>grpc-stub</artifactId>
+        <version>${grpc.version}</version>
+      </dependency>
+
+      <dependency>
+        <groupId>io.grpc</groupId>
+        <artifactId>grpc-testing</artifactId>
         <version>${grpc.version}</version>
       </dependency>
     </dependencies>
