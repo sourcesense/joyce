@@ -31,7 +31,7 @@ import java.util.Map;
 @Document
 @NoArgsConstructor
 @AllArgsConstructor
-public class SchemaObject {
+public class JsonSchemaEntry {
 
 	@JsonDeserialize(using = TypeDeserializer.class)
 	@JsonAlias(value = "type")
@@ -41,8 +41,8 @@ public class SchemaObject {
 	private List<String> required;
 
 	@JsonInclude(Include.NON_NULL)
-	private SchemaObject items;
+	private JsonSchemaEntry items;
 
 	@JsonInclude(Include.NON_EMPTY)
-	private Map<String, SchemaObject> properties;
+	private Map<String, JsonSchemaEntry> properties;
 }

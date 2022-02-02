@@ -16,10 +16,11 @@
 
 package com.sourcesense.joyce.schemacore.model.dto;
 
+import com.sourcesense.joyce.core.model.SchemaObject;
 import lombok.Data;
 
 @Data
-public class SchemaShort {
+public class SchemaShort implements SchemaObject {
 	private String uid;
 	private String name;
 	private String description;

@@ -6,7 +6,7 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.databind.SerializationFeature;
 import com.sourcesense.joyce.core.configuration.mongo.MongodbProperties;
 import com.sourcesense.joyce.sink.mongodb.model.MongoIndex;
-import com.sourcesense.joyce.sink.mongodb.model.SchemaObject;
+import com.sourcesense.joyce.sink.mongodb.model.JsonSchemaEntry;
 import org.bson.Document;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
@@ -132,14 +132,14 @@ class CollectionEnhancerTest implements ResourceLoader {
 		String schemaJson = Files.readString(this.loadResource(schemaPath));
 		String validatorJson = Files.readString(this.loadResource(validatorPath));
 
-		SchemaObject schemaObject = mapper.readValue(schemaJson, SchemaObject.class);
+		JsonSchemaEntry jsonSchemaEntry = mapper.readValue(schemaJson, JsonSchemaEntry.class);
 		Map<String, Object> validatorMap = mapper.readValue(validatorJson, new TypeReference<>() {
 		});
 
 		CollectionEnhancerService collectionEnhancerService = new CollectionEnhancerService(mapper, null, null, null);
 
 		Document expected = new Document("$jsonSchema", new Document(validatorMap));
-		Document actual = ReflectionTestUtils.invokeMethod(collectionEnhancerService, "computeValidationSchema", schemaObject);
+		Document actual = ReflectionTestUtils.invokeMethod(collectionEnhancerService, "computeValidationSchema", jsonSchemaEntry);
 
 		assertEquals(expected, actual);
 	}
