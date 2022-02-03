@@ -31,7 +31,7 @@ import java.io.IOException;
 
 @RequestMapping(value = "/api/import")
 @Tag(name = "Joyce Import API", description = "Joyce Import API")
-public interface ImportApi {
+public interface ImportRestApi {
 
 	@PostMapping(
 			produces = "application/json; charset=utf-8",

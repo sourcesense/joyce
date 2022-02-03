@@ -13,7 +13,7 @@ import com.sourcesense.joyce.core.model.SchemaEntity;
 import com.sourcesense.joyce.sink.mongodb.exception.MongodbSinkException;
 import com.sourcesense.joyce.core.configuration.mongo.MongodbProperties;
 import com.sourcesense.joyce.sink.mongodb.model.MongoIndex;
-import com.sourcesense.joyce.sink.mongodb.model.SchemaObject;
+import com.sourcesense.joyce.sink.mongodb.model.JsonSchemaEntry;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.bson.Document;
@@ -85,7 +85,7 @@ public class CollectionEnhancerService {
 	 *
 	 * @param schemaUri    Schema uri
 	 * @param schema       Schema's body
-	 * @param schemaObject Schema's body normalized for mongodb validation
+	 * @param jsonSchemaEntry Schema's body normalized for mongodb validation
 	 */
 	@Notify(
 			successEvent = NotificationEvent.SINK_MONGODB_UPDATE_VALIDATION_SCHEMA_SUCCESS,
@@ -94,13 +94,13 @@ public class CollectionEnhancerService {
 	public void upsertCollectionValidator(
 			@ContentUri String schemaUri,
 			@EventPayload SchemaEntity schema,
-			SchemaObject schemaObject) {
+			JsonSchemaEntry jsonSchemaEntry) {
 
 		if (schema.getMetadata().getValidation()) {
 			log.debug("Updating validation schema for schema: '{}'", schemaUri);
 			LinkedHashMap<String, Object> validatorCommand = new LinkedHashMap<>();
 			validatorCommand.put("collMod", schema.getMetadata().getNamespacedCollection());
-			validatorCommand.put("validator", this.computeValidationSchema(schemaObject));
+			validatorCommand.put("validator", this.computeValidationSchema(jsonSchemaEntry));
 			mongoTemplate.executeCommand(new Document(validatorCommand));
 		}
 	}
@@ -133,9 +133,9 @@ public class CollectionEnhancerService {
 	}
 
 
-	private Document computeValidationSchema(SchemaObject schemaObject) {
+	private Document computeValidationSchema(JsonSchemaEntry jsonSchemaEntry) {
 		return new Document(
-				"$jsonSchema", mapper.convertValue(schemaObject, Document.class)
+				"$jsonSchema", mapper.convertValue(jsonSchemaEntry, Document.class)
 		);
 	}
 

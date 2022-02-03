@@ -3,7 +3,7 @@ package com.sourcesense.joyce.sink.mongodb.consumer;
 import com.fasterxml.jackson.databind.node.ObjectNode;
 import com.sourcesense.joyce.core.exception.handler.CustomExceptionHandler;
 import com.sourcesense.joyce.core.model.SchemaEntity;
-import com.sourcesense.joyce.sink.mongodb.model.SchemaObject;
+import com.sourcesense.joyce.sink.mongodb.model.JsonSchemaEntry;
 import com.sourcesense.joyce.sink.mongodb.service.CollectionEnhancerService;
 import lombok.RequiredArgsConstructor;
 import org.apache.commons.lang3.StringUtils;
@@ -31,10 +31,10 @@ public class SchemaConsumer {
 	public void receive(@Payload ObjectNode jsonSchema) {
 		try {
 			SchemaEntity schema = collectionEnhancerService.computeSchema(StringUtils.EMPTY, jsonSchema, SchemaEntity.class);
-			SchemaObject schemaObject = collectionEnhancerService.computeSchema(schema.getUid(), jsonSchema, SchemaObject.class);
+			JsonSchemaEntry jsonSchemaEntry = collectionEnhancerService.computeSchema(schema.getUid(), jsonSchema, JsonSchemaEntry.class);
 
 			collectionEnhancerService.initCollection(schema.getUid(), schema);
-			collectionEnhancerService.upsertCollectionValidator(schema.getUid(), schema, schemaObject);
+			collectionEnhancerService.upsertCollectionValidator(schema.getUid(), schema, jsonSchemaEntry);
 			collectionEnhancerService.createIndexes(schema.getUid(), schema);
 
 		} catch (Exception exception) {

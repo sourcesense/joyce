@@ -22,6 +22,7 @@ import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.sourcesense.joyce.core.model.JoyceURI;
 import com.sourcesense.joyce.core.model.SchemaEntity;
+import com.sourcesense.joyce.core.model.SchemaObject;
 import com.sourcesense.joyce.protobuf.enumeration.JoyceUriSubtype;
 import com.sourcesense.joyce.schemacore.model.dto.SchemaSave;
 import com.sourcesense.joyce.schemacore.model.dto.SchemaShort;
@@ -76,7 +77,7 @@ public abstract class SchemaDtoMapper {
 		return jsonMapper.writeValueAsString(entity.getProperties());
 	}
 
-	public List<?> entitiesToShortIfFullSchema(List<SchemaEntity> schemas, Boolean fullSchema) {
+	public List<SchemaObject> entitiesToShortIfFullSchema(List<SchemaEntity> schemas, Boolean fullSchema) {
 		return schemas.stream()
 				.map(fullSchema ? Function.identity() : this::toDtoShort)
 				.collect(Collectors.toList());

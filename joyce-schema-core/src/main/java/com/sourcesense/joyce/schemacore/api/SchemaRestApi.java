@@ -18,6 +18,7 @@ package com.sourcesense.joyce.schemacore.api;
 
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.JsonNode;
+import com.sourcesense.joyce.core.model.SchemaObject;
 import com.sourcesense.joyce.schemacore.model.dto.SchemaInfo;
 import com.sourcesense.joyce.schemacore.model.dto.SchemaSave;
 import com.sourcesense.joyce.schemacore.model.dto.SchemaShort;
@@ -40,6 +41,7 @@ public interface SchemaRestApi {
 	List<String> getAllNamespaces();
 
 	@GetMapping(value = "/schema", produces = "application/json; charset=utf-8")
+	@ResponseStatus(code = HttpStatus.OK)
 	@ApiResponse(
 			responseCode = "200",
 			content = @Content(
@@ -51,12 +53,13 @@ public interface SchemaRestApi {
 					)
 			)
 	)
-	ResponseEntity<?> getAllSchema(
+	List<SchemaObject> getAllSchema(
 			@RequestParam(defaultValue = "false", name = "full_schema") Boolean fullSchema,
 			@RequestParam(defaultValue = "false", name = "root_only") Boolean rootOnly
-			);
+	);
 
 	@GetMapping(value = "/schema/{subtype}/{namespace}", produces = "application/json; charset=utf-8")
+	@ResponseStatus(code = HttpStatus.OK)
 	@ApiResponse(
 			responseCode = "200",
 			content = @Content(
@@ -68,7 +71,7 @@ public interface SchemaRestApi {
 					)
 			)
 	)
-	ResponseEntity<?> getAllSchemaForNamespace(
+	List<SchemaObject> getAllSchemaForNamespace(
 			@PathVariable String subtype,
 			@PathVariable String namespace,
 			@RequestParam(defaultValue = "false", name = "full_schema") Boolean fullSchema,

@@ -19,8 +19,8 @@ import java.util.stream.Collectors;
 @RequiredArgsConstructor
 public abstract class SchemaGrpcService extends SchemaApiGrpc.SchemaApiImplBase implements GrpcService {
 
-	private final SchemaService schemaService;
-	private final SchemaProtoMapper schemaMapper;
+	protected final SchemaService schemaService;
+	protected final SchemaProtoMapper schemaMapper;
 
 	public void getSchema(StringValue request, StreamObserver<OptionalSchema> responseObserver) {
 		this.handleRequest(request, responseObserver, id -> Collections.singletonList(this.getSchema(id)));
