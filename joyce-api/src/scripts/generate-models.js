@@ -12,7 +12,7 @@ const WORKDIR = process.env.WORKDIR || "./workdir";
 const mongoURI = process.env.MONGO_URI || "mongodb://localhost:27017/ingestion";
 const HASHES_FILE = `${WORKDIR}/hashes.json`;
 
-async function fetchSchemaAndHash(name, config) {
+async function fetchSchema(name, config) {
 	let response =  await fetch(config["source"]);
 	let text = await response.text();
 	text = text.replace(/\integer/g, "number");
@@ -23,9 +23,8 @@ async function fetchSchemaAndHash(name, config) {
 
 	const data = JSON.stringify(json);
 	
-	const hash = crypto.createHash("md5").update(data).digest("hex");
 	
-	return { hash, data };
+	return data ;
 }
 
 
@@ -84,45 +83,17 @@ async function run() {
 		encoding: "utf8",
 	});
 	let schemaJson = JSON.parse(data);
-	let hashes = {};
-
-
-	// Load hashes file if it exists
-	if (fs.existsSync(HASHES_FILE)) {
-		hashes = JSON.parse(fs.readFileSync(HASHES_FILE, { encoding: "utf8" }));
-	} 
-	let schemas_hash = Object.keys(hashes).reduce((acc, key) => {
-		acc.update(hashes[key] || "");
-		return acc;
-	}, crypto.createHash("md5")).digest("hex");
 	
-	
-	// Iterate models
-	const new_hash = crypto.createHash("md5");
 	const template = fs.readFileSync("./src/templates/model.js.handlebars", "utf8");
 	const compiledTemplate = Handlebars.compile(template);
 	for (const key of Object.keys(schemaJson["schemas"])) {
 		// Fetch has
-		let { hash, data } = await fetchSchemaAndHash(key, schemaJson["schemas"][key]);
-		
-		if (hash != hashes[key] || "") {
-			// write model if hashes differ
-			writeModel(data, key, compiledTemplate);
-		}
-		hashes[key] = hash;
-		new_hash.update(hash);
+		let data  = await fetchSchema(key, schemaJson["schemas"][key]);
+		writeModel(data, key, compiledTemplate);
 	}
 
 	// compare computed schemas hashes, if they differ we exit with a code to let npm script do a mesh build
-	
-	if (Object.keys(schemaJson["schemas"]).length == 0 || schemas_hash !== new_hash.digest("hex")) {
-		fs.writeFileSync(HASHES_FILE, JSON.stringify(hashes), "utf8");
-		saveMeshrc(Object.keys(schemaJson["schemas"]), mongoURI);
-		process.exit(1);
-	} else {
-		console.log("hash are THE SAME");
-		process.exit(0);
-	}
+	saveMeshrc(Object.keys(schemaJson["schemas"]), mongoURI);	
 }
 
 (async function() {

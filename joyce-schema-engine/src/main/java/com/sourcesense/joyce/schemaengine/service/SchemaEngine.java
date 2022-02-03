@@ -27,6 +27,7 @@ import com.sourcesense.joyce.schemaengine.handler.SchemaTransformerHandler;
 import com.sourcesense.joyce.schemaengine.model.JoyceMetaSchema;
 import org.apache.commons.lang.StringUtils;
 import org.springframework.beans.factory.annotation.Qualifier;
+import org.springframework.boot.autoconfigure.condition.ConditionalOnMissingBean;
 import org.springframework.stereotype.Service;
 
 import javax.annotation.PostConstruct;
@@ -35,20 +36,20 @@ import java.util.stream.Collectors;
 import java.util.stream.StreamSupport;
 
 @Service
-public class SchemaEngine {
+public class SchemaEngine<T> {
 
 	public static final String METADATA = "$metadata";
 
-	private final ObjectMapper mapper;
-	private final Map<String, SchemaTransformerHandler> transformerHandlers;
+	protected final ObjectMapper jsonMapper;
+	protected final Map<String, SchemaTransformerHandler> transformerHandlers;
 
-	private JsonSchemaFactory factory;
+	protected JsonSchemaFactory factory;
 
 	public SchemaEngine(
-			@Qualifier("jsonMapper") ObjectMapper mapper,
+			ObjectMapper jsonMapper,
 			@Qualifier("transformerHandlers") Map<String, SchemaTransformerHandler> transformerHandlers) {
 
-		this.mapper = mapper;
+		this.jsonMapper = jsonMapper;
 		this.transformerHandlers = transformerHandlers;
 		this.factory = JsonSchemaFactory.getInstance(SpecVersion.VersionFlag.V7);
 	}
@@ -64,7 +65,7 @@ public class SchemaEngine {
 	/**
 	 * Generates the Meta Schema with correct registered Keywords
 	 */
-	private void registerMetaSchema() {
+	protected void registerMetaSchema() {
 		JsonMetaSchema metaSchema = JoyceMetaSchema.getInstance(transformerHandlers.keySet());
 		this.factory = new JsonSchemaFactory.Builder()
 				.defaultMetaSchemaURI(metaSchema.getUri())
@@ -81,8 +82,8 @@ public class SchemaEngine {
 	 * @return
 	 */
 	public JsonNode process(String jsonSchema, String sourceJson) throws JsonProcessingException {
-		JsonNode schemaJsonNode = mapper.readValue(jsonSchema, JsonNode.class);
-		JsonNode sourceJsonNode = mapper.readValue(sourceJson, JsonNode.class);
+		JsonNode schemaJsonNode = jsonMapper.readValue(jsonSchema, JsonNode.class);
+		JsonNode sourceJsonNode = jsonMapper.readValue(sourceJson, JsonNode.class);
 		return process(schemaJsonNode, sourceJsonNode, null);
 	}
 
@@ -95,15 +96,20 @@ public class SchemaEngine {
 	 * @throws JsonProcessingException
 	 */
 	public JsonNode process(String jsonSchema, Map sourceJson) throws JsonProcessingException {
-		JsonNode schemaJsonNode = mapper.readValue(jsonSchema, JsonNode.class);
-		JsonNode sourceJsonNode = mapper.convertValue(sourceJson, JsonNode.class);
+		JsonNode schemaJsonNode = jsonMapper.readValue(jsonSchema, JsonNode.class);
+		JsonNode sourceJsonNode = jsonMapper.convertValue(sourceJson, JsonNode.class);
 		return process(schemaJsonNode, sourceJsonNode, null);
 	}
 
 	public JsonNode process(Map jsonSchema, Map sourceJson) {
-		JsonNode schemaJsonNode = mapper.convertValue(jsonSchema, JsonNode.class);
-		JsonNode sourceJsonNode = mapper.convertValue(sourceJson, JsonNode.class);
+		JsonNode schemaJsonNode = jsonMapper.convertValue(jsonSchema, JsonNode.class);
+		JsonNode sourceJsonNode = jsonMapper.convertValue(sourceJson, JsonNode.class);
 		return process(schemaJsonNode, sourceJsonNode, null);
+	}
+
+	public JsonNode process(T schema, JsonNode source, Object context) {
+		JsonNode jsonSchema = jsonMapper.valueToTree(schema);
+		return this.process(jsonSchema, source, context);
 	}
 
 	/**
@@ -123,6 +129,11 @@ public class SchemaEngine {
 		return result;
 	}
 
+	public void validate(T schema, JsonNode content) {
+		JsonNode jsonSchema = jsonMapper.valueToTree(schema);
+		this.validate(jsonSchema, content);
+	}
+
 	/**
 	 * Validate a document against a json schema
 	 * throws if it is not valid
@@ -136,6 +147,13 @@ public class SchemaEngine {
 		if (validation.getValidationMessages().size() > 0) {
 			throw new InvalidSchemaException(validation);
 		}
+	}
+
+	public void checkForBreakingChanges(T existingSchema, T actualSchema) {
+		this.checkForBreakingChanges(
+				jsonMapper.valueToTree(existingSchema),
+				jsonMapper.valueToTree(actualSchema)
+		);
 	}
 
 	/**
@@ -166,7 +184,7 @@ public class SchemaEngine {
 		return newDeprecated > prevDeprecated;
 	}
 
-	private Integer computeDeprecatedCount(
+	protected Integer computeDeprecatedCount(
 			JsonNode json,
 			List<String> keys) {
 
@@ -194,13 +212,13 @@ public class SchemaEngine {
 	 * @param context
 	 * @return
 	 */
-	private JsonNode parse(String key, JsonNode schema, JsonNode sourceJsonNode, Optional<JsonNode> metadata, Optional<Object> context) {
+	protected JsonNode parse(String key, JsonNode schema, JsonNode sourceJsonNode, Optional<JsonNode> metadata, Optional<Object> context) {
 		try {
 			if (schema.getNodeType().equals(JsonNodeType.OBJECT)) {
 				// Apply custom handlers
 				Optional<JsonNode> transformed = this.applyHandlers(key, schema, sourceJsonNode, metadata, context);
 				if (transformed.isPresent()) {
-					ObjectNode node = mapper.createObjectNode();
+					ObjectNode node = jsonMapper.createObjectNode();
 					if(key == null){
 						return transformed.get();
 					}
@@ -235,9 +253,9 @@ public class SchemaEngine {
 		return null;
 	}
 
-	private JsonNode parseType(String key, JsonNode schema, JsonNode sourceJsonNode, Optional<JsonNode> metadata, Optional<Object> context, String type) {
+	protected JsonNode parseType(String key, JsonNode schema, JsonNode sourceJsonNode, Optional<JsonNode> metadata, Optional<Object> context, String type) {
 		if (type.equals("object")) {
-			ObjectNode objectNode = mapper.createObjectNode();
+			ObjectNode objectNode = jsonMapper.createObjectNode();
 			JsonNode props = schema.get("properties");
 			if (props != null) {
 				Iterator<Map.Entry<String, JsonNode>> iter = props.fields();
@@ -249,7 +267,7 @@ public class SchemaEngine {
 			}
 			return objectNode;
 		} else if (type.equals("array")) {
-			ArrayNode arrayNode = mapper.createArrayNode();
+			ArrayNode arrayNode = jsonMapper.createArrayNode();
 			for (JsonNode item : sourceJsonNode.get(key)) {
 				JsonNode parsedItem = this.parse(null, schema.get("items"), item, metadata, context);
 				if (!parsedItem.isNull()) {
@@ -285,7 +303,7 @@ public class SchemaEngine {
 	 * @param context
 	 * @return
 	 */
-	private Optional<JsonNode> applyHandlers(String key, JsonNode schema, JsonNode sourceJsonNode, Optional<JsonNode> metadata, Optional<Object> context) {
+	protected Optional<JsonNode> applyHandlers(String key, JsonNode schema, JsonNode sourceJsonNode, Optional<JsonNode> metadata, Optional<Object> context) {
 
 		if (sourceJsonNode.getNodeType() != JsonNodeType.OBJECT) {
 			return Optional.empty();
@@ -309,7 +327,7 @@ public class SchemaEngine {
 		return Optional.ofNullable(returnNode);
 	}
 
-	private List<String> getTypesList(Map.Entry<String, JsonNode> stringJsonNodeEntry) {
+	protected List<String> getTypesList(Map.Entry<String, JsonNode> stringJsonNodeEntry) {
 		List<String> list = new ArrayList<>();
 		if (stringJsonNodeEntry.getValue().get("type").getNodeType().equals(JsonNodeType.ARRAY)) {
 			for (JsonNode node : stringJsonNodeEntry.getValue().get("type")) {

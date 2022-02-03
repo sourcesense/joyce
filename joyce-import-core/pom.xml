@@ -19,9 +19,9 @@
          xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 https://maven.apache.org/xsd/maven-4.0.0.xsd">
   <modelVersion>4.0.0</modelVersion>
   <parent>
-      <artifactId>joyce-parent</artifactId>
-      <groupId>com.sourcesense.joyce</groupId>
-      <version>${revision}</version>
+    <artifactId>joyce-parent</artifactId>
+    <groupId>com.sourcesense.joyce</groupId>
+    <version>${revision}</version>
   </parent>
 
   <artifactId>joyce-import-core</artifactId>
@@ -33,7 +33,7 @@
   <dependencies>
     <dependency>
       <groupId>com.sourcesense.joyce</groupId>
-      <artifactId>joyce-common-core</artifactId>
+      <artifactId>joyce-schema-core</artifactId>
     </dependency>
 
     <dependency>
@@ -50,11 +50,6 @@
       <groupId>org.springframework.boot</groupId>
       <artifactId>spring-boot-starter-test</artifactId>
       <scope>test</scope>
-    </dependency>
-
-    <dependency>
-      <groupId>io.confluent.ksql</groupId>
-      <artifactId>ksqldb-api-client</artifactId>
     </dependency>
 
     <dependency>

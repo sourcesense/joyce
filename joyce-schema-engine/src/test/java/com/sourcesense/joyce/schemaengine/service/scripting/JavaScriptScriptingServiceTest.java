@@ -4,7 +4,7 @@ import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.sourcesense.joyce.schemaengine.exception.JoyceSchemaEngineException;
 import com.sourcesense.joyce.schemaengine.model.handler.ScriptHandlerData;
-import com.sourcesense.joyce.schemaengine.utility.UtilitySupplier;
+import com.sourcesense.joyce.schemaengine.test.TestUtility;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
@@ -17,7 +17,7 @@ import java.util.Optional;
 import static org.junit.jupiter.api.Assertions.*;
 
 @ExtendWith(MockitoExtension.class)
-public class JavaScriptScriptingServiceTest implements UtilitySupplier {
+public class JavaScriptScriptingServiceTest implements TestUtility {
 
 	private ObjectMapper mapper;
 	private JavaScriptScriptingService javaScriptScriptingService;

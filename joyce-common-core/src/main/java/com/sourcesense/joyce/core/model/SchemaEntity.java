@@ -23,9 +23,9 @@ import org.springframework.data.annotation.Id;
 
 import java.util.List;
 
-
 @Data
-public class SchemaEntity {
+public class SchemaEntity implements SchemaObject {
+
 	@Id
 	private String uid;
 

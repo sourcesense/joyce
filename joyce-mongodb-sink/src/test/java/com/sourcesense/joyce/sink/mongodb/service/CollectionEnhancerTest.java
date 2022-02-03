@@ -4,9 +4,9 @@ import com.fasterxml.jackson.core.type.TypeReference;
 import com.fasterxml.jackson.databind.DeserializationFeature;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.databind.SerializationFeature;
-import com.sourcesense.joyce.sink.mongodb.model.MetadataIndexesProperties;
+import com.sourcesense.joyce.core.configuration.mongo.MongodbProperties;
 import com.sourcesense.joyce.sink.mongodb.model.MongoIndex;
-import com.sourcesense.joyce.sink.mongodb.model.SchemaObject;
+import com.sourcesense.joyce.sink.mongodb.model.JsonSchemaEntry;
 import org.bson.Document;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
@@ -27,6 +27,8 @@ import static org.junit.jupiter.api.Assertions.assertEquals;
 
 @ExtendWith(MockitoExtension.class)
 class CollectionEnhancerTest implements ResourceLoader {
+
+	private static final String SCHEMA_COLLECTION = "joyce_schema";
 
 	private ObjectMapper mapper;
 
@@ -63,13 +65,15 @@ class CollectionEnhancerTest implements ResourceLoader {
 		rawUriSchemaUid.put("raw_uri", 1);
 		rawUriSchemaUid.put("schema_uid", 1);
 
-		MetadataIndexesProperties metadataIndexesProperties = new MetadataIndexesProperties(
+		MongodbProperties mongodbProperties = new MongodbProperties(
+				true,
+				SCHEMA_COLLECTION,
 				List.of(rawUri, schemaUid, rawUriSchemaUid)
 		);
 
 		List<MongoIndex> actual = this.computeMongoIndexes(
 				Collections.emptyList(),
-				metadataIndexesProperties
+				mongodbProperties
 		);
 
 		List<MongoIndex> expected = List.of(
@@ -90,7 +94,7 @@ class CollectionEnhancerTest implements ResourceLoader {
 		rawUriSchemaUid.put("schema_uid", 1);
 
 		List<Map<String, Object>> fieldIndexes = List.of(rawUri, schemaUid, rawUriSchemaUid);
-		List<MongoIndex> actual = this.computeMongoIndexes(fieldIndexes, new MetadataIndexesProperties());
+		List<MongoIndex> actual = this.computeMongoIndexes(fieldIndexes, new MongodbProperties());
 
 		List<MongoIndex> expected = List.of(
 				new MongoIndex("raw_uri", rawUri),
@@ -109,11 +113,13 @@ class CollectionEnhancerTest implements ResourceLoader {
 
 		List<Map<String, Object>> fieldIndexes = List.of(fullName);
 
-		MetadataIndexesProperties metadataIndexesProperties = new MetadataIndexesProperties(
+		MongodbProperties mongodbProperties = new MongodbProperties(
+				true,
+				SCHEMA_COLLECTION,
 				List.of(rawUri)
 		);
 
-		List<MongoIndex> actual = this.computeMongoIndexes(fieldIndexes, metadataIndexesProperties);
+		List<MongoIndex> actual = this.computeMongoIndexes(fieldIndexes, mongodbProperties);
 		List<MongoIndex> expected = List.of(
 				new MongoIndex("full_name", fullName),
 				new MongoIndex("raw_uri", rawUri)
@@ -126,24 +132,24 @@ class CollectionEnhancerTest implements ResourceLoader {
 		String schemaJson = Files.readString(this.loadResource(schemaPath));
 		String validatorJson = Files.readString(this.loadResource(validatorPath));
 
-		SchemaObject schemaObject = mapper.readValue(schemaJson, SchemaObject.class);
+		JsonSchemaEntry jsonSchemaEntry = mapper.readValue(schemaJson, JsonSchemaEntry.class);
 		Map<String, Object> validatorMap = mapper.readValue(validatorJson, new TypeReference<>() {
 		});
 
-		CollectionEnhancer collectionEnhancer = new CollectionEnhancer(mapper, null, null, null);
+		CollectionEnhancerService collectionEnhancerService = new CollectionEnhancerService(mapper, null, null, null);
 
 		Document expected = new Document("$jsonSchema", new Document(validatorMap));
-		Document actual = ReflectionTestUtils.invokeMethod(collectionEnhancer, "computeValidationSchema", schemaObject);
+		Document actual = ReflectionTestUtils.invokeMethod(collectionEnhancerService, "computeValidationSchema", jsonSchemaEntry);
 
 		assertEquals(expected, actual);
 	}
 
 	private List<MongoIndex> computeMongoIndexes(
 			List<Map<String, Object>> fieldIndexes,
-			MetadataIndexesProperties metadataIndexesProperties) {
+			MongodbProperties mongodbProperties) {
 
-		CollectionEnhancer collectionEnhancer = new CollectionEnhancer(mapper, null, null, metadataIndexesProperties);
-		return ReflectionTestUtils.invokeMethod(collectionEnhancer, "computeMongoIndexes", fieldIndexes);
+		CollectionEnhancerService collectionEnhancerService = new CollectionEnhancerService(mapper, null, null, mongodbProperties);
+		return ReflectionTestUtils.invokeMethod(collectionEnhancerService, "computeMongoIndexes", fieldIndexes);
 	}
 
 	private ObjectMapper initMapper() {

@@ -26,7 +26,7 @@ import com.github.mustachejava.MustacheFactory;
 import com.networknt.schema.JsonSchemaException;
 import com.sourcesense.joyce.schemaengine.exception.JoyceSchemaEngineException;
 import com.sourcesense.joyce.schemaengine.handler.*;
-import com.sourcesense.joyce.schemaengine.utility.UtilitySupplier;
+import com.sourcesense.joyce.schemaengine.test.TestUtility;
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
@@ -59,7 +59,7 @@ import static org.springframework.test.web.client.response.MockRestResponseCreat
 
 @ExtendWith(MockitoExtension.class)
 @MockitoSettings(strictness = Strictness.LENIENT)
-public class SchemaEngineTest implements UtilitySupplier {
+public class SchemaEngineTest implements TestUtility {
 
 
 	private ObjectMapper mapper;

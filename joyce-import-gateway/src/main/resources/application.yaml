@@ -1,5 +1,10 @@
 server:
   port: 6651
+
+grpc:
+  server:
+    port: 6666
+
 opentracing:
   jaeger:
     enabled: false
@@ -8,6 +13,7 @@ opentracing:
     udp-sender:
       host: localhost
       port:  6831
+
 springdoc:
   swagger-ui:
     path: /docs
@@ -15,24 +21,21 @@ springdoc:
     server:
       url: http://localhost:${server.port}
       description: Local Server
+
 spring:
   servlet:
     multipart:
       max-file-size: 10MB
       max-request-size: 10MB
+
 joyce:
   cors:
     origin: http://localhost:3000
   schema-transformer-plugin:
     enabled: true
     jar-path: /app/custom-handlers
-  schema-service:
-    enabled: true
-    database: mongodb
-    subtype: import
   notification-service:
     enabled: true
-    topic: joyce_notification
     source: ImportGateway
   content-producer:
     enabled: true
@@ -40,15 +43,18 @@ joyce:
     kafka-connect-host: localhost:6682
   data:
     mongodb:
+      enabled: true
       uri: mongodb://user:password@localhost:27017/joyce
       database: joyce
   kafka:
     bootstrapAddress: kafka:9092
     consumer:
-      groupId: joyce-import-consumer-local
       enabled: true
+      groupId: joyce-import-consumer-local
     producer:
       enabled: true
+    schema:
+      topic: joyce_schema
     import:
       topic: joyce_import
     content:

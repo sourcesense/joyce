@@ -30,7 +30,7 @@ public class ContentConsumer {
 
 	private final SinkService sinkService;
 	private final CustomExceptionHandler customExceptionHandler;
-	private final Tracer tracer;
+
 	/**
 	 * This method saves or removes from a mongo collection processed documents coming from kafka.
 	 * Collection name and message key are retrieved from kafka headers.

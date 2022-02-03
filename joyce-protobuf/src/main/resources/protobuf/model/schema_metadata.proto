@@ -1,0 +1,26 @@
+syntax = "proto3";
+
+option java_multiple_files = true;
+option java_outer_classname = "SchemaMetadataProto";
+option java_package = "com.sourcesense.joyce.protobuf.model";
+
+import "enumeration/joyce_uri_subtype.proto";
+import "model/mongo_index.proto";
+
+message SchemaMetadata {
+  string uidKey = 1;
+  JoyceUriSubtype subtype = 2;
+  string collection = 3;
+  string name = 4;
+  string namespace = 5;
+  string description = 6;
+  string parent = 7;
+  repeated MongoIndex indexes = 8;
+  string development = 9;
+  string store = 10;
+  string validation = 11;
+  string indexed = 12;
+  string connectors = 13;
+  string export = 14;
+  string extra = 15;
+}

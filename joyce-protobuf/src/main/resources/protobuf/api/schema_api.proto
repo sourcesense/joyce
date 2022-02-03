@@ -1,0 +1,24 @@
+syntax = "proto3";
+
+option java_multiple_files = true;
+option java_outer_classname = "SchemaApiProto";
+option java_package = "com.sourcesense.joyce.protobuf.api";
+
+import "google/protobuf/empty.proto";
+import "google/protobuf/wrappers.proto";
+import "model/schema.proto";
+import "enumeration/joyce_uri_subtype.proto";
+
+service SchemaApi {
+  rpc GetSchema(google.protobuf.StringValue) returns (OptionalSchema);
+  rpc GetAllSchemas(google.protobuf.StringValue) returns (stream Schema);
+  rpc GetAllSchemasBySubtypeAndNamespace(RequestParams) returns (stream Schema);
+  rpc GetAllSchemasByReportsIsNotEmpty(google.protobuf.Empty) returns (stream Schema);
+  rpc GetAllNamespaces(google.protobuf.Empty) returns (stream google.protobuf.StringValue);
+}
+
+message RequestParams {
+  JoyceUriSubtype subtype = 1;
+  string namespace = 2;
+  string rootOnly = 3;
+}

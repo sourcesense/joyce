@@ -1,0 +1,13 @@
+syntax = "proto3";
+
+option java_multiple_files = true;
+option java_outer_classname = "JoyceUriSubtypeProto";
+option java_package = "com.sourcesense.joyce.protobuf.enumeration";
+
+enum JoyceUriSubtype {
+  IMPORT = 0;
+  MODEL = 1;
+  FIXED = 2;
+  REST = 3;
+  OTHER = 4;
+}
