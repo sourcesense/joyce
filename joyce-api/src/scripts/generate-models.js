@@ -13,18 +13,23 @@ const mongoURI = process.env.MONGO_URI || "mongodb://localhost:27017/ingestion";
 const HASHES_FILE = `${WORKDIR}/hashes.json`;
 
 async function fetchSchema(name, config) {
-	let response =  await fetch(config["source"]);
-	let text = await response.text();
-	text = text.replace(/\integer/g, "number");
-	let json = JSON.parse(text);
-	json.schema["$metadata"]["name"] = _.upperFirst(_.camelCase(json.schema["$metadata"]["name"]));
-	json.schema["$metadata"]["endpoint"] = name;
-	json.name = _.upperFirst(_.camelCase(json.name));
-
-	const data = JSON.stringify(json);
+	try {
+		let response =  await fetch(config["source"]);
+		let text = await response.text();
+		if (response.status != 200) {
+			console.log(`Bad Response ${text}`);
+			return null;
+		} 
+		text = text.replace(/\integer/g, "number");
+		let json = JSON.parse(text);
+		json["$metadata"]["endpoint"] = name;
+		json.name = _.upperFirst(_.camelCase(json["$metadata"]["name"]));
+		return JSON.stringify(json) ;	
+	} catch (error) {
+		console.log(error);
+		return null;
+	}
 	
-	
-	return data ;
 }
 
 
@@ -89,7 +94,10 @@ async function run() {
 	for (const key of Object.keys(schemaJson["schemas"])) {
 		// Fetch has
 		let data  = await fetchSchema(key, schemaJson["schemas"][key]);
-		writeModel(data, key, compiledTemplate);
+		if (data != null) {
+			writeModel(data, key, compiledTemplate);
+		}
+		
 	}
 
 	// compare computed schemas hashes, if they differ we exit with a code to let npm script do a mesh build
