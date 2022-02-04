@@ -96,6 +96,8 @@ async function run() {
 		let data  = await fetchSchema(key, schemaJson["schemas"][key]);
 		if (data != null) {
 			writeModel(data, key, compiledTemplate);
+		} else {
+			delete schemaJson["schemas"][key];
 		}
 		
 	}

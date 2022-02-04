@@ -24,18 +24,18 @@ export class SchemaConfiguration {
 				})
 				.then((j) => {
 					logger.info(`SUCCESS: ${resource.label} schema Found`);
-					j.schema["$metadata"]["endpoint"] = resource.label;
-					j.schema["$metadata"]["name"] = _.upperFirst(_.camelCase(j.schema["$metadata"]["name"]));
-					j.name = _.upperFirst(_.camelCase(j.name));
+					j["$metadata"]["endpoint"] = resource.label;
+					j["$metadata"]["name"] = _.upperFirst(_.camelCase(j["$metadata"]["name"]));
+					j.name = j["$metadata"]["name"];
 
 					return {
 						...resource,
-						schema: j.schema,
+						schema: j,
 					};
 				})
 				.catch((e) => {
 					const { statusText } = e;
-					logger.error(`ERROR:  ${resource.label} ${statusText}`);
+					logger.error(`ERROR:  ${resource.label} ${statusText} ${e}`);
 					return {};
 				});
 		});
