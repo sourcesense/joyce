@@ -1,6 +1,8 @@
 import fetch from "node-fetch";
 import { ResponsableSchema, SchemaResources } from "../types";
 import _ from "lodash";
+import { SchemaApiClient } from "../grpc/api/schema_api_grpc_pb";
+import * as grpc from "@grpc/grpc-js";
 
 export class SchemaConfiguration {
 	readonly sources = [];
@@ -13,6 +15,12 @@ export class SchemaConfiguration {
 		});
 	}
 	requestSchemas(logger): Promise<ResponsableSchema>[] | [] {
+		const asd = new SchemaApiClient("localhost:6666", grpc.credentials.createInsecure());
+		asd.getSchema("asd", (error: ServiceError, response: OptionalSchema) => {
+			
+		});
+
+
 		return this.sources.map((resource) => {
 			logger.info(resource.source);
 			return fetch(resource.source)
