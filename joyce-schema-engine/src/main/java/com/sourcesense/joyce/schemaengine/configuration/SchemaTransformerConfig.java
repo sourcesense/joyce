@@ -22,7 +22,6 @@ import java.util.stream.Collectors;
 @Configuration
 @RequiredArgsConstructor
 @DependsOn("pluginManager")
-@ConditionalOnProperty(value = "joyce.data.mongodb.enabled", havingValue = "true")
 public class SchemaTransformerConfig {
 
     private final ApplicationContext applicationContext;
