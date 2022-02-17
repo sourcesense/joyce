@@ -41,7 +41,7 @@ import java.util.Optional;
 @Slf4j
 @ConditionalOnProperty(value = "joyce.kafka.producer.enabled", havingValue = "true")
 @Service
-public class ContentProducer extends KafkaMessageProducer<JsonNode> {
+public class ContentProducer extends KafkaMessageProducer<String,JsonNode> {
 
 	private final String contentTopic;
 	private final NotificationService notificationService;
