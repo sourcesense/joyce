@@ -23,7 +23,7 @@ import org.springframework.data.mongodb.repository.config.EnableMongoRepositorie
 @RequiredArgsConstructor
 @EnableMongoRepositories(basePackages = "com.sourcesense.joyce")
 @ConditionalOnProperty(value = "joyce.data.mongodb.enabled", havingValue = "true")
-public class MongodbConfig  extends AbstractMongoClientConfiguration {
+public class MongodbConfig extends AbstractMongoClientConfiguration {
 
 	private final Tracer tracer;
 	private final ApplicationContext applicationContext;
