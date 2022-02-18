@@ -1,13 +1,21 @@
-import { Schema, SchemaProperties } from "../types";
+import { ResponsableSchema, SchemaProperties } from "../types";
+// import { Schema } from "@generated/grpc/model/schema_pb";
+
+type RichSchema = {
+	properties: string;
+	metadata: {
+		endpoint: string;
+	}
+}
 
 export class CustomeSchemaParser {
 	readonly endpoint: string = "";
 	readonly properties: SchemaProperties = {};
 	readonly required: string[] = [];
 	readonly nullable: string[] = [];
-	constructor({ schema: { $metadata, properties } }: { schema: Schema }) {
-		this.endpoint = $metadata?.endpoint;
-		this.properties = properties;
+	constructor({ schema: { metadata, properties } }: ResponsableSchema) {
+		this.endpoint = metadata?.endpoint;
+		this.properties = properties as SchemaProperties;
 	}
 
 	parseProperties(properties, transformLabel = "") {

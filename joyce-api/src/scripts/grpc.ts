@@ -1,13 +1,17 @@
 // node_modules/.bin/ts-node src/grpc.ts
+/*
+	test file per provare l'interazione con grpc
+*/
+require("module-alias/register");
 
 import * as grpc from "@grpc/grpc-js";
 // import * as protoLoader from '@grpc/proto-loader';
-import * as model_schema_pb from "./grpc/model/schema_pb";
+import * as model_schema_pb from "@generated/grpc/model/schema_pb";
 import * as google_protobuf_empty_pb from "google-protobuf/google/protobuf/empty_pb";
 import * as google_protobuf_wrappers_pb from "google-protobuf/google/protobuf/wrappers_pb";
-import { SchemaApiClient } from "./grpc/api/schema_api_grpc_pb";
-import { RequestParams } from "./grpc/api/schema_api_pb";
-import { JoyceUriSubtype } from "./grpc/enumeration/joyce_uri_subtype_pb";
+import { SchemaApiClient } from "@generated/grpc/api/schema_api_grpc_pb";
+import { RequestParams } from "@generated/grpc/api/schema_api_pb";
+import { JoyceUriSubtype } from "@generated/grpc/enumeration/joyce_uri_subtype_pb";
 
 const logger = require("pino")();
 
@@ -23,13 +27,24 @@ const asd = new SchemaApiClient("localhost:6666", credentials);
 const schemaRequest: google_protobuf_wrappers_pb.StringValue = new google_protobuf_wrappers_pb.StringValue();
 schemaRequest.setValue("joyce://schema/import/demo5.developer");
 
-const call: grpc.ClientUnaryCall = asd.getSchema(new google_protobuf_wrappers_pb.StringValue(["joyce://schema/import/demo5.developer"]), (error: grpc.ServiceError, response: model_schema_pb.OptionalSchema) => {
-	logger.info({ r: schemaRequest.toObject(), uid: new google_protobuf_wrappers_pb.StringValue(["joyce://schema/import/demo5.developer"]).toObject(), error, response }, "getting optional schema");
-	if (response) {
-		const optschema: model_schema_pb.OptionalSchema = response;
-		logger.info({ xx: true, optschema: optschema.toObject() }, "this schema");
-	}
-});
+const call: grpc.ClientUnaryCall = asd.getSchema(
+	new google_protobuf_wrappers_pb.StringValue(["joyce://schema/import/demo5.developer"]),
+	(error: grpc.ServiceError, response: model_schema_pb.OptionalSchema) => {
+		logger.info(
+			{
+				r: schemaRequest.toObject(),
+				uid: new google_protobuf_wrappers_pb.StringValue(["joyce://schema/import/demo5.developer"]).toObject(),
+				error,
+				response,
+			},
+			"getting optional schema",
+		);
+		if (response) {
+			const optschema: model_schema_pb.OptionalSchema = response;
+			logger.info({ xx: true, optschema: optschema.toObject() }, "this schema");
+		}
+	},
+);
 
 // -------------------
 
@@ -51,7 +66,10 @@ all.on("end", () => {
 
 // -------------------
 
-const stream: grpc.ClientReadableStream<google_protobuf_wrappers_pb.StringValue> =asd.getAllNamespaces(new google_protobuf_empty_pb.Empty(), {});
+const stream: grpc.ClientReadableStream<google_protobuf_wrappers_pb.StringValue> = asd.getAllNamespaces(
+	new google_protobuf_empty_pb.Empty(),
+	{},
+);
 
 stream.on("data", (data: google_protobuf_wrappers_pb.StringValue) => {
 	logger.info(`[getAllNamespaces] Namespace: ${JSON.stringify(data.toObject())}`);

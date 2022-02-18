@@ -3,7 +3,7 @@
     "module": "commonjs",
     "esModuleInterop": true,
     "allowSyntheticDefaultImports": true,
-    "target": "es6",
+    "target": "es2020",
     "allowJs": true,
     "emitDecoratorMetadata": true,
     "experimentalDecorators": true,
@@ -11,9 +11,16 @@
     "resolveJsonModule": true,
     "sourceMap": true,
     "outDir": "dist",
-    "rootDir": "src",
+    "rootDir": ".",
     "noImplicitAny": false,
-    "lib": ["es6"],
+    "lib": ["ES2020"],
+	"baseUrl": ".",
+	"paths": {
+		"@generated/*": ["generated/*"],
+		"@templates/*": ["src/templates/*"],
+		"@clients/*": ["src/clients/*"],
+		"@src/*": ["src/*"],
+	}
    // "noUnusedLocals": true
   },
   "include": ["src/**/*"],

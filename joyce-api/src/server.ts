@@ -11,19 +11,22 @@ import { JRPCParams, ResponsableSchema } from "./types";
 const logger = require("pino")();
 const path = require("path");
 
+logger.info("starting server module");
+
 const SCHEMAS_SOURCE = process.env.SCHEMAS_SOURCE || "schemas.json";
 const PRODUCTION_URL = process.env.BASE_URL || "https://<production-url>";
 const INTERNAL_URL = process.env.BASE_URL || "http://localhost:6650";
 const HEALTH_PATH = process.env.HEALTH_PATH || "/health";
 const JOYCE_GRAPHQL = process.env.JOYCE_GRAPHQL || true;
 
-const schemaSources = fs.readFileSync(SCHEMAS_SOURCE, "utf8");
-const schemaConfiguration = new SchemaConfiguration(JSON.parse(schemaSources));
-const requests = schemaConfiguration.requestSchemas(logger);
-const JOYCE_API_KAFKA_COMMAND_TOPIC = process.env.JOYCE_API_KAFKA_COMMAND_TOPIC || "commands";
-
 function createServer(db, producer) {
+	const schemaSources = fs.readFileSync(SCHEMAS_SOURCE, "utf8");
+	const schemaConfiguration = new SchemaConfiguration(JSON.parse(schemaSources));
+	const requests = schemaConfiguration.requestSchemas(logger);
+	const JOYCE_API_KAFKA_COMMAND_TOPIC = process.env.JOYCE_API_KAFKA_COMMAND_TOPIC || "commands";
+
 	return Promise.all(requests).then((schemasList) => {
+		// logger.info({ schemasList }, "schemaslist");
 		const filteredSchemalist = schemasList.filter((e) => e.label);
 		const server = fastify({
 			logger: {
@@ -43,7 +46,7 @@ function createServer(db, producer) {
 		server.get("/graphiql", (_, reply) => {
 			reply.sendFile("graphiql.html");
 		});
-		
+
 
 		server.register(require("fastify-oas"), {
 			routePrefix: "/docs",
@@ -105,7 +108,7 @@ function createServer(db, producer) {
 				});
 			},
 		);
-	
+
 		filteredSchemalist.map((schema: ResponsableSchema) => {
 			const tempSchema = new CustomeSchemaParser(schema);
 			/**
@@ -121,11 +124,11 @@ function createServer(db, producer) {
 				async function (req, res) {
 					const { id: entityID } = req.params;
 					try {
-						const namespaced_collection = `${schema.schema.$metadata.namespace || "default"}.${schema.schema.$metadata.collection
+						const namespaced_collection = `${schema.schema.metadata.namespace || "default"}.${schema.schema.metadata.collection
 						}`;
 						const collection = db.collection(namespaced_collection);
 
-						const _id = `joyce://content/${schema.schema.$metadata.subtype}/${namespaced_collection}/${entityID}`;
+						const _id = `joyce://content/${schema.schema.metadata.subtype}/${namespaced_collection}/${entityID}`;
 						const entity = await collection.findOne({ _id });
 
 						if (entity) {
@@ -151,7 +154,7 @@ function createServer(db, producer) {
 			}>(`/rest/${tempSchema.endpoint}`, MultipleEntitySchema(tempSchema), async function (req, res) {
 				const { page = 0, size = 10, orderBy, sortBy, ...other } = req.query;
 				try {
-					const namespaced_collection = `${schema.schema.$metadata.namespace || "default"}.${schema.schema.$metadata.collection
+					const namespaced_collection = `${schema.schema.metadata.namespace || "default"}.${schema.schema.metadata.collection
 					}`;
 					const collection = db.collection(namespaced_collection);
 					const docs = await collection

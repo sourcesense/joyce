@@ -1,11 +1,11 @@
 const { model, Schema } = require("mongoose");
 const createMongooseSchema = require("{{json_schema_module}}").default;
 
-var data =  {{{ data }}};
-data.properties["_id"] = { "type": "string" };
+var data = {{{ data }}};
+data.properties._id = { "type": "string" };
 const convertedSchema = createMongooseSchema(data.properties, data);
 let schema = new Schema(convertedSchema);
-let collection = `${data["$metadata"]["namespace"] || "default"}.${data["$metadata"]["collection"]}`;
+let collection = `${data.metadata.namespace || "default"}.${data.metadata.collection}`;
 
 let model_obj = model("{{ name }}", schema, collection);
 module.exports = model_obj;

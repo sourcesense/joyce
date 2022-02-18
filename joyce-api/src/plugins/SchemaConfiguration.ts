@@ -1,44 +1,49 @@
 import fetch from "node-fetch";
-import { ResponsableSchema, SchemaResources } from "../types";
-import _ from "lodash";
-import { SchemaApiClient } from "../grpc/api/schema_api_grpc_pb";
-import * as grpc from "@grpc/grpc-js";
+import { Config, ResponsableSchema, SchemaResources } from "../types";
+import upperFirst from "lodash/upperFirst";
+import camelCase from "lodash/camelCase";
+import { getSchema } from "@clients/grpc";
+
+const logger = require("pino")({ name: "schema-configuration" });
 
 export class SchemaConfiguration {
 	readonly sources = [];
-	constructor({ schemas }: { schemas: SchemaResources }) {
-		Object.keys(schemas).map((label) => {
+	constructor({ resources }: Config) {
+		logger.info({ resources }, "creating schema configuration");
+		resources.map(({ path, schema }) => {
 			this.sources.push({
-				label,
-				...schemas[label],
+				label: path,
+				source: schema,
 			});
 		});
 	}
-	requestSchemas(logger): Promise<ResponsableSchema>[] | [] {
-		const asd = new SchemaApiClient("localhost:6666", grpc.credentials.createInsecure());
-		asd.getSchema("asd", (error: ServiceError, response: OptionalSchema) => {
-			
-		});
-
-
+	requestSchemas(logger): Promise<ResponsableSchema>[] {
 		return this.sources.map((resource) => {
 			logger.info(resource.source);
-			return fetch(resource.source)
+			return getSchema(resource.source)
 				.then((r) => {
-					if (!r.ok) {
-						throw r;
-					}
-					return r.json();
+					return r.toObject();
 				})
 				.then((j) => {
 					logger.info(`SUCCESS: ${resource.label} schema Found`);
-					j["$metadata"]["endpoint"] = resource.label;
-					j["$metadata"]["name"] = _.upperFirst(_.camelCase(j["$metadata"]["name"]));
-					j.name = j["$metadata"]["name"];
+					// j["$metadata"]["endpoint"] = resource.label;
+					// j["$metadata"]["name"] = _.upperFirst(_.camelCase(j["$metadata"]["name"]));
+					// j.name = j["$metadata"]["name"];
+
+					const name = upperFirst(camelCase(resource.label));
 
 					return {
 						...resource,
-						schema: j,
+						name,
+						schema: {
+							...j,
+							metadata: {
+								...j.metadata,
+								endpoint: resource.label,
+								name,
+							},
+							properties: JSON.parse(j.properties),
+						},
 					};
 				})
 				.catch((e) => {

@@ -14,7 +14,7 @@ export interface SchemaMetadata {
 	subtype: string;
 }
 export interface Schema {
-	$metadata: SchemaMetadata;
+	metadata: SchemaMetadata;
 	properties: SchemaProperties;
 }
 export interface SchemaResources {
@@ -25,7 +25,7 @@ export interface Resource {
 }
 export interface ResponsableSchema extends Resource {
 	label: string;
-	schema: { $metadata: SchemaMetadata; properties: SchemaProperties };
+	schema: { metadata: SchemaMetadata; properties: SchemaProperties };
 }
 
 export interface JRPCParams {
@@ -33,4 +33,18 @@ export interface JRPCParams {
 	method: string;
 	params: any;
 	id: string;
+}
+
+export interface Config {
+	/** security config TBD */
+	security: { [key:string]: string };
+	/** default: true, enables jsonrpc channel (Kafka) */
+	jsonrpc: boolean;
+	/** schemas to be published by this api server */
+	resources: {
+		/** path to the resource */
+		path: string;
+		/** schema uid identifying the resource */
+		schema: string;
+	}[];
 }
