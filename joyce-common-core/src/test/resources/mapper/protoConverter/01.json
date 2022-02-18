@@ -1,0 +1,13 @@
+{
+  "field": "fieldValue",
+  "array": ["arrayValue"],
+  "object": {
+    "objectField": "objectFieldValue",
+    "nestedObject": {
+      "nestedObjectField": "nestedObjectFieldValue"
+    }
+  },
+  "objectArray": [{
+    "objectArrayField": "objectArrayFieldValue"
+  }]
+}

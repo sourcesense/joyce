@@ -53,6 +53,7 @@
     <jacoco.version>0.8.7</jacoco.version>
     <io.opentracing.contrib.jaeger>3.3.1</io.opentracing.contrib.jaeger>
     <grpc.version>1.42.2</grpc.version>
+    <com.google.protobuf.version>3.19.3</com.google.protobuf.version>
     <protobuf.version>3.14.0</protobuf.version>
     <protobuf-plugin.version>0.6.1</protobuf-plugin.version>
     <net.devh.version>2.13.1.RELEASE</net.devh.version>
@@ -285,6 +286,18 @@
         <artifactId>grpc-client-spring-boot-autoconfigure</artifactId>
         <version>${net.devh.version}</version>
         <type>pom</type>
+      </dependency>
+
+      <dependency>
+        <groupId>com.google.protobuf</groupId>
+        <artifactId>protobuf-java</artifactId>
+        <version>${com.google.protobuf.version}</version>
+      </dependency>
+
+      <dependency>
+        <groupId>com.google.protobuf</groupId>
+        <artifactId>protobuf-java-util</artifactId>
+        <version>${com.google.protobuf.version}</version>
       </dependency>
 
       <dependency>

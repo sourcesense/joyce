@@ -13,11 +13,11 @@ public interface GrpcService {
 
 	default <REQ extends AbstractMessage, RES extends AbstractMessage> void handleRequest(
 			REQ request, StreamObserver<RES> responseObserver,
-			Function<REQ, List<RES>> requestHandler) {
+			Function<REQ, RES> requestHandler) {
 
 		try {
-			List<RES> response = requestHandler.apply(request);
-			response.forEach(responseObserver::onNext);
+			RES response = requestHandler.apply(request);
+			responseObserver.onNext(response);
 
 		} catch (Exception exception) {
 			customExceptionHandler.handleException(exception);

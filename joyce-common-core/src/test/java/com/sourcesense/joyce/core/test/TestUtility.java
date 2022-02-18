@@ -1,10 +1,12 @@
-package com.sourcesense.joyce.schemacore.test;
+package com.sourcesense.joyce.core.test;
 
 import com.fasterxml.jackson.core.type.TypeReference;
 import com.fasterxml.jackson.databind.DeserializationFeature;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.databind.SerializationFeature;
-import com.sourcesense.joyce.core.exception.TestRuntimeException;
+import com.google.protobuf.InvalidProtocolBufferException;
+import com.google.protobuf.Struct;
+import com.google.protobuf.util.JsonFormat;
 
 import java.io.IOException;
 import java.io.InputStream;
@@ -21,6 +23,12 @@ public interface TestUtility {
 		return new ObjectMapper()
 				.disable(DeserializationFeature.FAIL_ON_UNKNOWN_PROPERTIES)
 				.disable(SerializationFeature.FAIL_ON_EMPTY_BEANS);
+	}
+
+	default Struct computeStruct(String json) throws InvalidProtocolBufferException {
+		Struct.Builder structBuilder = Struct.newBuilder();
+		JsonFormat.parser().ignoringUnknownFields().merge(json, structBuilder);
+		return structBuilder.build();
 	}
 
 	default <T> T computeResourceAsObject(String path, Class<T> clazz) throws IOException, URISyntaxException {
