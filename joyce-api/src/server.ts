@@ -1,18 +1,13 @@
 import fastify from "fastify";
 import * as fastifyStatic from "fastify-static";
+import path from "path";
+const logger = require("pino")();
 
 import healthHandler from "./modules/health/routes";
 import { CustomeSchemaParser } from "./plugins/CustomSchemaParser";
-import fs from "fs";
-// import path from "path";
-import { SchemaConfiguration } from "./plugins/SchemaConfiguration";
 import { MultipleEntitySchema, SingleEntitySchema } from "./plugins/PrepareFastifySchema";
-import { JRPCParams, ResponsableSchema } from "./types";
-import { readSchemas } from "./lib/schema-utils";
-import { readConfig } from "./lib/config-util";
+import { JRPCParams } from "./types";
 import { loadSchemas } from "./lib/openapi-utils";
-const logger = require("pino")();
-const path = require("path");
 
 logger.info("starting server module");
 
