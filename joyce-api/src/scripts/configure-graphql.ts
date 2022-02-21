@@ -7,70 +7,15 @@ import upperFirst from "lodash/upperFirst";
 import camelCase from "lodash/camelCase";
 import yaml from "js-yaml";
 
-import { getSchema } from "@clients/grpc";
-// import { Schema } from "@generated/grpc/model/schema_pb";
-
-import type { Config, Schema } from "src/types";
+import type { Schema } from "src/types";
+import { readConfig } from "@src/lib/config-util";
+import { readSchemas, saveSchemas } from "@src/lib/schema-utils";
 
 const logger = require("pino")({ name: "configure-graphql" });
 
 const SCHEMAS_SOURCE = process.env.SCHEMAS_SOURCE || "src/templates/schemas.json";
 const WORKDIR = process.env.WORKDIR || "./workdir";
 const mongoURI = process.env.MONGO_URI || "mongodb://localhost:27017/ingestion";
-
-/**
- * @returns the content of the config of this api server
- */
-function readConfig(): Promise<Config> {
-	return fs.promises
-		.readFile(SCHEMAS_SOURCE, {
-			encoding: "utf8",
-		})
-		.then((file) => JSON.parse(file) as Config)
-		.then((config) => {
-			validate(config);
-			return config;
-		});
-}
-
-function validate(config: Config): void {
-	if (Array.isArray(config.resources)) {
-		if (config.resources.length === 0) {
-			throw new Error("no configured resource");
-		}
-		const validResources = config.resources.every((resource) => {
-			return resource.path && resource.schema;
-		});
-		if (!validResources) {
-			throw new Error("resources config must have paths and schemas");
-		}
-		const paths = config.resources.reduce((acc, res) => {
-			return { ...acc, [res.path]: (acc[res.path] || 0) + 1 };
-		}, {});
-		const hasDuplicatePaths = Object.keys(paths).length < config.resources.length;
-		if (hasDuplicatePaths) {
-			throw new Error("paths should be unique");
-		}
-	} else {
-		throw new Error("no configured resources");
-	}
-}
-
-async function readSchemas(config: Config): Promise<{ [x: string]: Schema }> {
-	const schemas = {};
-	for (const resource of config.resources) {
-		const schema = await getSchema(resource.schema);
-		logger.info({ resource }, "getting resource schema");
-
-		schema.name = upperFirst(camelCase(resource.path));
-		schema.metadata.endpoint = resource.path;
-		schema.metadata.name = upperFirst(camelCase(resource.path));
-
-		schemas[resource.path] = schema;
-
-	}
-	return schemas;
-}
 
 /**
  * generates and saves to WORKDIR moongoose models from templates/model.js.handlebars and remote schema
@@ -116,7 +61,7 @@ async function generateMeshrc(models: string[], mongoURI: string) {
 						connectionString: mongoURI,
 						models: models.map((name) => ({
 							name,
-							path: path.resolve(`${WORKDIR}/${name}.model.js`),
+							path: `./${name}.model.js`,
 						})),
 					},
 				},
@@ -139,8 +84,9 @@ async function checkWorkdir() {
  */
 async function generateConfiguration() {
 	await checkWorkdir();
-	const config = await readConfig();
+	const config = await readConfig(SCHEMAS_SOURCE);
 	const schemas = await readSchemas(config);
+	await saveSchemas(schemas, WORKDIR);
 	const models = await generateMoongooseModels(schemas);
 	await generateMoongooseModelsEnhanced(schemas);
 	return generateMeshrc(models, mongoURI);

@@ -14,7 +14,7 @@ export interface SchemaMetadata {
 	name?: string;
 	collection: string;
 	namespace: string;
-	subtype: string;
+	subtype: keyof typeof JoyceUriSubtype;
 	indexes: {[x:string]: number}[];
 	development: boolean;
 	store: boolean;
@@ -22,6 +22,7 @@ export interface SchemaMetadata {
 	indexed: boolean;
 	connectors: boolean;
 	pb_export: boolean;
+	extra: string;
 }
 export interface Schema {
 	uid: string;
