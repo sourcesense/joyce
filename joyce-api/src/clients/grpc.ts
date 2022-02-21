@@ -3,21 +3,24 @@ import logFactory from "pino";
 import { SchemaApiClient } from "@generated/grpc/api/schema_api_grpc_pb";
 import { Schema } from "@generated/grpc/model/schema_pb";
 import * as google_protobuf_wrappers_pb from "google-protobuf/google/protobuf/wrappers_pb";
+import { GetSchemaRequest } from "@generated/grpc/api/schema_api_pb";
+import type { Schema as JsonSchema, SchemaMetadata, SchemaProperties } from "@src/types";
+import { JoyceUriSubtype } from "@generated/grpc/enumeration/joyce_uri_subtype_pb";
 
 const logger = logFactory({ name: "grpc-client" });
-const client = new SchemaApiClient("172.16.6.2:30744", grpc.credentials.createInsecure());
+const client = new SchemaApiClient("172.16.6.2:30244", grpc.credentials.createInsecure());
 
-export function getSchema(uid: string): Promise<Schema> {
+export function getSchema(uid: string): Promise<JsonSchema> {
 	return new Promise((resolve, reject) => {
-		const request = new google_protobuf_wrappers_pb.StringValue();
-		request.setValue(uid);
+		const request = new GetSchemaRequest();
+		request.setId(uid);
 
 		client.getSchema(request, (error, response) => {
 			if (error) {
 				reject(new Error(`cannot read grpc schema, cause: ${error.message}`));
 			} else {
 				if (response.hasSchema()) {
-					resolve(response.getSchema());
+					resolve(toJsonSchema(response.getSchema()));
 				} else {
 					logger.debug(`no such schema ${uid}`);
 					reject();
@@ -25,4 +28,35 @@ export function getSchema(uid: string): Promise<Schema> {
 			}
 		});
 	});
+}
+
+function toJsonSchema(protoSchema: Schema): JsonSchema {
+	const protoObj = protoSchema.toObject();
+	const schema: JsonSchema = {
+		uid: protoSchema.getUid(),
+		$schema: protoSchema.getSchema(),
+		type: protoSchema.getType(),
+		required: protoSchema.getRequiredList(),
+
+		metadata: {
+			...protoSchema.getMetadata().toObject(),
+			// endpoint: "TBD",
+			uid: protoObj.uid,
+			indexes: protoObj.metadata.indexesList.map((index) => Object.fromEntries(index.indexMap)),
+			subtype: Object.keys(JoyceUriSubtype).find((subtype) => Number(JoyceUriSubtype[subtype]) === Number(protoObj.metadata.subtype)),
+			development: protoObj.metadata.development === "true",
+			store: protoObj.metadata.store === "true",
+			validation: protoObj.metadata.validation === "true",
+			indexed: protoObj.metadata.indexed === "true",
+			connectors: protoObj.metadata.connectors === "true",
+			pb_export: protoObj.metadata.pb_export === "true",
+		},
+		properties: protoSchema.getProperties().toJavaScript(),
+
+	};
+
+	(schema.metadata as any).indexesList = undefined;
+	(schema as any).schema = undefined;
+
+	return schema;
 }

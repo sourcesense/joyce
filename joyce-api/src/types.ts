@@ -1,3 +1,5 @@
+import { JoyceUriSubtype } from "@generated/grpc/enumeration/joyce_uri_subtype_pb";
+
 export interface SchemaProperty {
 	required?: boolean;
 	type: string;
@@ -8,14 +10,27 @@ export interface SchemaProperties {
 }
 export interface SchemaMetadata {
 	uid: string;
-	endpoint: string;
+	endpoint?: string;
+	name?: string;
 	collection: string;
 	namespace: string;
 	subtype: string;
+	indexes: {[x:string]: number}[];
+	development: boolean;
+	store: boolean;
+	validation: boolean;
+	indexed: boolean;
+	connectors: boolean;
+	pb_export: boolean;
 }
 export interface Schema {
+	uid: string;
+	$schema: string;
+	type: string;
 	metadata: SchemaMetadata;
 	properties: SchemaProperties;
+	required: string[];
+	name?: string;
 }
 export interface SchemaResources {
 	[key: string]: Resource;

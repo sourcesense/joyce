@@ -8,11 +8,11 @@ import camelCase from "lodash/camelCase";
 import yaml from "js-yaml";
 
 import { getSchema } from "@clients/grpc";
-import { Schema } from "@generated/grpc/model/schema_pb";
+// import { Schema } from "@generated/grpc/model/schema_pb";
 
-import type { Config } from "src/types";
+import type { Config, Schema } from "src/types";
 
-const logger = require("pino")({ name: "graphql-configuration" });
+const logger = require("pino")({ name: "configure-graphql" });
 
 const SCHEMAS_SOURCE = process.env.SCHEMAS_SOURCE || "src/templates/schemas.json";
 const WORKDIR = process.env.WORKDIR || "./workdir";
@@ -59,15 +59,15 @@ function validate(config: Config): void {
 async function readSchemas(config: Config): Promise<{ [x: string]: Schema }> {
 	const schemas = {};
 	for (const resource of config.resources) {
-		const schema = await getSchema(resource.schema).then((s) => s.toObject());
-		schemas[resource.path] = {
-			...schema,
-			properties: JSON.parse(schema.properties),
-			required: schema.requiredList,
-			requiredList: undefined,
-			name: upperFirst(camelCase(resource.path)),
-			$schema: schema.schema,
-		};
+		const schema = await getSchema(resource.schema);
+		logger.info({ resource }, "getting resource schema");
+
+		schema.name = upperFirst(camelCase(resource.path));
+		schema.metadata.endpoint = resource.path;
+		schema.metadata.name = upperFirst(camelCase(resource.path));
+
+		schemas[resource.path] = schema;
+
 	}
 	return schemas;
 }
@@ -83,7 +83,7 @@ async function generateMoongooseModels(config: { [x: string]: Schema }): Promise
 
 	for (const key of Object.keys(config)) {
 		const name = upperFirst(camelCase(key));
-		logger.info(`generatingo ${name} model`);
+		logger.info(`generating ${name} model`);
 
 		const text = compiledTemplate({
 			data: JSON.stringify(config[key]),

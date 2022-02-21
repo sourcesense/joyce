@@ -10,8 +10,9 @@ import * as model_schema_pb from "@generated/grpc/model/schema_pb";
 import * as google_protobuf_empty_pb from "google-protobuf/google/protobuf/empty_pb";
 import * as google_protobuf_wrappers_pb from "google-protobuf/google/protobuf/wrappers_pb";
 import { SchemaApiClient } from "@generated/grpc/api/schema_api_grpc_pb";
-import { RequestParams } from "@generated/grpc/api/schema_api_pb";
+// import { RequestParams } from "@generated/grpc/api/schema_api_pb";
 import { JoyceUriSubtype } from "@generated/grpc/enumeration/joyce_uri_subtype_pb";
+import { GetSchemaResponse } from "@generated/grpc/api/schema_api_pb";
 
 const logger = require("pino")();
 
@@ -29,7 +30,7 @@ schemaRequest.setValue("joyce://schema/import/demo5.developer");
 
 const call: grpc.ClientUnaryCall = asd.getSchema(
 	new google_protobuf_wrappers_pb.StringValue(["joyce://schema/import/demo5.developer"]),
-	(error: grpc.ServiceError, response: model_schema_pb.OptionalSchema) => {
+	(error: grpc.ServiceError, response: GetSchemaResponse) => {
 		logger.info(
 			{
 				r: schemaRequest.toObject(),
@@ -40,7 +41,7 @@ const call: grpc.ClientUnaryCall = asd.getSchema(
 			"getting optional schema",
 		);
 		if (response) {
-			const optschema: model_schema_pb.OptionalSchema = response;
+			const optschema: GetSchemaResponse = response;
 			logger.info({ xx: true, optschema: optschema.toObject() }, "this schema");
 		}
 	},
@@ -48,35 +49,35 @@ const call: grpc.ClientUnaryCall = asd.getSchema(
 
 // -------------------
 
-const allRequest = new RequestParams();
-allRequest.setNamespace("demo5");
-allRequest.setSubtype(JoyceUriSubtype.IMPORT);
-allRequest.setRootonly("true");
+// const allRequest = new RequestParams();
+// allRequest.setNamespace("demo5");
+// allRequest.setSubtype(JoyceUriSubtype.IMPORT);
+// allRequest.setRootonly("true");
 
-const all = asd.getAllSchemasBySubtypeAndNamespace(allRequest);
-all.on("data", (data: google_protobuf_wrappers_pb.StringValue) => {
-	logger.info({ schema: data.toObject() }, `[getAllSchemasBySubtypeAndNamespace] schema`);
-});
-all.on("error", (err) => {
-	logger.warn(err);
-});
-all.on("end", () => {
-	logger.info("[getAllSchemasBySubtypeAndNamespace] Done.");
-});
+// const all = asd.getAllSchemasBySubtypeAndNamespace(allRequest);
+// all.on("data", (data: google_protobuf_wrappers_pb.StringValue) => {
+// 	logger.info({ schema: data.toObject() }, `[getAllSchemasBySubtypeAndNamespace] schema`);
+// });
+// all.on("error", (err) => {
+// 	logger.warn(err);
+// });
+// all.on("end", () => {
+// 	logger.info("[getAllSchemasBySubtypeAndNamespace] Done.");
+// });
 
 // -------------------
 
-const stream: grpc.ClientReadableStream<google_protobuf_wrappers_pb.StringValue> = asd.getAllNamespaces(
-	new google_protobuf_empty_pb.Empty(),
-	{},
-);
+// const stream: grpc.ClientReadableStream<google_protobuf_wrappers_pb.StringValue> = asd.getAllNamespaces(
+// 	new google_protobuf_empty_pb.Empty(),
+// 	{},
+// );
 
-stream.on("data", (data: google_protobuf_wrappers_pb.StringValue) => {
-	logger.info(`[getAllNamespaces] Namespace: ${JSON.stringify(data.toObject())}`);
-});
-stream.on("end", () => {
-	logger.info("[getAllNamespaces] Done.");
-});
+// stream.on("data", (data: google_protobuf_wrappers_pb.StringValue) => {
+// 	logger.info(`[getAllNamespaces] Namespace: ${JSON.stringify(data.toObject())}`);
+// });
+// stream.on("end", () => {
+// 	logger.info("[getAllNamespaces] Done.");
+// });
 
 // -------------------
 

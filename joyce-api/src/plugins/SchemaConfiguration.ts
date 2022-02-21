@@ -21,9 +21,6 @@ export class SchemaConfiguration {
 		return this.sources.map((resource) => {
 			logger.info(resource.source);
 			return getSchema(resource.source)
-				.then((r) => {
-					return r.toObject();
-				})
 				.then((j) => {
 					logger.info(`SUCCESS: ${resource.label} schema Found`);
 					// j["$metadata"]["endpoint"] = resource.label;
@@ -42,7 +39,6 @@ export class SchemaConfiguration {
 								endpoint: resource.label,
 								name,
 							},
-							properties: JSON.parse(j.properties),
 						},
 					};
 				})

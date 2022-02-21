@@ -24,8 +24,11 @@ export class Schema extends jspb.Message {
     getRequiredList(): Array<string>;
     setRequiredList(value: Array<string>): Schema;
     addRequired(value: string, index?: number): string;
-    getProperties(): string;
-    setProperties(value: string): Schema;
+
+    hasProperties(): boolean;
+    clearProperties(): void;
+    getProperties(): google_protobuf_struct_pb.Struct | undefined;
+    setProperties(value?: google_protobuf_struct_pb.Struct): Schema;
 
     serializeBinary(): Uint8Array;
     toObject(includeInstance?: boolean): Schema.AsObject;
@@ -44,44 +47,6 @@ export namespace Schema {
         metadata?: model_schema_metadata_pb.SchemaMetadata.AsObject,
         type: string,
         requiredList: Array<string>,
-        properties: string,
+        properties?: google_protobuf_struct_pb.Struct.AsObject,
     }
-}
-
-export class OptionalSchema extends jspb.Message { 
-
-    hasSchema(): boolean;
-    clearSchema(): void;
-    getSchema(): Schema | undefined;
-    setSchema(value?: Schema): OptionalSchema;
-
-    hasNull(): boolean;
-    clearNull(): void;
-    getNull(): google_protobuf_struct_pb.NullValue;
-    setNull(value: google_protobuf_struct_pb.NullValue): OptionalSchema;
-
-    getKindCase(): OptionalSchema.KindCase;
-
-    serializeBinary(): Uint8Array;
-    toObject(includeInstance?: boolean): OptionalSchema.AsObject;
-    static toObject(includeInstance: boolean, msg: OptionalSchema): OptionalSchema.AsObject;
-    static extensions: {[key: number]: jspb.ExtensionFieldInfo<jspb.Message>};
-    static extensionsBinary: {[key: number]: jspb.ExtensionFieldBinaryInfo<jspb.Message>};
-    static serializeBinaryToWriter(message: OptionalSchema, writer: jspb.BinaryWriter): void;
-    static deserializeBinary(bytes: Uint8Array): OptionalSchema;
-    static deserializeBinaryFromReader(message: OptionalSchema, reader: jspb.BinaryReader): OptionalSchema;
-}
-
-export namespace OptionalSchema {
-    export type AsObject = {
-        schema?: Schema.AsObject,
-        pb_null: google_protobuf_struct_pb.NullValue,
-    }
-
-    export enum KindCase {
-        KIND_NOT_SET = 0,
-        SCHEMA = 1,
-        NULL = 2,
-    }
-
 }
