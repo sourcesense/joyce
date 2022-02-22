@@ -4,10 +4,9 @@ import path from "path";
 const logger = require("pino")();
 
 import healthHandler from "./modules/health/routes";
-import { CustomeSchemaParser } from "./plugins/CustomSchemaParser";
-import { MultipleEntitySchema, SingleEntitySchema } from "./plugins/PrepareFastifySchema";
 import { JRPCParams } from "./types";
-import { loadSchemas } from "./lib/openapi-utils";
+import { readLocalSchemas } from "./utils/schema-utils";
+import MongoOpenApiResource from "./plugins/MongoOpenApiResource";
 
 logger.info("starting server module");
 
@@ -15,13 +14,13 @@ const SCHEMAS_SOURCE = process.env.SCHEMAS_SOURCE || "schemas.json";
 const WORKDIR = process.env.WORKDIR || "./workdir";
 const PRODUCTION_URL = process.env.BASE_URL || "https://<production-url>";
 const INTERNAL_URL = process.env.BASE_URL || "http://localhost:6650";
-const HEALTH_PATH = process.env.HEALTH_PATH || "/health";
-const JOYCE_GRAPHQL = process.env.JOYCE_GRAPHQL || true;
+// const HEALTH_PATH = process.env.HEALTH_PATH || "/health";
+// const JOYCE_GRAPHQL = process.env.JOYCE_GRAPHQL || true;
 
 async function createServer(db, producer) {
 	const JOYCE_API_KAFKA_COMMAND_TOPIC = process.env.JOYCE_API_KAFKA_COMMAND_TOPIC || "commands";
 
-	return loadSchemas(SCHEMAS_SOURCE, WORKDIR).then((schemasList) => {
+	return readLocalSchemas(SCHEMAS_SOURCE, WORKDIR).then((schemasList) => {
 		// logger.info({ schemasList }, "schemaslist");
 		// const filteredSchemalist = schemasList.filter((e) => e.label);
 		const server = fastify({
@@ -39,10 +38,6 @@ async function createServer(db, producer) {
 		server.get("/", (_, reply) => {
 			reply.sendFile("index.html");
 		});
-		server.get("/graphiql", (_, reply) => {
-			reply.sendFile("graphiql.html");
-		});
-
 
 		server.register(require("fastify-oas"), {
 			routePrefix: "/docs",
@@ -105,70 +100,11 @@ async function createServer(db, producer) {
 			},
 		);
 
-		logger.info("preparing resources");
 		schemasList.map((wrapper) => {
-			const tempSchema = new CustomeSchemaParser(wrapper.schema);
-			/**
-	   Per specificare le interfacce dei parametri di Fastify usa:
-		Querystring: {page:number:, size:number}
-		Params: {id:string}
-		Headers: {'x-joyce':string}
-		Body: {veditu:string}
-	   */
-			server.get<{ Params: { id: string } }>(
-				`/rest/${wrapper.path}/:id`,
-				SingleEntitySchema(tempSchema),
-				async function (req, res) {
-					const { id: entityID } = req.params;
-					try {
-						const namespaced_collection = `${wrapper.schema.metadata.namespace || "default"}.${wrapper.schema.metadata.collection
-						}`;
-						const collection = db.collection(namespaced_collection);
-
-						const _id = `joyce://content/${wrapper.schema.metadata.subtype}/${namespaced_collection}/${entityID}`;
-						const entity = await collection.findOne({ _id });
-
-						if (entity) {
-							req.log.info(`entity ${_id} found`);
-							res.status(200).send(entity);
-						} else {
-							req.log.info(`entity ${_id} not found`);
-							res.status(404).send();
-						}
-					} catch (errore) {
-						req.log.error(errore);
-						res.status(500).send({ code: 500, message: errore.message });
-					}
-				},
-			);
-			server.get<{
-				Querystring: {
-					page: number | null;
-					size: number | null;
-					orderBy: "asc" | "desc";
-					sortBy: string;
-				};
-			}>(`/rest/${wrapper.path}`, MultipleEntitySchema(tempSchema), async function (req, res) {
-				const { page = 0, size = 10, orderBy, sortBy, ...other } = req.query;
-				try {
-					const namespaced_collection = `${wrapper.schema.metadata.namespace || "default"}.${wrapper.schema.metadata.collection
-					}`;
-					const collection = db.collection(namespaced_collection);
-					const docs = await collection
-						.find(other || {})
-						.project(tempSchema.getSchemaPropertiesMongoProjection()) // è un ottimizzazione. Di fatto fastify già elimina le proprietà non comprese nello schema dichiarato poche righe sopra
-						.sort({ [sortBy || "id"]: orderBy === "asc" ? 1 : -1 })
-						.limit(size)
-						.skip(page * size)
-						.toArray();
-					res.status(200).send(docs);
-				} catch (errore) {
-					req.log.error(errore);
-					res.status(500).send(errore);
-				}
-			});
+			const resource = new MongoOpenApiResource(wrapper.schema, db);
+			server.register(resource.routes);
 		});
-		server.register(healthHandler, { prefix: HEALTH_PATH });
+		server.register(healthHandler, { prefix: "/health" });
 
 		server.setErrorHandler((error, req, res) => {
 			req.log.error(error.toString());

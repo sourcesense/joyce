@@ -27,7 +27,11 @@ module.exports = async ({ getBuiltMesh, documents, logger }) => {
 		logger.info("kafka ready");
 	});
 	const server = await createServer(client.db(), producerKafka);
+
 	server.register(apolloServer.createHandler());
+	server.get("/graphiql", (_, reply) => {
+		reply.sendFile("graphiql.html");
+	});
 
 	process.on("SIGINT", function () {
 		logger.info("Bye");

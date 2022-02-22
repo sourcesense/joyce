@@ -8,8 +8,8 @@ import camelCase from "lodash/camelCase";
 import yaml from "js-yaml";
 
 import type { Schema } from "src/types";
-import { readConfig } from "@src/lib/config-util";
-import { readSchemas, saveSchemas } from "@src/lib/schema-utils";
+import { readConfig } from "@src/utils/config-util";
+import { readRemoteSchemas, writeLocalSchemas } from "@src/utils/schema-utils";
 
 const logger = require("pino")({ name: "configure-graphql" });
 
@@ -85,8 +85,8 @@ async function checkWorkdir() {
 async function generateConfiguration() {
 	await checkWorkdir();
 	const config = await readConfig(SCHEMAS_SOURCE);
-	const schemas = await readSchemas(config);
-	await saveSchemas(schemas, WORKDIR);
+	const schemas = await readRemoteSchemas(config);
+	await writeLocalSchemas(schemas, WORKDIR);
 	const models = await generateMoongooseModels(schemas);
 	await generateMoongooseModelsEnhanced(schemas);
 	return generateMeshrc(models, mongoURI);
