@@ -15,6 +15,7 @@ export function getSchema(uid: string): Promise<JsonSchema> {
 	return new Promise((resolve, reject) => {
 		const request = new GetSchemaRequest();
 		request.setId(uid);
+		logger.info(`getting schema ${uid}`);
 
 		client.getSchema(request, (error, response) => {
 			if (error) {
@@ -34,7 +35,6 @@ export function getSchema(uid: string): Promise<JsonSchema> {
 function toJsonSchema(protoSchema: Schema): JsonSchema {
 	const protoObj = protoSchema.toObject();
 
-	logger.info({ extra: protoObj.metadata.extra }, "extras");
 	const schema: JsonSchema = {
 		uid: protoSchema.getUid(),
 		$schema: protoSchema.getSchema(),

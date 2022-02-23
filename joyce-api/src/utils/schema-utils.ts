@@ -16,7 +16,7 @@ export async function readRemoteSchemas(config: Config): Promise<{ [x: string]: 
 
 		schema.name = upperFirst(camelCase(resource.path));
 		schema.metadata.endpoint = resource.path;
-		schema.metadata.name = upperFirst(camelCase(resource.path));
+		// schema.metadata.name = upperFirst(camelCase(resource.path));
 
 		schemas[resource.path] = schema;
 
@@ -26,9 +26,13 @@ export async function readRemoteSchemas(config: Config): Promise<{ [x: string]: 
 
 export async function writeLocalSchemas(schemas: { [x: string]: Schema }, destination: string): Promise<void> {
 	for (const key of Object.keys(schemas)) {
-		await fs.promises.writeFile(`${destination}/${schemas[key].name}.schema.json`, JSON.stringify(schemas[key], null, 4), "utf-8");
+		await fs.promises.writeFile(`${destination}/${schemas[key].name}.schema.json`, schemaToString(schemas[key]), "utf-8");
 	}
 	return Promise.resolve();
+}
+
+export function schemaToString(schema: Schema): string {
+	return JSON.stringify(schema, null, 4);
 }
 
 export async function readLocalSchemas(source, workdir): Promise<{ name: string; path: string; schema: Schema}[]> {

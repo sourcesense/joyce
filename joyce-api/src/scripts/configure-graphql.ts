@@ -6,16 +6,63 @@ import Handlebars from "handlebars";
 import upperFirst from "lodash/upperFirst";
 import camelCase from "lodash/camelCase";
 import yaml from "js-yaml";
+import crypto from "crypto";
+import { graphqlMesh } from "@graphql-mesh/cli";
 
 import type { Schema } from "src/types";
 import { readConfig } from "@src/utils/config-util";
-import { readRemoteSchemas, writeLocalSchemas } from "@src/utils/schema-utils";
+import { readLocalSchemas, readRemoteSchemas, schemaToString, writeLocalSchemas } from "@src/utils/schema-utils";
 
 const logger = require("pino")({ name: "configure-graphql" });
 
 const SCHEMAS_SOURCE = process.env.SCHEMAS_SOURCE || "src/templates/schemas.json";
 const WORKDIR = process.env.WORKDIR || "./workdir";
 const mongoURI = process.env.MONGO_URI || "mongodb://localhost:27017/ingestion";
+
+/**
+ * configures graphql mesh reading this server config
+ */
+async function generateConfiguration() {
+	await checkWorkdir();
+	const config = await readConfig(SCHEMAS_SOURCE);
+	const schemas = await readRemoteSchemas(config);
+	const hashes = calculateHashes(schemas);
+	const hashCheck = await checkSavedHashes(hashes);
+
+	if (!hashCheck) {
+		await fs.promises.writeFile(`${WORKDIR}/hashes.json`, JSON.stringify(hashes, null, 4), "utf-8");
+		await writeLocalSchemas(schemas, WORKDIR);
+		const models = await generateMoongooseModels(schemas);
+		await generateMoongooseModelsEnhanced(schemas);
+		await generateMeshrc(models, mongoURI);
+		await graphqlMesh();
+		// mesh build
+	} else {
+		logger.info("GRAPHQL Configuration unchanged");
+	}
+	// mesh dev || start?
+	return Promise.resolve();
+}
+
+function calculateHashes(schemas: { [x: string]: Schema }): { [x: string]: string } {
+	return Object.keys(schemas).reduce(
+		(acc, key) => ({
+			...acc,
+			[key]: crypto.createHash("sha256").update(schemaToString(schemas[key])).digest("base64"),
+		}),
+		{},
+	);
+}
+
+async function checkSavedHashes(hashes: { [x: string]: string }): Promise<boolean> {
+	return fs.promises.readFile(`${WORKDIR}/hashes.json`, "utf-8")
+		.then((file) => JSON.parse(file))
+		.then((readHashes) => (
+			Object.keys(readHashes).length === Object.keys(hashes).length &&
+			Object.keys(readHashes).every((key) => readHashes[key] === hashes[key])
+		))
+		.catch(() => false);
+}
 
 /**
  * generates and saves to WORKDIR moongoose models from templates/model.js.handlebars and remote schema
@@ -79,22 +126,11 @@ async function checkWorkdir() {
 	return fs.promises.mkdir(WORKDIR, { recursive: true });
 }
 
-/**
- * configures graphql mesh reading this server config
- */
-async function generateConfiguration() {
-	await checkWorkdir();
-	const config = await readConfig(SCHEMAS_SOURCE);
-	const schemas = await readRemoteSchemas(config);
-	await writeLocalSchemas(schemas, WORKDIR);
-	const models = await generateMoongooseModels(schemas);
-	await generateMoongooseModelsEnhanced(schemas);
-	return generateMeshrc(models, mongoURI);
-}
-
 (async () => {
+	logger.info("GRAPHQL Configuration started");
 	await generateConfiguration().then(() => {
 		logger.info("GRAPHQL Configuration completed");
+		// mesh dev/build + start
 	});
 })();
 
