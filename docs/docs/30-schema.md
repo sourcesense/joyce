@@ -216,8 +216,13 @@ See [Schema Inheritance](#schema-inheritance)
 
 ### extra 
 *(default {})*  
-This node has extra feature that are specific for the type of schema.
+This node has extra features that are specific for the type of schema.
 
+### extra.filter
+
+From version `1.3` you can enter a [JSON Logic](https://jsonlogic.com/) expression that will filter content to be imported with this schema. If the expression evaluate to false the content get skipped.   
+It is useful when a  connector produce a lota of data that we don't want to get processed.   
+See [JSON logic docs](https://jsonlogic.com/operations.html) know how to express the filter. 
 ### extra.connectors
 *(default {})*  
 
@@ -246,6 +251,8 @@ Use it's value as a `json-path` expression, the underlying implementation is [Ja
 The exprassion is evaluated and the result returned.
 
 If it's value is an array, every item of the array that starts with a json-path expression (`$` sign) is evalueted and joined with the other that are not.
+
+As an add on feature you can specify a default value just inside the json-path expression in this way `$.some.path ?? DEFAULT_VALUE`.
 
 ### $meta
 
