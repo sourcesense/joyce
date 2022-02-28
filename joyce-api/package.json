@@ -9,7 +9,7 @@
 		"mesh:start": "cross-env WORKDIR=${WORKDIR:=./workdir} mesh start --dir $WORKDIR",
 		"generate": "cross-env WORKDIR=${WORKDIR:=./workdir} ts-node src/scripts/configure-graphql.ts --dir $WORKDIR",
 		"build": "tsc",
-		"start": "npm run generate && npm run mesh:live",
+		"start": "npm run generate build && npm run mesh:start",
 		"mesh:live": "cross-env WORKDIR=${WORKDIR:=./workdir} mesh dev --dir $WORKDIR",
 		"test": "jest --coverage",
 		"test:watch": "npm run test -- --watchAll",
