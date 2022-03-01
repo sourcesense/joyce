@@ -38,4 +38,7 @@ function validate(config: Config): void {
 	} else {
 		throw new Error("no configured resources");
 	}
+	if (config.jsonrpc !== true && config.graphQL === false && config.rest === false) {
+		throw new Error("no configured output");
+	}
 }

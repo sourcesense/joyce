@@ -1,5 +1,11 @@
 import { JoyceUriSubtype } from "@generated/grpc/enumeration/joyce_uri_subtype_pb";
 
+declare module "fastify" {
+	interface FastifySchema {
+		tags?: string[];
+	}
+}
+
 export interface SchemaProperty {
 	required?: boolean;
 	type: string;
@@ -56,6 +62,10 @@ export interface Config {
 	security: { [key:string]: string };
 	/** default: true, enables jsonrpc channel (Kafka) */
 	jsonrpc: boolean;
+	/** default: true, enables graphQL channel */
+	graphQL: boolean;
+	/** default: true, enables rest channel */
+	rest: boolean;
 	/** schemas to be published by this api server */
 	resources: {
 		/** path to the resource */

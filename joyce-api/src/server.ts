@@ -4,9 +4,10 @@ import path from "path";
 const logger = require("pino")();
 
 import healthHandler from "./modules/health/routes";
-import { JRPCParams } from "./types";
 import { readLocalSchemas } from "./utils/schema-utils";
 import MongoOpenApiResource from "./plugins/MongoOpenApiResource";
+import { readConfig } from "./utils/config-util";
+import jrpcPlugin from "./plugins/JrpcPlugin";
 
 logger.info("starting server module");
 
@@ -17,8 +18,9 @@ const INTERNAL_URL = process.env.BASE_URL || "http://localhost:6650";
 // const HEALTH_PATH = process.env.HEALTH_PATH || "/health";
 // const JOYCE_GRAPHQL = process.env.JOYCE_GRAPHQL || true;
 
-async function createServer(db, producer) {
-	const JOYCE_API_KAFKA_COMMAND_TOPIC = process.env.JOYCE_API_KAFKA_COMMAND_TOPIC || "commands";
+async function createServer(db) {
+	// const JOYCE_API_KAFKA_COMMAND_TOPIC = process.env.JOYCE_API_KAFKA_COMMAND_TOPIC || "commands";
+	const config = await readConfig(SCHEMAS_SOURCE);
 
 	return readLocalSchemas(SCHEMAS_SOURCE, WORKDIR).then((schemasList) => {
 		// logger.info({ schemasList }, "schemaslist");
@@ -61,44 +63,12 @@ async function createServer(db, producer) {
 				produces: ["application/json"],
 			},
 		});
-		server.post<{ Body: JRPCParams }>(
-			"/jrpc",
-			{
-				schema: {
-					// @ts-ignore
-					tags: ["jrpc"],
-					body: {
-						type: "object",
-						required: ["jsonrpc", "method", "params", "id"],
-						properties: {
-							jsonrpc: { type: "string", enum: ["2.0"] },
-							method: { type: "string" },
-							params: { type: "object", minProperties: 1 },
-							id: { type: "string", minLength: 1 },
-						},
-					},
-					response: {
-						200: { type: "string", enum: ["OK"] },
-						500: { type: "string", enum: ["KO"] },
-					},
-				},
-			},
-			async function (req, res) {
-				const payload = {
-					topic: JOYCE_API_KAFKA_COMMAND_TOPIC,
-					messages: JSON.stringify(req.body),
-					key: req.body.id,
-				};
-				producer.send([payload], function (err: any) {
-					if (err) {
-						res.status(500).send("KO");
-						return;
-					}
-					res.status(200).send("OK");
-					return;
-				});
-			},
-		);
+
+		if (config.jsonrpc === true) {
+			server.register(jrpcPlugin);
+		} else {
+			logger.info("Json RPC Channel NOT enabled");
+		}
 
 		schemasList.map((wrapper) => {
 			const resource = new MongoOpenApiResource(wrapper.schema, db);

@@ -11,7 +11,7 @@ import { graphqlMesh } from "@graphql-mesh/cli";
 
 import type { Schema } from "src/types";
 import { readConfig } from "@src/utils/config-util";
-import { readLocalSchemas, readRemoteSchemas, schemaToString, writeLocalSchemas } from "@src/utils/schema-utils";
+import { readRemoteSchemas, schemaToString, writeLocalSchemas } from "@src/utils/schema-utils";
 
 const logger = require("pino")({ name: "configure-graphql" });
 
@@ -25,22 +25,36 @@ const mongoURI = process.env.MONGO_URI || "mongodb://localhost:27017/ingestion";
 async function generateConfiguration() {
 	await checkWorkdir();
 	const config = await readConfig(SCHEMAS_SOURCE);
+	const hasGraphQL = config.graphQL !== false;
+	const hasRest = config.rest !== false;
+	if (!hasGraphQL && !hasRest) {
+		logger.info("Server Configuration skipped");
+		return Promise.resolve();
+	}
 	const schemas = await readRemoteSchemas(config);
 	const hashes = calculateHashes(schemas);
 	const hashCheck = await checkSavedHashes(hashes);
+	const hasMeshrc = fs.existsSync(`${WORKDIR}/.meshrc.yml`);
+
 
 	if (!hashCheck) {
 		await fs.promises.writeFile(`${WORKDIR}/hashes.json`, JSON.stringify(hashes, null, 4), "utf-8");
 		await writeLocalSchemas(schemas, WORKDIR);
+	}
+	if (hasGraphQL && (!hashCheck || !hasMeshrc)) {
 		const models = await generateMoongooseModels(schemas);
 		await generateMoongooseModelsEnhanced(schemas);
 		await generateMeshrc(models, mongoURI);
 		await graphqlMesh();
 		// mesh build
 	} else {
-		logger.info("GRAPHQL Configuration unchanged");
+		logger.info("Mesh Configuration skipped");
 	}
-	// mesh dev || start?
+
+	if (!hasGraphQL) {
+		// guarantees that hasMeshrc won't leverage an old file
+		await fs.promises.unlink(`${WORKDIR}/.meshrc.yml`);
+	}
 	return Promise.resolve();
 }
 
@@ -127,9 +141,9 @@ async function checkWorkdir() {
 }
 
 (async () => {
-	logger.info("GRAPHQL Configuration started");
+	logger.info("Server Configuration started");
 	await generateConfiguration().then(() => {
-		logger.info("GRAPHQL Configuration completed");
+		logger.info("Server Configuration completed");
 		// mesh dev/build + start
 	});
 })();
