@@ -6,11 +6,17 @@ const createServer = require("../server").default;
 // const KafkaProducerPromise = require("../plugins/KafkaClient").default;
 const MongoClient = require("mongodb");
 
+const logger = require("pino").default({ name: "mesh-server" });
+
 const PORT = process.env.PORT || "6650";
 const mongoURI = process.env.MONGO_URI || "mongodb://localhost:27017/ingestion";
 const SCHEMAS_SOURCE = process.env.SCHEMAS_SOURCE || "src/templates/schemas.json";
 
-module.exports = async ({ getBuiltMesh, documents, logger }) => {
+/**
+ * @param ServeMeshOptions param0
+ * @returns Promise<void>
+ */
+module.exports = async ({ getBuiltMesh, documents }) => {
 	const client = await MongoClient.connect(mongoURI, { useUnifiedTopology: true });
 
 	client.on("error", function (error) {
@@ -18,29 +24,29 @@ module.exports = async ({ getBuiltMesh, documents, logger }) => {
 	});
 
 	const config = await readConfig(SCHEMAS_SOURCE);
+	const hasGraphQL = config.graphQL !== false;
 
 	const server = await createServer(client.db());
 
-	const { schema, contextBuilder } = await getBuiltMesh();
+	if (hasGraphQL) {
+		const { schema, contextBuilder } = await getBuiltMesh();
 
-	const apolloServer = new ApolloServer({
-		schema,
-		context: ({ req }) => contextBuilder(req),
-		introspection: true,
-		playground: true,
-	});
+		const apolloServer = new ApolloServer({
+			schema,
+			context: ({ req }) => contextBuilder(req),
+			introspection: true,
+			playground: true,
+		});
 
-	await apolloServer.start();
-	// const producerKafka = KafkaProducerPromise(logger);
-	// producerKafka.then(producer => {
-	// 	logger.info("kafka ready");
-	// });
-	// const server = await createServer(client.db(), producerKafka);
+		await apolloServer.start();
 
-	server.register(apolloServer.createHandler());
-	server.get("/graphiql", (_, reply) => {
-		reply.sendFile("graphiql.html");
-	});
+		server.register(apolloServer.createHandler());
+		server.get("/graphiql", (_, reply) => {
+			reply.sendFile("graphiql.html");
+		});
+	} else {
+		logger.info("GraphQL channel disabled");
+	}
 
 	process.on("SIGINT", function () {
 		logger.info("Bye");
@@ -53,5 +59,5 @@ module.exports = async ({ getBuiltMesh, documents, logger }) => {
 		}
 		server.log.info;
 	});
-	return { apolloServer, server };
+	return { server };
 };

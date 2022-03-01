@@ -27,35 +27,32 @@ async function generateConfiguration() {
 	const config = await readConfig(SCHEMAS_SOURCE);
 	const hasGraphQL = config.graphQL !== false;
 	const hasRest = config.rest !== false;
+
 	if (!hasGraphQL && !hasRest) {
-		logger.info("Server Configuration skipped");
-		return Promise.resolve();
-	}
-	const schemas = await readRemoteSchemas(config);
-	const hashes = calculateHashes(schemas);
-	const hashCheck = await checkSavedHashes(hashes);
-	const hasMeshrc = fs.existsSync(`${WORKDIR}/.meshrc.yml`);
-
-
-	if (!hashCheck) {
-		await fs.promises.writeFile(`${WORKDIR}/hashes.json`, JSON.stringify(hashes, null, 4), "utf-8");
-		await writeLocalSchemas(schemas, WORKDIR);
-	}
-	if (hasGraphQL && (!hashCheck || !hasMeshrc)) {
-		const models = await generateMoongooseModels(schemas);
-		await generateMoongooseModelsEnhanced(schemas);
-		await generateMeshrc(models, mongoURI);
-		await graphqlMesh();
-		// mesh build
+		logger.info("Server Configuration minimal");
+		await generateMeshrc([], mongoURI);
 	} else {
-		logger.info("Mesh Configuration skipped");
+		const schemas = await readRemoteSchemas(config);
+		const hashes = calculateHashes(schemas);
+		const hashCheck = await checkSavedHashes(hashes);
+
+		if (!hashCheck) {
+			await fs.promises.writeFile(`${WORKDIR}/hashes.json`, JSON.stringify(hashes, null, 4), "utf-8");
+			await writeLocalSchemas(schemas, WORKDIR);
+		}
+
+		if (hasGraphQL && !hashCheck) {
+			const models = await generateMoongooseModels(schemas);
+			await generateMoongooseModelsEnhanced(schemas);
+			await generateMeshrc(models, mongoURI);
+		} else {
+			await generateMeshrc([], mongoURI);
+			logger.info("Mesh Configuration skipped");
+		}
 	}
 
-	if (!hasGraphQL) {
-		// guarantees that hasMeshrc won't leverage an old file
-		await fs.promises.unlink(`${WORKDIR}/.meshrc.yml`);
-	}
-	return Promise.resolve();
+	// mesh build
+	return graphqlMesh();
 }
 
 function calculateHashes(schemas: { [x: string]: Schema }): { [x: string]: string } {
@@ -114,7 +111,7 @@ async function generateMoongooseModelsEnhanced(config: { [x: string]: Schema }):
  */
 async function generateMeshrc(models: string[], mongoURI: string) {
 	const meshConfig = {
-		sources: [
+		sources: models.length ? [
 			{
 				name: "Mongoose",
 				handler: {
@@ -127,7 +124,7 @@ async function generateMeshrc(models: string[], mongoURI: string) {
 					},
 				},
 			},
-		],
+		] : [],
 		require: ["ts-node/register/transpile-only"],
 		serve: {
 			customServerHandler: path.resolve("./src/scripts/mesh-server.js"),
