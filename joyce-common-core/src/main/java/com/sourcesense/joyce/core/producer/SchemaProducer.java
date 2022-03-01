@@ -18,7 +18,7 @@ import org.springframework.stereotype.Service;
 @Slf4j
 @Service
 @ConditionalOnProperty(value = "joyce.kafka.producer.enabled", havingValue = "true")
-public class SchemaProducer extends KafkaMessageProducer<JsonNode> {
+public class SchemaProducer extends KafkaMessageProducer<String,JsonNode> {
 
 	private final NotificationService notificationService;
 	private final MongodbProperties mongodbProperties;

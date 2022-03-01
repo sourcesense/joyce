@@ -27,14 +27,14 @@ import org.springframework.util.concurrent.ListenableFuture;
 import org.springframework.util.concurrent.ListenableFutureCallback;
 
 @RequiredArgsConstructor
-public abstract class KafkaMessageProducer<T> {
+public abstract class KafkaMessageProducer<Z,T> {
 
     protected final ObjectMapper jsonMapper;
-    private final KafkaTemplate<String, T> kafkaTemplate;
+    private final KafkaTemplate<Z, T> kafkaTemplate;
 
     public abstract void handleMessageSuccess(
             Message<T> message,
-            SendResult<String, T> result,
+            SendResult<Z, T> result,
             String rawUri,
             String contentUri,
             T eventPayload,
@@ -49,12 +49,12 @@ public abstract class KafkaMessageProducer<T> {
             T eventPayload,
             JsonNode eventMetadata);
 
-    protected ListenableFuture<SendResult<String, T>> sendMessage(String rawUri, String contentUri, Message<T> message) {
-			ListenableFuture<SendResult<String, T>> future = kafkaTemplate.send(message);
+    protected ListenableFuture<SendResult<Z, T>> sendMessage(String rawUri, String contentUri, Message<T> message) {
+			ListenableFuture<SendResult<Z, T>> future = kafkaTemplate.send(message);
 			future.addCallback(new ListenableFutureCallback<>() {
 
 				@Override
-				public void onSuccess(SendResult<String, T> result) {
+				public void onSuccess(SendResult<Z, T> result) {
 					handleMessageSuccess(
 							message,
 							result,
