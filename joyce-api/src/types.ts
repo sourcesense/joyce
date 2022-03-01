@@ -1,3 +1,5 @@
+import { JoyceUriSubtype } from "@generated/grpc/enumeration/joyce_uri_subtype_pb";
+
 export interface SchemaProperty {
 	required?: boolean;
 	type: string;
@@ -8,14 +10,28 @@ export interface SchemaProperties {
 }
 export interface SchemaMetadata {
 	uid: string;
-	endpoint: string;
+	endpoint?: string;
+	name?: string;
 	collection: string;
 	namespace: string;
-	subtype: string;
+	subtype: keyof typeof JoyceUriSubtype;
+	indexes: {[x:string]: number}[];
+	development: boolean;
+	store: boolean;
+	validation: boolean;
+	indexed: boolean;
+	connectors: boolean;
+	pb_export: boolean;
+	extra: string;
 }
 export interface Schema {
-	$metadata: SchemaMetadata;
+	uid: string;
+	$schema: string;
+	type: string;
+	metadata: SchemaMetadata;
 	properties: SchemaProperties;
+	required: string[];
+	name?: string;
 }
 export interface SchemaResources {
 	[key: string]: Resource;
@@ -25,7 +41,7 @@ export interface Resource {
 }
 export interface ResponsableSchema extends Resource {
 	label: string;
-	schema: { $metadata: SchemaMetadata; properties: SchemaProperties };
+	schema: { metadata: SchemaMetadata; properties: SchemaProperties };
 }
 
 export interface JRPCParams {
@@ -33,4 +49,18 @@ export interface JRPCParams {
 	method: string;
 	params: any;
 	id: string;
+}
+
+export interface Config {
+	/** security config TBD */
+	security: { [key:string]: string };
+	/** default: true, enables jsonrpc channel (Kafka) */
+	jsonrpc: boolean;
+	/** schemas to be published by this api server */
+	resources: {
+		/** path to the resource */
+		path: string;
+		/** schema uid identifying the resource */
+		schema: string;
+	}[];
 }

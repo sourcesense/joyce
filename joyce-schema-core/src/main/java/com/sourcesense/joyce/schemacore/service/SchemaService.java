@@ -66,7 +66,7 @@ public class SchemaService implements SchemaClient {
 	public SchemaEntity getOrElseThrow(String id) {
 		return this.get(id)
 				.orElseThrow(() -> new SchemaNotFoundException(
-						String.format("Schema [%s] doesn not exist", id)
+						String.format("Schema [%s] does not exist", id)
 				));
 	}
 

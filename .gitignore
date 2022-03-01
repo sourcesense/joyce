@@ -296,3 +296,4 @@ yarn-error.log*
 .flattened-pom.xml
 *.iml
 docs/node_modules
+joyce-api/src/grpc

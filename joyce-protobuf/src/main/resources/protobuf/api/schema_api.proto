@@ -5,20 +5,39 @@ option java_outer_classname = "SchemaApiProto";
 option java_package = "com.sourcesense.joyce.protobuf.api";
 
 import "google/protobuf/empty.proto";
-import "google/protobuf/wrappers.proto";
 import "model/schema.proto";
 import "enumeration/joyce_uri_subtype.proto";
 
 service SchemaApi {
-  rpc GetSchema(google.protobuf.StringValue) returns (OptionalSchema);
-  rpc GetAllSchemas(google.protobuf.StringValue) returns (stream Schema);
-  rpc GetAllSchemasBySubtypeAndNamespace(RequestParams) returns (stream Schema);
-  rpc GetAllSchemasByReportsIsNotEmpty(google.protobuf.Empty) returns (stream Schema);
-  rpc GetAllNamespaces(google.protobuf.Empty) returns (stream google.protobuf.StringValue);
+  rpc GetSchema(GetSchemaRequest) returns (GetSchemaResponse);
+  rpc GetAllSchemas(GetAllSchemasRequest) returns (GetSchemasResponse);
+  rpc GetAllSchemasBySubtypeAndNamespace(GetAllSchemasBySubtypeAndNamespaceRequest) returns (GetSchemasResponse);
+  rpc GetAllSchemasByReportsIsNotEmpty(google.protobuf.Empty) returns (GetSchemasResponse);
+  rpc GetAllNamespaces(google.protobuf.Empty) returns (GetNamespacesResponse);
 }
 
-message RequestParams {
+message GetSchemaRequest {
+  string id = 1;
+}
+
+message GetAllSchemasRequest {
+  string rootOnly = 1;
+}
+
+message GetAllSchemasBySubtypeAndNamespaceRequest {
   JoyceUriSubtype subtype = 1;
   string namespace = 2;
   string rootOnly = 3;
+}
+
+message GetSchemaResponse {
+  Schema schema = 1;
+}
+
+message GetSchemasResponse {
+  repeated Schema schemas = 1;
+}
+
+message GetNamespacesResponse {
+  repeated string namespaces = 1;
 }

@@ -13,12 +13,7 @@ message Schema {
   SchemaMetadata metadata = 3;
   string type = 4;
   repeated string required = 5;
-  string properties = 6;
+  google.protobuf.Struct properties = 6;
 }
 
-message OptionalSchema {
-  oneof kind {
-    Schema schema = 1;
-    google.protobuf.NullValue null = 2;
-  }
-}
+

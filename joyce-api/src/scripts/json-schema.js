@@ -10,6 +10,7 @@ var subSchemaTypeV3 = function (parentSchema, subschema, key) {
 		type: subschema, required: true
 	} : subschema;
 };
+
 var subSchemaTypeV4 = function (parentSchema, subschema, key) {
 	return (0 <= parentSchema.required.indexOf(key)) ? !_.isPlainObject(subschema) ? {
 		type: subschema, required: true
@@ -32,25 +33,25 @@ var schemaParamsToMongoose = {
 	* Pattern for value to match
 	*/
 	pattern: function (pattern) {
-		return ({ match: RegExp(pattern) }); 
+		return ({ match: RegExp(pattern) });
 	},
 	type: function (type) {
-		return ({ type: typeStringToMongooseType[type] }); 
+		return ({ type: typeStringToMongooseType[type] });
 	},
 	minLength: function (min) {
-		return ({ minlength: min }); 
+		return ({ minlength: min });
 	},
 	maxLength: function (max) {
-		return ({ maxlength: max }); 
+		return ({ maxlength: max });
 	},
 	minimum: function (min) {
-		return ({ min: min }); 
+		return ({ min: min });
 	},
 	maximum: function (max) {
-		return ({ max: max }); 
+		return ({ max: max });
 	},
 	enum: function (members) {
-		return ({ enum: members }); 
+		return ({ enum: members });
 	}
 };
 var toMongooseParams = function (acc, val, key) {
@@ -80,7 +81,7 @@ var convertV = function (version, refSchemas, jsonSchema) {
 			isTypeDate ?
 				_.reduce(_.omit(jsonSchema, "type", "format"), toMongooseParams, { type: typeRefToMongooseType["#/definitions/dateOrDatetime"] })
 				:
-				_.has(typeStringToMongooseType, jsonSchema.type) ?      
+				_.has(typeStringToMongooseType, jsonSchema.type) ?
 					_.reduce(jsonSchema, toMongooseParams, {})
 					:
 					(jsonSchema.type === "object") ?
