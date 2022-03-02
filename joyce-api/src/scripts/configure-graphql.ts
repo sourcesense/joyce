@@ -30,38 +30,43 @@ async function generateConfiguration() {
 
 	if (hasGraphQL || hasRest) {
 		const schemas = await readRemoteSchemas(config);
-		const hash = calculateHash(schemas, config);
-		const hashCheck = await checkSavedHash(hash);
-
-		// const hashes = calculateHashes(schemas);
-		// const hashCheck2 = await checkSavedHashes(hashes);
-		// logger.info({ hashCheck, hashCheck2 }, "hash check result");
+		const hash = createResourcesHash(schemas, config);
+		const hashCheck = await checkAndPersistHash(hash, "resources.hash");
 
 		if (!hashCheck) {
-			await fs.promises.writeFile(`${WORKDIR}/hash.txt`, hash, "utf-8");
-			// await fs.promises.writeFile(`${WORKDIR}/hashes.json`, JSON.stringify(hashes, null, 4), "utf-8");
 			await writeLocalSchemas(schemas, WORKDIR);
 			if (hasGraphQL) {
 				const models = await generateMoongooseModels(schemas);
 				await generateMoongooseModelsEnhanced(schemas);
-				await generateMeshrc(models, mongoURI);
+				const meshConfig = await generateMeshrc(models, mongoURI);
 				logger.info("Mesh Configuration full");
-				await graphqlMesh();
+
+				const sameMesh = await checkAndPersistHash(createHash(meshConfig), "mesh.hash");
+				if (!sameMesh) {
+					await graphqlMesh();
+				} else {
+					logger.info("Mesh build skipped");
+				}
 			}
 		}
 	}
 
 	if (!hasGraphQL) {
-		await generateMeshrc([], mongoURI);
+		const meshConfig = await generateMeshrc([], mongoURI);
 		logger.info("Mesh Configuration minimal");
-		await graphqlMesh();
+		const sameMesh = await checkAndPersistHash(createHash(meshConfig), "mesh.hash");
+		if (!sameMesh) {
+			await graphqlMesh();
+		} else {
+			logger.info("Mesh build skipped");
+		}
 	}
 
 	// mesh build
 	return Promise.resolve();
 }
 
-function calculateHash(schemas: Record<string, Schema>, config: Config): string {
+function createResourcesHash(schemas: Record<string, Schema>, config: Config): string {
 	const keys = Object.keys(schemas);
 	keys.sort();
 	const relevantInfo = [config.graphQL, ...keys.map((k) => createHash(schemaToString(schemas[k])))];
@@ -72,10 +77,13 @@ function createHash(content: string): string {
 	return crypto.createHash("sha256").update(content).digest("base64");
 }
 
-async function checkSavedHash(hash: string): Promise<boolean> {
-	return fs.promises.readFile(`${WORKDIR}/hash.txt`, "utf-8")
+async function checkAndPersistHash(hash: string, filename: string): Promise<boolean> {
+	return fs.promises.readFile(`${WORKDIR}/${filename}`, "utf-8")
 		.then((saved) => saved === hash)
-		.catch(() => fs.promises.writeFile(`${WORKDIR}/hash.txt`, hash, "utf-8")
+		.then((result) => fs.promises.writeFile(`${WORKDIR}/${filename}`, hash, "utf-8")
+			.then(() => result)
+		)
+		.catch(() => fs.promises.writeFile(`${WORKDIR}/${filename}`, hash, "utf-8")
 			.then(() => false)
 		);
 }
@@ -115,7 +123,7 @@ async function generateMoongooseModelsEnhanced(schemas: Record<string, Schema>):
  * @param config
  * @param mongoURI
  */
-async function generateMeshrc(models: string[], mongoURI: string) {
+async function generateMeshrc(models: string[], mongoURI: string): Promise<string> {
 	const meshConfig = {
 		sources: models.length ? [
 			{
@@ -136,7 +144,8 @@ async function generateMeshrc(models: string[], mongoURI: string) {
 			customServerHandler: path.resolve("./src/scripts/mesh-server.js"),
 		},
 	};
-	return fs.promises.writeFile(`${WORKDIR}/.meshrc.yml`, yaml.dump(meshConfig), "utf-8");
+	const text = yaml.dump(meshConfig);
+	return fs.promises.writeFile(`${WORKDIR}/.meshrc.yml`, text, "utf-8").then(() => text);
 }
 
 async function checkWorkdir() {
