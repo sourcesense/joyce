@@ -9,7 +9,7 @@ import yaml from "js-yaml";
 import crypto from "crypto";
 import { graphqlMesh } from "@graphql-mesh/cli";
 
-import type { Schema } from "src/types";
+import type { Schema, Config } from "src/types";
 import { readConfig } from "@src/utils/config-util";
 import { readRemoteSchemas, schemaToString, writeLocalSchemas } from "@src/utils/schema-utils";
 
@@ -28,69 +28,75 @@ async function generateConfiguration() {
 	const hasGraphQL = config.graphQL !== false;
 	const hasRest = config.rest !== false;
 
-	if (!hasGraphQL && !hasRest) {
-		logger.info("Server Configuration minimal");
-		await generateMeshrc([], mongoURI);
-	} else {
+	if (hasGraphQL || hasRest) {
 		const schemas = await readRemoteSchemas(config);
-		const hashes = calculateHashes(schemas);
-		const hashCheck = await checkSavedHashes(hashes);
+		const hash = calculateHash(schemas, config);
+		const hashCheck = await checkSavedHash(hash);
+
+		// const hashes = calculateHashes(schemas);
+		// const hashCheck2 = await checkSavedHashes(hashes);
+		// logger.info({ hashCheck, hashCheck2 }, "hash check result");
 
 		if (!hashCheck) {
-			await fs.promises.writeFile(`${WORKDIR}/hashes.json`, JSON.stringify(hashes, null, 4), "utf-8");
+			await fs.promises.writeFile(`${WORKDIR}/hash.txt`, hash, "utf-8");
+			// await fs.promises.writeFile(`${WORKDIR}/hashes.json`, JSON.stringify(hashes, null, 4), "utf-8");
 			await writeLocalSchemas(schemas, WORKDIR);
-		}
-
-		if (hasGraphQL && !hashCheck) {
-			const models = await generateMoongooseModels(schemas);
-			await generateMoongooseModelsEnhanced(schemas);
-			await generateMeshrc(models, mongoURI);
-		} else {
-			await generateMeshrc([], mongoURI);
-			logger.info("Mesh Configuration skipped");
+			if (hasGraphQL) {
+				const models = await generateMoongooseModels(schemas);
+				await generateMoongooseModelsEnhanced(schemas);
+				await generateMeshrc(models, mongoURI);
+				logger.info("Mesh Configuration full");
+				await graphqlMesh();
+			}
 		}
 	}
 
+	if (!hasGraphQL) {
+		await generateMeshrc([], mongoURI);
+		logger.info("Mesh Configuration minimal");
+		await graphqlMesh();
+	}
+
 	// mesh build
-	return graphqlMesh();
+	return Promise.resolve();
 }
 
-function calculateHashes(schemas: { [x: string]: Schema }): { [x: string]: string } {
-	return Object.keys(schemas).reduce(
-		(acc, key) => ({
-			...acc,
-			[key]: crypto.createHash("sha256").update(schemaToString(schemas[key])).digest("base64"),
-		}),
-		{},
-	);
+function calculateHash(schemas: Record<string, Schema>, config: Config): string {
+	const keys = Object.keys(schemas);
+	keys.sort();
+	const relevantInfo = [config.graphQL, ...keys.map((k) => createHash(schemaToString(schemas[k])))];
+	return createHash(JSON.stringify(relevantInfo));
 }
 
-async function checkSavedHashes(hashes: { [x: string]: string }): Promise<boolean> {
-	return fs.promises.readFile(`${WORKDIR}/hashes.json`, "utf-8")
-		.then((file) => JSON.parse(file))
-		.then((readHashes) => (
-			Object.keys(readHashes).length === Object.keys(hashes).length &&
-			Object.keys(readHashes).every((key) => readHashes[key] === hashes[key])
-		))
-		.catch(() => false);
+function createHash(content: string): string {
+	return crypto.createHash("sha256").update(content).digest("base64");
+}
+
+async function checkSavedHash(hash: string): Promise<boolean> {
+	return fs.promises.readFile(`${WORKDIR}/hash.txt`, "utf-8")
+		.then((saved) => saved === hash)
+		.catch(() => fs.promises.writeFile(`${WORKDIR}/hash.txt`, hash, "utf-8")
+			.then(() => false)
+		);
 }
 
 /**
  * generates and saves to WORKDIR moongoose models from templates/model.js.handlebars and remote schema
  */
-async function generateMoongooseModels(config: { [x: string]: Schema }): Promise<string[]> {
+async function generateMoongooseModels(schemas: Record<string, Schema>): Promise<string[]> {
 	const generated = [];
 	const template = await fs.promises.readFile("./src/templates/model.js.handlebars", "utf-8");
 	const compiledTemplate = Handlebars.compile(template);
 	// logger.info({ config }, "generating models from schemas");
 
-	for (const key of Object.keys(config)) {
+	for (const key of Object.keys(schemas)) {
 		const name = upperFirst(camelCase(key));
 		logger.info(`generating ${name} model`);
 
 		const text = compiledTemplate({
-			data: JSON.stringify(config[key]),
+			data: JSON.stringify(schemas[key]),
 			name,
+			date: (new Date()).toISOString(),
 			json_schema_module: path.resolve("./src/scripts/json-schema.js"),
 		});
 		await fs.promises.writeFile(`${WORKDIR}/${name}.model.js`, text, "utf-8");
@@ -100,7 +106,7 @@ async function generateMoongooseModels(config: { [x: string]: Schema }): Promise
 	return Promise.resolve(generated);
 }
 
-async function generateMoongooseModelsEnhanced(config: { [x: string]: Schema }): Promise<void> {
+async function generateMoongooseModelsEnhanced(schemas: Record<string, Schema>): Promise<void> {
 	return Promise.resolve();
 }
 
@@ -138,9 +144,10 @@ async function checkWorkdir() {
 }
 
 (async () => {
+	const start = Date.now();
 	logger.info("Server Configuration started");
 	await generateConfiguration().then(() => {
-		logger.info("Server Configuration completed");
+		logger.info(`Server Configuration completed in ${Date.now() - start}ms`);
 		// mesh dev/build + start
 	});
 })();
