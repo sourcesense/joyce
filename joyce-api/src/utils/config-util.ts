@@ -33,7 +33,7 @@ function validate(config: Config): void {
 			throw new Error("paths should be unique");
 		}
 	} else {
-		throw new Error("no configured resources");
+		throw new Error("resources is not an array");
 	}
 	if (config.jsonrpc !== true && config.graphQL === false && config.rest === false) {
 		throw new Error("no configured output");
