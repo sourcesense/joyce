@@ -49,6 +49,13 @@ jobs:
           module: joyce-kafka-connect
           tag: ${{ steps.vars.outputs.VERSION }}
           docker_pwd: ${{ secrets.DOCKER_PASSWORD }}
+      - uses: actions/setup-node@v2
+        with:
+          node-version: '14'
+      - run: npm ci
+        working-directory: joyce-api
+      - run: make
+        working-directory: joyce-api
       - uses: ./.github/actions/docker-publish
         with:
           module: joyce-api
