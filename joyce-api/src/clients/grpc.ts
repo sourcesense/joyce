@@ -7,9 +7,9 @@ import { GetSchemaRequest } from "@generated/grpc/api/schema_api_pb";
 import { JoyceUriSubtype } from "@generated/grpc/enumeration/joyce_uri_subtype_pb";
 
 import type { Schema as JsonSchema } from "@src/types";
-
+const SCHEMA_GRPC_ENDPOINT = process.env.SCHEMA_GRPC_ENDPOINT || "import-gateway:6666";
 const logger = logFactory({ name: "grpc-client" });
-const client = new SchemaApiClient("172.16.6.2:30244", grpc.credentials.createInsecure());
+const client = new SchemaApiClient(SCHEMA_GRPC_ENDPOINT, grpc.credentials.createInsecure());
 
 export function getSchema(uid: string): Promise<JsonSchema> {
 	return new Promise((resolve, reject) => {

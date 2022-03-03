@@ -15,11 +15,12 @@ services:
     environment:
       - MONGO_URI=mongodb://user:password@mongodb:27017/joyce
       - WORKDIR=/usr/joyce/workdir
-      - SCHEMAS_SOURCE=/opt/schemas.json
+      - SCHEMAS_SOURCE=/opt/config.json
+      - SCHEMA_GRPC_ENDPOINT=172.16.6.2:30244
     ports:
       - "6650:6650"
     volumes:
-      - ./schemas.json:/opt/schemas.json
+      - ./config.json:/opt/config.json
       - ./data:/usr/joyce/workdir
     depends_on:
       - mongodb

@@ -1,6 +1,6 @@
 FROM       node:14-slim
 
-RUN apt-get update || : && apt-get install python -y
+RUN apt-get update && apt-get install make
 
 WORKDIR    /usr/joyce
 
@@ -10,8 +10,7 @@ RUN        npm ci
 
 COPY       static /usr/joyce/static
 COPY       src src/
-
-RUN        npm run build
+COPY       generated generated/
 
 ENV        NODE_ENV="production"
 EXPOSE     6650
