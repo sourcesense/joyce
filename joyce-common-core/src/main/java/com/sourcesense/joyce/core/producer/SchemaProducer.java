@@ -3,6 +3,8 @@ package com.sourcesense.joyce.core.producer;
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.sourcesense.joyce.core.configuration.mongo.MongodbProperties;
+import com.sourcesense.joyce.core.enumeration.ImportAction;
+import com.sourcesense.joyce.core.enumeration.KafkaCustomHeaders;
 import com.sourcesense.joyce.core.enumeration.NotificationEvent;
 import com.sourcesense.joyce.core.model.SchemaEntity;
 import com.sourcesense.joyce.core.service.NotificationService;
@@ -39,7 +41,7 @@ public class SchemaProducer extends KafkaMessageProducer<String,JsonNode> {
 		this.sendMessage(
 				schemaEntity.getUid(),
 				schemaEntity.getUid(),
-				this.buildSchemaMessage(schemaEntity, jsonMapper.convertValue(schemaEntity, JsonNode.class))
+				this.buildSchemaMessage(schemaEntity, jsonMapper.convertValue(schemaEntity, JsonNode.class), ImportAction.INSERT.name())
 		);
 	}
 
@@ -47,14 +49,16 @@ public class SchemaProducer extends KafkaMessageProducer<String,JsonNode> {
 		this.sendMessage(
 				schemaEntity.getUid(),
 				schemaEntity.getUid(),
-				this.buildSchemaMessage(schemaEntity, jsonMapper.createObjectNode())
+				this.buildSchemaMessage(schemaEntity, jsonMapper.createObjectNode(), ImportAction.DELETE.name())
 		);
 	}
 
-	private Message<JsonNode> buildSchemaMessage(SchemaEntity schemaEntity, JsonNode payload) {
+	private Message<JsonNode> buildSchemaMessage(SchemaEntity schemaEntity, JsonNode payload, Object action) {
 		return MessageBuilder
 				.withPayload(payload)
 				.setHeader(KafkaHeaders.TOPIC, mongodbProperties.getSchemaCollection())
+				.setHeader(KafkaCustomHeaders.COLLECTION, schemaEntity.getMetadata().getNamespacedCollection())
+				.setHeader(KafkaCustomHeaders.MESSAGE_ACTION, action)
 				.setHeader(KafkaHeaders.MESSAGE_KEY, schemaEntity.getUid())
 				.build();
 	}
