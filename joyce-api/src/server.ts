@@ -1,6 +1,6 @@
 import * as fastify from "fastify";
 import * as fastifyStatic from "fastify-static";
-import path from "path";
+import * as path from "path";
 const logger = require("pino")({ name: "Joyce-API" });
 
 import healthHandler from "./modules/health/routes";
@@ -40,12 +40,6 @@ async function createServer(db) {
 		reply.sendFile("index.html");
 	});
 
-	if (hasJrpc) {
-		server.register(jrpcPlugin);
-	} else {
-		logger.info("Json RPC Channel NOT enabled");
-	}
-
 	if (hasRest || hasJrpc) {
 		server.register(require("fastify-oas"), {
 			routePrefix: "/docs",
@@ -71,6 +65,12 @@ async function createServer(db) {
 		});
 	} else {
 		logger.info("Swagger UI NOT enabled");
+	}
+
+	if (hasJrpc) {
+		server.register(jrpcPlugin);
+	} else {
+		logger.info("Json RPC Channel NOT enabled");
 	}
 
 	server.register(healthHandler, { prefix: "/health" });
