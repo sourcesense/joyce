@@ -19,9 +19,6 @@ export function readConfig(source: string): Promise<Config> {
 
 function validate(config: Config): void {
 	if (Array.isArray(config.resources)) {
-		if (config.resources.length === 0) {
-			throw new Error("no configured resource");
-		}
 		const validResources = config.resources.every((resource) => {
 			return resource.path && resource.schema;
 		});

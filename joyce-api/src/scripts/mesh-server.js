@@ -24,7 +24,7 @@ module.exports = async ({ getBuiltMesh, documents }) => {
 	});
 
 	const config = await readConfig(SCHEMAS_SOURCE);
-	const hasGraphQL = config.graphQL !== false;
+	const hasGraphQL = config.graphQL !== false && config.resources.length;
 
 	const server = await createServer(client.db());
 
