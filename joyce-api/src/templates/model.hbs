@@ -1,0 +1,17 @@
+/* generated on {{date}} */
+const { model } = require("mongoose");
+import jsonSchemaToMongooseSchema from "../src/utils/json-schema-to-mongoose-schema";
+
+const schema = require("./{{name}}.schema.json");
+schema.properties._id = { "type": "string" };
+const schemaWithDefs = {
+	"$schema": "http://json-schema.org/draft-07/schema#",
+	"definitions": {
+		{{name}}: schema,
+	},
+};
+
+const mongooseSchema = jsonSchemaToMongooseSchema(schemaWithDefs, "{{name}}");
+const collection = `${schema.metadata.namespace || "default"}.${schema.metadata.collection}`;
+const mongoose_model = model("{{name}}", mongooseSchema, collection)
+module.exports = mongoose_model;

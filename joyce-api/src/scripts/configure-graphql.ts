@@ -20,7 +20,7 @@ const WORKDIR = process.env.WORKDIR || "./workdir";
 const mongoURI = process.env.MONGO_URI || "mongodb://localhost:27017/ingestion";
 
 /**
- * configures graphql mesh reading this server config
+ * according to current configuration, prepares graphql mesh and builds/starts it if needed
  */
 async function generateConfiguration() {
 	await checkWorkdir();
@@ -37,7 +37,6 @@ async function generateConfiguration() {
 			await writeLocalSchemas(schemas, WORKDIR);
 			if (hasGraphQL) {
 				const models = await generateMoongooseModels(schemas);
-				await generateMoongooseModelsEnhanced(schemas);
 				const meshConfig = await generateMeshrc(models, mongoURI);
 				logger.info("Mesh Configuration full");
 
@@ -66,6 +65,15 @@ async function generateConfiguration() {
 	return Promise.resolve();
 }
 
+/**
+ * Calculates the cumulative hash of schemas and graphql channel enabling a change of this hash toggles a mesh build.
+ * It is critical when starting using "start" script and a persisted workdir.
+ * Ininfluent with "start:dev" or "start:live" (volatile workdir).
+ *
+ * @param schemas
+ * @param config
+ * @returns
+ */
 function createResourcesHash(schemas: Record<string, Schema>, config: Config): string {
 	const keys = Object.keys(schemas);
 	keys.sort();
@@ -73,10 +81,19 @@ function createResourcesHash(schemas: Record<string, Schema>, config: Config): s
 	return createHash(JSON.stringify(relevantInfo));
 }
 
+/**
+ * given a string returns its hash
+ */
 function createHash(content: string): string {
 	return crypto.createHash("sha256").update(content).digest("base64");
 }
 
+/**
+ * verifies if there's a saved hash and compares with the current, and saves the latest
+ * @param hash
+ * @param filename
+ * @returns if the persisted hash is equal to the new one
+ */
 async function checkAndPersistHash(hash: string, filename: string): Promise<boolean> {
 	return fs.promises.readFile(`${WORKDIR}/${filename}`, "utf-8")
 		.then((saved) => saved === hash)
@@ -93,7 +110,7 @@ async function checkAndPersistHash(hash: string, filename: string): Promise<bool
  */
 async function generateMoongooseModels(schemas: Record<string, Schema>): Promise<string[]> {
 	const generated = [];
-	const template = await fs.promises.readFile("./src/templates/model.js.handlebars", "utf-8");
+	const template = await fs.promises.readFile("./src/templates/model.hbs", "utf-8");
 	const compiledTemplate = Handlebars.compile(template);
 	// logger.info({ config }, "generating models from schemas");
 
@@ -112,10 +129,6 @@ async function generateMoongooseModels(schemas: Record<string, Schema>): Promise
 	}
 
 	return Promise.resolve(generated);
-}
-
-async function generateMoongooseModelsEnhanced(schemas: Record<string, Schema>): Promise<void> {
-	return Promise.resolve();
 }
 
 /**
