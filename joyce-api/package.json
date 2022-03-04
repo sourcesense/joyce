@@ -4,7 +4,8 @@
 	"description": "",
 	"main": "index.js",
 	"scripts": {
-		"mesh:clean": "cross-env WORKDIR=${WORKDIR:=./workdir} rm $WORKDIR/*",
+		"mesh:clean": "cross-env WORKDIR=${WORKDIR:=./workdir} rm -f $WORKDIR/*",
+		"mesh:dev": "cross-env WORKDIR=${WORKDIR:=./workdir} mesh dev --dir $WORKDIR",
 		"mesh:start": "cross-env WORKDIR=${WORKDIR:=./workdir} mesh start --dir $WORKDIR",
 		"generate": "cross-env WORKDIR=${WORKDIR:=./workdir} ts-node src/scripts/configure-graphql.ts --dir $WORKDIR",
 		"start:dev": "npm run mesh:clean && npm run generate dev",
