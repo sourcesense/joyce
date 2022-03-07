@@ -116,14 +116,14 @@ public class NotificationAspect implements MethodAspect {
 	 * @param eventProvider
 	 * @return A notification event
 	 */
-	private Optional<NotificationEvent> computeNotificationEvent(
+	private Optional<String> computeNotificationEvent(
 			Method method,
-			Function<Notify, NotificationEvent> eventProvider) {
+			Function<Notify, String> eventProvider) {
 
 		return Optional.ofNullable(method)
 				.map(annotatedMethod -> annotatedMethod.getAnnotation(Notify.class))
 				.map(eventProvider)
-				.filter(Predicate.not(NotificationEvent.NONE::equals));
+				.filter(Predicate.not(NotificationEvent.NONE::equalsIgnoreCase));
 	}
 
 	/**
