@@ -18,6 +18,7 @@ package com.sourcesense.joyce.importgateway.controller.rest;
 
 import com.sourcesense.joyce.importcore.controller.AbstractSchemaRestController;
 import com.sourcesense.joyce.importcore.service.ConnectorService;
+import com.sourcesense.joyce.importcore.service.ValidationService;
 import com.sourcesense.joyce.schemacore.mapper.SchemaDtoMapper;
 import com.sourcesense.joyce.schemacore.service.SchemaService;
 import org.springframework.web.bind.annotation.RestController;
@@ -28,8 +29,9 @@ public class SchemaRestController extends AbstractSchemaRestController {
 	public SchemaRestController(
 			SchemaDtoMapper schemaMapper,
 			SchemaService schemaService,
-			ConnectorService connectorService) {
+			ConnectorService connectorService,
+			ValidationService validationService) {
 
-		super(schemaMapper, schemaService, connectorService);
+		super(schemaMapper, schemaService, connectorService, validationService);
 	}
 }
