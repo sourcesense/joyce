@@ -13,6 +13,8 @@ const { BatchSpanProcessor } = require("@opentelemetry/sdk-trace-base");
 const { MongooseInstrumentation } = require("opentelemetry-instrumentation-mongoose");
 const { MongoDBInstrumentation } = require("@opentelemetry/instrumentation-mongodb");
 
+const logger = require("pino")({ name: "tracing" });
+
 const host = process.env.JAEGER_HOST;
 const port = process.env.JAEGER_PORT;
 
@@ -40,5 +42,7 @@ if (host || port) {
 	};
 
 	provider.addSpanProcessor(new BatchSpanProcessor(new JaegerExporter(jaegerOpts)));
+} else {
+	logger.warn("opentelemetry needs JAEGER_HOST and JAEGER_PORT env variables");
 }
 
