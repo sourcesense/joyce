@@ -1,13 +1,15 @@
 import * as fastify from "fastify";
 import * as fastifyStatic from "fastify-static";
+import fp from "fastify-plugin";
 import * as path from "path";
+
 const logger = require("pino")({ name: "Joyce-API" });
 
-import healthHandler from "./modules/health/routes";
 import { readLocalSchemas } from "./utils/schema-utils";
 import MongoOpenApiResource from "./plugins/MongoOpenApiResource";
 import { readConfig } from "./utils/config-util";
 import jrpcPlugin from "./plugins/JrpcPlugin";
+import healthPlugin from "./plugins/HealthPlugin";
 
 logger.info("starting server");
 
@@ -25,9 +27,7 @@ async function createServer(db) {
 	const hasRest = config.rest !== false;
 
 	const server = fastify.default({
-		logger: {
-			level: "info",
-		},
+		logger,
 	});
 	server.register(require("fastify-cors"));
 
@@ -73,7 +73,7 @@ async function createServer(db) {
 		logger.info("Json RPC Channel NOT enabled");
 	}
 
-	server.register(healthHandler, { prefix: "/health" });
+	server.register(healthPlugin, { prefix: "/health" });
 
 	server.setErrorHandler((error, req, res) => {
 		req.log.error(error.toString());
@@ -86,7 +86,8 @@ async function createServer(db) {
 				return readLocalSchemas(SCHEMAS_SOURCE, WORKDIR).then((schemasList) => {
 					schemasList.map((wrapper) => {
 						const resource = new MongoOpenApiResource(wrapper.schema, db);
-						server.register(resource.routes);
+						logger.info(`registering paths under ${wrapper.path} for ${wrapper.name}`);
+						server.register(fp(resource.routes, { name: wrapper.name }));
 					});
 				});
 			} else {
