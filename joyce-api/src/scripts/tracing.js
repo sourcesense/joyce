@@ -16,9 +16,8 @@ const { MongoDBInstrumentation } = require("@opentelemetry/instrumentation-mongo
 const logger = require("pino")({ name: "tracing" });
 
 const host = process.env.JAEGER_HOST;
-const port = process.env.JAEGER_PORT;
 
-if (host || port) {
+if (host) {
 	const provider = new NodeTracerProvider({
 		resource: new Resource({
 			[SemanticResourceAttributes.SERVICE_NAME]: "Joyce-API",
@@ -37,12 +36,12 @@ if (host || port) {
 	});
 
 	const jaegerOpts = {
-		host: process.env.JAEGER_HOST || "localhost",
+		host: process.env.JAEGER_HOST,
 		port: Number(process.env.JAEGER_PORT || 6832),
 	};
 
 	provider.addSpanProcessor(new BatchSpanProcessor(new JaegerExporter(jaegerOpts)));
 } else {
-	logger.warn("opentelemetry needs JAEGER_HOST and JAEGER_PORT env variables");
+	logger.warn("opentelemetry needs JAEGER_HOST env variable");
 }
 
