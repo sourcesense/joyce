@@ -42,7 +42,7 @@ async function createServer(db) {
 
 	if (hasRest || hasJrpc) {
 		server.register(require("fastify-oas"), {
-			routePrefix: "/docs",
+			routePrefix: "/swagger-ui",
 			exposeRoute: true,
 			hideUntagged: true,
 			swagger: {
