@@ -20,9 +20,9 @@ import org.springframework.boot.SpringApplication;
 import org.springframework.boot.autoconfigure.SpringBootApplication;
 
 @SpringBootApplication(scanBasePackages = "com.sourcesense.joyce")
-public class JoyceImportGatewayApplication {
+public class ImportGatewayApplication {
 
 	public static void main(String[] args) {
-		SpringApplication.run(JoyceImportGatewayApplication.class, args);
+		SpringApplication.run(ImportGatewayApplication.class, args);
 	}
 }

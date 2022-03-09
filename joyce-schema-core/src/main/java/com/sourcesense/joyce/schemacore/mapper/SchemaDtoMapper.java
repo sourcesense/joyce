@@ -17,23 +17,18 @@
 package com.sourcesense.joyce.schemacore.mapper;
 
 import com.fasterxml.jackson.core.JsonProcessingException;
-import com.fasterxml.jackson.core.type.TypeReference;
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
-import com.sourcesense.joyce.core.model.JoyceURI;
 import com.sourcesense.joyce.core.model.SchemaEntity;
 import com.sourcesense.joyce.core.model.SchemaObject;
-import com.sourcesense.joyce.protobuf.enumeration.JoyceUriSubtype;
 import com.sourcesense.joyce.schemacore.model.dto.SchemaSave;
 import com.sourcesense.joyce.schemacore.model.dto.SchemaShort;
 import com.sourcesense.joyce.schemacore.model.entity.SchemaDocument;
 import org.mapstruct.Mapper;
 import org.mapstruct.Mapping;
-import org.mapstruct.Named;
 import org.springframework.beans.factory.annotation.Autowired;
 
 import java.util.List;
-import java.util.Map;
 import java.util.function.Function;
 import java.util.stream.Collectors;
 
@@ -48,13 +43,6 @@ public abstract class SchemaDtoMapper {
 		this.jsonMapper = jsonMapper;
 	}
 
-	@Mapping(target = "name", source = "metadata.name")
-	@Mapping(target = "description", source = "metadata.description")
-	@Mapping(target = "uidKey", source = "metadata.uidKey")
-	@Mapping(target = "collection", source = "metadata.collection")
-	@Mapping(target = "development", source = "metadata.development")
-	@Mapping(target = "connectors", source = "metadata.connectors")
-	@Mapping(target = "export", source = "metadata.export")
 	public abstract SchemaShort toDtoShort(SchemaEntity entity);
 
 	public abstract SchemaSave toDtoSave(SchemaEntity entity);
