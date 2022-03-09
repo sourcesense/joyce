@@ -2,6 +2,7 @@ require("module-alias/register");
 
 const { readConfig } = require("@src/utils/config-util");
 const { ApolloServer } = require("apollo-server-fastify");
+import fp from "fastify-plugin";
 const createServer = require("../server").default;
 // const KafkaProducerPromise = require("../plugins/KafkaClient").default;
 const MongoClient = require("mongodb");
@@ -40,7 +41,7 @@ module.exports = async ({ getBuiltMesh, documents }) => {
 
 		await apolloServer.start();
 
-		server.register(apolloServer.createHandler());
+		server.register(fp(apolloServer.createHandler(), { name: "apollo" }));
 		server.get("/graphiql", (_, reply) => {
 			reply.sendFile("graphiql.html");
 		});

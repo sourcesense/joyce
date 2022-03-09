@@ -42,7 +42,7 @@ async function generateConfiguration() {
 
 				const sameMesh = await checkAndPersistHash(createHash(meshConfig), "mesh.hash");
 				if (!sameMesh) {
-					await graphqlMesh();
+					return await graphqlMesh();
 				} else {
 					logger.info("Mesh build skipped");
 				}
@@ -55,7 +55,7 @@ async function generateConfiguration() {
 		logger.info("Mesh Configuration minimal");
 		const sameMesh = await checkAndPersistHash(createHash(meshConfig), "mesh.hash");
 		if (!sameMesh) {
-			await graphqlMesh();
+			return await graphqlMesh();
 		} else {
 			logger.info("Mesh build skipped");
 		}

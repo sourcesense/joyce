@@ -42,24 +42,37 @@ public class SchemaConsumer {
 											@Header(KafkaHeaders.RECEIVED_MESSAGE_KEY) String key,
 											@Headers Map<String, String> headers) {
 		try {
-			ImportAction action = Optional.ofNullable(headers.get(KafkaCustomHeaders.MESSAGE_ACTION)).map(ImportAction::valueOf).orElse(ImportAction.INSERT);
-			if (action.equals(ImportAction.INSERT)) {
-				SchemaEntity schema = collectionEnhancerService.computeSchema(StringUtils.EMPTY, jsonSchema, SchemaEntity.class);
-				JsonSchemaEntry jsonSchemaEntry = collectionEnhancerService.computeSchema(schema.getUid(), jsonSchema, JsonSchemaEntry.class);
+			ImportAction action = this.computeAction(headers);
 
-				collectionEnhancerService.initCollection(schema.getUid(), schema);
-				collectionEnhancerService.upsertCollectionValidator(schema.getUid(), schema, jsonSchemaEntry);
-				collectionEnhancerService.createIndexes(schema.getUid(), schema);
+			if (ImportAction.INSERT.equals(action)) {
+				this.createCollection(jsonSchema);
 			} else {
-				// Delete
-				Optional<String> collection = Optional.ofNullable(headers.get(KafkaCustomHeaders.COLLECTION));
-				collection.ifPresent(coll -> {
-					mongoTemplate.dropCollection(coll);
-				});
+				this.dropCollection(headers);
 			}
-
 		} catch (Exception exception) {
 			customExceptionHandler.handleException(exception);
 		}
+	}
+
+	private void createCollection(ObjectNode jsonSchema) {
+		SchemaEntity schema = collectionEnhancerService.computeSchema(StringUtils.EMPTY, jsonSchema, SchemaEntity.class);
+		JsonSchemaEntry jsonSchemaEntry = collectionEnhancerService.computeSchema(schema.getUid(), jsonSchema, JsonSchemaEntry.class);
+
+		collectionEnhancerService.initCollection(schema.getUid(), schema);
+		collectionEnhancerService.upsertCollectionValidator(schema.getUid(), schema, jsonSchemaEntry);
+		collectionEnhancerService.createIndexes(schema.getUid(), schema);
+	}
+
+	private void dropCollection(Map<String, String> headers) {
+		Optional.of(KafkaCustomHeaders.COLLECTION)
+				.map(headers::get)
+				.ifPresent(mongoTemplate::dropCollection);
+	}
+
+	private ImportAction computeAction(Map<String, String> headers) {
+		return Optional.of(KafkaCustomHeaders.MESSAGE_ACTION)
+				.map(headers::get)
+				.map(ImportAction::valueOf)
+				.orElse(ImportAction.INSERT);
 	}
 }

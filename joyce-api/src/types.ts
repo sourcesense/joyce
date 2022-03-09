@@ -3,6 +3,8 @@ import { JoyceUriSubtype } from "@generated/grpc/enumeration/joyce_uri_subtype_p
 declare module "fastify" {
 	interface FastifySchema {
 		tags?: string[];
+		summary?: string;
+		description?: string;
 	}
 }
 
