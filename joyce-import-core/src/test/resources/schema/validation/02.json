@@ -1,6 +1,8 @@
 {
   "$schema": "https://joyce.sourcesense.com/v1/schema",
-  "$metadata": {},
+  "$metadata": {
+    "uid": ""
+  },
   "type": "object",
   "properties": {
     "id": {
