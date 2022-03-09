@@ -1,6 +1,3 @@
-/* tracing.js */
-
-// Require dependencies
 const { NodeTracerProvider } = require("@opentelemetry/node");
 const { registerInstrumentations } = require("@opentelemetry/instrumentation");
 const { HttpInstrumentation } = require("@opentelemetry/instrumentation-http");
@@ -20,7 +17,8 @@ const host = process.env.JAEGER_HOST;
 if (host) {
 	const provider = new NodeTracerProvider({
 		resource: new Resource({
-			[SemanticResourceAttributes.SERVICE_NAME]: "Joyce-API",
+			[SemanticResourceAttributes.SERVICE_NAME]: process.env.JAEGER_SERVICE_NAME || "unknown_service:nodejs",
+			[SemanticResourceAttributes.SERVICE_NAMESPACE]: process.env.JAEGER_SERVICE_NAMESPACE || "Joyce.API"
 		}),
 	});
 	provider.register({});

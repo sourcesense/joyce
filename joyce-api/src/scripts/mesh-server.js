@@ -11,7 +11,7 @@ const logger = require("pino").default({ name: "mesh-server" });
 
 const PORT = process.env.PORT || "6650";
 const mongoURI = process.env.MONGO_URI || "mongodb://localhost:27017/ingestion";
-const SCHEMAS_SOURCE = process.env.SCHEMAS_SOURCE || "src/templates/schemas.json";
+const CONFIG_SOURCE = process.env.CONFIG_SOURCE || "./api-config.json";
 
 /**
  * @param ServeMeshOptions param0
@@ -24,7 +24,7 @@ module.exports = async ({ getBuiltMesh, documents }) => {
 		logger.error(error, "Error in MongoDb connection");
 	});
 
-	const config = await readConfig(SCHEMAS_SOURCE);
+	const config = await readConfig(CONFIG_SOURCE);
 	const hasGraphQL = config.graphQL !== false && config.resources.length;
 
 	const server = await createServer(client.db());

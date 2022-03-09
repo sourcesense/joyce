@@ -15,7 +15,7 @@ import { readRemoteSchemas, schemaToString, writeLocalSchemas } from "@src/utils
 
 const logger = require("pino")({ name: "configure-graphql" });
 
-const SCHEMAS_SOURCE = process.env.SCHEMAS_SOURCE || "src/templates/schemas.json";
+const CONFIG_SOURCE = process.env.CONFIG_SOURCE || "./api-config.json";
 const WORKDIR = process.env.WORKDIR || "./workdir";
 const mongoURI = process.env.MONGO_URI || "mongodb://localhost:27017/ingestion";
 
@@ -24,7 +24,7 @@ const mongoURI = process.env.MONGO_URI || "mongodb://localhost:27017/ingestion";
  */
 async function generateConfiguration() {
 	await checkWorkdir();
-	const config = await readConfig(SCHEMAS_SOURCE);
+	const config = await readConfig(CONFIG_SOURCE);
 	const hasGraphQL = config.graphQL !== false;
 	const hasRest = config.rest !== false;
 
