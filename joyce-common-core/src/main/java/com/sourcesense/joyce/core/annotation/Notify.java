@@ -23,6 +23,6 @@ import static java.lang.annotation.RetentionPolicy.RUNTIME;
 @Retention(RUNTIME)
 public @interface Notify {
 
-    NotificationEvent successEvent() default NotificationEvent.NONE;
-    NotificationEvent failureEvent() default NotificationEvent.NONE;
+    String successEvent() default NotificationEvent.NONE;
+    String failureEvent() default NotificationEvent.NONE;
 }

@@ -20,7 +20,6 @@ import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.databind.node.ObjectNode;
 import com.sourcesense.joyce.core.configuration.NotificationServiceProperties;
-import com.sourcesense.joyce.core.enumeration.NotificationEvent;
 import lombok.Builder;
 import lombok.Getter;
 import lombok.extern.slf4j.Slf4j;
@@ -40,7 +39,7 @@ import java.util.UUID;
 class Notification {
 
 	private final String source;
-	private final NotificationEvent event;
+	private final String event;
 	private final String rawUri;
 	private final String contentUri;
 	private final Boolean success;
@@ -84,36 +83,36 @@ public class NotificationService {
 	}
 
 
-	public void ok(String rawUri, String contentUri, NotificationEvent event) {
+	public void ok(String rawUri, String contentUri, String event) {
 		this.sendNotification(rawUri, contentUri, event, null, null, true);
 	}
 
-	public <T> void ok(String rawUri, String contentUri, NotificationEvent event, T metadata) {
+	public <T> void ok(String rawUri, String contentUri, String event, T metadata) {
 		this.sendNotification(rawUri, contentUri, event, metadata, null, true);
 	}
 
-	public <T> void ok(String rawUri, String contentUri, NotificationEvent event, T metadata, T payload) {
+	public <T> void ok(String rawUri, String contentUri, String event, T metadata, T payload) {
 		this.sendNotification(rawUri, contentUri, event, metadata, payload, true);
 	}
 
-	public void ko(String rawUri, String contentUri, NotificationEvent event, String error) {
+	public void ko(String rawUri, String contentUri, String event, String error) {
 		ObjectNode meta = jsonMapper.createObjectNode();
 		meta.put("error", error);
 		this.sendNotification(rawUri, contentUri, event, meta, null, false);
 	}
 
-	public <T> void ko(String rawUri, String contentUri, NotificationEvent event, T metadata) {
+	public <T> void ko(String rawUri, String contentUri, String event, T metadata) {
 		this.sendNotification(rawUri, contentUri, event, metadata, null, false);
 	}
 
-	public <T> void ko(String rawUri, String contentUri, NotificationEvent event, T metadata, T payload) {
+	public <T> void ko(String rawUri, String contentUri, String event, T metadata, T payload) {
 		this.sendNotification(rawUri, contentUri, event, metadata, payload, false);
 	}
 
 	private <T> void sendNotification(
 			String rawUri,
 			String contentUri,
-			NotificationEvent event,
+			String event,
 			T metadata,
 			T payload,
 			boolean success) {
