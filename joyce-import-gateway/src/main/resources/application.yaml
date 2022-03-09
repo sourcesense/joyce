@@ -16,7 +16,7 @@ opentracing:
 
 springdoc:
   swagger-ui:
-    path: /docs
+    path: /swagger-ui
     disable-swagger-default-url: true
     server:
       url: http://localhost:${server.port}

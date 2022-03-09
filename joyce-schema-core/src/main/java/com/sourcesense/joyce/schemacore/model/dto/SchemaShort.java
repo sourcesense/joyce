@@ -16,17 +16,14 @@
 
 package com.sourcesense.joyce.schemacore.model.dto;
 
+import com.sourcesense.joyce.core.model.JoyceSchemaMetadata;
 import com.sourcesense.joyce.core.model.SchemaObject;
 import lombok.Data;
 
 @Data
 public class SchemaShort implements SchemaObject {
+
 	private String uid;
-	private String name;
-	private String description;
-	private String uidKey;
-	private String collection;
-	private Boolean development;
-	private Boolean connectors;
-	private Boolean export;
+	private JoyceSchemaMetadata metadata;
+
 }
