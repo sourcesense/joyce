@@ -1,0 +1,11 @@
+{
+  "$schema": "https://joyce.sourcesense.com/v1/schema",
+  "$metadata": {},
+  "type": "object",
+  "properties": {
+    "id": {
+      "type": "string",
+      "$path": "$.id"
+    }
+  }
+}

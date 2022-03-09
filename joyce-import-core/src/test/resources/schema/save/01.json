@@ -23,7 +23,7 @@
   },
   "type": "object",
   "properties": {
-    "uid": {
+    "id": {
       "type": "string",
       "$path": "$.id"
     },
