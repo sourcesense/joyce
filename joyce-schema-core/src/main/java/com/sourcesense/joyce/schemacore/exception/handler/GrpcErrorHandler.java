@@ -4,7 +4,6 @@ import com.sourcesense.joyce.core.exception.InvalidMetadataException;
 import com.sourcesense.joyce.core.exception.ProcessingException;
 import com.sourcesense.joyce.core.exception.SchemaNotFoundException;
 import com.sourcesense.joyce.core.exception.handler.CustomExceptionHandler;
-import com.sourcesense.joyce.schemaengine.exception.InvalidSchemaException;
 import io.grpc.Status;
 import io.grpc.StatusRuntimeException;
 import lombok.RequiredArgsConstructor;
@@ -17,11 +16,6 @@ import org.apache.kafka.common.KafkaException;
 public class GrpcErrorHandler {
 
 	private final CustomExceptionHandler exceptionHandler;
-
-	@GrpcExceptionHandler(InvalidSchemaException.class)
-	public StatusRuntimeException handler(InvalidSchemaException exception) {
-		return this.logExceptionAndComputeErrorResponse(exception, Status.INVALID_ARGUMENT);
-	}
 
 	@GrpcExceptionHandler(InvalidMetadataException.class)
 	public StatusRuntimeException handler(InvalidMetadataException exception) {

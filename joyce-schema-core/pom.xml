@@ -32,6 +32,11 @@
     </dependency>
 
     <dependency>
+      <groupId>com.sourcesense.joyce</groupId>
+      <artifactId>joyce-schema-engine</artifactId>
+    </dependency>
+
+    <dependency>
       <groupId>net.devh</groupId>
       <artifactId>grpc-server-spring-boot-starter</artifactId>
     </dependency>

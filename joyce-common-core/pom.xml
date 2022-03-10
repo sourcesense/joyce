@@ -33,11 +33,6 @@
     </dependency>
 
     <dependency>
-      <groupId>com.sourcesense.joyce</groupId>
-      <artifactId>joyce-schema-engine</artifactId>
-    </dependency>
-
-    <dependency>
       <groupId>org.mapstruct</groupId>
       <artifactId>mapstruct</artifactId>
     </dependency>

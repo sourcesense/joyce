@@ -1,9 +1,10 @@
 package com.sourcesense.joyce.core.exception.handler;
 
-import com.jayway.jsonpath.PathNotFoundException;
 import com.sourcesense.joyce.core.dto.ApiError;
-import com.sourcesense.joyce.core.exception.*;
-import com.sourcesense.joyce.schemaengine.exception.InvalidSchemaException;
+import com.sourcesense.joyce.core.exception.InvalidMetadataException;
+import com.sourcesense.joyce.core.exception.ProcessingException;
+import com.sourcesense.joyce.core.exception.RestException;
+import com.sourcesense.joyce.core.exception.SchemaNotFoundException;
 import lombok.RequiredArgsConstructor;
 import org.apache.kafka.common.KafkaException;
 import org.springframework.http.HttpStatus;
@@ -22,22 +23,8 @@ public class RestExceptionHandler {
 
 	@ResponseBody
 	@ResponseStatus(HttpStatus.BAD_REQUEST)
-	@ExceptionHandler(InvalidSchemaException.class)
-	public ApiError handler(InvalidSchemaException exception, WebRequest request) {
-		return this.logExceptionAndComputeErrorResponse(exception);
-	}
-
-	@ResponseBody
-	@ResponseStatus(HttpStatus.BAD_REQUEST)
 	@ExceptionHandler(InvalidMetadataException.class)
 	public ApiError handler(InvalidMetadataException exception, WebRequest request) {
-		return this.logExceptionAndComputeErrorResponse(exception);
-	}
-
-	@ResponseBody
-	@ResponseStatus(HttpStatus.INTERNAL_SERVER_ERROR)
-	@ExceptionHandler(PathNotFoundException.class)
-	public ApiError handler(PathNotFoundException exception, WebRequest request) {
 		return this.logExceptionAndComputeErrorResponse(exception);
 	}
 
