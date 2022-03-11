@@ -7,8 +7,8 @@ This is the api server from which you can consume the final output of selected J
 It may publish also a jrpc endpoint to push back writes with a CQRS approach. These messages might be consumed with custom components.
 
 ```bash
-http://${INTERNAL_URL}:${port}/swagger-ui/index.html#/default
-http://${INTERNAL_URL}:${port}/graphiql/
+http://${HOST}:${PORT}/swagger-ui/index.html#/default
+http://${HOST}:${PORT}/graphiql/
 ```
 
 ## Documentation
@@ -31,7 +31,7 @@ Refer to this [docker-compose] to view an example.
 
 | env var                          | description                                                                                                                 |
 | -------------------------------- | --------------------------------------------------------------------------------------------------------------------------- |
-| CONFIG_SOURCE                    | path to configuration file. Default `./api-config.json`                                                                        |
+| CONFIG_SOURCE                    | path to configuration file. Default `./api-config.json`                                                                     |
 | WORKDIR                          | path to work folder. Default `./workdir`                                                                                    |
 | PORT                             | Port where service is. Default: `6650`                                                                                      |
 | MONGO_URI                        | [Mongo connection uri]                                                                                                      |

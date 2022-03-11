@@ -60,7 +60,7 @@
 		"grpc": "^1.24.11",
 		"handlebars": "^4.7.7",
 		"js-yaml": "^4.1.0",
-		"kafka-node": "^5.0.0",
+		"kafkajs": "^1.16.0",
 		"lodash": "^4.17.21",
 		"module-alias": "^2.2.2",
 		"mongodb": "^3.7.0",
