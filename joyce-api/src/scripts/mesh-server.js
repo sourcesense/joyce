@@ -9,9 +9,9 @@ const MongoClient = require("mongodb");
 
 const logger = require("pino").default({ name: "mesh-server" });
 
-const PORT = process.env.PORT || "6650";
-const mongoURI = process.env.MONGO_URI || "mongodb://localhost:27017/ingestion";
-const CONFIG_SOURCE = process.env.CONFIG_SOURCE || "./api-config.json";
+const JOYCE_API_PORT = process.env.JOYCE_API_PORT || "6650";
+const mongoURI = process.env.JOYCE_API_MONGO_URI || "mongodb://localhost:27017/ingestion";
+const JOYCE_API_CONFIG_SOURCE = process.env.JOYCE_API_CONFIG_SOURCE || "./api-config.json";
 
 /**
  * @param ServeMeshOptions param0
@@ -24,7 +24,7 @@ module.exports = async ({ getBuiltMesh, documents }) => {
 		logger.error(error, "Error in MongoDb connection");
 	});
 
-	const config = await readConfig(CONFIG_SOURCE);
+	const config = await readConfig(JOYCE_API_CONFIG_SOURCE);
 	const hasGraphQL = config.graphQL !== false && config.resources.length;
 
 	const server = await createServer(client.db());
@@ -54,7 +54,7 @@ module.exports = async ({ getBuiltMesh, documents }) => {
 		client.close();
 		process.exit();
 	});
-	server.listen(+PORT, "0.0.0.0", (err) => {
+	server.listen(+JOYCE_API_PORT, "0.0.0.0", (err) => {
 		if (err) {
 			throw err;
 		}

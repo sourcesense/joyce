@@ -20,13 +20,13 @@ if (!enabled) {
 }
 logger.debug("tracing enabled");
 
-const host = process.env.JAEGER_HOST;
+const host = process.env.JOYCE_API_JAEGER_HOST;
 
 if (host) {
 	const provider = new NodeTracerProvider({
 		resource: new Resource({
-			[SemanticResourceAttributes.SERVICE_NAME]: process.env.JAEGER_SERVICE_NAME || "unknown_service:nodejs",
-			[SemanticResourceAttributes.SERVICE_NAMESPACE]: process.env.JAEGER_SERVICE_NAMESPACE || "Joyce.API"
+			[SemanticResourceAttributes.SERVICE_NAME]: process.env.JOYCE_API_SERVICE_NAME || "unknown_service:nodejs",
+			[SemanticResourceAttributes.SERVICE_NAMESPACE]: process.env.JOYCE_API_SERVICE_NAMESPACE || "Joyce.API"
 		}),
 	});
 	provider.register({});
@@ -42,12 +42,12 @@ if (host) {
 	});
 
 	const jaegerOpts = {
-		host: process.env.JAEGER_HOST,
-		port: Number(process.env.JAEGER_PORT || 6832),
+		host,
+		port: Number(process.env.JOYCE_API_JAEGER_PORT || 6832),
 	};
 
 	provider.addSpanProcessor(new BatchSpanProcessor(new JaegerExporter(jaegerOpts)));
 } else {
-	logger.warn("opentelemetry needs JAEGER_HOST env variable");
+	logger.warn("opentelemetry needs JOYCE_API_JAEGER_HOST env variable");
 }
 

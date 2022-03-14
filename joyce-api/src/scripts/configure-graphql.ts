@@ -15,16 +15,16 @@ import { readRemoteSchemas, schemaToString, writeLocalSchemas } from "@src/utils
 
 const logger = require("pino")({ name: "configure-graphql" });
 
-const CONFIG_SOURCE = process.env.CONFIG_SOURCE || "./api-config.json";
-const WORKDIR = process.env.WORKDIR || "./workdir";
-const mongoURI = process.env.MONGO_URI || "mongodb://localhost:27017/ingestion";
+const JOYCE_API_CONFIG_SOURCE = process.env.JOYCE_API_CONFIG_SOURCE || "./api-config.json";
+const JOYCE_API_WORKDIR = process.env.JOYCE_API_WORKDIR || "./workdir";
+const mongoURI = process.env.JOYCE_API_MONGO_URI || "mongodb://localhost:27017/ingestion";
 
 /**
  * according to current configuration, prepares graphql mesh and builds/starts it if needed
  */
 async function generateConfiguration() {
 	await checkWorkdir();
-	const config = await readConfig(CONFIG_SOURCE);
+	const config = await readConfig(JOYCE_API_CONFIG_SOURCE);
 	const hasGraphQL = config.graphQL !== false;
 	const hasRest = config.rest !== false;
 
@@ -34,7 +34,7 @@ async function generateConfiguration() {
 		const hashCheck = await checkAndPersistHash(hash, "resources.hash");
 
 		if (!hashCheck) {
-			await writeLocalSchemas(schemas, WORKDIR);
+			await writeLocalSchemas(schemas, JOYCE_API_WORKDIR);
 			if (hasGraphQL) {
 				const models = await generateMoongooseModels(schemas);
 				const meshConfig = await generateMeshrc(models, mongoURI);
@@ -95,18 +95,18 @@ function createHash(content: string): string {
  * @returns if the persisted hash is equal to the new one
  */
 async function checkAndPersistHash(hash: string, filename: string): Promise<boolean> {
-	return fs.promises.readFile(`${WORKDIR}/${filename}`, "utf-8")
+	return fs.promises.readFile(`${JOYCE_API_WORKDIR}/${filename}`, "utf-8")
 		.then((saved) => saved === hash)
-		.then((result) => fs.promises.writeFile(`${WORKDIR}/${filename}`, hash, "utf-8")
+		.then((result) => fs.promises.writeFile(`${JOYCE_API_WORKDIR}/${filename}`, hash, "utf-8")
 			.then(() => result)
 		)
-		.catch(() => fs.promises.writeFile(`${WORKDIR}/${filename}`, hash, "utf-8")
+		.catch(() => fs.promises.writeFile(`${JOYCE_API_WORKDIR}/${filename}`, hash, "utf-8")
 			.then(() => false)
 		);
 }
 
 /**
- * generates and saves to WORKDIR moongoose models from templates/model.js.handlebars and remote schema
+ * generates and saves to JOYCE_API_WORKDIR moongoose models from templates/model.js.handlebars and remote schema
  */
 async function generateMoongooseModels(schemas: Record<string, Schema>): Promise<string[]> {
 	const generated = [];
@@ -124,7 +124,7 @@ async function generateMoongooseModels(schemas: Record<string, Schema>): Promise
 			date: (new Date()).toISOString(),
 			json_schema_module: path.resolve("./src/scripts/json-schema.js"),
 		});
-		await fs.promises.writeFile(`${WORKDIR}/${name}.model.js`, text, "utf-8");
+		await fs.promises.writeFile(`${JOYCE_API_WORKDIR}/${name}.model.js`, text, "utf-8");
 		generated.push(name);
 	}
 
@@ -132,7 +132,7 @@ async function generateMoongooseModels(schemas: Record<string, Schema>): Promise
 }
 
 /**
- * generates and saves to WORKDIR a .meshrc.yml
+ * generates and saves to JOYCE_API_WORKDIR a .meshrc.yml
  * @param config
  * @param mongoURI
  */
@@ -158,11 +158,11 @@ async function generateMeshrc(models: string[], mongoURI: string): Promise<strin
 		},
 	};
 	const text = yaml.dump(meshConfig);
-	return fs.promises.writeFile(`${WORKDIR}/.meshrc.yml`, text, "utf-8").then(() => text);
+	return fs.promises.writeFile(`${JOYCE_API_WORKDIR}/.meshrc.yml`, text, "utf-8").then(() => text);
 }
 
 async function checkWorkdir() {
-	return fs.promises.mkdir(WORKDIR, { recursive: true });
+	return fs.promises.mkdir(JOYCE_API_WORKDIR, { recursive: true });
 }
 
 (async () => {

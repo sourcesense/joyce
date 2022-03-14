@@ -13,10 +13,10 @@ services:
   joyce-api:
     build: ./
     environment:
-      - MONGO_URI=mongodb://user:password@mongodb:27017/joyce
-      - WORKDIR=/usr/joyce/workdir
-      - CONFIG_SOURCE=/opt/config.json
-      - SCHEMA_GRPC_ENDPOINT=172.16.6.2:30244
+      - JOYCE_API_MONGO_URI=mongodb://user:password@mongodb:27017/joyce
+      - JOYCE_API_WORKDIR=/usr/joyce/workdir
+      - JOYCE_API_CONFIG_SOURCE=/opt/config.json
+      - JOYCE_API_SCHEMA_GRPC_ENDPOINT=172.16.6.2:30244
     ports:
       - "6650:6650"
     volumes:

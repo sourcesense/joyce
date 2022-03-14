@@ -6,7 +6,7 @@ import { JRPCParams } from "@src/types";
 
 const JOYCE_API_KAFKA_BOOTSTRAPADDRESS = process.env.JOYCE_API_KAFKA_BOOTSTRAPADDRESS || "kafka:9092";
 const JOYCE_API_KAFKA_COMMAND_TOPIC = process.env.JOYCE_API_KAFKA_COMMAND_TOPIC || "joyce_command";
-const clientId = process.env.JAEGER_SERVICE_NAME || "unknown_joyce_api:nodejs";
+const clientId = process.env.JOYCE_API_SERVICE_NAME || "unknown_joyce_api:nodejs";
 
 function toPinoLogLevel(kafkaLogLevel) {
 	switch (kafkaLogLevel) {

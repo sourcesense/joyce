@@ -6,9 +6,11 @@ This is the api server from which you can consume the final output of selected J
 
 It may publish also a jrpc endpoint to push back writes with a CQRS approach. These messages might be consumed with custom components.
 
+Togheter with the REST/GraphQL/JRPC endpoints this server publishes also a swagger-ui and a graphiql pages available at the following urls.
+
 ```bash
-http://${HOST}:${PORT}/swagger-ui/index.html#/default
-http://${HOST}:${PORT}/graphiql/
+http://${host}:${JOYCE_API_PORT}/swagger-ui/index.html#/default
+http://${host}:${JOYCE_API_PORT}/graphiql/
 ```
 
 ## Documentation
@@ -29,21 +31,20 @@ It is configured by environment variables.
 
 Refer to this [docker-compose] to view an example.
 
-| env var                          | description                                                                                                                 |
-| -------------------------------- | --------------------------------------------------------------------------------------------------------------------------- |
-| CONFIG_SOURCE                    | path to configuration file. Default `./api-config.json`                                                                     |
-| WORKDIR                          | path to work folder. Default `./workdir`                                                                                    |
-| PORT                             | Port where service is. Default: `6650`                                                                                      |
-| MONGO_URI                        | [Mongo connection uri]                                                                                                      |
-| JOYCE_API_KAFKA_BOOTSTRAPADDRESS | A string of kafka broker/host combination delimited by comma. Default `localhost:9092`                                      |
-| JOYCE_API_KAFKA_COMMAND_TOPIC    | Kafka commando topic. Default: `joyce_command`                                                                              |
-| SCHEMA_GRPC_ENDPOINT             | host:port to import-gateway, default `import-gateway:6666`                                                                  |
-| MESH_FLAGS                       | with a value of `-r ./src/scripts/tracing.js` enables tracing with opentelemetry: use with _WORKDIR_ in a persistent volume |
-| GENERATE_FLAGS                   | with a value of `-r ./src/scripts/tracing.js` enables tracing with opentelemetry: use with _WORKDIR_ in a volatile volume   |
-| JAEGER_HOST                      | jaeger server host for opentelemetry span report, required to enable tracing                                                |
-| JAEGER_PORT                      | jaeger server port for opentelemetry span report, default `6832`                                                            |
-| JAEGER_SERVICE_NAME              | Logical name of the service, default `unknown_service:nodejs` see [opentelemetry spec]                                      |
-| JAEGER_SERVICE_NAMESPACE         | A namespace for _JAEGER_SERVICE_NAME_. Default `Joyce.API`                                                                  |
+| env var                          | description                                                                            |
+| -------------------------------- | -------------------------------------------------------------------------------------- |
+| JOYCE_API_CONFIG_SOURCE          | path to configuration file. Default `./api-config.json`                                |
+| JOYCE_API_WORKDIR                | path to work folder. Default `./workdir`                                               |
+| JOYCE_API_PORT                   | Port where service is. Default: `6650`                                                 |
+| JOYCE_API_MONGO_URI              | [Mongo connection uri]                                                                 |
+| JOYCE_API_KAFKA_BOOTSTRAPADDRESS | A string of kafka broker/host combination delimited by comma. Default `localhost:9092` |
+| JOYCE_API_KAFKA_COMMAND_TOPIC    | Kafka commando topic. Default: `joyce_command`                                         |
+| JOYCE_API_SCHEMA_GRPC_ENDPOINT   | host:port to import-gateway, default `import-gateway:6666`                             |
+| JOYCE_API_JAEGER_HOST            | jaeger server host for opentelemetry span report, required to enable tracing           |
+| JOYCE_API_JAEGER_PORT            | jaeger server port for opentelemetry span report, default `6832`                       |
+| JOYCE_API_SERVICE_NAME           | Logical name of the service, default `unknown_service:nodejs` see [opentelemetry spec] |
+| JOYCE_API_SERVICE_NAMESPACE      | A namespace for _JOYCE_API_SERVICE_NAME_. Default `Joyce.API`                          |
+| JOYCE_API_ENABLE_TRACING         | Enables tracing with jaeger. Tracing needs JOYCE_API_JAEGER_HOST as well.                        |
 
 ## Developing
 

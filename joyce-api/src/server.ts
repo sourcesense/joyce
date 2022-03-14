@@ -13,12 +13,12 @@ import healthPlugin from "./plugins/HealthPlugin";
 
 logger.info("starting server");
 
-const CONFIG_SOURCE = process.env.CONFIG_SOURCE || "./api-config.json";
-const WORKDIR = process.env.WORKDIR || "./workdir";
+const JOYCE_API_CONFIG_SOURCE = process.env.JOYCE_API_CONFIG_SOURCE || "./api-config.json";
+const JOYCE_API_WORKDIR = process.env.JOYCE_API_WORKDIR || "./workdir";
 
 async function createServer(db) {
 	// const JOYCE_API_KAFKA_COMMAND_TOPIC = process.env.JOYCE_API_KAFKA_COMMAND_TOPIC || "commands";
-	const config = await readConfig(CONFIG_SOURCE);
+	const config = await readConfig(JOYCE_API_CONFIG_SOURCE);
 	const hasJrpc = config.jsonrpc === true;
 	const hasRest = config.rest !== false;
 
@@ -75,7 +75,7 @@ async function createServer(db) {
 	return Promise.resolve()
 		.then(() => {
 			if (hasRest) {
-				return readLocalSchemas(CONFIG_SOURCE, WORKDIR).then((schemasList) => {
+				return readLocalSchemas(JOYCE_API_CONFIG_SOURCE, JOYCE_API_WORKDIR).then((schemasList) => {
 					schemasList.map((wrapper) => {
 						const resource = new MongoOpenApiResource(wrapper.schema, db);
 						logger.info(`registering paths under ${wrapper.path} for ${wrapper.name}`);
