@@ -37,14 +37,14 @@ Refer to this [docker-compose] to view an example.
 | JOYCE_API_WORKDIR                | path to work folder. Default `./workdir`                                               |
 | JOYCE_API_PORT                   | Port where service is. Default: `6650`                                                 |
 | JOYCE_API_MONGO_URI              | [Mongo connection uri]                                                                 |
-| JOYCE_API_KAFKA_BOOTSTRAPADDRESS | A string of kafka broker/host combination delimited by comma. Default `localhost:9092` |
+| JOYCE_API_KAFKA_BOOTSTRAPADDRESS | A string of kafka broker/host combination delimited by comma. Default `kafka:9092`     |
 | JOYCE_API_KAFKA_COMMAND_TOPIC    | Kafka commando topic. Default: `joyce_command`                                         |
 | JOYCE_API_SCHEMA_GRPC_ENDPOINT   | host:port to import-gateway, default `import-gateway:6666`                             |
 | JOYCE_API_JAEGER_HOST            | jaeger server host for opentelemetry span report, required to enable tracing           |
 | JOYCE_API_JAEGER_PORT            | jaeger server port for opentelemetry span report, default `6832`                       |
 | JOYCE_API_SERVICE_NAME           | Logical name of the service, default `unknown_service:nodejs` see [opentelemetry spec] |
 | JOYCE_API_SERVICE_NAMESPACE      | A namespace for _JOYCE_API_SERVICE_NAME_. Default `Joyce.API`                          |
-| JOYCE_API_ENABLE_TRACING         | Enables tracing with jaeger. Tracing needs JOYCE_API_JAEGER_HOST as well.                        |
+| JOYCE_API_ENABLE_TRACING         | Enables tracing with jaeger. Tracing needs _JOYCE_API_JAEGER_HOST_ as well.            |
 
 ## Developing
 

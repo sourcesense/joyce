@@ -42,7 +42,7 @@ const jrpcPlugin: FastifyPluginCallback<unknown> = async function (fastify, opti
 
 	const kafka = new Kafka({
 		clientId,
-		brokers: JOYCE_API_KAFKA_BOOTSTRAPADDRESS.split(/; ?/),
+		brokers: JOYCE_API_KAFKA_BOOTSTRAPADDRESS.split(/, ?/),
 		logCreator: PinoLogCreator,
 	});
 
