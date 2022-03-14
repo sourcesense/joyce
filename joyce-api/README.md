@@ -27,7 +27,36 @@ docker pull sourcesense/joyce-api:latest
 
 ### Configure
 
-It is configured by environment variables.
+It is configured by json and environment variables.
+
+This is a sample JSON configuration.
+
+```json
+{
+  "security": {},
+  "jsonrpc": true,
+  "graphQL": true,
+  "rest": true,
+  "resources": [
+    {
+      "path": "path",
+      "schema": "schema"
+    },
+  ]
+}
+```
+
+| property           | description                                       |
+| ------------------ | ------------------------------------------------- |
+| security           | for future configuration                          |
+| jsonrpc            | to enable json rpc channel, default false         |
+| graphQL            | to disable GraphQL channel, default true          |
+| rest               | to disable REST channel, default true             |
+| resources          | list of schemas to publish                        |
+| resources[].path   | rest path of the selected schema and graphql type |
+| resources[].schema | schema uid of the published mongo documents       |
+
+
 
 Refer to this [docker-compose] to view an example.
 
