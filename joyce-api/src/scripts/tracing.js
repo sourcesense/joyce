@@ -10,7 +10,15 @@ const { BatchSpanProcessor } = require("@opentelemetry/sdk-trace-base");
 const { MongooseInstrumentation } = require("opentelemetry-instrumentation-mongoose");
 const { MongoDBInstrumentation } = require("@opentelemetry/instrumentation-mongodb");
 
-const logger = require("pino")({ name: "tracing" });
+const logger = require("pino")({ name: "tracing", level: "debug" });
+
+const enabled = process.env.JOYCE_API_ENABLE_TRACING === "true";
+
+if (!enabled) {
+	logger.debug("tracing not enabled");
+	return;
+}
+logger.debug("tracing enabled");
 
 const host = process.env.JAEGER_HOST;
 
