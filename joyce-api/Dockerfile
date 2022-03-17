@@ -2,7 +2,7 @@ FROM       node:14-slim
 
 RUN apt-get update && apt-get install make
 
-JOYCE_API_WORKDIR    /usr/joyce
+WORKDIR    /usr/joyce
 
 COPY       package*.json ./
 COPY       tsconfig.json ./
