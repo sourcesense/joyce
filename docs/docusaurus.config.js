@@ -10,11 +10,6 @@ module.exports = {
   organizationName: 'sourcesense', // Usually your GitHub org/user name.
   projectName: 'joyce', // Usually your repo name.
   themeConfig: {
-    googleAnalytics: {
-      trackingID: 'UA-56700273-2',
-      // Optional fields.
-      anonymizeIP: true, // Should IPs be anonymized?
-    },
     navbar: {
       title: 'Joyce',
       logo: {
@@ -28,7 +23,7 @@ module.exports = {
           position: 'left',
           label: 'Documentation',
         },
-        {to: '/getting-started', label: 'Getting Started', position: 'left'},
+        { to: '/getting-started', label: 'Getting Started', position: 'left' },
         {
           href: 'https://github.com/sourcesense/joyce',
           label: 'GitHub',
@@ -45,7 +40,7 @@ module.exports = {
             {
               label: 'Gitter',
               href: 'https://gitter.im/sourcesense/joyce',
-            }
+            },
           ],
         },
         {
@@ -72,11 +67,15 @@ module.exports = {
         docs: {
           sidebarPath: require.resolve('./sidebars.js'),
           // Please change this to your repo.
-          editUrl:
-            'https://github.com/sourcesense/joyce/edit/main/docs',
+          editUrl: 'https://github.com/sourcesense/joyce/edit/main/docs',
         },
         theme: {
           customCss: require.resolve('./src/css/custom.css'),
+        },
+        googleAnalytics: {
+          trackingID: 'UA-56700273-2',
+          // Optional fields.
+          anonymizeIP: true, // Should IPs be anonymized?
         },
       },
     ],
