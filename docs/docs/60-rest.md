@@ -24,9 +24,7 @@ The configuration file is really simple:
 }
 ```
 
-ie.
-
-```json
+```json title="sample api-config.json"
 {
   "resources": [
     {
@@ -57,6 +55,12 @@ There are a number of env vars needed to setup the inner configuration of `Joyce
 | JOYCE_API_SERVICE_NAME           | Logical name of the service, default `unknown_service:nodejs` see [opentelemetry spec] |
 | JOYCE_API_SERVICE_NAMESPACE      | A namespace for _JOYCE_API_SERVICE_NAME_. Default `Joyce.API`                          |
 | JOYCE_API_ENABLE_TRACING         | Enables tracing with jaeger. Tracing needs _JOYCE_API_JAEGER_HOST_ as well.            |
+
+:::caution
+
+prior to version 1.5.6 of Joyce-API config and env variables were slightly different
+
+:::
 
 ## REST
 
