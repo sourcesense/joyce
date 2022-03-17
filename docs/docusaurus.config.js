@@ -25,6 +25,12 @@ module.exports = {
         },
         { to: '/getting-started', label: 'Getting Started', position: 'left' },
         {
+          type: 'docsVersionDropdown',
+          position: 'right',
+          dropdownItemsAfter: [{to: '/versions', label: 'All versions'}],
+          dropdownActiveClassDisabled: true,
+        },
+        {
           href: 'https://github.com/sourcesense/joyce',
           label: 'GitHub',
           position: 'right',
@@ -68,6 +74,14 @@ module.exports = {
           sidebarPath: require.resolve('./sidebars.js'),
           // Please change this to your repo.
           editUrl: 'https://github.com/sourcesense/joyce/edit/main/docs',
+          includeCurrentVersion: true,
+          lastVersion: 'current',
+          versions: {
+            current: {
+              label: 'v1.5',
+              path: 'docs',
+            },
+          },
         },
         theme: {
           customCss: require.resolve('./src/css/custom.css'),

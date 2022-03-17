@@ -1,8 +1,8 @@
 
 # Joyce API
 
-`joyce-rest` is the main interface to consume the final output of Joyce transofrmations.  
-It expose a **REST** and a **GraphQL** interface to *read* and a **JSON-RPC** interface to propagate other operations to the source backend systems.
+`Joyce-API` is the main interface to consume the final output of Joyce transformations.
+It exposes readonly **REST** and **GraphQL** interfaces and a **JSON-RPC** CQRS interface to propagate other operations to the underlying systems.
 
 ## Configuration
 
@@ -11,49 +11,73 @@ The api needs a json config file that defines which schemas to serve, this enabl
 The configuration file is really simple:
 
 ```json
-{   
-    "schemas": {
-        "[PATH]": {
-            "source": "[JOYCE_URI_OF_SCHEMA]"
-        }
-    }
+{
+  "jsonrpc": false, // default
+  "graphQL": true, // default
+  "rest": true, // default
+  "resources": [
+    {
+      "path": "[DESIRED_PATH]",
+      "source": "[JOYCE_URI_OF_SCHEMA]"
+    },
+  ]
 }
 ```
 
 ie.
+
 ```json
-{   
-    "schemas": {
-        "users": {
-            "source": "http://import-gateway:6651/api/schema/user"
-        },
-        "projects": {
-            "source": "http://import-gateway:6651/api/schema/project"
-        }
+{
+  "resources": [
+    {
+      "path": "users",
+      "source": "joyce://schema/import/user"
+    },
+    {
+      "path": "projects",
+      "source": "joyce://schema/import/project"
     }
+  ]
 }
 ```
 
 The file is read at startup so you have to already have the schema stored within the import gateway.
 
-`joyce-rest` read the schema and parses its [$metadata](schema#$metadata), knowing the shape of the content, the collection and unique id of content.
+`Joyce-API` reads the schema and parses its [$metadata](schema#metadata) and properties, knowing the shape of the content, the collection and unique id of content.
 
-## REST 
+There are a number of env vars needed to setup the inner configuration of `Joyce-API`, the most relevant are:
 
-With this information it will expose a Swagger documentation of the API at `/docs`.
+| env var                          | description                                                                            |
+| -------------------------------- | -------------------------------------------------------------------------------------- |
+| JOYCE_API_MONGO_URI              | [Mongo connection uri]                                                                 |
+| JOYCE_API_KAFKA_BOOTSTRAPADDRESS | A string of kafka broker/host combination delimited by comma. Default `kafka:9092`     |
+| JOYCE_API_SCHEMA_GRPC_ENDPOINT   | host:port to import-gateway, default `import-gateway:6666`                             |
+| JOYCE_API_JAEGER_HOST            | jaeger server host for opentelemetry span report, required to enable tracing           |
+| JOYCE_API_JAEGER_PORT            | jaeger server port for opentelemetry span report, default `6832`                       |
+| JOYCE_API_SERVICE_NAME           | Logical name of the service, default `unknown_service:nodejs` see [opentelemetry spec] |
+| JOYCE_API_SERVICE_NAMESPACE      | A namespace for _JOYCE_API_SERVICE_NAME_. Default `Joyce.API`                          |
+| JOYCE_API_ENABLE_TRACING         | Enables tracing with jaeger. Tracing needs _JOYCE_API_JAEGER_HOST_ as well.            |
 
-For every schema configured two enpoint are exposed:
+## REST
+
+If rest is not explicitly disabled in config, `Joyce-API` will expose a Swagger documentation of the API at `/swagger-ui`.
+
+For every schema configured two endpoints are exposed:
 
 - one to retrive a single content by uid `/[PATH]/[UID]`
-- one to list content  `/[PATH]` that can be *paged*, *ordered* and *filtered*
-
-## JSON-RPC
-
-API are **read-only**, only GET endpoint are exposed for the collections, but the platform enables also a way to push back writes, but following a CQRS approach does it in a different way.
-
-There is a `/jrpc` endpoint where you can send [json-rpc](https://www.jsonrpc.org/specification) messages that will be published on a `joyce_command` topic, that you can consume with custom code to make changes to the backend systems that owns the row data.
+- one to list content  `/[PATH]` that can be _paged_, _ordered_ and _filtered_
 
 ## GraphQL
 
-This service will expose also a [GraphQL](https://graphql.org/) interface at `/query` and a playground at `/graphql`. 
+If graphQL is not explicitly disabled in config, `Joyce-API` will expose also a [GraphQL](https://graphql.org/) interface at `/graphql` and a playground at `/graphiql`.
+
 The schema is transposed to a graphql schema automatically by using [GraphQL Mesh](https://www.graphql-mesh.com/)
+
+## JSON-RPC
+
+REST and GraphQL APIs are **read-only**, only GET endpoints are exposed for the schemas, but the platform enables also a way to push back writes, following a CQRS approach.
+
+There is a `/jrpc` endpoint where you can send [json-rpc](https://www.jsonrpc.org/specification) messages that will be published on a `joyce_command` topic, that you can consume with custom code to make changes to the backend systems that owns the row data.
+
+[Mongo connection uri]: https://docs.mongodb.com/drivers/node/current/fundamentals/connection/#connection-uri
+[opentelemetry spec]: https://github.com/open-telemetry/opentelemetry-specification/blob/main/specification/resource/semantic_conventions/README.md#service
