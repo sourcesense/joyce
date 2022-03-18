@@ -28,7 +28,7 @@
   </modules>
 
   <properties>
-    <revision>1.0.0-SNAPSHOT</revision>
+    <revision>2.0.0-SNAPSHOT</revision>
     <java.version>11</java.version>
     <!-- Sonar -->
     <sonar.projectKey>sourcesense_joyce-parent</sonar.projectKey>
