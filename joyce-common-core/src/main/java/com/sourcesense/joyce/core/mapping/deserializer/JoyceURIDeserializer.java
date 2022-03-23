@@ -21,31 +21,29 @@ import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.DeserializationContext;
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.deser.std.StdDeserializer;
-import com.sourcesense.joyce.core.model.JoyceURI;
+import com.sourcesense.joyce.core.model.uri.JoyceURI;
+import com.sourcesense.joyce.core.model.uri.JoyceURIFactory;
 
 import java.io.IOException;
 import java.util.Optional;
 
 public class JoyceURIDeserializer extends StdDeserializer<JoyceURI> {
-    protected JoyceURIDeserializer() {
-        this(null);
-    }
-    protected JoyceURIDeserializer(Class<?> vc) {
-        super(vc);
-    }
+	protected JoyceURIDeserializer() {
+		this(null);
+	}
 
-    @Override
-    public JoyceURI deserialize(JsonParser jsonParser, DeserializationContext deserializationContext) throws IOException, JsonProcessingException {
-        JsonNode node = jsonParser.getCodec().readTree(jsonParser);
-        Optional<JoyceURI> uri;
-        if (node.isObject()) {
-             uri = JoyceURI.createURI(node.get("uri").asText());
-        } else {
-            uri = JoyceURI.createURI(node.asText());
-        }
-        if (uri.isEmpty()){
-            throw new JsonProcessingException(String.format("uri: %s is not a joyce uri", node.asText())){};
-        }
-        return uri.get();
-    }
+	protected JoyceURIDeserializer(Class<?> vc) {
+		super(vc);
+	}
+
+	@Override
+	public JoyceURI deserialize(JsonParser jsonParser, DeserializationContext deserializationContext) throws IOException, JsonProcessingException {
+		JsonNode uriNode = jsonParser.getCodec().readTree(jsonParser);
+		return Optional.ofNullable(uriNode)
+				.map(node -> node.isObject() ? node.get("uri").asText() : node.asText())
+				.flatMap(JoyceURIFactory.getInstance()::createURI)
+				.orElseThrow(() -> new JsonProcessingException(String.format(
+						"uri: %s is not a joyce uri", uriNode.asText())
+				) {});
+	}
 }

@@ -16,9 +16,20 @@
 
 package com.sourcesense.joyce.core.exception;
 
-public class InvalidJoyceUriException extends RuntimeException {
-    public InvalidJoyceUriException(String s) {
-        super(s);
-    }
+public class InvalidJoyceURIException extends RuntimeException {
+
+	public InvalidJoyceURIException(String message) {
+		super(message);
+	}
+
+	public static InvalidJoyceURIException wrongNumberOfParts() {
+		return wrongNumberOfParts("");
+	}
+
+	public static InvalidJoyceURIException wrongNumberOfParts(String kind) {
+		return new InvalidJoyceURIException(String.format(
+				"Impossible to create %s Joyce uri, uri contains an unexpected number of parts.", kind
+		));
+	}
 }
 

@@ -14,10 +14,11 @@
  * limitations under the License.
  */
 
-package com.sourcesense.joyce.core.model;
+package com.sourcesense.joyce.core.model.entity;
 
 import com.fasterxml.jackson.annotation.JsonProperty;
 import com.sourcesense.joyce.core.exception.InvalidMetadataException;
+import com.sourcesense.joyce.core.model.JoyceURI;
 import lombok.EqualsAndHashCode;
 import lombok.Getter;
 import lombok.Setter;

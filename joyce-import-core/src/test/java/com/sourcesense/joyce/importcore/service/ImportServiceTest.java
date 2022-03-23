@@ -21,12 +21,12 @@ import com.fasterxml.jackson.core.type.TypeReference;
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.sourcesense.joyce.core.enumeration.KafkaCustomHeaders;
-import com.sourcesense.joyce.core.exception.InvalidJoyceUriException;
+import com.sourcesense.joyce.core.exception.InvalidJoyceURIException;
 import com.sourcesense.joyce.core.exception.InvalidMetadataException;
 import com.sourcesense.joyce.core.exception.SchemaNotFoundException;
 import com.sourcesense.joyce.core.utililty.SchemaUtils;
 import com.sourcesense.joyce.core.model.JoyceURI;
-import com.sourcesense.joyce.core.model.SchemaEntity;
+import com.sourcesense.joyce.core.model.entity.SchemaEntity;
 import com.sourcesense.joyce.core.producer.ContentProducer;
 import com.sourcesense.joyce.core.service.CsvMappingService;
 import com.sourcesense.joyce.schemacore.service.SchemaService;
@@ -128,7 +128,7 @@ class ImportServiceTest {
 		Map<String, String> headers = this.computeHeaders(IMPORT_SCHEMA);
 
 		assertThrows(
-				InvalidJoyceUriException.class,
+				InvalidJoyceURIException.class,
 				() -> importService.computeRawURI(INVALID_MESSAGE_KEY, headers)
 		);
 	}
@@ -162,7 +162,7 @@ class ImportServiceTest {
 		Map<String, String> headers = this.computeHeaders(INVALID_IMPORT_SCHEMA);
 
 		assertThrows(
-				InvalidJoyceUriException.class,
+				InvalidJoyceURIException.class,
 				() -> importService.computeValidSchemaUri(null, headers, null)
 		);
 	}

@@ -1,7 +1,7 @@
 package com.sourcesense.joyce.core.service;
 
 import com.sourcesense.joyce.core.model.JoyceURI;
-import com.sourcesense.joyce.core.model.SchemaEntity;
+import com.sourcesense.joyce.core.model.entity.SchemaEntity;
 
 import java.util.List;
 import java.util.Optional;

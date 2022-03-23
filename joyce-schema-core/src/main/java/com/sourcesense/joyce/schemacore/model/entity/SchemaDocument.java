@@ -1,5 +1,5 @@
 package com.sourcesense.joyce.schemacore.model.entity;
-import com.sourcesense.joyce.core.model.JoyceSchemaMetadata;
+import com.sourcesense.joyce.core.model.entity.JoyceSchemaMetadata;
 import lombok.Getter;
 import lombok.Setter;
 import org.springframework.data.annotation.Id;

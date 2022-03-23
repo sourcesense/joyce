@@ -14,7 +14,7 @@
  * limitations under the License.
  */
 
-package com.sourcesense.joyce.core.dto;
+package com.sourcesense.joyce.core.model.dto;
 
 import lombok.AllArgsConstructor;
 import lombok.Builder;

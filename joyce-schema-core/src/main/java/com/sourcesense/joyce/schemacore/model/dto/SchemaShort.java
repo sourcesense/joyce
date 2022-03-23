@@ -16,8 +16,8 @@
 
 package com.sourcesense.joyce.schemacore.model.dto;
 
-import com.sourcesense.joyce.core.model.JoyceSchemaMetadata;
-import com.sourcesense.joyce.core.model.SchemaObject;
+import com.sourcesense.joyce.core.model.entity.JoyceSchemaMetadata;
+import com.sourcesense.joyce.core.model.entity.SchemaObject;
 import lombok.Data;
 
 @Data

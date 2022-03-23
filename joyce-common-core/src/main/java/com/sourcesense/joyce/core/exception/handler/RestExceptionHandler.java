@@ -1,6 +1,6 @@
 package com.sourcesense.joyce.core.exception.handler;
 
-import com.sourcesense.joyce.core.dto.ApiError;
+import com.sourcesense.joyce.core.model.dto.ApiError;
 import com.sourcesense.joyce.core.exception.InvalidMetadataException;
 import com.sourcesense.joyce.core.exception.ProcessingException;
 import com.sourcesense.joyce.core.exception.RestException;

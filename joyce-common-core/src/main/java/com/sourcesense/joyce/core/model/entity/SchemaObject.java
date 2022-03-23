@@ -1,4 +1,4 @@
-package com.sourcesense.joyce.core.model;
+package com.sourcesense.joyce.core.model.entity;
 
 public interface SchemaObject {
 

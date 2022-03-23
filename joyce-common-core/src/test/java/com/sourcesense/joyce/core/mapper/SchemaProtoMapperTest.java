@@ -9,7 +9,7 @@ import com.sourcesense.joyce.core.mapping.mapper.ProtoConverter;
 import com.sourcesense.joyce.core.mapping.mapper.SchemaProtoMapper;
 import com.sourcesense.joyce.core.mapping.mapper.SchemaProtoMapperImpl;
 import com.sourcesense.joyce.core.model.JoyceURI;
-import com.sourcesense.joyce.core.model.SchemaEntity;
+import com.sourcesense.joyce.core.model.entity.SchemaEntity;
 import com.sourcesense.joyce.core.test.TestUtility;
 import com.sourcesense.joyce.protobuf.enumeration.JoyceUriSubtype;
 import com.sourcesense.joyce.protobuf.model.Schema;

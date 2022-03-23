@@ -20,7 +20,7 @@ import com.mongodb.client.DistinctIterable;
 import com.sourcesense.joyce.core.configuration.mongo.MongodbProperties;
 import com.sourcesense.joyce.core.exception.SchemaNotFoundException;
 import com.sourcesense.joyce.core.model.JoyceURI;
-import com.sourcesense.joyce.core.model.SchemaEntity;
+import com.sourcesense.joyce.core.model.entity.SchemaEntity;
 import com.sourcesense.joyce.core.producer.SchemaProducer;
 import com.sourcesense.joyce.core.service.SchemaClient;
 import com.sourcesense.joyce.schemacore.mapper.SchemaDtoMapper;

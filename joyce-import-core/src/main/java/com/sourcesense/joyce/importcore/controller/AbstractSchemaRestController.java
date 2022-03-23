@@ -1,11 +1,11 @@
 package com.sourcesense.joyce.importcore.controller;
 
 import com.fasterxml.jackson.databind.JsonNode;
-import com.sourcesense.joyce.core.dto.ConnectorOperationStatus;
-import com.sourcesense.joyce.core.model.JoyceSchemaMetadataExtraConnector;
+import com.sourcesense.joyce.core.model.dto.ConnectorOperationStatus;
+import com.sourcesense.joyce.core.model.entity.JoyceSchemaMetadataExtraConnector;
 import com.sourcesense.joyce.core.model.JoyceURI;
-import com.sourcesense.joyce.core.model.SchemaEntity;
-import com.sourcesense.joyce.core.model.SchemaObject;
+import com.sourcesense.joyce.core.model.entity.SchemaEntity;
+import com.sourcesense.joyce.core.model.entity.SchemaObject;
 import com.sourcesense.joyce.importcore.service.ConnectorService;
 import com.sourcesense.joyce.importcore.service.ValidationService;
 import com.sourcesense.joyce.schemacore.api.SchemaRestApi;
@@ -14,12 +14,8 @@ import com.sourcesense.joyce.schemacore.model.dto.SchemaInfo;
 import com.sourcesense.joyce.schemacore.model.dto.SchemaSave;
 import com.sourcesense.joyce.schemacore.service.SchemaService;
 import lombok.RequiredArgsConstructor;
-import org.springframework.util.ObjectUtils;
-import org.springframework.util.StringUtils;
 
 import java.util.List;
-import java.util.Optional;
-import java.util.function.Predicate;
 
 @RequiredArgsConstructor
 public abstract class AbstractSchemaRestController implements SchemaRestApi {

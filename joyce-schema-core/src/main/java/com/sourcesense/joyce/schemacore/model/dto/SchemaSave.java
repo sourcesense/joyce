@@ -18,7 +18,7 @@ package com.sourcesense.joyce.schemacore.model.dto;
 
 import com.fasterxml.jackson.annotation.JsonProperty;
 import com.fasterxml.jackson.databind.JsonNode;
-import com.sourcesense.joyce.core.model.JoyceSchemaMetadata;
+import com.sourcesense.joyce.core.model.entity.JoyceSchemaMetadata;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Data;

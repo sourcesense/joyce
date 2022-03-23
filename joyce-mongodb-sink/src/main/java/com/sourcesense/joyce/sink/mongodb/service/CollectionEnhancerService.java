@@ -9,7 +9,7 @@ import com.sourcesense.joyce.core.annotation.EventPayload;
 import com.sourcesense.joyce.core.annotation.Notify;
 import com.sourcesense.joyce.core.enumeration.NotificationEvent;
 import com.sourcesense.joyce.core.utililty.SchemaUtils;
-import com.sourcesense.joyce.core.model.SchemaEntity;
+import com.sourcesense.joyce.core.model.entity.SchemaEntity;
 import com.sourcesense.joyce.sink.mongodb.exception.MongodbSinkException;
 import com.sourcesense.joyce.core.configuration.mongo.MongodbProperties;
 import com.sourcesense.joyce.sink.mongodb.model.MongoIndex;

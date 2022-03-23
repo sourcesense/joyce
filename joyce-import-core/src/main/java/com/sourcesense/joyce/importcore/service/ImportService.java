@@ -26,11 +26,11 @@ import com.sourcesense.joyce.core.annotation.RawUri;
 import com.sourcesense.joyce.core.enumeration.FileExtension;
 import com.sourcesense.joyce.core.enumeration.KafkaCustomHeaders;
 import com.sourcesense.joyce.core.enumeration.NotificationEvent;
-import com.sourcesense.joyce.core.exception.InvalidJoyceUriException;
+import com.sourcesense.joyce.core.exception.InvalidJoyceURIException;
 import com.sourcesense.joyce.core.exception.InvalidMetadataException;
-import com.sourcesense.joyce.core.model.JoyceSchemaMetadata;
+import com.sourcesense.joyce.core.model.entity.JoyceSchemaMetadata;
 import com.sourcesense.joyce.core.model.JoyceURI;
-import com.sourcesense.joyce.core.model.SchemaEntity;
+import com.sourcesense.joyce.core.model.entity.SchemaEntity;
 import com.sourcesense.joyce.core.producer.ContentProducer;
 import com.sourcesense.joyce.core.service.CsvMappingService;
 import com.sourcesense.joyce.core.utililty.SchemaUtils;
@@ -99,7 +99,7 @@ public class ImportService {
 		}
 
 		return JoyceURI.createURI(messageKey)
-				.orElseThrow(() -> new InvalidJoyceUriException(String.format("Uri [%s] is not a valid Joyce Uri", messageKey)));
+				.orElseThrow(() -> new InvalidJoyceURIException(String.format("Uri [%s] is not a valid Joyce Uri", messageKey)));
 	}
 
 	/**
@@ -122,7 +122,7 @@ public class ImportService {
 		return this.computeSchemaUri(messageKey, headers)
 				.filter(joyceURI -> JoyceURI.Subtype.IMPORT.equals(joyceURI.getSubtype()))
 				.orElseThrow(
-						() -> new InvalidJoyceUriException(
+						() -> new InvalidJoyceURIException(
 								String.format("Schema is not a valid schema uri. key: %s", messageKey))
 				);
 	}

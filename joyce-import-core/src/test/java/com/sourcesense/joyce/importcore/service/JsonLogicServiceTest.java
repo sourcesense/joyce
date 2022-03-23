@@ -1,7 +1,7 @@
 package com.sourcesense.joyce.importcore.service;
 
 import com.fasterxml.jackson.databind.JsonNode;
-import com.sourcesense.joyce.core.model.JoyceSchemaMetadata;
+import com.sourcesense.joyce.core.model.entity.JoyceSchemaMetadata;
 import com.sourcesense.joyce.importcore.test.TestUtility;
 import io.github.jamsesso.jsonlogic.JsonLogic;
 import org.junit.jupiter.api.Test;

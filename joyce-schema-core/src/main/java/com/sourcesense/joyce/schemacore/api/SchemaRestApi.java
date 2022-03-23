@@ -18,17 +18,16 @@ package com.sourcesense.joyce.schemacore.api;
 
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.JsonNode;
-import com.sourcesense.joyce.core.model.SchemaObject;
+import com.sourcesense.joyce.core.model.entity.SchemaObject;
 import com.sourcesense.joyce.schemacore.model.dto.SchemaInfo;
 import com.sourcesense.joyce.schemacore.model.dto.SchemaSave;
 import com.sourcesense.joyce.schemacore.model.dto.SchemaShort;
-import com.sourcesense.joyce.core.model.JoyceSchemaMetadataExtraConnector;
-import com.sourcesense.joyce.core.model.SchemaEntity;
+import com.sourcesense.joyce.core.model.entity.JoyceSchemaMetadataExtraConnector;
+import com.sourcesense.joyce.core.model.entity.SchemaEntity;
 import io.swagger.v3.oas.annotations.media.Content;
 import io.swagger.v3.oas.annotations.responses.ApiResponse;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import org.springframework.http.HttpStatus;
-import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.List;

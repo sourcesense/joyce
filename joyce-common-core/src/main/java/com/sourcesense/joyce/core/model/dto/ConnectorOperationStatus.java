@@ -1,4 +1,4 @@
-package com.sourcesense.joyce.core.dto;
+package com.sourcesense.joyce.core.model.dto;
 
 import com.fasterxml.jackson.databind.JsonNode;
 import com.sourcesense.joyce.core.enumeration.ConnectorOperation;

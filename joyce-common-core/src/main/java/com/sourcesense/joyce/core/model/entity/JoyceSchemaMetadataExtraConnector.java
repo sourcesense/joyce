@@ -1,4 +1,4 @@
-package com.sourcesense.joyce.core.model;
+package com.sourcesense.joyce.core.model.entity;
 
 import com.fasterxml.jackson.annotation.JsonAlias;
 import com.fasterxml.jackson.databind.JsonNode;

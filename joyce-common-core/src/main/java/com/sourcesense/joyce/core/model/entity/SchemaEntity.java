@@ -14,7 +14,7 @@
  * limitations under the License.
  */
 
-package com.sourcesense.joyce.core.model;
+package com.sourcesense.joyce.core.model.entity;
 
 import com.fasterxml.jackson.annotation.JsonProperty;
 import com.fasterxml.jackson.databind.JsonNode;

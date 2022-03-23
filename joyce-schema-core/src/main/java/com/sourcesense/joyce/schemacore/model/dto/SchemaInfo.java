@@ -1,6 +1,6 @@
 package com.sourcesense.joyce.schemacore.model.dto;
 
-import com.sourcesense.joyce.core.dto.ConnectorOperationStatus;
+import com.sourcesense.joyce.core.model.dto.ConnectorOperationStatus;
 import com.sourcesense.joyce.core.model.JoyceURI;
 import lombok.AllArgsConstructor;
 import lombok.Builder;

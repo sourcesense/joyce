@@ -2,7 +2,7 @@ package com.sourcesense.joyce.schemacore.service;
 
 import com.google.protobuf.Empty;
 import com.sourcesense.joyce.core.mapping.mapper.SchemaProtoMapper;
-import com.sourcesense.joyce.core.model.SchemaEntity;
+import com.sourcesense.joyce.core.model.entity.SchemaEntity;
 import com.sourcesense.joyce.protobuf.api.*;
 import com.sourcesense.joyce.protobuf.model.Schema;
 import io.grpc.stub.StreamObserver;
