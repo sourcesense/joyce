@@ -3,7 +3,6 @@ package com.sourcesense.joyce.importcore.controller;
 import com.fasterxml.jackson.databind.JsonNode;
 import com.sourcesense.joyce.core.model.dto.ConnectorOperationStatus;
 import com.sourcesense.joyce.core.model.entity.JoyceSchemaMetadataExtraConnector;
-import com.sourcesense.joyce.core.model.JoyceURI;
 import com.sourcesense.joyce.core.model.entity.SchemaEntity;
 import com.sourcesense.joyce.core.model.entity.SchemaObject;
 import com.sourcesense.joyce.importcore.service.ConnectorService;
@@ -25,13 +24,14 @@ public abstract class AbstractSchemaRestController implements SchemaRestApi {
 	protected final ConnectorService connectorService;
 	protected final ValidationService validationService;
 
+	//Todo: must be deleted and
 	@Override
 	public List<String> getAllNamespaces() {
 		return schemaService.getAllNamespaces();
 	}
 
 	@Override
-	public List<SchemaObject> getAllSchema(
+	public List<SchemaObject> getAllSchemas(
 			Boolean fullSchema,
 			Boolean rootOnly) {
 
@@ -39,22 +39,19 @@ public abstract class AbstractSchemaRestController implements SchemaRestApi {
 		return schemaMapper.entitiesToShortIfFullSchema(schemas, fullSchema);
 	}
 
-	@Override
-	public List<SchemaObject> getAllSchemaForNamespace(
-			String subtype,
-			String namespace,
+	public List<SchemaObject> getAllSchemasForDomainAndProduct(
+			String domain,
+			String product,
 			Boolean fullSchema,
 			Boolean rootOnly) {
 
-		JoyceURI.Subtype uriSubtype = JoyceURI.Subtype.getOrElseThrow(subtype);
-		List<SchemaEntity> schemas = schemaService.getAllBySubtypeAndNamespace(uriSubtype, namespace, rootOnly);
+		List<SchemaEntity> schemas = schemaService.getAllByDomainAndProduct(domain, product, rootOnly);
 		return schemaMapper.entitiesToShortIfFullSchema(schemas, fullSchema);
 	}
 
 	@Override
-	public SchemaEntity getSchema(String subtype, String namespace, String name) {
-		JoyceURI.Subtype uriSubtype = JoyceURI.Subtype.getOrElseThrow(subtype);
-		return schemaService.getOrElseThrow(uriSubtype, namespace, name);
+	public SchemaEntity getSchema(String domain, String product, String name) {
+		return schemaService.getOrElseThrow(domain, product, name);
 	}
 
 	@Override
@@ -68,71 +65,40 @@ public abstract class AbstractSchemaRestController implements SchemaRestApi {
 	}
 
 	@Override
-	public SchemaInfo deleteSchema(String subtype, String namespace, String name) {
-		List<ConnectorOperationStatus> connectors = connectorService.deleteConnectors(subtype, namespace, name);
-		JoyceURI.Subtype uriSubtype = JoyceURI.Subtype.getOrElseThrow(subtype);
-		schemaService.delete(uriSubtype, namespace,	name);
+	public SchemaInfo deleteSchema(String domain, String product, String name) {
+		List<ConnectorOperationStatus> connectors = connectorService.deleteConnectors(domain, product, name);
+		schemaService.delete(domain, product, name);
 		return SchemaInfo.builder().connectors(connectors).build();
 	}
 
 	@Override
-	public List<JoyceSchemaMetadataExtraConnector> getConnectors(
-			String subtype,
-			String namespace,
-			String name) {
-
-		return connectorService.getConnectors(subtype, namespace, name);
+	public List<JoyceSchemaMetadataExtraConnector> getConnectors(String domain, String product, String name) {
+		return connectorService.getConnectors(domain, product, name);
 	}
 
 	@Override
-	public JsonNode getConnectorStatus(
-			String subtype,
-			String namespace,
-			String name,
-			String connector) {
-
-		return connectorService.getConnectorStatus(namespace, name, connector);
+	public JsonNode getConnectorStatus(String domain, String product, String name, String connector) {
+		return connectorService.getConnectorStatus(domain, product, name, connector);
 	}
 
 	@Override
-	public Boolean restartConnector(
-			String subtype,
-			String namespace,
-			String name,
-			String connector) {
-
-		return connectorService.restartConnector(namespace, name, connector);
+	public Boolean restartConnector(String domain, String product, String name, String connector) {
+		return connectorService.restartConnector(domain, product, name, connector);
 	}
 
 	@Override
-	public Boolean pauseConnector(
-			String subtype,
-			String namespace,
-			String name,
-			String connector) {
-
-		return connectorService.pauseConnector(namespace, name, connector);
+	public Boolean pauseConnector(String domain, String product, String name, String connector) {
+		return connectorService.pauseConnector(domain, product, name, connector);
 	}
 
 	@Override
-	public Boolean resumeConnector(
-			String subtype,
-			String namespace,
-			String name,
-			String connector) {
-
-		return connectorService.resumeConnector(namespace, name, connector);
+	public Boolean resumeConnector(String domain, String product, String name, String connector) {
+		return connectorService.resumeConnector(domain, product, name, connector);
 	}
 
 	@Override
-	public Boolean restartConnectorTask(
-			String subtype,
-			String namespace,
-			String name,
-			String connector,
-			String task) {
-
-		return connectorService.restartConnectorTask(namespace, name, connector, task);
+	public Boolean restartConnectorTask(String domain, String product, String name, String connector, String task) {
+		return connectorService.restartConnectorTask(domain, product, name, connector, task);
 	}
 
 	protected SchemaInfo saveSchema(SchemaSave schema) {

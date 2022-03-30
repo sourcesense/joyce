@@ -1,7 +1,7 @@
-# Joyce 
+# Joyce
 
-[![Joyce Release](https://github.com/sourcesense/joyce/actions/workflows/release-all.yaml/badge.svg)](https://github.com/sourcesense/joyce/actions/workflows/release-all.yaml)  
-[![Documentation Release](https://github.com/sourcesense/joyce/actions/workflows/pages.yaml/badge.svg)](https://github.com/sourcesense/joyce/actions/workflows/pages.yaml)  
+[![Joyce Release](https://github.com/sourcesense/joyce/actions/workflows/release-all.yaml/badge.svg)](https://github.com/sourcesense/joyce/actions/workflows/release-all.yaml)
+[![Documentation Release](https://github.com/sourcesense/joyce/actions/workflows/pages.yaml/badge.svg)](https://github.com/sourcesense/joyce/actions/workflows/pages.yaml)
 [![Libraries Build](https://github.com/sourcesense/joyce/actions/workflows/parent-release.yaml/badge.svg)](https://github.com/sourcesense/joyce/actions/workflows/parent-release.yaml)
 
 | Component          | docker                                         | latest version | Build |
@@ -9,12 +9,12 @@
 | Import Gateway     | sourcesense/joyce-import-gateway | ![Docker Image Version (latest semver)](https://img.shields.io/docker/v/sourcesense/joyce-import-gateway) |  [![Import Engine Build](https://github.com/sourcesense/joyce/actions/workflows/import-engine-release.yaml/badge.svg)](https://github.com/sourcesense/joyce/actions/workflows/import-engine-release.yaml)     |
 | Joyce Kafka Connect | sourcesense/joyce-kafka-connect | ![Docker Image Version (latest semver)](https://img.shields.io/docker/v/sourcesense/joyce-kafka-connect) | [![Kafka Connect Build](https://github.com/sourcesense/joyce/actions/workflows/kafka-connect-release.yaml/badge.svg)](https://github.com/sourcesense/joyce/actions/workflows/kafka-connect-release.yaml)    |
 | Mongodb Sink |  sourcesense/joyce-mongodb-sink | ![Docker Image Version (latest semver)](https://img.shields.io/docker/v/sourcesense/joyce-mongodb-sink) | [![Mongodb Sink Build](https://github.com/sourcesense/joyce/actions/workflows/mongodb-sink-release.yaml/badge.svg)](https://github.com/sourcesense/joyce/actions/workflows/mongodb-sink-release.yaml) |
-| Rest       | sourcesense/joyce-api | ![Docker Image Version (latest semver)](https://img.shields.io/docker/v/sourcesense/joyce-api) |  [![API Docker Release](https://github.com/sourcesense/joyce/actions/workflows/api-release.yaml/badge.svg)](https://github.com/sourcesense/joyce/actions/workflows/api-release.yaml) |  
+| Rest       | sourcesense/joyce-api | ![Docker Image Version (latest semver)](https://img.shields.io/docker/v/sourcesense/joyce-api) |  [![API Docker Release](https://github.com/sourcesense/joyce/actions/workflows/api-release.yaml/badge.svg)](https://github.com/sourcesense/joyce/actions/workflows/api-release.yaml) |
 ## Introduction
 
-> 
+>
 > Joyce is a highly scalable event-driven Cloud Native [Data Hub](https://en.wikipedia.org/wiki/Data_hub).
-> 
+>
 
 Ok! Wait, what? Joyce allows you to ingest data from (almost) any source and expose the ingested data as standard APIs (REST, event notification) **automatically**. In order to specify to Joyce which data we want to pick from the incoming data stream and how APIs will look like you need to describe the expected behaviour with a DSL based on `json-schema`.
 
@@ -49,7 +49,7 @@ This will startup:
 
 First of all we have to store a schema that tells the system how to project the content we import inside Joyce.
 
-A schema is an enhanced `json-schema` with keywords that tells how to transform/project a content.  
+A schema is an enhanced `json-schema` with keywords that tells how to transform/project a content.
 
 For a complete documentation on schema go [here](https://sourcesense.github.io/joyce-docs/docs/schema)
 
@@ -66,7 +66,7 @@ $metadata:
   name: user
   description: A test schema
   development: true
-  uid: code
+  uuuid: code
   collection: users
 type: object
 properties:
@@ -81,7 +81,7 @@ properties:
     $path: $.last_name
   full_name:
     type: string
-    $script: 
+    $script:
       language: python
       code: "'_'.join([source['first_name'].upper(), source['last_name'].upper()])"
   email:
@@ -125,7 +125,7 @@ If you go to [http://localhost:6650/docs](http://localhost:6650/docs) you'll see
 create a file `schemas.json` with this content:
 ```bash
 cat > schemas.json  <<- "EOF"
-{   
+{
     "schemas": {
         "test-users": {
             "source": "http://import-gateway:6651/api/schema/import/default/user"

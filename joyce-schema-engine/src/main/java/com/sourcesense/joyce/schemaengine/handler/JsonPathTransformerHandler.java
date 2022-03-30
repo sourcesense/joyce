@@ -70,20 +70,21 @@ public class JsonPathTransformerHandler implements SchemaTransformerHandler {
 	@Override
 	public JsonNode process(String key, String type, JsonNode value, JsonNode source, Optional<JsonNode> metadata, Optional<Object> context) {
 		if (value.getNodeType().equals(JsonNodeType.ARRAY)){
-			StringBuffer stringBuffer = new StringBuffer();
+
+			StringBuilder stringBuilder = new StringBuilder();
 			for (JsonNode jsonNode : value) {
 				if(jsonNode.getNodeType().equals(JsonNodeType.STRING)){
 					if(jsonNode.asText().startsWith("$")){
 						JsonNode resolvedPath = this.computeValueOrDefault(type, source, jsonNode.asText());
-						stringBuffer.append(resolvedPath.asText());
+						stringBuilder.append(resolvedPath.asText());
 					} else {
-						stringBuffer.append(jsonNode.asText());
+						stringBuilder.append(jsonNode.asText());
 					}
 				} else {
 					log.error("values in array must be strings ");
 				}
 			}
-			return new TextNode(stringBuffer.toString());
+			return new TextNode(stringBuilder.toString());
 		} else {
 			return this.computeValueOrDefault(type, source, value.asText());
 		}

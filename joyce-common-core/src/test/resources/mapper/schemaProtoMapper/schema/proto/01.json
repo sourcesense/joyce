@@ -1,10 +1,11 @@
 {
-  "uid": "joyce://schema/import/test.object",
+  "uid": "joyce:content:test:default:user:schema",
   "schema": "https://joyce.sourcesense.com/v1/schema",
   "metadata": {
-    "subtype": "IMPORT",
-    "name": "object",
-    "namespace": "default",
+    "type": "import",
+    "domain": "test",
+    "product": "default",
+    "name": "user",
     "description": "A test schema",
     "development": true,
     "store": "true",
@@ -13,7 +14,7 @@
     "connectors": "false",
     "export": "false",
     "uidKey": "id",
-    "collection": "test.object"
+    "collection": "test-default-user"
   },
   "type": "object",
   "properties": {

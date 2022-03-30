@@ -6,7 +6,6 @@ option java_package = "com.sourcesense.joyce.protobuf.api";
 
 import "google/protobuf/empty.proto";
 import "model/schema.proto";
-import "enumeration/joyce_uri_subtype.proto";
 
 service SchemaApi {
   rpc GetSchema(GetSchemaRequest) returns (GetSchemaResponse);
@@ -25,8 +24,8 @@ message GetAllSchemasRequest {
 }
 
 message GetAllSchemasBySubtypeAndNamespaceRequest {
-  JoyceUriSubtype subtype = 1;
-  string namespace = 2;
+  string domain = 1;
+  string product = 2;
   string rootOnly = 3;
 }
 

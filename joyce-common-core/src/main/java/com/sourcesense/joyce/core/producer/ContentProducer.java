@@ -23,8 +23,10 @@ import com.sourcesense.joyce.core.enumeration.ImportAction;
 import com.sourcesense.joyce.core.enumeration.KafkaCustomHeaders;
 import com.sourcesense.joyce.core.enumeration.NotificationEvent;
 import com.sourcesense.joyce.core.model.entity.JoyceSchemaMetadata;
-import com.sourcesense.joyce.core.model.JoyceURI;
 import com.sourcesense.joyce.core.model.entity.SchemaEntity;
+import com.sourcesense.joyce.core.model.uri.JoyceDocumentURI;
+import com.sourcesense.joyce.core.model.uri.JoyceSourceURI;
+import com.sourcesense.joyce.core.model.uri.JoyceURI;
 import com.sourcesense.joyce.core.service.NotificationService;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Value;
@@ -57,71 +59,77 @@ public class ContentProducer extends KafkaMessageProducer<String,JsonNode> {
 		this.notificationService = notificationService;
 	}
 
-	public JoyceURI remove(JoyceURI rawUri, JoyceSchemaMetadata metadata) {
-		return this.sendRemovalMessage(rawUri, rawUri, metadata);
+	public JoyceURI remove(JoyceURI sourceURI, JoyceSchemaMetadata metadata) {
+		return this.sendRemovalMessage(sourceURI, sourceURI, metadata);
 	}
 
-	public JoyceURI remove(JoyceURI rawUri, JoyceURI contentUri, JoyceSchemaMetadata metadata) {
-		return this.sendRemovalMessage(rawUri, contentUri, metadata);
+	public JoyceURI remove(JoyceURI sourceURI, JoyceURI documentURI, JoyceSchemaMetadata metadata) {
+		return this.sendRemovalMessage(sourceURI, documentURI, metadata);
 	}
 
-	public JoyceURI sendRemovalMessage(JoyceURI rawUri, JoyceURI contentUri, JoyceSchemaMetadata metadata) {
+	public JoyceURI sendRemovalMessage(JoyceURI sourceURI, JoyceURI documentURI, JoyceSchemaMetadata metadata) {
 
 		MessageBuilder<JsonNode> message = MessageBuilder
 				.withPayload((JsonNode) jsonMapper.createObjectNode())
 				.setHeader(KafkaHeaders.TOPIC, contentTopic)
-				.setHeader(KafkaHeaders.MESSAGE_KEY, contentUri.toString())
+				.setHeader(KafkaHeaders.MESSAGE_KEY, documentURI.toString())
 				.setHeader(KafkaCustomHeaders.MESSAGE_ACTION, ImportAction.DELETE.toString())
-				.setHeader(KafkaCustomHeaders.RAW_URI, rawUri.toString());
+				.setHeader(KafkaCustomHeaders.SOURCE_URI, sourceURI.toString());
 
 		setMetadataHeaders(metadata, message);
 
-		this.sendMessage(rawUri.toString(), contentUri.toString(), message.build());
-		return contentUri;
+		this.sendMessage(sourceURI.toString(), documentURI.toString(), message.build());
+		return documentURI;
 	}
 
 	/**
 	 * Publish to main log a processed content
 	 *
 	 * @param schema
-	 * @param rawUri
-	 * @param contentUri
+	 * @param sourceURI
+	 * @param documentURI
 	 * @param content
 	 * @param metadata
 	 * @return
 	 */
-	public JoyceURI publish(
+	public JoyceDocumentURI publish(
 			SchemaEntity schema,
-			JoyceURI rawUri,
-			JoyceURI contentUri,
+			JoyceSourceURI sourceURI,
+			JoyceDocumentURI documentURI,
 			JsonNode content,
 			JoyceSchemaMetadata metadata) {
 
-		JsonNode enrichedContent = this.computeEnrichedContent(schema, rawUri, content);
+		JsonNode enrichedContent = this.computeEnrichedContent(schema, sourceURI, content);
 
 		MessageBuilder<JsonNode> message = MessageBuilder
 				.withPayload(enrichedContent)
 				.setHeader(KafkaHeaders.TOPIC, contentTopic)
 				.setHeader(KafkaCustomHeaders.MESSAGE_ACTION, ImportAction.INSERT.toString())
-				.setHeader(KafkaHeaders.MESSAGE_KEY, contentUri.toString());
+				.setHeader(KafkaHeaders.MESSAGE_KEY, documentURI.toString());
 
 		setMetadataHeaders(metadata, message);
 
-		this.sendMessage((rawUri != null) ? rawUri.toString() : null, contentUri.toString(), message.build());
-		return contentUri;
+		this.sendMessage(
+				sourceURI != null ? sourceURI.toString() : null,
+				documentURI.toString(),
+				message.build()
+		);
+
+		return documentURI;
 	}
 
 	private ObjectNode computeEnrichedContent(
 			SchemaEntity schema,
-			JoyceURI rawUri,
+			JoyceSourceURI sourceURI,
 			JsonNode content) {
 
 		// Set schema version
+		//Todo: make Content metadata enum
 		ObjectNode content_metadata = jsonMapper.createObjectNode();
-		content_metadata.put("schema_uid", schema.getUid());
+		content_metadata.put("schema_uid", schema.getUid().toString());
 		content_metadata.put("schema_name", schema.getMetadata().getName());
 		content_metadata.put("schema_development", schema.getMetadata().getDevelopment());
-		Optional.ofNullable(rawUri).ifPresent(joyceURI -> content_metadata.put("raw_uri", rawUri.toString()));
+		Optional.ofNullable(sourceURI).ifPresent(joyceURI -> content_metadata.put("source_uri", sourceURI.toString()));
 
 		ObjectNode enrichedContent = content.deepCopy();
 		enrichedContent.set("_metadata_", content_metadata);
@@ -129,12 +137,12 @@ public class ContentProducer extends KafkaMessageProducer<String,JsonNode> {
 	}
 
 	private void setMetadataHeaders(JoyceSchemaMetadata metadata, MessageBuilder<JsonNode> message) {
-		message.setHeader(KafkaCustomHeaders.COLLECTION, metadata.getNamespacedCollection());
-		message.setHeader(KafkaCustomHeaders.SCHEMA, metadata.getName());
-		message.setHeader(KafkaCustomHeaders.SUBTYPE, metadata.getSubtype().toString());
+		message.setHeader(KafkaCustomHeaders.COLLECTION, metadata.getCollection());
 		message.setHeader(KafkaCustomHeaders.STORE_CONTENT, metadata.getStore().toString());
+		message.setHeader(KafkaCustomHeaders.SCHEMA_NAME, metadata.getName());
+		message.setHeader(KafkaCustomHeaders.SCHEMA_TYPE, metadata.getType());
 		if (metadata.getParent() != null) {
-			message.setHeader(KafkaCustomHeaders.PARENT, metadata.getParent().toString());
+			message.setHeader(KafkaCustomHeaders.SCHEMA_PARENT, metadata.getParent().toString());
 		}
 	}
 
@@ -142,15 +150,15 @@ public class ContentProducer extends KafkaMessageProducer<String,JsonNode> {
 	public void handleMessageSuccess(
 			Message<JsonNode> message,
 			SendResult<String, JsonNode> result,
-			String rawUri,
-			String contentUri,
+			String sourceURI,
+			String documentURI,
 			JsonNode eventPayload,
 			JsonNode eventMetadata) {
 
 		log.debug("Correctly sent message: {} to content topic", message);
 		notificationService.ok(
-				rawUri,
-				contentUri,
+				sourceURI,
+				documentURI,
 				NotificationEvent.CONTENT_PUBLISH_SUCCESS,
 				eventMetadata,
 				eventPayload
@@ -161,15 +169,15 @@ public class ContentProducer extends KafkaMessageProducer<String,JsonNode> {
 	public void handleMessageFailure(
 			Message<JsonNode> message,
 			Throwable throwable,
-			String rawUri,
-			String contentUri,
+			String sourceURI,
+			String documentURI,
 			JsonNode eventPayload,
 			JsonNode eventMetadata) {
 
 		log.error("Unable to send message=[{}] due to : [{}]", message, throwable.getMessage());
 		notificationService.ko(
-				rawUri,
-				contentUri,
+				sourceURI,
+				documentURI,
 				NotificationEvent.CONTENT_PUBLISH_FAILED,
 				eventMetadata,
 				eventPayload

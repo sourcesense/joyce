@@ -17,8 +17,12 @@
 package com.sourcesense.joyce.core.model.entity;
 
 import com.fasterxml.jackson.annotation.JsonProperty;
+import com.fasterxml.jackson.databind.annotation.JsonDeserialize;
+import com.fasterxml.jackson.databind.annotation.JsonSerialize;
 import com.sourcesense.joyce.core.exception.InvalidMetadataException;
-import com.sourcesense.joyce.core.model.JoyceURI;
+import com.sourcesense.joyce.core.mapping.deserializer.JoyceURIDeserializer;
+import com.sourcesense.joyce.core.mapping.serializer.JoyceURISerializer;
+import com.sourcesense.joyce.core.model.uri.JoyceSchemaURI;
 import lombok.EqualsAndHashCode;
 import lombok.Getter;
 import lombok.Setter;
@@ -35,19 +39,25 @@ public class JoyceSchemaMetadata {
 
 	@JsonProperty("uid")
 	private String uidKey;
-	private JoyceURI.Subtype subtype;
-	private String collection;
+	private String type;
+	private String domain;
+	private String product;
 	private String name;
-	private String namespace = "default";
-	private List<Map<String, Object>> indexes;
+	private String collection;
 	private String description;
+
+	@JsonSerialize(using = JoyceURISerializer.class)
+	@JsonDeserialize(using = JoyceURIDeserializer.class)
+	private JoyceSchemaURI parent;
+	private List<Map<String, Object>> indexes;
+
 	private Boolean development = false;
 	private Boolean store = true;
 	private Boolean validation = true;
 	private Boolean indexed = true;
 	private Boolean connectors = false;
 	private Boolean export = false;
-	private JoyceURI parent;
+
 	private Map<String, Object> extra;
 
 	/**
@@ -62,7 +72,7 @@ public class JoyceSchemaMetadata {
 			throw new InvalidMetadataException("Missing [name] from metadata");
 		}
 
-		if (subtype == null) {
+		if (type == null) {
 			throw new InvalidMetadataException("Missing [subtype] from metadata");
 		}
 
@@ -77,18 +87,6 @@ public class JoyceSchemaMetadata {
 		if (collection == null) {
 			throw new InvalidMetadataException("Missing [collection] from metadata");
 		}
-
-		if (JoyceURI.Subtype.MODEL.equals(subtype) && extra == null) {
-			throw new InvalidMetadataException("Missing [extra] from metadata");
-		}
 		return this;
-	}
-
-	public String getNamespacedName() {
-		return String.format("%s%s%s", namespace, JoyceURI.NAMESPACE_SEPARATOR, name);
-	}
-
-	public String getNamespacedCollection() {
-		return String.format("%s%s%s", namespace, JoyceURI.NAMESPACE_SEPARATOR, collection);
 	}
 }

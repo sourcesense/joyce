@@ -25,8 +25,8 @@ import java.util.function.Predicate;
  * Aspect that intercept method annotated with
  * {@link Notify}
  * It retrieves data from the method parameters annotated with
- * {@link RawUri}
- * {@link ContentUri}
+ * {@link SourceUri}
+ * {@link DocumentUri}
  * {@link EventPayload}
  * {@link EventMetadata}
  * and sends notifications to kafka notification topic
@@ -59,8 +59,8 @@ public class NotificationAspect implements MethodAspect {
 		Method method = this.computeMethod(joinPoint);
 		Parameter[] params = method.getParameters();
 
-		String rawUri = this.computeUri(params, joinPoint.getArgs(), RawUri.class);
-		String contentUri = this.computeUri(params, joinPoint.getArgs(), ContentUri.class);
+		String rawUri = this.computeUri(params, joinPoint.getArgs(), SourceUri.class);
+		String contentUri = this.computeUri(params, joinPoint.getArgs(), DocumentUri.class);
 		JsonNode eventPayload = this.computeNode(params, joinPoint.getArgs(), EventPayload.class);
 		JsonNode eventMetadata = this.computeNode(params, joinPoint.getArgs(), EventMetadata.class);
 
@@ -128,8 +128,8 @@ public class NotificationAspect implements MethodAspect {
 
 	/**
 	 * Retrieves an uri from a param of the intercepted method
-	 * annotated with {@link RawUri}
-	 * or {@link ContentUri}
+	 * annotated with {@link SourceUri}
+	 * or {@link DocumentUri}
 	 * Uri can of type JoyceURI or String.
 	 *
 	 * @param params

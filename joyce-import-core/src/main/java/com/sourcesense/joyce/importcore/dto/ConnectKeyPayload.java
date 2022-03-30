@@ -16,6 +16,11 @@
 
 package com.sourcesense.joyce.importcore.dto;
 
+import com.fasterxml.jackson.databind.annotation.JsonDeserialize;
+import com.fasterxml.jackson.databind.annotation.JsonSerialize;
+import com.sourcesense.joyce.core.mapping.deserializer.JoyceURIDeserializer;
+import com.sourcesense.joyce.core.mapping.serializer.JoyceURISerializer;
+import com.sourcesense.joyce.core.model.uri.JoyceSchemaURI;
 import lombok.Data;
 
 /**
@@ -24,8 +29,11 @@ import lombok.Data;
  */
 @Data
 public class ConnectKeyPayload {
-	private String schema;
+
+	@JsonSerialize(using = JoyceURISerializer.class)
+	@JsonDeserialize(using = JoyceURIDeserializer.class)
+	private JoyceSchemaURI schema;
+	private String origin;
 	private String uid;
-	private String source;
 
 }

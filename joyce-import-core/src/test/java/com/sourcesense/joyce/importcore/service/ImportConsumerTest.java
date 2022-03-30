@@ -16,13 +16,19 @@
 
 package com.sourcesense.joyce.importcore.service;
 
+import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.node.JsonNodeFactory;
 import com.fasterxml.jackson.databind.node.ObjectNode;
 import com.sourcesense.joyce.core.enumeration.ImportAction;
+import com.sourcesense.joyce.core.enumeration.JoyceSchemaType;
 import com.sourcesense.joyce.core.enumeration.KafkaCustomHeaders;
 import com.sourcesense.joyce.core.exception.handler.CustomExceptionHandler;
+import com.sourcesense.joyce.core.model.entity.JoyceSchemaMetadata;
+import com.sourcesense.joyce.core.model.entity.SchemaEntity;
+import com.sourcesense.joyce.core.model.uri.JoyceSchemaURI;
+import com.sourcesense.joyce.core.model.uri.JoyceSourceURI;
+import com.sourcesense.joyce.core.model.uri.JoyceURIFactory;
 import com.sourcesense.joyce.importcore.consumer.ImportConsumer;
-import com.sourcesense.joyce.importcore.service.ImportService;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
@@ -47,8 +53,11 @@ class ImportConsumerTest {
 	private ImportConsumer importConsumer;
 
 	// CONSTANTS
-	private static final String MESSAGE_KEY = "joyce://raw/other/user/1";
-	private static final String IMPORT_SCHEMA = "joyce://schema/import/user";
+	private static final String SCHEMA_URI = "joyce:content:test:default:user:schema";
+	private static final String SOURCE_URI = "joyce:content:test:default:user:src:rest:single:666";
+
+	private static final JoyceSchemaURI JOYCE_SCHEMA_URI = JoyceURIFactory.getInstance().createURIOrElseThrow(SCHEMA_URI, JoyceSchemaURI.class);
+	private static final JoyceSourceURI JOYCE_SOURCE_URI = JoyceURIFactory.getInstance().createURIOrElseThrow(SOURCE_URI, JoyceSourceURI.class);
 
 	@BeforeEach
 	void init() {
@@ -56,28 +65,38 @@ class ImportConsumerTest {
 	}
 
 	@Test
-	void testActionInsert() {
+	void testActionInsert() throws JsonProcessingException {
 
 		// mocking and stubbing data for test execution
 		ObjectNode message = new ObjectNode(JsonNodeFactory.instance);
 		Map<String, String> headers = computeHeaders(ImportAction.INSERT);
+		SchemaEntity schema = this.computeSchemaEntity();
+
+		when(importService.computeSourceURI(SOURCE_URI, headers)).thenReturn(JOYCE_SOURCE_URI);
+		when(importService.computeSchemaURI(SOURCE_URI, headers, JOYCE_SOURCE_URI)).thenReturn(JOYCE_SCHEMA_URI);
+		when(importService.computeSchema(JOYCE_SCHEMA_URI, JOYCE_SOURCE_URI)).thenReturn(schema);
 
 		//  Subject under test
-		importConsumer.consumeMessage(message, MESSAGE_KEY, headers);
+		importConsumer.consumeMessage(message, SOURCE_URI, headers);
 
 		// asserts
 		verify(importService, times(1)).processImport(any(), any(), any());
 	}
 
 	@Test
-	void testActionDelete() {
+	void testActionDelete() throws JsonProcessingException {
 
 		// mocking and stubbing data for test execution
 		ObjectNode message = new ObjectNode(JsonNodeFactory.instance);
 		Map<String, String> headers = computeHeaders(ImportAction.DELETE);
+		SchemaEntity schema = this.computeSchemaEntity();
+
+		when(importService.computeSourceURI(SOURCE_URI, headers)).thenReturn(JOYCE_SOURCE_URI);
+		when(importService.computeSchemaURI(SOURCE_URI, headers, JOYCE_SOURCE_URI)).thenReturn(JOYCE_SCHEMA_URI);
+		when(importService.computeSchema(JOYCE_SCHEMA_URI, JOYCE_SOURCE_URI)).thenReturn(schema);
 
 		//  Subject under test
-		importConsumer.consumeMessage(message, MESSAGE_KEY, headers);
+		importConsumer.consumeMessage(message, SOURCE_URI, headers);
 
 		// asserts
 		verify(importService, times(1)).removeDocument(any(), any());
@@ -85,10 +104,19 @@ class ImportConsumerTest {
 
 
 	/* UTILITY METHODS */
+
+	private SchemaEntity computeSchemaEntity() {
+		SchemaEntity schemaEntity = new SchemaEntity();
+		JoyceSchemaMetadata joyceSchemaMetadata = new JoyceSchemaMetadata();
+		joyceSchemaMetadata.setType(JoyceSchemaType.IMPORT);
+		schemaEntity.setMetadata(joyceSchemaMetadata);
+		return schemaEntity;
+	}
+
 	private Map<String, String> computeHeaders(ImportAction delete) {
 		return Map.of(
 				KafkaCustomHeaders.MESSAGE_ACTION, delete.toString(),
-				KafkaCustomHeaders.IMPORT_SCHEMA, IMPORT_SCHEMA
+				KafkaCustomHeaders.IMPORT_SCHEMA, SCHEMA_URI
 		);
 	}
 }

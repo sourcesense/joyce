@@ -1,6 +1,6 @@
 [
   {
-    "name": "test.schema.connector",
+    "name": "test:default:user:user-connector",
     "connectorOperation": "CREATE",
     "status": "CREATED"
   }

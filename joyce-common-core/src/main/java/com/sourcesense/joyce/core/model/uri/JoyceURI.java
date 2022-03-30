@@ -16,13 +16,12 @@ import java.net.URI;
 public class JoyceURI {
 
 	public static final String URI_SCHEMA = "joyce";
-	public static final String URI_SEPARATOR = ":";
 
 	protected final URI uri;
 	protected final String kind;
 	protected final String name;
 
-	public JoyceURI(URI uri, String kind, String name) {
+	protected JoyceURI(URI uri, String kind, String name) {
 		this.uri = uri;
 		this.kind = kind;
 		this.name = name;
@@ -32,4 +31,5 @@ public class JoyceURI {
 	public String toString() {
 		return uri.toString();
 	}
+
 }

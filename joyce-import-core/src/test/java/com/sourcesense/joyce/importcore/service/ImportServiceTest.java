@@ -24,15 +24,17 @@ import com.sourcesense.joyce.core.enumeration.KafkaCustomHeaders;
 import com.sourcesense.joyce.core.exception.InvalidJoyceURIException;
 import com.sourcesense.joyce.core.exception.InvalidMetadataException;
 import com.sourcesense.joyce.core.exception.SchemaNotFoundException;
-import com.sourcesense.joyce.core.utililty.SchemaUtils;
-import com.sourcesense.joyce.core.model.JoyceURI;
 import com.sourcesense.joyce.core.model.entity.SchemaEntity;
+import com.sourcesense.joyce.core.model.uri.JoyceSchemaURI;
+import com.sourcesense.joyce.core.model.uri.JoyceSourceURI;
+import com.sourcesense.joyce.core.model.uri.JoyceURIFactory;
 import com.sourcesense.joyce.core.producer.ContentProducer;
 import com.sourcesense.joyce.core.service.CsvMappingService;
-import com.sourcesense.joyce.schemacore.service.SchemaService;
+import com.sourcesense.joyce.core.utililty.SchemaUtils;
 import com.sourcesense.joyce.importcore.dto.SingleImportResult;
 import com.sourcesense.joyce.importcore.enumeration.ProcessStatus;
 import com.sourcesense.joyce.importcore.exception.ImportException;
+import com.sourcesense.joyce.schemacore.service.SchemaService;
 import com.sourcesense.joyce.schemaengine.exception.InvalidSchemaException;
 import com.sourcesense.joyce.schemaengine.exception.JoyceSchemaEngineException;
 import com.sourcesense.joyce.schemaengine.service.SchemaEngine;
@@ -79,20 +81,28 @@ class ImportServiceTest {
 	private ImportService importService;
 
 	// CONSTANTS
-	private static final String MESSAGE_KEY = "joyce://raw/other/user/1";
-	private static final String BULK_CSV_MESSAGE_KEY = "joyce://raw/rest/bulk/01.csv";
-	private static final String INVALID_MESSAGE_KEY = "mississippi://raw/other/user/1";
-	private static final String IMPORT_SCHEMA = "joyce://schema/import/user";
-	private static final String INVALID_IMPORT_SCHEMA = "joyce://schema/not-import/user";
+	private static final String SCHEMA_URI = "joyce:content:test:default:user:schema";
+	private static final String INVALID_SCHEMA_URI = "juice:content:test:default:user:schema";
+
+	private static final JoyceSchemaURI JOYCE_SCHEMA_URI = JoyceURIFactory.getInstance().createURIOrElseThrow(SCHEMA_URI, JoyceSchemaURI.class);
+
+	private static final String CONNECT_URI = "joyce:content:test:default:user:src:connect:user-connector:1";
+	private static final String SINGLE_REST_URI = "joyce:content:test:default:user:src:rest:single:666";
+	private static final String BULK_REST_URI = "joyce:content:test:default:user:src:rest:bulk:666.csv";
+	private static final String INVALID_REST_URI = "juice:content:test:default:user:src:rest:single:666";
+
+	private static final JoyceSourceURI JOYCE_CONNECT_URI = JoyceURIFactory.getInstance().createURIOrElseThrow(CONNECT_URI, JoyceSourceURI.class);
+	private static final JoyceSourceURI JOYCE_SINGLE_REST_URI = JoyceURIFactory.getInstance().createURIOrElseThrow(SINGLE_REST_URI, JoyceSourceURI.class);
+	private static final JoyceSourceURI JOYCE_BULK_REST_URI = JoyceURIFactory.getInstance().createURIOrElseThrow(BULK_REST_URI, JoyceSourceURI.class);
 
 	private static final String TEST_USER_JSON = "test-user.json";
 	private static final String TEST_SCHEMA_JSON_USER = "test-schema-user.json";
 	private static final String TEST_SCHEMA_JSON_ENHANCED_USER = "test-schema-enhanced-user.json";
 
-	private static final String TEST_COMPLEX_MESSAGE_KEY_CORRECT = "complex-message/test-complex-message-key-correct.json";
-	private static final String TEST_COMPLEX_MESSAGE_KEY_MISSING_SCHEMA = "complex-message/test-complex-message-key-missing-schema.json";
-	private static final String TEST_COMPLEX_MESSAGE_KEY_MISSING_UID = "complex-message/test-complex-message-key-missing-uid.json";
-	private static final String TEST_COMPLEX_MESSAGE_KEY_MISSING_SOURCE = "complex-message/test-complex-message-key-missing-source.json";
+	private static final String CONNECT_KEY_CORRECT = "complex-message/test-complex-message-key-correct.json";
+	private static final String CONNECT_KEY_MISSING_SCHEMA = "complex-message/test-complex-message-key-missing-schema.json";
+	private static final String CONNECT_KEY_MISSING_UID = "complex-message/test-complex-message-key-missing-uid.json";
+	private static final String CONNECT_KEY_MISSING_SOURCE = "complex-message/test-complex-message-key-missing-source.json";
 
 	@BeforeEach
 	void init() {
@@ -100,70 +110,66 @@ class ImportServiceTest {
 	}
 
 	/*
-	computeRawUri tests
+	computeSourceURI tests
  */
 	@Test
-	void shouldComputeRawUriWhenImportSchemaIsNotNull() throws JsonProcessingException {
-		Map<String, String> headers = this.computeHeaders(IMPORT_SCHEMA);
+	void shouldComputeSourceURIWhenImportSchemaIsNotNull() throws JsonProcessingException {
+		Map<String, String> headers = this.computeHeaders(SCHEMA_URI);
 
-		JoyceURI expectedRawUri = JoyceURI.createURI(MESSAGE_KEY).get();
-		JoyceURI actualRawUri = importService.computeRawURI(MESSAGE_KEY, headers);
+		JoyceSourceURI actualSourceURI = importService.computeSourceURI(SINGLE_REST_URI, headers);
 
-		assertEquals(expectedRawUri, actualRawUri);
+		assertEquals(JOYCE_SINGLE_REST_URI, actualSourceURI);
 	}
 
 	@Test
-	void shouldComputeRawUriWhenImportSchemaIsNull() throws JsonProcessingException {
+	void shouldComputeSourceURIWhenImportSchemaIsNull() throws JsonProcessingException {
 		Map<String, String> headers = this.computeHeaders(null);
-		String messageKey = this.computeResourceAsString(TEST_COMPLEX_MESSAGE_KEY_CORRECT);
+		String messageKey = this.computeResourceAsString(CONNECT_KEY_CORRECT);
 
-		JoyceURI expectedRawUri = JoyceURI.createURI(MESSAGE_KEY).get();
-		JoyceURI actualRawUri = importService.computeRawURI(messageKey, headers);
+		JoyceSourceURI actualSourceURI = importService.computeSourceURI(messageKey, headers);
 
-		assertEquals(expectedRawUri, actualRawUri);
+		assertEquals(JOYCE_CONNECT_URI, actualSourceURI);
 	}
 
 	@Test
-	void shouldThrowInvalidJoyceURIExceptionWhenJoyceUriIsInvalid() {
-		Map<String, String> headers = this.computeHeaders(IMPORT_SCHEMA);
+	void shouldThrowInvalidJoyceURIExceptionWhenJoyceURIIsInvalid() {
+		Map<String, String> headers = this.computeHeaders(SCHEMA_URI);
 
 		assertThrows(
 				InvalidJoyceURIException.class,
-				() -> importService.computeRawURI(INVALID_MESSAGE_KEY, headers)
+				() -> importService.computeSourceURI(INVALID_REST_URI, headers)
 		);
 	}
 
 	/*
-			computeValidSchemaUri tests
+			computeValidSchemaURI tests
 	 */
 	@Test
-	void shouldComputeValidSchemaUriWhenImportSchemaIsNotNull() throws JsonProcessingException {
-		Map<String, String> headers = this.computeHeaders(IMPORT_SCHEMA);
+	void shouldComputeValidSchemaURIWhenImportSchemaIsNotNull() throws JsonProcessingException {
+		Map<String, String> headers = this.computeHeaders(SCHEMA_URI);
 
-		JoyceURI expectedSchemaUri = JoyceURI.createURI(IMPORT_SCHEMA).get();
-		JoyceURI actualSchemaUri = importService.computeValidSchemaUri(null, headers, null);
+		JoyceSchemaURI actualSchemaURI = importService.computeSchemaURI(null, headers, null);
 
-		assertEquals(expectedSchemaUri, actualSchemaUri);
+		assertEquals(JOYCE_SCHEMA_URI, actualSchemaURI);
 	}
 
 	@Test
-	void shouldComputeValidSchemaUriWhenImportSchemaIsNull() throws JsonProcessingException {
+	void shouldComputeValidSchemaURIWhenImportSchemaIsNull() throws JsonProcessingException {
 		Map<String, String> headers = this.computeHeaders(null);
-		String messageKey = this.computeResourceAsString(TEST_COMPLEX_MESSAGE_KEY_CORRECT);
+		String messageKey = this.computeResourceAsString(CONNECT_KEY_CORRECT);
 
-		JoyceURI expectedSchemaUri = JoyceURI.createURI(IMPORT_SCHEMA).get();
-		JoyceURI actualSchemaUri = importService.computeValidSchemaUri(messageKey, headers, null);
+		JoyceSchemaURI actualSchemaURI = importService.computeSchemaURI(messageKey, headers, null);
 
-		assertEquals(expectedSchemaUri, actualSchemaUri);
+		assertEquals(JOYCE_SCHEMA_URI, actualSchemaURI);
 	}
 
 	@Test
 	void shouldThrowInvalidJoyceURIExceptionIfSubtypeIsNotImport() {
-		Map<String, String> headers = this.computeHeaders(INVALID_IMPORT_SCHEMA);
+		Map<String, String> headers = this.computeHeaders(INVALID_SCHEMA_URI);
 
 		assertThrows(
 				InvalidJoyceURIException.class,
-				() -> importService.computeValidSchemaUri(null, headers, null)
+				() -> importService.computeSchemaURI(null, headers, null)
 		);
 	}
 
@@ -173,48 +179,48 @@ class ImportServiceTest {
 	@Test
 	void shouldThrowImportExceptionWhenSchemaIsMissing() {
 		Map<String, String> headers = this.computeHeaders(null);
-		String messageKey = this.computeResourceAsString(TEST_COMPLEX_MESSAGE_KEY_MISSING_SCHEMA);
+		String messageKey = this.computeResourceAsString(CONNECT_KEY_MISSING_SCHEMA);
 
 		assertThrows(
 				ImportException.class,
-				() -> importService.computeRawURI(messageKey, headers)
+				() -> importService.computeSourceURI(messageKey, headers)
 		);
 
 		assertThrows(
 				ImportException.class,
-				() -> importService.computeValidSchemaUri(messageKey, headers, null)
+				() -> importService.computeSchemaURI(messageKey, headers, null)
 		);
 	}
 
 	@Test
 	void shouldThrowImportExceptionWhenUidIsMissing() {
 		Map<String, String> headers = this.computeHeaders(null);
-		String messageKey = this.computeResourceAsString(TEST_COMPLEX_MESSAGE_KEY_MISSING_UID);
+		String messageKey = this.computeResourceAsString(CONNECT_KEY_MISSING_UID);
 
 		assertThrows(
 				ImportException.class,
-				() -> importService.computeRawURI(messageKey, headers)
+				() -> importService.computeSourceURI(messageKey, headers)
 		);
 
 		assertThrows(
 				ImportException.class,
-				() -> importService.computeValidSchemaUri(messageKey, headers, null)
+				() -> importService.computeSchemaURI(messageKey, headers, null)
 		);
 	}
 
 	@Test
 	void shouldThrowImportExceptionWhenSourceIsMissing() {
 		Map<String, String> headers = this.computeHeaders(null);
-		String messageKey = this.computeResourceAsString(TEST_COMPLEX_MESSAGE_KEY_MISSING_SOURCE);
+		String messageKey = this.computeResourceAsString(CONNECT_KEY_MISSING_SOURCE);
 
 		assertThrows(
 				ImportException.class,
-				() -> importService.computeRawURI(messageKey, headers)
+				() -> importService.computeSourceURI(messageKey, headers)
 		);
 
 		assertThrows(
 				ImportException.class,
-				() -> importService.computeValidSchemaUri(messageKey, headers, null)
+				() -> importService.computeSchemaURI(messageKey, headers, null)
 		);
 	}
 
@@ -223,13 +229,12 @@ class ImportServiceTest {
 	 */
 	@Test
 	void shouldThrowSchemaNotFoundExceptionIfMissing() {
-		JoyceURI schemaUri = JoyceURI.createURI(IMPORT_SCHEMA).get();
 
 		when(schemaService.getOrElseThrow(any(), any(), any())).thenThrow(SchemaNotFoundException.class);
 
 		assertThrows(
 				SchemaNotFoundException.class,
-				() -> importService.computeSchema(schemaUri, null)
+				() -> importService.computeSchema(JOYCE_SCHEMA_URI, null)
 		);
 	}
 
@@ -238,15 +243,14 @@ class ImportServiceTest {
 
 		// mocking and stubbing data for test execution
 		SchemaEntity schema = computeSchema(TEST_SCHEMA_JSON_USER);
-		JoyceURI rawURI = JoyceURI.createURI(MESSAGE_KEY).orElseThrow();
 		when(schemaUtils.metadataFromSchemaOrElseThrow(any())).thenReturn(schema.getMetadata());
 		when(jsonLogicService.filter(any(), any())).thenReturn(true);
 		when(schemaEngine.process(any(SchemaEntity.class), any(), any()))
 				.thenReturn(objectMapper.valueToTree(Map.of("code", "1337")));
 
 		// Subject under test
-		SingleImportResult expected = new SingleImportResult(rawURI, ProcessStatus.IMPORTED, null);
-		SingleImportResult actual = importService.processImport(rawURI, computeDocument(TEST_USER_JSON), schema);
+		SingleImportResult expected = new SingleImportResult(JOYCE_SINGLE_REST_URI, ProcessStatus.IMPORTED, null);
+		SingleImportResult actual = importService.processImport(JOYCE_SINGLE_REST_URI, computeDocument(TEST_USER_JSON), schema);
 
 		// Asserts
 		assertEquals(expected, actual);
@@ -293,7 +297,6 @@ class ImportServiceTest {
 	void shouldProcessImportIfSchemaHasParentAndParentSchemaIsAlreadyPresentInDb() throws IOException {
 		// mocking and stubbing data for test execution
 		SchemaEntity schema = computeSchema(TEST_SCHEMA_JSON_ENHANCED_USER);
-		JoyceURI rawURI = JoyceURI.createURI(MESSAGE_KEY).orElseThrow();
 		when(schemaUtils.metadataFromSchemaOrElseThrow(any())).thenReturn(schema.getMetadata());
 		when(jsonLogicService.filter(any(), any())).thenReturn(true);
 		when(schemaEngine.process(any(SchemaEntity.class), any(), any()))
@@ -301,8 +304,8 @@ class ImportServiceTest {
 		when(schemaService.get(any()))
 				.thenReturn(Optional.of(computeSchema(TEST_SCHEMA_JSON_USER)));
 
-		SingleImportResult expected = new SingleImportResult(rawURI, ProcessStatus.IMPORTED, null);
-		SingleImportResult actual = importService.processImport(rawURI, null, schema);
+		SingleImportResult expected = new SingleImportResult(JOYCE_SINGLE_REST_URI, ProcessStatus.IMPORTED, null);
+		SingleImportResult actual = importService.processImport(JOYCE_SINGLE_REST_URI, null, schema);
 
 		// asserts
 		assertEquals(expected, actual);
@@ -311,14 +314,13 @@ class ImportServiceTest {
 	@Test
 	void shouldRetrieveCsvRowsFromFile() throws IOException, URISyntaxException {
 
-		JoyceURI rawURI = JoyceURI.createURI(BULK_CSV_MESSAGE_KEY).orElseThrow();
 		MultipartFile multipartFile = new MockMultipartFile("01", "01.csv", "text/csv", new byte[0]);
 
 		List<JsonNode> expected = this.computeResourceAsNodeList("result/bulk/csv/01.json");
 
 		when(csvMappingService.convertCsvFileToDocuments(any(), any(), any())).thenReturn(expected);
 
-		List<JsonNode> actual = importService.computeDocumentsFromFile(rawURI, multipartFile, ',', ";");
+		List<JsonNode> actual = importService.computeDocumentsFromFile(JOYCE_BULK_REST_URI, multipartFile, ',', ";");
 		assertThat(expected).hasSameElementsAs(actual);
 	}
 

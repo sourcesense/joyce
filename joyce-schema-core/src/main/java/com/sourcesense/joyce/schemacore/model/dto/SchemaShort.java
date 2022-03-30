@@ -16,14 +16,21 @@
 
 package com.sourcesense.joyce.schemacore.model.dto;
 
+import com.fasterxml.jackson.databind.annotation.JsonDeserialize;
+import com.fasterxml.jackson.databind.annotation.JsonSerialize;
+import com.sourcesense.joyce.core.mapping.deserializer.JoyceURIDeserializer;
+import com.sourcesense.joyce.core.mapping.serializer.JoyceURISerializer;
 import com.sourcesense.joyce.core.model.entity.JoyceSchemaMetadata;
 import com.sourcesense.joyce.core.model.entity.SchemaObject;
+import com.sourcesense.joyce.core.model.uri.JoyceSchemaURI;
 import lombok.Data;
 
 @Data
 public class SchemaShort implements SchemaObject {
 
-	private String uid;
+	@JsonSerialize(using = JoyceURISerializer.class)
+	@JsonDeserialize(using = JoyceURIDeserializer.class)
+	private JoyceSchemaURI uid;
 	private JoyceSchemaMetadata metadata;
 
 }

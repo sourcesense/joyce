@@ -6,9 +6,9 @@ import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.google.common.collect.Lists;
 import com.google.protobuf.Struct;
-import com.sourcesense.joyce.core.model.JoyceURI;
 import com.sourcesense.joyce.core.model.entity.SchemaEntity;
-import com.sourcesense.joyce.protobuf.enumeration.JoyceUriSubtype;
+import com.sourcesense.joyce.core.model.uri.JoyceSchemaURI;
+import com.sourcesense.joyce.core.model.uri.JoyceURIFactory;
 import com.sourcesense.joyce.protobuf.model.Schema;
 import org.apache.commons.lang3.ObjectUtils;
 import org.mapstruct.Mapper;
@@ -17,8 +17,10 @@ import org.mapstruct.Named;
 import org.mapstruct.NullValueCheckStrategy;
 import org.springframework.beans.factory.annotation.Autowired;
 
-import java.util.*;
-import java.util.function.Predicate;
+import java.util.Iterator;
+import java.util.List;
+import java.util.Map;
+import java.util.Optional;
 
 @Mapper(nullValueCheckStrategy = NullValueCheckStrategy.ALWAYS)
 public abstract class SchemaProtoMapper {
@@ -36,10 +38,10 @@ public abstract class SchemaProtoMapper {
 		this.protoConverter = protoConverter;
 	}
 
-	@Mapping(target = "properties", source = "properties", qualifiedByName = "structToJsonNode")
-	@Mapping(target = "metadata.subtype", source = "metadata.subtype", qualifiedByName = "joyceUriSubtypeProtoToEntity")
-	@Mapping(target = "metadata.parent", source = "metadata.parent", qualifiedByName = "joyceUriStringToEntity")
+	@Mapping(target = "uid", source = "uid", qualifiedByName = "stringToJoyceSchemaURI")
+	@Mapping(target = "metadata.parent", source = "metadata.parent", qualifiedByName = "stringToJoyceSchemaURI")
 	@Mapping(target = "metadata.extra", source = "metadata.extra", qualifiedByName = "stringToMap")
+	@Mapping(target = "properties", source = "properties", qualifiedByName = "structToJsonNode")
 	public abstract SchemaEntity protoToEntity(Schema schema);
 
 	public abstract List<SchemaEntity> protosToEntities(List<Schema> schemas);
@@ -50,39 +52,22 @@ public abstract class SchemaProtoMapper {
 		);
 	}
 
-	@Mapping(target = "properties", source = "properties", qualifiedByName = "jsonNodeToStruct")
-	@Mapping(target = "metadata.subtype", source = "metadata.subtype", qualifiedByName = "joyceUriSubtypeEntityToProto")
-	@Mapping(target = "metadata.parent", source = "metadata.parent", qualifiedByName = "joyceUriEntityToString")
+	@Mapping(target = "uid", source = "uid", qualifiedByName = "joyceSchemaURIToString")
+	@Mapping(target = "metadata.parent", source = "metadata.parent", qualifiedByName = "joyceSchemaURIToString")
 	@Mapping(target = "metadata.extra", source = "metadata.extra", qualifiedByName = "mapToString")
+	@Mapping(target = "properties", source = "properties", qualifiedByName = "jsonNodeToStruct")
 	public abstract Schema entityToProto(SchemaEntity schema);
 
 	public abstract List<Schema> entitiesToProtos(List<SchemaEntity> schema);
 
-	@Named("joyceUriEntityToString")
-	public String joyceUriEntityToString(JoyceURI joyceURI) {
-		return ObjectUtils.isNotEmpty(joyceURI) ? joyceURI.toString() : null;
+	@Named("joyceSchemaURIToString")
+	public String joyceSchemaURIToString(JoyceSchemaURI schemaURI) {
+		return ObjectUtils.isNotEmpty(schemaURI) ? schemaURI.toString() : null;
 	}
 
-	@Named("joyceUriStringToEntity")
-	public JoyceURI joyceUriStringToEntity(String joyceUri) {
-		return JoyceURI.createURI(joyceUri).orElse(null);
-	}
-
-	@Named("joyceUriSubtypeEntityToProto")
-	public JoyceUriSubtype joyceUriSubtypeEntityToProto(JoyceURI.Subtype subtype) {
-		return Optional.ofNullable(subtype)
-				.map(JoyceURI.Subtype::name)
-				.map(JoyceUriSubtype::valueOf)
-				.orElse(null);
-	}
-
-	@Named("joyceUriSubtypeProtoToEntity")
-	public JoyceURI.Subtype joyceUriSubtypeProtoToEntity(JoyceUriSubtype subtype) {
-		return Optional.ofNullable(subtype)
-				.filter(Predicate.not(JoyceUriSubtype.UNRECOGNIZED::equals))
-				.map(JoyceUriSubtype::name)
-				.map(JoyceURI.Subtype::valueOf)
-				.orElse(null);
+	@Named("stringToJoyceSchemaURI")
+	public JoyceSchemaURI stringToJoyceSchemaURI(String stringURI) {
+		return JoyceURIFactory.getInstance().createURI(stringURI, JoyceSchemaURI.class).orElse(null);
 	}
 
 	@Named("stringToMap")

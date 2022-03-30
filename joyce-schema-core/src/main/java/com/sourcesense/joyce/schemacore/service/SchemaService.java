@@ -19,8 +19,9 @@ package com.sourcesense.joyce.schemacore.service;
 import com.mongodb.client.DistinctIterable;
 import com.sourcesense.joyce.core.configuration.mongo.MongodbProperties;
 import com.sourcesense.joyce.core.exception.SchemaNotFoundException;
-import com.sourcesense.joyce.core.model.JoyceURI;
 import com.sourcesense.joyce.core.model.entity.SchemaEntity;
+import com.sourcesense.joyce.core.model.uri.JoyceSchemaURI;
+import com.sourcesense.joyce.core.model.uri.JoyceURIFactory;
 import com.sourcesense.joyce.core.producer.SchemaProducer;
 import com.sourcesense.joyce.core.service.SchemaClient;
 import com.sourcesense.joyce.schemacore.mapper.SchemaDtoMapper;
@@ -58,9 +59,10 @@ public class SchemaService implements SchemaClient {
 		return schemaRepository.findById(id).map(schemaMapper::entityFromDocument);
 	}
 
-	public Optional<SchemaEntity> get(JoyceURI.Subtype subtype, String namespace, String name) {
-		String schemaUri = this.getSchemaUid(subtype, namespace, name).toString();
-		return this.get(schemaUri);
+	public Optional<SchemaEntity> get(String domain, String product, String name) {
+		return this.get(
+				JoyceURIFactory.getInstance().createSchemaURIOrElseThrow(domain, product, name).toString()
+		);
 	}
 
 	public SchemaEntity getOrElseThrow(String id) {
@@ -70,10 +72,10 @@ public class SchemaService implements SchemaClient {
 				));
 	}
 
-	public SchemaEntity getOrElseThrow(JoyceURI.Subtype subtype, String namespace, String name) {
-		return this.get(subtype, namespace, name)
+	public SchemaEntity getOrElseThrow(String domain, String product, String name) {
+		return this.get(domain, product, name)
 				.orElseThrow(() -> new SchemaNotFoundException(
-						String.format("Schema [%s/%s/%s] does not exist", subtype, namespace, name))
+						String.format("Schema [%s/%s/%s] does not exist", domain, product, name))
 				);
 	}
 
@@ -85,14 +87,14 @@ public class SchemaService implements SchemaClient {
 		return schemaMapper.entitiesFromDocuments(schemas);
 	}
 
-	public List<SchemaEntity> getAllBySubtypeAndNamespace(
-			JoyceURI.Subtype subtype,
-			String namespace,
+	public List<SchemaEntity> getAllByDomainAndProduct(
+			String domain,
+			String product,
 			Boolean rootOnly) {
 
 		List<SchemaDocument> schemas = rootOnly
-				? schemaRepository.findAllByMetadata_SubtypeAndMetadata_NamespaceAndMetadata_ParentIsNull(subtype, namespace)
-				: schemaRepository.findAllByMetadata_SubtypeAndMetadata_Namespace(subtype, namespace);
+				? schemaRepository.findAllByMetadata_DomainAndMetadata_ProductAndMetadata_ParentIsNull(domain, product)
+				: schemaRepository.findAllByMetadata_DomainAndMetadata_Product(domain, product);
 
 		return schemaMapper.entitiesFromDocuments(schemas);
 	}
@@ -102,6 +104,7 @@ public class SchemaService implements SchemaClient {
 		return schemaMapper.entitiesFromDocuments(schemas);
 	}
 
+	//Todo: Idk if this must remain
 	public List<String> getAllNamespaces() {
 		DistinctIterable<String> distinctIterable = mongoTemplate
 				.getCollection(mongodbProperties.getSchemaCollection())
@@ -111,16 +114,16 @@ public class SchemaService implements SchemaClient {
 				.collect(Collectors.toList());
 	}
 
-	public JoyceURI save(SchemaSave schema) {
+	public JoyceSchemaURI save(SchemaSave schema) {
 		SchemaEntity schemaEntity = schemaMapper.toEntity(schema);
 
-		JoyceURI schemaUid = getSchemaUid(
-				schemaEntity.getMetadata().getSubtype(),
-				schemaEntity.getMetadata().getNamespace(),
+		JoyceSchemaURI schemaUid = JoyceURIFactory.getInstance().createSchemaURIOrElseThrow(
+				schemaEntity.getMetadata().getDomain(),
+				schemaEntity.getMetadata().getProduct(),
 				schemaEntity.getMetadata().getName()
 		);
 
-		schemaEntity.setUid(schemaUid.toString());
+		schemaEntity.setUid(schemaUid);
 
 		// Validate schema
 		schema.getMetadata().validate();
@@ -138,16 +141,11 @@ public class SchemaService implements SchemaClient {
 		return schemaUid;
 	}
 
-	public void delete(JoyceURI.Subtype subtype, String namespace, String name) {
-		JoyceURI schemaUid = this.getSchemaUid(subtype, namespace, name);
-		SchemaEntity schemaEntity = this.getOrElseThrow(schemaUid.toString());
+	public void delete(String domain, String product, String name) {
+		SchemaEntity schemaEntity = this.getOrElseThrow(domain, product, name);
 		SchemaDocument document = schemaMapper.documentFromEntity(schemaEntity);
 		schemaRepository.delete(document);
 		schemaProducer.delete(schemaEntity);
-	}
-
-	private JoyceURI getSchemaUid(JoyceURI.Subtype subtype, String namespace, String name) {
-		return JoyceURI.makeNamespaced(JoyceURI.Type.SCHEMA, subtype, namespace, name);
 	}
 
 	private void validateParent(SchemaEntity schemaEntity) {
@@ -160,7 +158,7 @@ public class SchemaService implements SchemaClient {
 	}
 
 	private void validateExisting(SchemaEntity schemaEntity) {
-		Optional<SchemaEntity> existingSchema = this.get(schemaEntity.getUid());
+		Optional<SchemaEntity> existingSchema = this.get(schemaEntity.getUid().toString());
 		if (existingSchema.isPresent()) {
 			/*
 			 * If schema is in development mode we skip schema checks,

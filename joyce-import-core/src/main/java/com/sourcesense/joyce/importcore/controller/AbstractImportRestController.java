@@ -2,9 +2,12 @@ package com.sourcesense.joyce.importcore.controller;
 
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.node.ObjectNode;
+import com.sourcesense.joyce.core.enumeration.uri.JoyceURIChannel;
+import com.sourcesense.joyce.core.enumeration.uri.JoyceURIRestOrigin;
 import com.sourcesense.joyce.core.exception.SchemaNotFoundException;
-import com.sourcesense.joyce.core.model.JoyceURI;
 import com.sourcesense.joyce.core.model.entity.SchemaEntity;
+import com.sourcesense.joyce.core.model.uri.JoyceSourceURI;
+import com.sourcesense.joyce.core.model.uri.JoyceURIFactory;
 import com.sourcesense.joyce.importcore.api.ImportRestApi;
 import com.sourcesense.joyce.importcore.dto.BulkImportResult;
 import com.sourcesense.joyce.importcore.dto.SingleImportResult;
@@ -12,6 +15,7 @@ import com.sourcesense.joyce.importcore.enumeration.ProcessStatus;
 import com.sourcesense.joyce.importcore.service.ImportService;
 import com.sourcesense.joyce.schemacore.service.SchemaService;
 import lombok.RequiredArgsConstructor;
+import org.apache.commons.lang3.function.TriFunction;
 import org.springframework.web.multipart.MultipartFile;
 
 import java.io.IOException;
@@ -37,11 +41,7 @@ public abstract class AbstractImportRestController implements ImportRestApi {
 	 */
 	@Override
 	public SingleImportResult importDocument(String schemaId, ObjectNode document) {
-		return importService.processImport(
-				this.computeSingleRestRawUri(),
-				document,
-				this.fetchSchema(schemaId)
-		);
+		return this.executeSingleImportOperation(schemaId, document, importService::processImport);
 	}
 
 	@Override
@@ -51,22 +51,30 @@ public abstract class AbstractImportRestController implements ImportRestApi {
 			Character columnSeparator,
 			String arraySeparator) throws IOException {
 
-		JoyceURI rawUri = this.computeBulkRestRawUri(data.getOriginalFilename());
 		SchemaEntity schema = this.fetchSchema(schemaId);
-		List<JsonNode> documents = importService.computeDocumentsFromFile(rawUri, data, columnSeparator, arraySeparator);
+		JoyceSourceURI sourceURI = JoyceURIFactory.getInstance().createSourceURIOrElseThrow(
+				schema.getUid().getDomain(),
+				schema.getUid().getProduct(),
+				schema.getUid().getName(),
+				JoyceURIChannel.REST,
+				JoyceURIRestOrigin.BULK,
+				data.getOriginalFilename()
+		);
+
+		List<JsonNode> documents = importService.computeDocumentsFromFile(sourceURI, data, columnSeparator, arraySeparator);
 
 		Map<ProcessStatus, List<SingleImportResult>> results = documents.stream()
-				.map(document -> this.importSingleDocument(rawUri, document, schema))
+				.map(document -> this.importSingleDocument(sourceURI, document, schema))
 				.collect(Collectors.groupingBy(SingleImportResult::getProcessStatus));
 
 		BulkImportResult finalReport = BulkImportResult.builder()
 				.total(documents.size())
-				.imported(this.computeCardinalityForProcessStatus(results, ProcessStatus.IMPORTED))
-				.skipped(this.computeCardinalityForProcessStatus(results, ProcessStatus.SKIPPED))
-				.failed(this.computeCardinalityForProcessStatus(results, ProcessStatus.FAILED))
+				.imported(this.computeOccurrencesForProcessStatus(results, ProcessStatus.IMPORTED))
+				.skipped(this.computeOccurrencesForProcessStatus(results, ProcessStatus.SKIPPED))
+				.failed(this.computeOccurrencesForProcessStatus(results, ProcessStatus.FAILED))
 				.build();
 
-		return importService.notifyBulkImportSuccess(rawUri, finalReport);
+		return importService.notifyBulkImportSuccess(sourceURI, finalReport);
 	}
 
 	/**
@@ -78,11 +86,7 @@ public abstract class AbstractImportRestController implements ImportRestApi {
 	 */
 	@Override
 	public SingleImportResult importDryRun(String schemaId, ObjectNode document) {
-		return importService.importDryRun(
-				this.computeSingleRestRawUri(),
-				document,
-				this.fetchSchema(schemaId)
-		);
+		return this.executeSingleImportOperation(schemaId, document, importService::importDryRun);
 	}
 
 	/**
@@ -94,27 +98,30 @@ public abstract class AbstractImportRestController implements ImportRestApi {
 	 */
 	@Override
 	public SingleImportResult removeDocument(String schemaId, ObjectNode document) {
-		return importService.removeDocument(
-				this.computeSingleRestRawUri(),
-				document,
-				this.fetchSchema(schemaId)
-		);
+		return this.executeSingleImportOperation(schemaId, document, importService::removeDocument);
 	}
 
+	private SingleImportResult executeSingleImportOperation(
+			String schemaId,
+			ObjectNode document,
+			TriFunction<JoyceSourceURI, ObjectNode, SchemaEntity, SingleImportResult> operation) {
 
-	private JoyceURI computeSingleRestRawUri() {
+		SchemaEntity schema = this.fetchSchema(schemaId);
+		JoyceSourceURI sourceURI = this.computeSingleRestSourceUri(
+				schema.getMetadata().getDomain(),
+				schema.getMetadata().getProduct(),
+				schema.getMetadata().getName()
+		);
+		return operation.apply(sourceURI, document, schema);
+	}
+
+	private JoyceSourceURI computeSingleRestSourceUri(String domain, String product, String name) {
 		String uuid = UUID.randomUUID().toString().substring(0, 6);
 		long timestamp = new Date().toInstant().toEpochMilli();
 		String uid = String.format("%d-%s", timestamp, uuid);
-		return this.computeRawUri("single", uid);
-	}
-
-	private JoyceURI computeBulkRestRawUri(String fileName) {
-		return this.computeRawUri("bulk", fileName);
-	}
-
-	private JoyceURI computeRawUri(String collection, String uid) {
-		return JoyceURI.make(JoyceURI.Type.RAW, JoyceURI.Subtype.REST, collection, uid);
+		return JoyceURIFactory.getInstance().createSourceURIOrElseThrow(
+				domain, product, name, JoyceURIChannel.REST, JoyceURIRestOrigin.SINGLE, uid
+		);
 	}
 
 	private SchemaEntity fetchSchema(String schemaUid) {
@@ -126,19 +133,22 @@ public abstract class AbstractImportRestController implements ImportRestApi {
 	}
 
 	private SingleImportResult importSingleDocument(
-			JoyceURI rawUri,
+			JoyceSourceURI sourceURI,
 			JsonNode document,
 			SchemaEntity schema) {
 
 		try {
-			return importService.processImport(rawUri, document, schema);
+			return importService.processImport(sourceURI, document, schema);
 
 		} catch (Exception exception) {
-			return SingleImportResult.builder().uri(rawUri).processStatus(ProcessStatus.FAILED).build();
+			return SingleImportResult.builder()
+					.uri(sourceURI)
+					.processStatus(ProcessStatus.FAILED)
+					.build();
 		}
 	}
 
-	private Integer computeCardinalityForProcessStatus(
+	private Integer computeOccurrencesForProcessStatus(
 			Map<ProcessStatus, List<SingleImportResult>> results,
 			ProcessStatus status) {
 

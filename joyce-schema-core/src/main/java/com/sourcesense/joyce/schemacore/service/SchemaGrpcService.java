@@ -17,38 +17,23 @@ public abstract class SchemaGrpcService extends SchemaApiGrpc.SchemaApiImplBase 
 	protected final SchemaService schemaService;
 	protected final SchemaProtoMapper schemaMapper;
 
-	public void getSchema(
-			GetSchemaRequest request,
-			StreamObserver<GetSchemaResponse> responseObserver) {
-
+	public void getSchema(GetSchemaRequest request, StreamObserver<GetSchemaResponse> responseObserver) {
 		this.handleRequest(request, responseObserver, this::getSchema);
 	}
 
-	public void getAllSchemas(
-			GetAllSchemasRequest request,
-			StreamObserver<GetSchemasResponse> responseObserver) {
-
+	public void getAllSchemas(GetAllSchemasRequest request, StreamObserver<GetSchemasResponse> responseObserver) {
 		this.handleRequest(request, responseObserver, this::getAllSchemas);
 	}
 
-	public void getAllSchemasBySubtypeAndNamespace(
-			GetAllSchemasBySubtypeAndNamespaceRequest request,
-			StreamObserver<GetSchemasResponse> responseObserver) {
-
+	public void getAllSchemasBySubtypeAndNamespace(GetAllSchemasBySubtypeAndNamespaceRequest request, StreamObserver<GetSchemasResponse> responseObserver) {
 		this.handleRequest(request, responseObserver, this::getAllSchemasBySubtypeAndNamespace);
 	}
 
-	public void getAllSchemasByReportsIsNotEmpty(
-			Empty request,
-			StreamObserver<GetSchemasResponse> responseObserver) {
-
+	public void getAllSchemasByReportsIsNotEmpty(Empty request, StreamObserver<GetSchemasResponse> responseObserver) {
 		this.handleRequest(request, responseObserver, this::getAllSchemasByReportsIsNotEmpty);
 	}
 
-	public void getAllNamespaces(
-			Empty request,
-			StreamObserver<GetNamespacesResponse> responseObserver) {
-
+	public void getAllNamespaces(Empty request, StreamObserver<GetNamespacesResponse> responseObserver) {
 		this.handleRequest(request, responseObserver, this::getAllNamespaces);
 	}
 
@@ -57,7 +42,7 @@ public abstract class SchemaGrpcService extends SchemaApiGrpc.SchemaApiImplBase 
 				.map(schemaMapper::entityToProto)
 				.map(GetSchemaResponse.newBuilder()::setSchema)
 				.map(GetSchemaResponse.Builder::build)
-				.orElseGet(() -> GetSchemaResponse.newBuilder().setSchema((Schema) null).build());
+				.orElse(null);
 	}
 
 	private GetSchemasResponse getAllSchemas(GetAllSchemasRequest request) {
@@ -68,9 +53,9 @@ public abstract class SchemaGrpcService extends SchemaApiGrpc.SchemaApiImplBase 
 	}
 
 	private GetSchemasResponse getAllSchemasBySubtypeAndNamespace(GetAllSchemasBySubtypeAndNamespaceRequest request) {
-		List<SchemaEntity> schemas = schemaService.getAllBySubtypeAndNamespace(
-				schemaMapper.joyceUriSubtypeProtoToEntity(request.getSubtype()),
-				request.getNamespace(),
+		List<SchemaEntity> schemas = schemaService.getAllByDomainAndProduct(
+				request.getDomain(),
+				request.getProduct(),
 				Boolean.parseBoolean(request.getRootOnly())
 		);
 		return this.buildSchemasResponse(schemas);

@@ -11,11 +11,10 @@ import static java.lang.annotation.RetentionPolicy.RUNTIME;
 /**
  * This annotation marks the parameter of a method annotated with
  * {@link Notify} that will
- * contain the raw uri used to send a notification to kafka
+ * contain the content uri used to send a notification to kafka
  * notification topic in {@link NotificationAspect}
  */
 @Target(PARAMETER)
 @Retention(RUNTIME)
-public @interface RawUri {
-
+public @interface DocumentUri {
 }

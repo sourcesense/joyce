@@ -11,7 +11,7 @@ public class JoyceDocumentURI extends JoyceContentURI{
 
 	protected final String uid;
 
-	public JoyceDocumentURI(URI uri, String kind, String name, String domain, String product, String contentType, String uid) {
+	protected JoyceDocumentURI(URI uri, String kind, String name, String domain, String product, String contentType, String uid) {
 		super(uri, kind, name, domain, product, contentType);
 		this.uid = uid;
 	}

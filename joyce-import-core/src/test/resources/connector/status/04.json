@@ -1,6 +1,6 @@
 [
   {
-    "name": "test.schema.connector",
+    "name": "test:default:user:user-connector",
     "connectorOperation": "DELETE",
     "status": "NO_CONTENT"
   }

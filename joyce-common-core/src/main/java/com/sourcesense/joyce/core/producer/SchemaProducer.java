@@ -39,16 +39,16 @@ public class SchemaProducer extends KafkaMessageProducer<String,JsonNode> {
 
 	public void publish(SchemaEntity schemaEntity) {
 		this.sendMessage(
-				schemaEntity.getUid(),
-				schemaEntity.getUid(),
+				schemaEntity.getUid().toString(),
+				schemaEntity.getUid().toString(),
 				this.buildSchemaMessage(schemaEntity, jsonMapper.convertValue(schemaEntity, JsonNode.class), ImportAction.INSERT.name())
 		);
 	}
 
 	public void delete(SchemaEntity schemaEntity) {
 		this.sendMessage(
-				schemaEntity.getUid(),
-				schemaEntity.getUid(),
+				schemaEntity.getUid().toString(),
+				schemaEntity.getUid().toString(),
 				this.buildSchemaMessage(schemaEntity, jsonMapper.createObjectNode(), ImportAction.DELETE.name())
 		);
 	}
@@ -57,7 +57,7 @@ public class SchemaProducer extends KafkaMessageProducer<String,JsonNode> {
 		return MessageBuilder
 				.withPayload(payload)
 				.setHeader(KafkaHeaders.TOPIC, mongodbProperties.getSchemaCollection())
-				.setHeader(KafkaCustomHeaders.COLLECTION, schemaEntity.getMetadata().getNamespacedCollection())
+				.setHeader(KafkaCustomHeaders.COLLECTION, schemaEntity.getMetadata().getCollection())
 				.setHeader(KafkaCustomHeaders.MESSAGE_ACTION, action)
 				.setHeader(KafkaHeaders.MESSAGE_KEY, schemaEntity.getUid())
 				.build();

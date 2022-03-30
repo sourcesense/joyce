@@ -21,6 +21,8 @@ import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.sourcesense.joyce.core.model.entity.SchemaEntity;
 import com.sourcesense.joyce.core.model.entity.SchemaObject;
+import com.sourcesense.joyce.core.model.uri.JoyceSchemaURI;
+import com.sourcesense.joyce.core.model.uri.JoyceURIFactory;
 import com.sourcesense.joyce.schemacore.model.dto.SchemaSave;
 import com.sourcesense.joyce.schemacore.model.dto.SchemaShort;
 import com.sourcesense.joyce.schemacore.model.entity.SchemaDocument;
@@ -52,7 +54,11 @@ public abstract class SchemaDtoMapper {
 	@Mapping(target = "properties", source = "document")
 	public abstract SchemaEntity entityFromDocument(SchemaDocument document);
 
-	JsonNode propertiesFromString(SchemaDocument document) throws JsonProcessingException {
+	public JoyceSchemaURI joyceSchemaURIFromString(String stringUri) {
+		return JoyceURIFactory.getInstance().createURIOrElseThrow(stringUri, JoyceSchemaURI.class);
+	}
+
+	public JsonNode propertiesFromString(SchemaDocument document) throws JsonProcessingException {
 		return jsonMapper.readTree(document.getProperties());
 	}
 
@@ -60,6 +66,10 @@ public abstract class SchemaDtoMapper {
 	public abstract SchemaDocument documentFromEntity(SchemaEntity entity);
 
 	public abstract List<SchemaEntity> entitiesFromDocuments(List<SchemaDocument> documents);
+
+	public String joyceSchemaURIToString(JoyceSchemaURI joyceSchemaURI) {
+		return joyceSchemaURI.toString();
+	}
 
 	public String propertiesToString(SchemaEntity entity) throws JsonProcessingException {
 		return jsonMapper.writeValueAsString(entity.getProperties());

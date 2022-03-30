@@ -25,6 +25,47 @@ public class JoyceURIFactory {
 				: instance;
 	}
 
+	public JoyceURI createURIOrElseThrow(String kind, String name) {
+		return this.createURIOrElseThrow(
+				String.format("%s:%s:%s", JoyceURI.URI_SCHEMA, kind, name)
+		);
+	}
+
+	public JoyceTaxonomyURI createTaxonomyURIOrElseThrow(String kind, String domain, String product, String name) {
+		return this.createURIOrElseThrow(
+				String.format("%s:%s:%s:%s:%s", JoyceURI.URI_SCHEMA, kind, domain, product, name),
+				JoyceTaxonomyURI.class
+		);
+	}
+
+	public JoyceContentURI createContentURIOrElseThrow(String domain, String product, String name, String contentType) {
+		return this.createURIOrElseThrow(
+				String.format("%s:%s:%s:%s:%s:%s", JoyceURI.URI_SCHEMA, JoyceURIKind.CONTENT, domain, product, name, contentType),
+				JoyceContentURI.class
+		);
+	}
+
+	public JoyceSchemaURI createSchemaURIOrElseThrow(String domain, String product, String name) {
+		return this.createURIOrElseThrow(
+				String.format("%s:%s:%s:%s:%s:%s", JoyceURI.URI_SCHEMA, JoyceURIKind.CONTENT, domain, product, name, JoyceURIContentType.SCHEMA),
+				JoyceSchemaURI.class
+		);
+	}
+
+	public JoyceDocumentURI createDocumentURIOrElseThrow(String domain, String product, String name, String uid) {
+		return this.createURIOrElseThrow(
+				String.format("%s:%s:%s:%s:%s:%s:%s", JoyceURI.URI_SCHEMA, JoyceURIKind.CONTENT, domain, product, name, JoyceURIContentType.DOCUMENT, uid),
+				JoyceDocumentURI.class
+		);
+	}
+
+	public JoyceSourceURI createSourceURIOrElseThrow(String domain, String product, String name, String channel, String origin, String uid) {
+		return this.createURIOrElseThrow(
+				String.format("%s:%s:%s:%s:%s:%s:%s:%s:%s", JoyceURI.URI_SCHEMA, JoyceURIKind.CONTENT, domain, product, name, JoyceURIContentType.SOURCE, channel, origin, uid),
+				JoyceSourceURI.class
+		);
+	}
+
 	public <U extends JoyceURI> Optional<U> createURI(String stringURI, Class<U> clazz) {
 		try {
 			return Optional.ofNullable(
@@ -143,7 +184,7 @@ public class JoyceURIFactory {
 	}
 
 	protected List<String> computeUriParts(URI uri) {
-		String[] uriParts = uri.toString().split(JoyceURI.URI_SEPARATOR);
+		String[] uriParts = uri.toString().split(":");
 		return Arrays.stream(uriParts)
 				.filter(Predicate.not(String::isEmpty))
 				.collect(Collectors.toList());

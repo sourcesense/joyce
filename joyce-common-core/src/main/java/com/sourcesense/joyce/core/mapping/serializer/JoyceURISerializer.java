@@ -19,16 +19,17 @@ package com.sourcesense.joyce.core.mapping.serializer;
 import com.fasterxml.jackson.core.JsonGenerator;
 import com.fasterxml.jackson.databind.SerializerProvider;
 import com.fasterxml.jackson.databind.ser.std.StdSerializer;
-import com.sourcesense.joyce.core.model.JoyceURI;
+import com.sourcesense.joyce.core.model.uri.JoyceURI;
 
 import java.io.IOException;
 
 public class JoyceURISerializer extends StdSerializer<JoyceURI> {
+
     protected JoyceURISerializer() {
         this(null);
     }
-    protected JoyceURISerializer(Class<JoyceURI> t) {
-        super(t);
+    protected JoyceURISerializer(Class<JoyceURI> clazz) {
+        super(clazz);
     }
 
     @Override

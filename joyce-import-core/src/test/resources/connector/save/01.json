@@ -1,5 +1,5 @@
 {
-  "name": "test.schema.connector",
+  "name": "test:default:user:user-connector",
   "config": {
     "tasks.max": 3,
     "connector.class": "org.kaliy.kafka.connect.rss.RssSourceConnector",
@@ -7,8 +7,8 @@
     "topic": "joyce_import",
     "transforms": "joyceKey",
     "transforms.joyceKey.uid": "id",
-    "transforms.joyceKey.source": "connector",
-    "transforms.joyceKey.schema": "joyce://schema/import/test.schema",
+    "transforms.joyceKey.source": "user-connector",
+    "transforms.joyceKey.schema": "joyce:content:test:default:user:schema",
     "transforms.joyceKey.type": "com.sourcesense.joyce.connect.custom.InsertJoyceMessageKey"
   }
 }

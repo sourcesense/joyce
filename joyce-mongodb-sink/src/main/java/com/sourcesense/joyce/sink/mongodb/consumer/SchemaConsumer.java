@@ -11,8 +11,6 @@ import lombok.RequiredArgsConstructor;
 import org.apache.commons.lang3.StringUtils;
 import org.springframework.data.mongodb.core.MongoTemplate;
 import org.springframework.kafka.annotation.KafkaListener;
-import org.springframework.kafka.support.KafkaHeaders;
-import org.springframework.messaging.handler.annotation.Header;
 import org.springframework.messaging.handler.annotation.Headers;
 import org.springframework.messaging.handler.annotation.Payload;
 import org.springframework.stereotype.Component;
@@ -39,7 +37,6 @@ public class SchemaConsumer {
 	 */
 	@KafkaListener(topics = "${joyce.kafka.schema.topic:joyce_schema}")
 	public void receive(@Payload ObjectNode jsonSchema,
-											@Header(KafkaHeaders.RECEIVED_MESSAGE_KEY) String key,
 											@Headers Map<String, String> headers) {
 		try {
 			ImportAction action = this.computeAction(headers);
@@ -56,11 +53,11 @@ public class SchemaConsumer {
 
 	private void createCollection(ObjectNode jsonSchema) {
 		SchemaEntity schema = collectionEnhancerService.computeSchema(StringUtils.EMPTY, jsonSchema, SchemaEntity.class);
-		JsonSchemaEntry jsonSchemaEntry = collectionEnhancerService.computeSchema(schema.getUid(), jsonSchema, JsonSchemaEntry.class);
+		JsonSchemaEntry jsonSchemaEntry = collectionEnhancerService.computeSchema(schema.getUid().toString(), jsonSchema, JsonSchemaEntry.class);
 
-		collectionEnhancerService.initCollection(schema.getUid(), schema);
-		collectionEnhancerService.upsertCollectionValidator(schema.getUid(), schema, jsonSchemaEntry);
-		collectionEnhancerService.createIndexes(schema.getUid(), schema);
+		collectionEnhancerService.initCollection(schema.getUid().toString(), schema);
+		collectionEnhancerService.upsertCollectionValidator(schema.getUid().toString(), schema, jsonSchemaEntry);
+		collectionEnhancerService.createIndexes(schema.getUid().toString(), schema);
 	}
 
 	private void dropCollection(Map<String, String> headers) {
