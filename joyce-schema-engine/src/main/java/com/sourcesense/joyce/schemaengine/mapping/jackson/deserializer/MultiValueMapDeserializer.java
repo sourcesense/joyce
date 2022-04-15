@@ -1,4 +1,4 @@
-package com.sourcesense.joyce.schemaengine.deserializer;
+package com.sourcesense.joyce.schemaengine.mapping.jackson.deserializer;
 
 import com.fasterxml.jackson.core.JsonParser;
 import com.fasterxml.jackson.core.JsonProcessingException;

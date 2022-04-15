@@ -341,8 +341,7 @@ public class ConnectorService {
 
 		return jsonMapper.convertValue(
 				this.executeRest(endpoint, method, requiredStatus),
-				new TypeReference<>() {
-				}
+				new TypeReference<>() {}
 		);
 	}
 

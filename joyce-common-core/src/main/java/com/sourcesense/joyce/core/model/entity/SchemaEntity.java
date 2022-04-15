@@ -18,10 +18,6 @@ package com.sourcesense.joyce.core.model.entity;
 
 import com.fasterxml.jackson.annotation.JsonProperty;
 import com.fasterxml.jackson.databind.JsonNode;
-import com.fasterxml.jackson.databind.annotation.JsonDeserialize;
-import com.fasterxml.jackson.databind.annotation.JsonSerialize;
-import com.sourcesense.joyce.core.mapping.deserializer.JoyceURIDeserializer;
-import com.sourcesense.joyce.core.mapping.serializer.JoyceURISerializer;
 import com.sourcesense.joyce.core.model.uri.JoyceSchemaURI;
 import lombok.Data;
 import org.springframework.data.annotation.Id;
@@ -32,8 +28,6 @@ import java.util.List;
 public class SchemaEntity implements SchemaObject {
 
 	@Id
-	@JsonSerialize(using = JoyceURISerializer.class)
-	@JsonDeserialize(using = JoyceURIDeserializer.class)
 	private JoyceSchemaURI uid;
 
 	@JsonProperty("$schema")

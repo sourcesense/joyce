@@ -2,7 +2,7 @@ package com.sourcesense.joyce.schemaengine.model.handler;
 
 import com.fasterxml.jackson.databind.annotation.JsonDeserialize;
 import com.fasterxml.jackson.databind.node.TextNode;
-import com.sourcesense.joyce.schemaengine.deserializer.MultiValueMapDeserializer;
+import com.sourcesense.joyce.schemaengine.mapping.jackson.deserializer.MultiValueMapDeserializer;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Data;

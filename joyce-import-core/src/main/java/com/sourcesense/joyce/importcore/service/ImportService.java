@@ -197,7 +197,7 @@ public class ImportService {
 			JoyceDocumentURI contentURI = this.computeDocumentURI(result, metadata);
 			span.finish();
 
-			contentProducer.publish(schema, sourceURI, contentURI, result, metadata);
+			contentProducer.publish(schema, sourceURI.toString(), contentURI.toString(), result, metadata);
 			return SingleImportResult.builder().uri(sourceURI).processStatus(ProcessStatus.IMPORTED).build();
 
 		} else {
@@ -259,7 +259,7 @@ public class ImportService {
 
 		JoyceDocumentURI documentURI = computeDocumentURI(result, metadata);
 
-		contentProducer.remove(sourceURI, documentURI, metadata);
+		contentProducer.remove(sourceURI.toString(), documentURI.toString(), metadata);
 		return SingleImportResult.builder()
 				.uri(sourceURI)
 				.processStatus(ProcessStatus.DELETED)
@@ -282,7 +282,7 @@ public class ImportService {
 		if (Objects.isNull(schema.getMetadata())) {
 			throw new InvalidMetadataException("Schema has no metadata, cannot remove document");
 		}
-		contentProducer.remove(sourceURI, schema.getMetadata());
+		contentProducer.remove(sourceURI.toString(), schema.getMetadata());
 	}
 
 	/**

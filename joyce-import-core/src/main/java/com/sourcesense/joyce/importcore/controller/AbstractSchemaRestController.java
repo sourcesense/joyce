@@ -8,7 +8,7 @@ import com.sourcesense.joyce.core.model.entity.SchemaObject;
 import com.sourcesense.joyce.importcore.service.ConnectorService;
 import com.sourcesense.joyce.importcore.service.ValidationService;
 import com.sourcesense.joyce.schemacore.api.SchemaRestApi;
-import com.sourcesense.joyce.schemacore.mapper.SchemaDtoMapper;
+import com.sourcesense.joyce.schemacore.mapping.mapstruct.SchemaDtoMapper;
 import com.sourcesense.joyce.schemacore.model.dto.SchemaInfo;
 import com.sourcesense.joyce.schemacore.model.dto.SchemaSave;
 import com.sourcesense.joyce.schemacore.service.SchemaService;

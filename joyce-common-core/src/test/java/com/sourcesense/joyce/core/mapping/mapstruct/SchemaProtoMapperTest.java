@@ -1,11 +1,11 @@
-package com.sourcesense.joyce.core.mapper;
+package com.sourcesense.joyce.core.mapping.mapstruct;
 
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.core.type.TypeReference;
 import com.fasterxml.jackson.databind.JsonNode;
-import com.sourcesense.joyce.core.mapping.mapper.ProtoConverter;
-import com.sourcesense.joyce.core.mapping.mapper.SchemaProtoMapper;
-import com.sourcesense.joyce.core.mapping.mapper.SchemaProtoMapperImpl;
+import com.sourcesense.joyce.core.mapping.mapstruct.ProtoConverter;
+import com.sourcesense.joyce.core.mapping.mapstruct.SchemaProtoMapper;
+import com.sourcesense.joyce.core.mapping.mapstruct.SchemaProtoMapperImpl;
 import com.sourcesense.joyce.core.model.entity.SchemaEntity;
 import com.sourcesense.joyce.core.model.uri.JoyceSchemaURI;
 import com.sourcesense.joyce.core.model.uri.JoyceURIFactory;

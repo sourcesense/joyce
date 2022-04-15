@@ -59,7 +59,7 @@ public class SchemaProducer extends KafkaMessageProducer<String,JsonNode> {
 				.setHeader(KafkaHeaders.TOPIC, mongodbProperties.getSchemaCollection())
 				.setHeader(KafkaCustomHeaders.COLLECTION, schemaEntity.getMetadata().getCollection())
 				.setHeader(KafkaCustomHeaders.MESSAGE_ACTION, action)
-				.setHeader(KafkaHeaders.MESSAGE_KEY, schemaEntity.getUid())
+				.setHeader(KafkaHeaders.MESSAGE_KEY, schemaEntity.getUid().toString())
 				.build();
 	}
 

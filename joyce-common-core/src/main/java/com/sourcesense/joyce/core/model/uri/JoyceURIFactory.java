@@ -3,6 +3,7 @@ package com.sourcesense.joyce.core.model.uri;
 import com.sourcesense.joyce.core.enumeration.uri.JoyceURIContentType;
 import com.sourcesense.joyce.core.enumeration.uri.JoyceURIKind;
 import com.sourcesense.joyce.core.exception.InvalidJoyceURIException;
+import org.apache.commons.lang3.StringUtils;
 
 import java.net.URI;
 import java.util.Arrays;
@@ -14,7 +15,7 @@ import java.util.stream.Collectors;
 
 public class JoyceURIFactory {
 
-	private static JoyceURIFactory instance;
+	protected static JoyceURIFactory instance;
 
 	protected JoyceURIFactory() {
 	}
@@ -96,7 +97,7 @@ public class JoyceURIFactory {
 		URI uri = this.computeURI(stringURI);
 		List<String> uriParts = this.computeUriParts(uri);
 		if (uriParts.size() < 2) {
-			throw InvalidJoyceURIException.wrongNumberOfParts();
+			this.throwWrongNumberOfPartsException();
 		}
 		if (!JoyceURI.URI_SCHEMA.equals(uriParts.get(0))) {
 			throw new InvalidJoyceURIException("Impossible to create Joyce uri, uri schema is not Joyce.");
@@ -113,28 +114,26 @@ public class JoyceURIFactory {
 	}
 
 	protected JoyceURI computeUnhandledJoyceURI(URI uri, List<String> uriParts) {
-		throw new InvalidJoyceURIException(String.format(
-				"Impossible to create Joyce uri, invalid kind %s.", uriParts.get(1)
-		));
+		return this.throwInvalidKindException(uriParts);
 	}
 
 	protected JoyceURI computeJoyceURI(URI uri, List<String> uriParts) {
 		if (uriParts.size() < 3) {
-			throw InvalidJoyceURIException.wrongNumberOfParts(uriParts.get(1));
+			this.throwWrongNumberOfPartsException(uriParts);
 		}
 		return new JoyceURI(uri, uriParts.get(1), uriParts.get(2));
 	}
 
 	protected JoyceTaxonomyURI computeJoyceTaxonomyURI(URI uri, List<String> uriParts) {
 		if (uriParts.size() < 5) {
-			throw InvalidJoyceURIException.wrongNumberOfParts(uriParts.get(1));
+			this.throwWrongNumberOfPartsException(uriParts);
 		}
 		return new JoyceTaxonomyURI(uri, uriParts.get(1), uriParts.get(4), uriParts.get(2), uriParts.get(3));
 	}
 
 	protected JoyceContentURI computeJoyceContentURI(URI uri, List<String> uriParts) {
 		if (uriParts.size() < 6) {
-			throw InvalidJoyceURIException.wrongNumberOfParts(uriParts.get(1));
+			this.throwWrongNumberOfPartsException(uriParts);
 		}
 		switch (uriParts.get(5)) {
 			case JoyceURIContentType.SCHEMA:
@@ -149,9 +148,7 @@ public class JoyceURIFactory {
 	}
 
 	protected JoyceContentURI computeUnhandledJoyceContentURI(URI uri, List<String> uriParts) {
-		throw new InvalidJoyceURIException(String.format(
-				"Impossible to create Joyce content uri, invalid contentType %s.", uriParts.get(5)
-		));
+		return this.throwInvalidContentTypeException(uriParts);
 	}
 
 	protected JoyceSchemaURI computeJoyceSchemaURI(URI uri, List<String> uriParts) {
@@ -160,14 +157,14 @@ public class JoyceURIFactory {
 
 	protected JoyceDocumentURI computeJoyceDocumentURI(URI uri, List<String> uriParts) {
 		if (uriParts.size() < 7) {
-			throw InvalidJoyceURIException.wrongNumberOfParts(uriParts.get(1));
+			this.throwWrongNumberOfPartsException(uriParts);
 		}
 		return new JoyceDocumentURI(uri, uriParts.get(1), uriParts.get(4), uriParts.get(2), uriParts.get(3), uriParts.get(5), uriParts.get(6));
 	}
 
 	protected JoyceSourceURI computeJoyceSourceURI(URI uri, List<String> uriParts) {
 		if (uriParts.size() < 9) {
-			throw InvalidJoyceURIException.wrongNumberOfParts(uriParts.get(1));
+			this.throwWrongNumberOfPartsException(uriParts);
 		}
 		return new JoyceSourceURI(uri, uriParts.get(1), uriParts.get(4), uriParts.get(2), uriParts.get(3), uriParts.get(5), uriParts.get(6), uriParts.get(7), uriParts.get(8));
 	}
@@ -188,5 +185,28 @@ public class JoyceURIFactory {
 		return Arrays.stream(uriParts)
 				.filter(Predicate.not(String::isEmpty))
 				.collect(Collectors.toList());
+	}
+
+	protected void throwWrongNumberOfPartsException() {
+		this.throwWrongNumberOfPartsException(null);
+	}
+
+	protected void throwWrongNumberOfPartsException(List<String> uriParts) {
+		throw new InvalidJoyceURIException(String.format(
+				"Impossible to create %s Joyce uri, uri contains an unexpected number of parts.",
+				Objects.nonNull(uriParts) ? uriParts.get(1) : StringUtils.EMPTY
+		));
+	}
+
+	protected JoyceURI throwInvalidKindException(List<String> uriParts) {
+		throw new InvalidJoyceURIException(String.format(
+				"Impossible to create Joyce uri, invalid kind %s.", uriParts.get(1)
+		));
+	}
+
+	protected JoyceContentURI throwInvalidContentTypeException(List<String> uriParts) {
+		throw new InvalidJoyceURIException(String.format(
+				"Impossible to create Joyce content uri, invalid contentType %s.", uriParts.get(5)
+		));
 	}
 }

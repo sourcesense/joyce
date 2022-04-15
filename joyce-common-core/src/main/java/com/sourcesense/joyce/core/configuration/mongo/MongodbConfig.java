@@ -4,6 +4,7 @@ import com.mongodb.ConnectionString;
 import com.mongodb.MongoClientSettings;
 import com.mongodb.client.MongoClient;
 import com.mongodb.client.MongoClients;
+import com.sourcesense.joyce.core.mapping.mongo.JoyceURIMongoConverters;
 import io.opentracing.Tracer;
 import io.opentracing.contrib.mongo.common.TracingCommandListener;
 import lombok.RequiredArgsConstructor;
@@ -27,6 +28,7 @@ public class MongodbConfig extends AbstractMongoClientConfiguration {
 
 	private final Tracer tracer;
 	private final ApplicationContext applicationContext;
+	private final JoyceURIMongoConverters joyceURIMongoConverters;
 
 	@Value("${joyce.data.mongodb.uri:mongodb://localhost:27017/joyce}")
 	String mongoUri;
@@ -65,4 +67,8 @@ public class MongodbConfig extends AbstractMongoClientConfiguration {
 		return database;
 	}
 
+	@Override
+	protected void configureConverters(MongoCustomConversions.MongoConverterConfigurationAdapter converterConfigurationAdapter) {
+		joyceURIMongoConverters.getConverters().forEach(converterConfigurationAdapter::registerConverter);
+	}
 }

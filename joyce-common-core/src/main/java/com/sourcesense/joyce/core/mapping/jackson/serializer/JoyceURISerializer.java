@@ -14,7 +14,7 @@
  * limitations under the License.
  */
 
-package com.sourcesense.joyce.core.mapping.serializer;
+package com.sourcesense.joyce.core.mapping.jackson.serializer;
 
 import com.fasterxml.jackson.core.JsonGenerator;
 import com.fasterxml.jackson.databind.SerializerProvider;
@@ -25,10 +25,11 @@ import java.io.IOException;
 
 public class JoyceURISerializer extends StdSerializer<JoyceURI> {
 
-    protected JoyceURISerializer() {
+    public JoyceURISerializer() {
         this(null);
     }
-    protected JoyceURISerializer(Class<JoyceURI> clazz) {
+
+    public JoyceURISerializer(Class<JoyceURI> clazz) {
         super(clazz);
     }
 

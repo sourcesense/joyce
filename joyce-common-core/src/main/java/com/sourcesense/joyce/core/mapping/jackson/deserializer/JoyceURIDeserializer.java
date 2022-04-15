@@ -14,36 +14,40 @@
  * limitations under the License.
  */
 
-package com.sourcesense.joyce.core.mapping.deserializer;
+package com.sourcesense.joyce.core.mapping.jackson.deserializer;
 
 import com.fasterxml.jackson.core.JsonParser;
-import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.DeserializationContext;
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.deser.std.StdDeserializer;
+import com.sourcesense.joyce.core.exception.handler.JsonProcessingException;
 import com.sourcesense.joyce.core.model.uri.JoyceURI;
 import com.sourcesense.joyce.core.model.uri.JoyceURIFactory;
+import lombok.Getter;
 
 import java.io.IOException;
 import java.util.Optional;
 
-public class JoyceURIDeserializer extends StdDeserializer<JoyceURI> {
-	protected JoyceURIDeserializer() {
-		this(null);
-	}
+@Getter
+public class JoyceURIDeserializer<J extends JoyceURI> extends StdDeserializer<J> {
 
-	protected JoyceURIDeserializer(Class<?> vc) {
-		super(vc);
+	private final JoyceURIFactory joyceURIFactory;
+	private final Class<J> joyceURIClass;
+
+	public JoyceURIDeserializer(JoyceURIFactory joyceURIFactory, Class<J> joyceURIClass) {
+		super(joyceURIClass);
+		this.joyceURIClass = joyceURIClass;
+		this.joyceURIFactory = joyceURIFactory;
 	}
 
 	@Override
-	public JoyceURI deserialize(JsonParser jsonParser, DeserializationContext deserializationContext) throws IOException, JsonProcessingException {
+	public J deserialize(JsonParser jsonParser, DeserializationContext deserializationContext) throws IOException, JsonProcessingException {
 		JsonNode uriNode = jsonParser.getCodec().readTree(jsonParser);
 		return Optional.ofNullable(uriNode)
 				.map(node -> node.isObject() ? node.get("uri").asText() : node.asText())
-				.flatMap(JoyceURIFactory.getInstance()::createURI)
+				.flatMap(stringURI -> joyceURIFactory.createURI(stringURI, joyceURIClass))
 				.orElseThrow(() -> new JsonProcessingException(String.format(
 						"uri: %s is not a joyce uri", uriNode.asText())
-				) {});
+				));
 	}
 }

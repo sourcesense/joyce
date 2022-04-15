@@ -1,8 +1,8 @@
-package com.sourcesense.joyce.core.mapper;
+package com.sourcesense.joyce.core.mapping.mapstruct;
 
 import com.google.protobuf.Message;
 import com.google.protobuf.Struct;
-import com.sourcesense.joyce.core.mapping.mapper.ProtoConverter;
+import com.sourcesense.joyce.core.mapping.mapstruct.ProtoConverter;
 import com.sourcesense.joyce.core.test.TestUtility;
 import com.sourcesense.joyce.protobuf.exception.ProtobufParsingException;
 import org.junit.jupiter.api.BeforeEach;

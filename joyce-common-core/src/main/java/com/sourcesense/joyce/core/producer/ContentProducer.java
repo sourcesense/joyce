@@ -24,9 +24,6 @@ import com.sourcesense.joyce.core.enumeration.KafkaCustomHeaders;
 import com.sourcesense.joyce.core.enumeration.NotificationEvent;
 import com.sourcesense.joyce.core.model.entity.JoyceSchemaMetadata;
 import com.sourcesense.joyce.core.model.entity.SchemaEntity;
-import com.sourcesense.joyce.core.model.uri.JoyceDocumentURI;
-import com.sourcesense.joyce.core.model.uri.JoyceSourceURI;
-import com.sourcesense.joyce.core.model.uri.JoyceURI;
 import com.sourcesense.joyce.core.service.NotificationService;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Value;
@@ -43,7 +40,7 @@ import java.util.Optional;
 @Slf4j
 @ConditionalOnProperty(value = "joyce.kafka.producer.enabled", havingValue = "true")
 @Service
-public class ContentProducer extends KafkaMessageProducer<String,JsonNode> {
+public class ContentProducer extends KafkaMessageProducer<String, JsonNode> {
 
 	private final String contentTopic;
 	private final NotificationService notificationService;
@@ -59,43 +56,39 @@ public class ContentProducer extends KafkaMessageProducer<String,JsonNode> {
 		this.notificationService = notificationService;
 	}
 
-	public JoyceURI remove(JoyceURI sourceURI, JoyceSchemaMetadata metadata) {
-		return this.sendRemovalMessage(sourceURI, sourceURI, metadata);
+	public void remove(String deleteURI, JoyceSchemaMetadata metadata) {
+		this.sendRemovalMessage(deleteURI, deleteURI, metadata);
 	}
 
-	public JoyceURI remove(JoyceURI sourceURI, JoyceURI documentURI, JoyceSchemaMetadata metadata) {
-		return this.sendRemovalMessage(sourceURI, documentURI, metadata);
+	public void remove(String sourceURI, String documentURI, JoyceSchemaMetadata metadata) {
+		this.sendRemovalMessage(sourceURI, documentURI, metadata);
 	}
 
-	public JoyceURI sendRemovalMessage(JoyceURI sourceURI, JoyceURI documentURI, JoyceSchemaMetadata metadata) {
-
+	public void sendRemovalMessage(String sourceURI, String documentURI, JoyceSchemaMetadata metadata) {
 		MessageBuilder<JsonNode> message = MessageBuilder
 				.withPayload((JsonNode) jsonMapper.createObjectNode())
 				.setHeader(KafkaHeaders.TOPIC, contentTopic)
-				.setHeader(KafkaHeaders.MESSAGE_KEY, documentURI.toString())
+				.setHeader(KafkaHeaders.MESSAGE_KEY, documentURI)
 				.setHeader(KafkaCustomHeaders.MESSAGE_ACTION, ImportAction.DELETE.toString())
-				.setHeader(KafkaCustomHeaders.SOURCE_URI, sourceURI.toString());
+				.setHeader(KafkaCustomHeaders.SOURCE_URI, sourceURI);
 
-		setMetadataHeaders(metadata, message);
-
-		this.sendMessage(sourceURI.toString(), documentURI.toString(), message.build());
-		return documentURI;
+		this.setMetadataHeaders(metadata, message);
+		this.sendMessage(sourceURI, documentURI, message.build());
 	}
 
 	/**
 	 * Publish to main log a processed content
 	 *
-	 * @param schema
-	 * @param sourceURI
-	 * @param documentURI
-	 * @param content
-	 * @param metadata
-	 * @return
+	 * @param schema schema entity
+	 * @param sourceURI sourceURI
+	 * @param documentURI documentURI
+	 * @param content message body
+	 * @param metadata message metadata
 	 */
-	public JoyceDocumentURI publish(
+	public void publish(
 			SchemaEntity schema,
-			JoyceSourceURI sourceURI,
-			JoyceDocumentURI documentURI,
+			String sourceURI,
+			String documentURI,
 			JsonNode content,
 			JoyceSchemaMetadata metadata) {
 
@@ -105,22 +98,15 @@ public class ContentProducer extends KafkaMessageProducer<String,JsonNode> {
 				.withPayload(enrichedContent)
 				.setHeader(KafkaHeaders.TOPIC, contentTopic)
 				.setHeader(KafkaCustomHeaders.MESSAGE_ACTION, ImportAction.INSERT.toString())
-				.setHeader(KafkaHeaders.MESSAGE_KEY, documentURI.toString());
+				.setHeader(KafkaHeaders.MESSAGE_KEY, documentURI);
 
 		setMetadataHeaders(metadata, message);
-
-		this.sendMessage(
-				sourceURI != null ? sourceURI.toString() : null,
-				documentURI.toString(),
-				message.build()
-		);
-
-		return documentURI;
+		this.sendMessage(sourceURI, documentURI, message.build());
 	}
 
 	private ObjectNode computeEnrichedContent(
 			SchemaEntity schema,
-			JoyceSourceURI sourceURI,
+			String sourceURI,
 			JsonNode content) {
 
 		// Set schema version
@@ -129,7 +115,7 @@ public class ContentProducer extends KafkaMessageProducer<String,JsonNode> {
 		content_metadata.put("schema_uid", schema.getUid().toString());
 		content_metadata.put("schema_name", schema.getMetadata().getName());
 		content_metadata.put("schema_development", schema.getMetadata().getDevelopment());
-		Optional.ofNullable(sourceURI).ifPresent(joyceURI -> content_metadata.put("source_uri", sourceURI.toString()));
+		Optional.ofNullable(sourceURI).ifPresent(joyceURI -> content_metadata.put("source_uri", sourceURI));
 
 		ObjectNode enrichedContent = content.deepCopy();
 		enrichedContent.set("_metadata_", content_metadata);

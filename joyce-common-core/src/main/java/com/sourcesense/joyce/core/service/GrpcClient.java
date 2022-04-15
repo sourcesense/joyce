@@ -2,7 +2,7 @@ package com.sourcesense.joyce.core.service;
 
 import com.google.protobuf.Empty;
 import com.sourcesense.joyce.core.exception.SchemaNotFoundException;
-import com.sourcesense.joyce.core.mapping.mapper.SchemaProtoMapper;
+import com.sourcesense.joyce.core.mapping.mapstruct.SchemaProtoMapper;
 import com.sourcesense.joyce.core.model.entity.SchemaEntity;
 import com.sourcesense.joyce.core.model.uri.JoyceURIFactory;
 import com.sourcesense.joyce.protobuf.api.*;

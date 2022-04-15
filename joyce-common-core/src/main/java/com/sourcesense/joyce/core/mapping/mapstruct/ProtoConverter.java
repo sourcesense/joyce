@@ -1,4 +1,4 @@
-package com.sourcesense.joyce.core.mapping.mapper;
+package com.sourcesense.joyce.core.mapping.mapstruct;
 
 import com.google.protobuf.Message;
 import com.google.protobuf.MessageOrBuilder;

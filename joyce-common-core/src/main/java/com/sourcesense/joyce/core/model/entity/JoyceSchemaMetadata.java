@@ -17,11 +17,7 @@
 package com.sourcesense.joyce.core.model.entity;
 
 import com.fasterxml.jackson.annotation.JsonProperty;
-import com.fasterxml.jackson.databind.annotation.JsonDeserialize;
-import com.fasterxml.jackson.databind.annotation.JsonSerialize;
 import com.sourcesense.joyce.core.exception.InvalidMetadataException;
-import com.sourcesense.joyce.core.mapping.deserializer.JoyceURIDeserializer;
-import com.sourcesense.joyce.core.mapping.serializer.JoyceURISerializer;
 import com.sourcesense.joyce.core.model.uri.JoyceSchemaURI;
 import lombok.EqualsAndHashCode;
 import lombok.Getter;
@@ -46,8 +42,6 @@ public class JoyceSchemaMetadata {
 	private String collection;
 	private String description;
 
-	@JsonSerialize(using = JoyceURISerializer.class)
-	@JsonDeserialize(using = JoyceURIDeserializer.class)
 	private JoyceSchemaURI parent;
 	private List<Map<String, Object>> indexes;
 

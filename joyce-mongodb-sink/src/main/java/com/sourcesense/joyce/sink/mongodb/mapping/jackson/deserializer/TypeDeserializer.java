@@ -1,4 +1,4 @@
-package com.sourcesense.joyce.sink.mongodb.deserializer;
+package com.sourcesense.joyce.sink.mongodb.mapping.jackson.deserializer;
 
 import com.fasterxml.jackson.core.JsonParser;
 import com.fasterxml.jackson.core.ObjectCodec;

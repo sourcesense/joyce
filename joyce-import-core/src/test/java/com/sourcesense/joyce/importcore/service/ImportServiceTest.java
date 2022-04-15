@@ -19,7 +19,6 @@ package com.sourcesense.joyce.importcore.service;
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.core.type.TypeReference;
 import com.fasterxml.jackson.databind.JsonNode;
-import com.fasterxml.jackson.databind.ObjectMapper;
 import com.sourcesense.joyce.core.enumeration.KafkaCustomHeaders;
 import com.sourcesense.joyce.core.exception.InvalidJoyceURIException;
 import com.sourcesense.joyce.core.exception.InvalidMetadataException;
@@ -34,6 +33,7 @@ import com.sourcesense.joyce.core.utililty.SchemaUtils;
 import com.sourcesense.joyce.importcore.dto.SingleImportResult;
 import com.sourcesense.joyce.importcore.enumeration.ProcessStatus;
 import com.sourcesense.joyce.importcore.exception.ImportException;
+import com.sourcesense.joyce.importcore.test.TestUtility;
 import com.sourcesense.joyce.schemacore.service.SchemaService;
 import com.sourcesense.joyce.schemaengine.exception.InvalidSchemaException;
 import com.sourcesense.joyce.schemaengine.exception.JoyceSchemaEngineException;
@@ -59,7 +59,7 @@ import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.Mockito.when;
 
 @ExtendWith(MockitoExtension.class)
-class ImportServiceTest {
+class ImportServiceTest implements TestUtility {
 
 	// Mocked components
 	@Mock
@@ -74,8 +74,6 @@ class ImportServiceTest {
 	private JsonLogicService jsonLogicService;
 	@Mock
 	private CsvMappingService csvMappingService;
-
-	private final ObjectMapper objectMapper = new ObjectMapper();
 
 	// Subject under test
 	private ImportService importService;
@@ -106,7 +104,7 @@ class ImportServiceTest {
 
 	@BeforeEach
 	void init() {
-		importService = new ImportService(objectMapper, schemaUtils, schemaService, contentProducer, jsonLogicService, csvMappingService, schemaEngine);
+		importService = new ImportService(jsonMapper, schemaUtils, schemaService, contentProducer, jsonLogicService, csvMappingService, schemaEngine);
 	}
 
 	/*
@@ -122,7 +120,7 @@ class ImportServiceTest {
 	}
 
 	@Test
-	void shouldComputeSourceURIWhenImportSchemaIsNull() throws JsonProcessingException {
+	void shouldComputeSourceURIWhenImportSchemaIsNull() throws IOException, URISyntaxException {
 		Map<String, String> headers = this.computeHeaders(null);
 		String messageKey = this.computeResourceAsString(CONNECT_KEY_CORRECT);
 
@@ -154,7 +152,7 @@ class ImportServiceTest {
 	}
 
 	@Test
-	void shouldComputeValidSchemaURIWhenImportSchemaIsNull() throws JsonProcessingException {
+	void shouldComputeValidSchemaURIWhenImportSchemaIsNull() throws IOException, URISyntaxException {
 		Map<String, String> headers = this.computeHeaders(null);
 		String messageKey = this.computeResourceAsString(CONNECT_KEY_CORRECT);
 
@@ -177,7 +175,7 @@ class ImportServiceTest {
 		checkValidKey tests
 	 */
 	@Test
-	void shouldThrowImportExceptionWhenSchemaIsMissing() {
+	void shouldThrowImportExceptionWhenSchemaIsMissing() throws IOException, URISyntaxException {
 		Map<String, String> headers = this.computeHeaders(null);
 		String messageKey = this.computeResourceAsString(CONNECT_KEY_MISSING_SCHEMA);
 
@@ -193,7 +191,7 @@ class ImportServiceTest {
 	}
 
 	@Test
-	void shouldThrowImportExceptionWhenUidIsMissing() {
+	void shouldThrowImportExceptionWhenUidIsMissing() throws IOException, URISyntaxException {
 		Map<String, String> headers = this.computeHeaders(null);
 		String messageKey = this.computeResourceAsString(CONNECT_KEY_MISSING_UID);
 
@@ -209,7 +207,7 @@ class ImportServiceTest {
 	}
 
 	@Test
-	void shouldThrowImportExceptionWhenSourceIsMissing() {
+	void shouldThrowImportExceptionWhenSourceIsMissing() throws IOException, URISyntaxException {
 		Map<String, String> headers = this.computeHeaders(null);
 		String messageKey = this.computeResourceAsString(CONNECT_KEY_MISSING_SOURCE);
 
@@ -246,7 +244,7 @@ class ImportServiceTest {
 		when(schemaUtils.metadataFromSchemaOrElseThrow(any())).thenReturn(schema.getMetadata());
 		when(jsonLogicService.filter(any(), any())).thenReturn(true);
 		when(schemaEngine.process(any(SchemaEntity.class), any(), any()))
-				.thenReturn(objectMapper.valueToTree(Map.of("code", "1337")));
+				.thenReturn(jsonMapper.valueToTree(Map.of("code", "1337")));
 
 		// Subject under test
 		SingleImportResult expected = new SingleImportResult(JOYCE_SINGLE_REST_URI, ProcessStatus.IMPORTED, null);
@@ -257,7 +255,7 @@ class ImportServiceTest {
 	}
 
 	@Test
-	void shouldThrowInvalidMetadataExceptionIfSchemaHasNotMetadata() throws IOException {
+	void shouldThrowInvalidMetadataExceptionIfSchemaHasNotMetadata() {
 		// mocking and stubbing data for test execution
 		SchemaEntity schema = new SchemaEntity();
 
@@ -300,7 +298,7 @@ class ImportServiceTest {
 		when(schemaUtils.metadataFromSchemaOrElseThrow(any())).thenReturn(schema.getMetadata());
 		when(jsonLogicService.filter(any(), any())).thenReturn(true);
 		when(schemaEngine.process(any(SchemaEntity.class), any(), any()))
-				.thenReturn(objectMapper.valueToTree(Map.of("code", "1337")));
+				.thenReturn(jsonMapper.valueToTree(Map.of("code", "1337")));
 		when(schemaService.get(any()))
 				.thenReturn(Optional.of(computeSchema(TEST_SCHEMA_JSON_USER)));
 
@@ -327,7 +325,7 @@ class ImportServiceTest {
 	/* UTILITY METHODS */
 	private SchemaEntity computeSchema(String jsonSchemaName) throws IOException {
 		InputStream resource = this.computeResourceAsBytes(jsonSchemaName);
-		return objectMapper.readValue(resource, SchemaEntity.class);
+		return jsonMapper.readValue(resource, SchemaEntity.class);
 	}
 
 	/* UTILITY METHODS */
@@ -338,24 +336,15 @@ class ImportServiceTest {
 	}
 
 	private JsonNode computeDocument(String path) throws IOException {
-		return objectMapper.readTree(
+		return jsonMapper.readTree(
 				this.computeResourceAsBytes(path)
 		);
 	}
 
 	private List<JsonNode> computeResourceAsNodeList(String path) throws IOException {
-		return objectMapper.readValue(
+		return jsonMapper.readValue(
 				this.computeResourceAsBytes(path),
 				new TypeReference<>() {}
 		);
-	}
-
-	private String computeResourceAsString(String path) {
-		InputStream resourceStream = this.computeResourceAsBytes(path);
-		return IOUtils.toString(resourceStream);
-	}
-
-	private InputStream computeResourceAsBytes(String path) {
-		return this.getClass().getClassLoader().getResourceAsStream(path);
 	}
 }

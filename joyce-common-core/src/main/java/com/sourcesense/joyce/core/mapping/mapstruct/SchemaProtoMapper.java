@@ -1,4 +1,4 @@
-package com.sourcesense.joyce.core.mapping.mapper;
+package com.sourcesense.joyce.core.mapping.mapstruct;
 
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.core.type.TypeReference;

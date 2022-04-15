@@ -6,6 +6,8 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.databind.SerializationFeature;
 import com.fasterxml.jackson.dataformat.csv.CsvMapper;
 import com.fasterxml.jackson.dataformat.csv.CsvParser;
+import com.fasterxml.jackson.dataformat.yaml.YAMLMapper;
+import com.sourcesense.joyce.core.configuration.jackson.JacksonMappersModuleRegisterer;
 
 import java.io.IOException;
 import java.io.InputStream;
@@ -19,6 +21,13 @@ public interface TestUtility {
 	ObjectMapper jsonMapper = initJsonMapper();
 
 	static ObjectMapper initJsonMapper() {
+		ObjectMapper jsonMapper = buildJsonMapper();
+		JacksonMappersModuleRegisterer moduleRegisterer = new JacksonMappersModuleRegisterer(jsonMapper, new YAMLMapper());
+		moduleRegisterer.registerJoyceURIModule();
+		return jsonMapper;
+	}
+
+	static ObjectMapper buildJsonMapper() {
 		return new ObjectMapper()
 				.disable(DeserializationFeature.FAIL_ON_UNKNOWN_PROPERTIES)
 				.disable(SerializationFeature.FAIL_ON_EMPTY_BEANS);
