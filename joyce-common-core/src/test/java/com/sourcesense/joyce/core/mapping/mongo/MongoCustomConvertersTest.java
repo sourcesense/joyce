@@ -93,10 +93,10 @@ public class MongoCustomConvertersTest extends WithMongoTestBase implements Test
 		);
 
 		MongoMappingContext mongoMappingContext = new MongoMappingContext();
-		mongoMappingContext.setSimpleTypeHolder(mongoCustomConversions.getSimpleTypeHolder());
-
 		MappingMongoConverter mappingMongoConverter = new MappingMongoConverter(dbRefResolver, mongoMappingContext);
 		mappingMongoConverter.setMapKeyDotReplacement("_");
+		mappingMongoConverter.setCustomConversions(mongoCustomConversions);
+		mappingMongoConverter.afterPropertiesSet();
 
 		return new MongoTemplate(mongoDatabaseFactory, mappingMongoConverter);
 	}
