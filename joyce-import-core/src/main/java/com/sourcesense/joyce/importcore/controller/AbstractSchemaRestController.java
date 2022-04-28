@@ -14,12 +14,8 @@ import com.sourcesense.joyce.schemacore.model.dto.SchemaInfo;
 import com.sourcesense.joyce.schemacore.model.dto.SchemaSave;
 import com.sourcesense.joyce.schemacore.service.SchemaService;
 import lombok.RequiredArgsConstructor;
-import org.springframework.util.ObjectUtils;
-import org.springframework.util.StringUtils;
 
 import java.util.List;
-import java.util.Optional;
-import java.util.function.Predicate;
 
 @RequiredArgsConstructor
 public abstract class AbstractSchemaRestController implements SchemaRestApi {

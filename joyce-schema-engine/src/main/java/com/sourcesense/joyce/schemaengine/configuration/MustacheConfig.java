@@ -1,11 +1,12 @@
 package com.sourcesense.joyce.schemaengine.configuration;
 
+import com.github.mustachejava.DefaultMustacheFactory;
+import com.github.mustachejava.MustacheFactory;
 import com.samskivert.mustache.Mustache;
 import com.sourcesense.joyce.schemaengine.annotation.MustacheLambda;
 import com.sourcesense.joyce.schemaengine.exception.MustacheLambdaTagNotFoundException;
-import com.sourcesense.joyce.schemaengine.templating.mustache.template.MustacheTemplate;
+import com.sourcesense.joyce.schemaengine.templating.mustache.resolver.MustacheTemplateResolver;
 import lombok.RequiredArgsConstructor;
-import org.springframework.boot.autoconfigure.AutoConfigureBefore;
 import org.springframework.context.ApplicationContext;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
@@ -23,8 +24,18 @@ public class MustacheConfig {
 	private final ApplicationContext context;
 
 	@Bean
-	public MustacheTemplate mustacheTemplate() {
-		Map<String, Object> mustacheContext = context.getBeansWithAnnotation(MustacheLambda.class)
+	public MustacheFactory mustacheFactory(){
+		return new DefaultMustacheFactory();
+	};
+
+	@Bean
+	public MustacheTemplateResolver mustacheTemplate(Map<String, Object> mustacheContext) {
+		return new MustacheTemplateResolver(Mustache.compiler(), mustacheContext);
+	}
+
+	@Bean
+	public Map<String, Object> mustacheContext() {
+		return context.getBeansWithAnnotation(MustacheLambda.class)
 				.values().stream()
 				.filter(Mustache.Lambda.class::isInstance)
 				.map(Mustache.Lambda.class::cast)
@@ -32,8 +43,6 @@ public class MustacheConfig {
 						this::computeTag,
 						Function.identity()
 				));
-
-		return new MustacheTemplate(Mustache.compiler(), mustacheContext);
 	}
 
 	private String computeTag(Mustache.Lambda lambda) {

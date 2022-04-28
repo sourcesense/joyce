@@ -23,7 +23,6 @@ import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Component;
 
-import javax.annotation.PostConstruct;
 import java.util.Optional;
 
 
@@ -33,11 +32,11 @@ import java.util.Optional;
 @SchemaTransformationHandler(keyword = "$meta")
 public class MetadataValueTransformerHandler extends JsonPathTransformerHandler {
 
-	private final ObjectMapper mapper;
+	private final ObjectMapper jsonMapper;
 
 	@Override
 	public JsonNode process(String key, String type, JsonNode value, JsonNode source, Optional<JsonNode> metadata, Optional<Object> context) {
-		JsonNode metadataAsSource = mapper.createObjectNode();
+		JsonNode metadataAsSource = jsonMapper.createObjectNode();
 		if (metadata.isPresent()) {
 			metadataAsSource = metadata.get();
 		}
