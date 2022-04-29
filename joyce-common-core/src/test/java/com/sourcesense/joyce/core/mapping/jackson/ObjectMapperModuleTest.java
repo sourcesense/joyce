@@ -60,15 +60,19 @@ public class ObjectMapperModuleTest implements TestUtility {
 	}
 
 	private <J extends JoyceURI> void testStringToJoyceURIConversion(String stringURI, J joyceURI) throws JsonProcessingException {
-		assertEquals(
-				new JoyceURIWrapper<>(666, joyceURI),
-				jsonMapper.readValue(this.computeStringURIWrapper(stringURI), new TypeReference<JoyceURIWrapper<J>>() {})
+		JoyceURIWrapper<J> expected = new JoyceURIWrapper<>(666, joyceURI);
+		JoyceURIWrapper<J> actual = jsonMapper.readValue(
+				this.computeStringURIWrapper(stringURI),
+				new TypeReference<>() {}
 		);
+
+		assertEquals(expected, actual);
 	}
 
 	private String computeStringURIWrapper(String stringURI) {
 		return jsonMapper.createObjectNode()
 				.put("_id", 666)
-				.put("joyceURI", stringURI).toString();
+				.put("joyceURI", stringURI)
+				.toString();
 	}
 }

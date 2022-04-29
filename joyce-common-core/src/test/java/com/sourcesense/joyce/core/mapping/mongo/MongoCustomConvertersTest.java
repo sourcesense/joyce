@@ -1,10 +1,7 @@
 package com.sourcesense.joyce.core.mapping.mongo;
 
-import com.fasterxml.jackson.core.JsonProcessingException;
-import com.mongodb.client.FindIterable;
 import com.mongodb.client.MongoClient;
 import com.mongodb.client.MongoClients;
-import com.mongodb.client.MongoCollection;
 import com.sourcesense.joyce.core.mapping.mongo.reading.*;
 import com.sourcesense.joyce.core.mapping.mongo.writing.JoyceURIWritingConverter;
 import com.sourcesense.joyce.core.model.uri.JoyceURI;
@@ -44,39 +41,65 @@ public class MongoCustomConvertersTest extends WithMongoTestBase implements Test
 	}
 
 	@Test
-	public void shouldConvertJoyceTaxonomyURIToString() throws JsonProcessingException {
+	public void shouldConvertStringToJoyceTaxonomyURIWhenFetching() {
+		this.testStringToJoyceURIConversion(JOYCE_TAXONOMY_URI);
+	}
+
+	@Test
+	public void shouldConvertStringToJoyceSchemaURIWhenFetching() {
+		this.testStringToJoyceURIConversion(JOYCE_SCHEMA_URI);
+	}
+
+	@Test
+	public void shouldConvertStringToJoyceSourceURIWhenFetching() {
+		this.testStringToJoyceURIConversion(JOYCE_SOURCE_URI);
+	}
+
+	@Test
+	public void shouldConvertStringToJoyceDocumentURIWhenFetching() {
+		this.testStringToJoyceURIConversion(JOYCE_DOCUMENT_URI);
+	}
+
+	@Test
+	public void shouldConvertJoyceTaxonomyToStringURIWhenSaving() {
 		this.testJoyceURIToStringConversion(JOYCE_TAXONOMY_URI);
 	}
 
 	@Test
-	public void shouldConvertJoyceSchemaURIToString() throws JsonProcessingException {
+	public void shouldConvertJoyceSchemaURIToStringWhenSaving() {
 		this.testJoyceURIToStringConversion(JOYCE_SCHEMA_URI);
 	}
 
 	@Test
-	public void shouldConvertJoyceSourceURIToString() throws JsonProcessingException {
+	public void shouldConvertJoyceSourceURIToStringWhenSaving() {
 		this.testJoyceURIToStringConversion(JOYCE_SOURCE_URI);
 	}
 
 	@Test
-	public void shouldConvertJoyceDocumentURIToString() throws JsonProcessingException {
+	public void shouldConvertJoyceDocumentURIToStringWhenSaving() {
 		this.testJoyceURIToStringConversion(JOYCE_DOCUMENT_URI);
 	}
 
-	private <J extends JoyceURI> void testJoyceURIToStringConversion(J joyceURI) throws JsonProcessingException {
+	private <J extends JoyceURI> void testStringToJoyceURIConversion(J joyceURI) {
 		JoyceURIWrapper<J> document = new JoyceURIWrapper<>(666, joyceURI);
-		mongoTemplate.save(document, MONGO_COLLECTION);
-		assertEquals(
-				jsonMapper.writeValueAsString(document),
-				this.computeSavedDocument()
-		);
+		JoyceURIWrapper<J> saved = mongoTemplate.save(document, MONGO_COLLECTION);
+		assertEquals(document, saved);
 	}
 
-	private String computeSavedDocument() {
+	private <J extends JoyceURI> void testJoyceURIToStringConversion(J joyceURI) {
+		JoyceURIWrapper<J> document = new JoyceURIWrapper<>(666, joyceURI);
+		mongoTemplate.save(document, MONGO_COLLECTION);
+
+		Document savedDocument = this.computeSavedDocument();
+
+		assertEquals(document.get_id(), savedDocument.get("_id"));
+		assertEquals(document.getJoyceURI().toString(), savedDocument.get("joyceURI"));
+	}
+
+	private Document computeSavedDocument() {
 		return Optional.of(mongoTemplate)
 				.map(template -> template.findById(666, Document.class, MONGO_COLLECTION))
-				.map(Document::toJson)
-				.orElse("");
+				.orElseThrow();
 	}
 
 	private MongoTemplate buildMongoTemplate() {
