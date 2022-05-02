@@ -1,7 +1,6 @@
 package com.sourcesense.joyce.schemaengine.configuration;
 
-import com.github.mustachejava.DefaultMustacheFactory;
-import com.github.mustachejava.MustacheFactory;
+import com.fasterxml.jackson.databind.ObjectMapper;
 import com.samskivert.mustache.Mustache;
 import com.sourcesense.joyce.schemaengine.annotation.MustacheLambda;
 import com.sourcesense.joyce.schemaengine.exception.MustacheLambdaTagNotFoundException;
@@ -21,20 +20,16 @@ import java.util.stream.Collectors;
 @RequiredArgsConstructor
 public class MustacheConfig {
 
+	private final ObjectMapper jsonMapper;
 	private final ApplicationContext context;
 
 	@Bean
-	public MustacheFactory mustacheFactory(){
-		return new DefaultMustacheFactory();
-	};
-
-	@Bean
-	public MustacheTemplateResolver mustacheTemplate(Map<String, Object> mustacheContext) {
-		return new MustacheTemplateResolver(Mustache.compiler(), mustacheContext);
+	public MustacheTemplateResolver mustacheTemplate(Map<String, Mustache.Lambda> mustacheLambdas) {
+		return new MustacheTemplateResolver(jsonMapper, Mustache.compiler(), mustacheLambdas);
 	}
 
 	@Bean
-	public Map<String, Object> mustacheContext() {
+	public Map<String, Mustache.Lambda> mustacheLambdas() {
 		return context.getBeansWithAnnotation(MustacheLambda.class)
 				.values().stream()
 				.filter(Mustache.Lambda.class::isInstance)

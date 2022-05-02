@@ -26,10 +26,9 @@ public class ScriptingTransformerHandlerTest implements TestUtility {
 
 	@BeforeEach
 	void init() {
-		ObjectMapper mapper = initJsonMapper();
-		ApplicationContext context = initApplicationContext(mapper);
+		ApplicationContext context = initApplicationContext(jsonMapper);
 		scriptingTransformerHandler = new ScriptingTransformerHandler(
-				mapper,
+				jsonMapper,
 				context
 		);
 	}

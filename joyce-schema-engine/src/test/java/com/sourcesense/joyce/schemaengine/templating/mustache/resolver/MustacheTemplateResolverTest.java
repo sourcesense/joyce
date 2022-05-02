@@ -4,6 +4,7 @@ import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.node.*;
 import com.samskivert.mustache.Mustache;
 import com.samskivert.mustache.Template;
+import com.sourcesense.joyce.schemaengine.test.TestUtility;
 import lombok.RequiredArgsConstructor;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
@@ -14,7 +15,7 @@ import java.util.Map;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
 
-public class MustacheTemplateResolverTest {
+public class MustacheTemplateResolverTest implements TestUtility {
 
 	private final static String TEST_STRING_INPUT = "Test - {{#test}}some text{{/test}} - Test - {{#test}}more text{{/test}} - Test";
 	private final static String TEST_STRING_OUTPUT = "Test - SOME TEXT - Test - MORE TEXT - Test";
@@ -27,8 +28,9 @@ public class MustacheTemplateResolverTest {
 	@BeforeEach
 	public void init() {
 		mustacheTemplateResolver = new MustacheTemplateResolver(
+				jsonMapper,
 				Mustache.compiler(),
-				this.initMustacheContext()
+				this.initMustacheLambdas()
 		);
 	}
 
@@ -98,20 +100,5 @@ public class MustacheTemplateResolverTest {
 				JsonNodeFactory.instance.arrayNode().add(TEST_NODE_OUTPUT),
 				mustacheTemplateResolver.resolve(input)
 		);
-	}
-
-	private Map<String, Object> initMustacheContext() {
-		return Map.of(
-			"test", new TestLambda()
-		);
-	}
-
-	@RequiredArgsConstructor
-	private static class TestLambda implements Mustache.Lambda {
-
-		@Override
-		public void execute(Template.Fragment fragment, Writer writer) throws IOException {
-			writer.append(fragment.execute().toUpperCase());
-		}
 	}
 }

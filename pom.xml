@@ -49,7 +49,6 @@
     <json-logic-java.version>1.0.6</json-logic-java.version>
     <flatten-maven-plugin.version>1.2.7</flatten-maven-plugin.version>
     <org.elasticsearch.version>7.12.0</org.elasticsearch.version>
-    <com.github.spullara.mustache.version>0.9.7</com.github.spullara.mustache.version>
     <jacoco.version>0.8.7</jacoco.version>
     <io.opentracing.contrib.jaeger>3.3.1</io.opentracing.contrib.jaeger>
     <grpc.version>1.42.2</grpc.version>
@@ -187,12 +186,6 @@
         <groupId>org.elasticsearch.client</groupId>
         <artifactId>elasticsearch-rest-high-level-client</artifactId>
         <version>${org.elasticsearch.version}</version>
-      </dependency>
-
-      <dependency>
-        <groupId>com.github.spullara.mustache.java</groupId>
-        <artifactId>compiler</artifactId>
-        <version>${com.github.spullara.mustache.version}</version>
       </dependency>
 
       <dependency>
