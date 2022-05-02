@@ -25,9 +25,9 @@ import com.sourcesense.joyce.schemaengine.exception.InvalidSchemaException;
 import com.sourcesense.joyce.schemaengine.exception.JoyceSchemaEngineException;
 import com.sourcesense.joyce.schemaengine.handler.SchemaTransformerHandler;
 import com.sourcesense.joyce.schemaengine.model.JoyceMetaSchema;
+import com.sourcesense.joyce.schemaengine.templating.mustache.resolver.MustacheTemplateResolver;
 import org.apache.commons.lang.StringUtils;
 import org.springframework.beans.factory.annotation.Qualifier;
-import org.springframework.boot.autoconfigure.condition.ConditionalOnMissingBean;
 import org.springframework.stereotype.Service;
 
 import javax.annotation.PostConstruct;
@@ -41,16 +41,19 @@ public class SchemaEngine<T> {
 	public static final String METADATA = "$metadata";
 
 	protected final ObjectMapper jsonMapper;
+	protected final MustacheTemplateResolver mustacheTemplateResolver;
 	protected final Map<String, SchemaTransformerHandler> transformerHandlers;
 
 	protected JsonSchemaFactory factory;
 
 	public SchemaEngine(
 			ObjectMapper jsonMapper,
+			MustacheTemplateResolver mustacheTemplateResolver,
 			@Qualifier("transformerHandlers") Map<String, SchemaTransformerHandler> transformerHandlers) {
 
 		this.jsonMapper = jsonMapper;
 		this.transformerHandlers = transformerHandlers;
+		this.mustacheTemplateResolver = mustacheTemplateResolver;
 		this.factory = JsonSchemaFactory.getInstance(SpecVersion.VersionFlag.V7);
 	}
 
@@ -219,7 +222,7 @@ public class SchemaEngine<T> {
 				Optional<JsonNode> transformed = this.applyHandlers(key, schema, sourceJsonNode, metadata, context);
 				if (transformed.isPresent()) {
 					ObjectNode node = jsonMapper.createObjectNode();
-					if(key == null){
+					if (key == null) {
 						return transformed.get();
 					}
 					node.set(key, transformed.get());
@@ -310,19 +313,26 @@ public class SchemaEngine<T> {
 		}
 
 		// Apply handlers in cascade
-		List<String> knownHandlerKeys = StreamSupport.stream(
-				Spliterators.spliteratorUnknownSize(schema.fieldNames(), Spliterator.ORDERED),
-				false)
+		Spliterator<String> schemaFieldNames = Spliterators.spliteratorUnknownSize(schema.fieldNames(), Spliterator.ORDERED);
+		List<String> knownHandlerKeys = StreamSupport.stream(schemaFieldNames, false)
 				.filter(transformerHandlers.keySet()::contains)
 				.collect(Collectors.toList());
+
 		if (knownHandlerKeys.size() < 1) {
 			return Optional.empty();
 		}
 
 		JsonNode returnNode = sourceJsonNode.deepCopy();
 		for (String handlerKey : knownHandlerKeys) {
+
+			String handlerType = schema.get("type").asText();
+			JsonNode handlerConfig = mustacheTemplateResolver.resolve(
+					schema.get(handlerKey),
+					sourceJsonNode
+			);
+
 			SchemaTransformerHandler handler = transformerHandlers.get(handlerKey);
-			returnNode = handler.process(key, schema.get("type").asText(), schema.get(handlerKey), returnNode, metadata, context);
+			returnNode = handler.process(key, handlerType, handlerConfig, returnNode, metadata, context);
 		}
 		return Optional.ofNullable(returnNode);
 	}

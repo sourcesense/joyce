@@ -1,8 +1,6 @@
 package com.sourcesense.joyce.schemaengine.handler;
 
 import com.fasterxml.jackson.databind.JsonNode;
-import com.github.mustachejava.DefaultMustacheFactory;
-import com.github.mustachejava.MustacheFactory;
 import com.sourcesense.joyce.schemaengine.test.TestUtility;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
@@ -37,13 +35,12 @@ public class RestTransformerHandlerTest implements TestUtility {
 	void init() {
 		RestTemplate restTemplate = new RestTemplate();
 		server = MockRestServiceServer.createServer(restTemplate);
-		MustacheFactory mustacheFactory = new DefaultMustacheFactory();
-		restTransformerHandler = new RestTransformerHandler(this.initJsonMapper(), restTemplate, mustacheFactory);
+		restTransformerHandler = new RestTransformerHandler(jsonMapper, restTemplate);
 		restTransformerHandler.configure();
 	}
 
 	@Test
-	void shouldExecuteGetRequestWithoutParams() throws IOException, URISyntaxException {
+	void shouldExecuteGetRequest() throws IOException, URISyntaxException {
 		server.expect(request -> {
 			assertEquals(request.getURI().toString(), "http://test:8080/posts/1");
 			assertEquals(request.getMethod(), HttpMethod.GET);
@@ -58,26 +55,6 @@ public class RestTransformerHandlerTest implements TestUtility {
 				"source/10.json",
 				"rest/request/41.json",
 				"result/41.json"
-		);
-
-	}
-
-	@Test
-	void shouldExecuteGetRequestWithParams() throws IOException, URISyntaxException {
-		server.expect(request -> {
-			assertEquals(request.getURI().toString(), "http://test:8080/posts/Bret");
-			assertEquals(request.getMethod(), HttpMethod.GET);
-
-		}).andRespond(withSuccess(
-				this.getResourceAsString("rest/response/42.json"),
-				MediaType.APPLICATION_JSON
-		));
-
-		this.shouldProcessScript(
-				"getWithParams",
-				"source/10.json",
-				"rest/request/42.json",
-				"result/42.json"
 		);
 
 	}

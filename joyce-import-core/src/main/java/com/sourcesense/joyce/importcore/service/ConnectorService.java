@@ -16,6 +16,7 @@ import com.sourcesense.joyce.importcore.dto.JoyceSchemaImportMetadataExtra;
 import com.sourcesense.joyce.importcore.exception.ConnectorOperationException;
 import com.sourcesense.joyce.schemacore.model.dto.SchemaSave;
 import com.sourcesense.joyce.schemacore.service.SchemaService;
+import com.sourcesense.joyce.schemaengine.templating.mustache.resolver.MustacheTemplateResolver;
 import org.apache.commons.lang3.StringUtils;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.http.HttpEntity;
@@ -51,17 +52,20 @@ public class ConnectorService {
 	private final ObjectMapper jsonMapper;
 	private final RestTemplate restTemplate;
 	private final SchemaService schemaService;
+	private final MustacheTemplateResolver mustacheTemplateResolver;
 
 	public ConnectorService(
 			ObjectMapper jsonMapper,
 			RestTemplate restTemplate,
 			SchemaService schemaService,
+			MustacheTemplateResolver mustacheTemplateResolver,
 			@Value("${joyce.connector-service.kafka-connect-host}") String kafkaConnectHost) {
 
 		this.jsonMapper = jsonMapper;
 		this.restTemplate = restTemplate;
 		this.schemaService = schemaService;
 		this.kafkaConnectHost = kafkaConnectHost;
+		this.mustacheTemplateResolver = mustacheTemplateResolver;
 	}
 
 	public List<JoyceSchemaMetadataExtraConnector> getConnectors(
@@ -260,29 +264,25 @@ public class ConnectorService {
 			JoyceSchemaMetadataExtraConnector connector,
 			ConnectorOperation connectorOperation) {
 
-		ObjectNode enrichedConfig = connector.getConfig().deepCopy();
+		ObjectNode enrichedConfig = (ObjectNode) mustacheTemplateResolver.resolve(connector.getConfig());
 		enrichedConfig.put(TOPIC, "joyce_import");
+
 		JsonNode transforms = enrichedConfig.path(TRANSFORMS);
 		boolean isJoyceKeyPresent = this.isJoyceKeyPresent(transforms);
+
 		if (transforms.isTextual() && isJoyceKeyPresent) {
 			return enrichedConfig;
 
-		} else if (connector.getImportKeyUid() != null
-				&& transforms.isTextual()
-				&& !isJoyceKeyPresent) {
+		} else if (connector.getImportKeyUid() != null && transforms.isTextual() && !isJoyceKeyPresent) {
 
 			String transform = String.format("%s,%s", transforms.asText(), JOYCE_KEY);
 			this.addJoyceKeyTransformProperties(enrichedConfig, transform, metadata, connector);
 
-		} else if(connector.getImportKeyUid() != null) {
+		} else if (connector.getImportKeyUid() != null) {
 			this.addJoyceKeyTransformProperties(enrichedConfig, JOYCE_KEY, metadata, connector);
 
 		} else {
-			throw new ConnectorOperationException(
-					"Field import uid key wasn't found for connector",
-					connectorName,
-					connectorOperation
-			);
+			throw new ConnectorOperationException("Field import uid key wasn't found for connector", connectorName, connectorOperation);
 		}
 		return enrichedConfig;
 	}
@@ -332,7 +332,8 @@ public class ConnectorService {
 
 		return jsonMapper.convertValue(
 				this.executeRest(endpoint, method, requiredStatus),
-				new TypeReference<>() {}
+				new TypeReference<>() {
+				}
 		);
 	}
 
