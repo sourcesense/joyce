@@ -1,0 +1,5 @@
+{
+  "tasks.max": 3,
+  "connector.class": "org.kaliy.kafka.connect.rss.RssSourceConnector",
+  "rss.urls": "http://someurl/rss/homepage.xml"
+}

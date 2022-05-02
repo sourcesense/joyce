@@ -4,11 +4,17 @@ import com.fasterxml.jackson.databind.*;
 import com.fasterxml.jackson.dataformat.yaml.YAMLGenerator;
 import com.fasterxml.jackson.dataformat.yaml.YAMLMapper;
 import com.oracle.truffle.js.scriptengine.GraalJSScriptEngine;
+import com.samskivert.mustache.Mustache;
+import com.samskivert.mustache.Template;
+import com.sourcesense.joyce.schemaengine.configuration.CryptingConfig;
 import com.sourcesense.joyce.schemaengine.enumeration.ScriptingEngine;
+import com.sourcesense.joyce.schemaengine.service.CryptingService;
 import com.sourcesense.joyce.schemaengine.service.scripting.GroovyScriptingService;
 import com.sourcesense.joyce.schemaengine.service.scripting.JavaScriptScriptingService;
 import com.sourcesense.joyce.schemaengine.service.scripting.PythonScriptingService;
+import com.sourcesense.joyce.schemaengine.templating.mustache.lambda.SecretLambda;
 import groovy.lang.GroovyClassLoader;
+import lombok.RequiredArgsConstructor;
 import org.codehaus.groovy.control.CompilerConfiguration;
 import org.codehaus.groovy.control.customizers.ImportCustomizer;
 import org.codehaus.groovy.jsr223.GroovyScriptEngineImpl;
@@ -18,32 +24,24 @@ import org.springframework.context.ApplicationContext;
 
 import javax.script.ScriptEngineManager;
 import java.io.IOException;
+import java.io.Writer;
 import java.net.URISyntaxException;
 import java.net.URL;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
+import java.util.Map;
 
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.when;
 
 public interface TestUtility {
 
-	default ObjectMapper initJsonMapper() {
-		return new ObjectMapper()
-				.disable(DeserializationFeature.FAIL_ON_UNKNOWN_PROPERTIES)
-				.disable(SerializationFeature.FAIL_ON_EMPTY_BEANS);
-	}
+	ObjectMapper jsonMapper = initJsonMapper();
+	YAMLMapper yamlMapper = initYamlMapper();
 
-	default YAMLMapper initYamlMapper() {
-		YAMLMapper yamlMapper = new YAMLMapper();
-		yamlMapper.disable(YAMLGenerator.Feature.SPLIT_LINES);
-		yamlMapper.enable(YAMLGenerator.Feature.INDENT_ARRAYS);
-		yamlMapper.enable(YAMLGenerator.Feature.MINIMIZE_QUOTES);
-		yamlMapper.enable(YAMLGenerator.Feature.LITERAL_BLOCK_STYLE);
-		yamlMapper.setPropertyNamingStrategy(PropertyNamingStrategy.KEBAB_CASE);
-		return yamlMapper;
-	}
+	String TEST_SECRET_KEY = "F985C96FEC5150A02BF1F889245B93C9BA1EDF440865175911A97A6A9D819AB9";
+
 
 	default JsonNode getResourceAsNode(String path) throws IOException, URISyntaxException {
 		URL res = this.getClass().getClassLoader().getResource(path);
@@ -95,5 +93,39 @@ public interface TestUtility {
 		when(context.getBean(PythonScriptingService.class)).thenReturn(pyService);
 		when(context.getBean(GroovyScriptingService.class)).thenReturn(groovyService);
 		return context;
+	}
+
+	default Map<String, Mustache.Lambda> initMustacheLambdas() {
+		CryptingConfig cryptingConfig = new CryptingConfig(TEST_SECRET_KEY);
+		CryptingService cryptingService = new CryptingService(cryptingConfig.secretKey());
+		return Map.of(
+				"test", new TestLambda(),
+				"secret", new SecretLambda(cryptingService)
+		);
+	}
+
+	private static ObjectMapper initJsonMapper() {
+		return new ObjectMapper()
+				.disable(DeserializationFeature.FAIL_ON_UNKNOWN_PROPERTIES)
+				.disable(SerializationFeature.FAIL_ON_EMPTY_BEANS);
+	}
+
+	private static YAMLMapper initYamlMapper() {
+		YAMLMapper yamlMapper = new YAMLMapper();
+		yamlMapper.disable(YAMLGenerator.Feature.SPLIT_LINES);
+		yamlMapper.enable(YAMLGenerator.Feature.INDENT_ARRAYS);
+		yamlMapper.enable(YAMLGenerator.Feature.MINIMIZE_QUOTES);
+		yamlMapper.enable(YAMLGenerator.Feature.LITERAL_BLOCK_STYLE);
+		yamlMapper.setPropertyNamingStrategy(PropertyNamingStrategy.KEBAB_CASE);
+		return yamlMapper;
+	}
+
+	@RequiredArgsConstructor
+	class TestLambda implements Mustache.Lambda {
+
+		@Override
+		public void execute(Template.Fragment fragment, Writer writer) throws IOException {
+			writer.append(fragment.execute().toUpperCase());
+		}
 	}
 }

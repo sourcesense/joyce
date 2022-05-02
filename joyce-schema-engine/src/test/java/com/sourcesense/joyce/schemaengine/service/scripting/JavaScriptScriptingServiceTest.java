@@ -19,14 +19,12 @@ import static org.junit.jupiter.api.Assertions.*;
 @ExtendWith(MockitoExtension.class)
 public class JavaScriptScriptingServiceTest implements TestUtility {
 
-	private ObjectMapper mapper;
 	private JavaScriptScriptingService javaScriptScriptingService;
 
 	@BeforeEach
 	void init() {
-		mapper = this.initJsonMapper();
 		javaScriptScriptingService = new JavaScriptScriptingService(
-				mapper,
+				jsonMapper,
 				this.initGraalJSScriptEngine()
 		);
 	}
@@ -35,7 +33,7 @@ public class JavaScriptScriptingServiceTest implements TestUtility {
 	void shouldNotProcessVoidScript() throws IOException, URISyntaxException {
 		String key = "void";
 		JsonNode source = this.getResourceAsNode("source/31.json");
-		ScriptHandlerData scriptHandlerData = mapper.convertValue(
+		ScriptHandlerData scriptHandlerData = jsonMapper.convertValue(
 				this.getResourceAsNode("script/javascript/31.json"),
 				ScriptHandlerData.class
 		);
@@ -52,7 +50,7 @@ public class JavaScriptScriptingServiceTest implements TestUtility {
 	void shouldProcessForNoValue() throws IOException, URISyntaxException {
 		String key = "noValue";
 		JsonNode source = this.getResourceAsNode("source/31.json");
-		ScriptHandlerData scriptHandlerData = mapper.convertValue(
+		ScriptHandlerData scriptHandlerData = jsonMapper.convertValue(
 				this.getResourceAsNode("script/javascript/32.json"),
 				ScriptHandlerData.class
 		);
@@ -69,7 +67,7 @@ public class JavaScriptScriptingServiceTest implements TestUtility {
 	void shouldProcessForSimpleField() throws IOException, URISyntaxException {
 		String key = "lowercaseSimpleField";
 		JsonNode source = this.getResourceAsNode("source/31.json");
-		ScriptHandlerData scriptHandlerData = mapper.convertValue(
+		ScriptHandlerData scriptHandlerData = jsonMapper.convertValue(
 				this.getResourceAsNode("script/javascript/33.json"),
 				ScriptHandlerData.class
 		);
@@ -86,7 +84,7 @@ public class JavaScriptScriptingServiceTest implements TestUtility {
 	void shouldProcessForStringArray() throws IOException, URISyntaxException {
 		String key = "reducedStringArray";
 		JsonNode source = this.getResourceAsNode("source/31.json");
-		ScriptHandlerData scriptHandlerData = mapper.convertValue(
+		ScriptHandlerData scriptHandlerData = jsonMapper.convertValue(
 				this.getResourceAsNode("script/javascript/34.json"),
 				ScriptHandlerData.class
 		);
@@ -103,7 +101,7 @@ public class JavaScriptScriptingServiceTest implements TestUtility {
 	void shouldProcessForComplexArray() throws IOException, URISyntaxException {
 		String key = "uppercaseComplexArrayField";
 		JsonNode source = this.getResourceAsNode("source/31.json");
-		ScriptHandlerData scriptHandlerData = mapper.convertValue(
+		ScriptHandlerData scriptHandlerData = jsonMapper.convertValue(
 				this.getResourceAsNode("script/javascript/35.json"),
 				ScriptHandlerData.class
 		);
@@ -121,7 +119,7 @@ public class JavaScriptScriptingServiceTest implements TestUtility {
 	void shouldProcessForObject() throws IOException, URISyntaxException {
 		String key = "mapComplexArrayToValues";
 		JsonNode source = this.getResourceAsNode("source/31.json");
-		ScriptHandlerData scriptHandlerData = mapper.convertValue(
+		ScriptHandlerData scriptHandlerData = jsonMapper.convertValue(
 				this.getResourceAsNode("script/javascript/36.json"),
 				ScriptHandlerData.class
 		);
@@ -131,7 +129,7 @@ public class JavaScriptScriptingServiceTest implements TestUtility {
 				"nestedObjectComplexArrayValue2",
 				"nestedObjectComplexArrayValueN"
 		};
-		Object[] actual = mapper.convertValue(
+		Object[] actual = jsonMapper.convertValue(
 				javaScriptScriptingService.eval(key, scriptHandlerData, source, Optional.empty(), Optional.empty()),
 				Object[].class
 		);
@@ -142,7 +140,7 @@ public class JavaScriptScriptingServiceTest implements TestUtility {
 	void shouldProcessMultilineScript() throws IOException, URISyntaxException {
 		String key = "multilineScript";
 		JsonNode source = this.getResourceAsNode("source/31.json");
-		ScriptHandlerData scriptHandlerData = mapper.convertValue(
+		ScriptHandlerData scriptHandlerData = jsonMapper.convertValue(
 				this.getResourceAsNode("script/javascript/38.json"),
 				ScriptHandlerData.class
 		);

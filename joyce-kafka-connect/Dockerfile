@@ -1,29 +1,18 @@
 FROM confluentinc/cp-kafka-connect-base:6.1.1
 
 RUN confluent-hub install --no-prompt confluentinc/kafka-connect-jdbc:10.1.0
-RUN confluent-hub install --no-prompt confluentinc/kafka-connect-jira:latest
 RUN confluent-hub install --no-prompt jcustenborder/kafka-connect-spooldir:latest
 RUN confluent-hub install --no-prompt castorm/kafka-connect-http:0.8.6
 RUN confluent-hub install --no-prompt kaliy/kafka-connect-rss:0.1.0
 RUN confluent-hub install --no-prompt confluentinc/kafka-connect-elasticsearch:latest
-
-RUN curl -fSL -o /tmp/plugin.tar.gz \
-    https://github.com/RedHatInsights/expandjsonsmt/releases/download/0.0.5/kafka-connect-smt-expandjsonsmt-0.0.5.tar.gz && \
-    tar -xzf /tmp/plugin.tar.gz --directory /usr/share/java && \
-    rm -f /tmp/plugin.tar.gz;
-
-RUN mkdir -p /usr/share/java/camel && \
-  wget https://repo1.maven.org/maven2/org/apache/camel/kafkaconnector/camel-rss-kafka-connector/0.9.0/camel-rss-kafka-connector-0.9.0-package.tar.gz -O /usr/share/java/camel/camel-rss-kafka-connector.tar.gz && \
-  tar -xvzf /usr/share/java/camel/camel-rss-kafka-connector.tar.gz --directory /usr/share/java/camel && \
-  rm /usr/share/java/camel/camel-rss-kafka-connector.tar.gz
-
-RUN wget https://repo1.maven.org/maven2/org/apache/camel/camel-gson/3.9.0/camel-gson-3.9.0.jar -P /usr/share/java/camel/
-
-RUN wget https://repo1.maven.org/maven2/org/apache/camel/camel-fastjson/3.9.0/camel-fastjson-3.9.0.jar -P /usr/share/java/camel/
-
-RUN wget https://repo1.maven.org/maven2/com/alibaba/fastjson/1.2.9/fastjson-1.2.9.jar -P /usr/share/java/camel/
+RUN confluent-hub install  --no-prompt redhatinsights/expandjsonsmt:0.0.7
 
 RUN mkdir -p /usr/share/java/joyce
+RUN wget -O /usr/share/java/joyce/kafka-connect-aws.tar.gz https://github.com/lensesio/stream-reactor/releases/download/3.0.1/kafka-connect-aws-s3-3.0.1-2.5.0-all.tar.gz && \
+  tar -zxf /usr/share/java/joyce/kafka-connect-aws.tar.gz --directory /usr/share/java/joyce && \
+  rm /usr/share/java/joyce/kafka-connect-aws.tar.gz
+
+
 COPY InsertJoyceMessageKey/target/InsertJoyceMessageKey-*-SNAPSHOT.jar /usr/share/java/joyce/
 
 
