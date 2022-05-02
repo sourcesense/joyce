@@ -6,6 +6,7 @@ import com.sourcesense.joyce.schemaengine.annotation.MustacheLambda;
 import com.sourcesense.joyce.schemaengine.exception.MustacheLambdaTagNotFoundException;
 import com.sourcesense.joyce.schemaengine.templating.mustache.resolver.MustacheTemplateResolver;
 import lombok.RequiredArgsConstructor;
+import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.context.ApplicationContext;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
@@ -24,7 +25,7 @@ public class MustacheConfig {
 	private final ApplicationContext context;
 
 	@Bean
-	public MustacheTemplateResolver mustacheTemplate(Map<String, Mustache.Lambda> mustacheLambdas) {
+	public MustacheTemplateResolver mustacheTemplate(@Qualifier("mustacheLambdas") Map<String, Mustache.Lambda> mustacheLambdas) {
 		return new MustacheTemplateResolver(jsonMapper, Mustache.compiler(), mustacheLambdas);
 	}
 
