@@ -24,11 +24,6 @@ public abstract class AbstractSchemaRestController implements SchemaRestApi {
 	protected final ConnectorService connectorService;
 	protected final ValidationService validationService;
 
-	//Todo: must be deleted and
-	@Override
-	public List<String> getAllNamespaces() {
-		return schemaService.getAllNamespaces();
-	}
 
 	@Override
 	public List<SchemaObject> getAllSchemas(

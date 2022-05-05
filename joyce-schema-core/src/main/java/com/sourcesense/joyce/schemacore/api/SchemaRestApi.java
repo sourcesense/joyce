@@ -36,10 +36,6 @@ import java.util.List;
 @Tag(name = "Schema API", description = "Schema	 Management API")
 public interface SchemaRestApi {
 
-	//Todo: idk if this must be deleted
-	@GetMapping(value = "/namespace", produces = "application/json; charset=utf-8")
-	List<String> getAllNamespaces();
-
 	@GetMapping(value = "/schema", produces = "application/json; charset=utf-8")
 	@ResponseStatus(code = HttpStatus.OK)
 	@ApiResponse(
