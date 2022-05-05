@@ -3,9 +3,6 @@
   "method": "GET",
   "headers": {
     "Content-Type": "application/json",
-    "test": "value1, valueN, {{test}}"
-  },
-  "vars": {
-    "test": "$.username"
+    "test": "value1, valueN, Bret"
   }
 }

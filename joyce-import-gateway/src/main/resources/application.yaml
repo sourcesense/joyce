@@ -29,6 +29,8 @@ spring:
       max-request-size: 10MB
 
 joyce:
+  crypter:
+    secret-key: F985C96FEC5150A02BF1F889245B93C9BA1EDF440865175911A97A6A9D819AB9
   cors:
     origin: http://localhost:3000
   schema-transformer-plugin:

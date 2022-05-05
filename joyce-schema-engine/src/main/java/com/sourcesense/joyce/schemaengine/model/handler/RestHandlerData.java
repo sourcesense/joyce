@@ -22,7 +22,6 @@ public class RestHandlerData {
 	private HttpMethod method;
 	private String body;
 	private TextNode extract;
-	private Map<String, String> vars;
 
 	@JsonDeserialize(using = MultiValueMapDeserializer.class)
 	private MultiValueMap<String, String> headers;

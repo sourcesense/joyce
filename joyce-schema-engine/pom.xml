@@ -26,6 +26,11 @@
     </dependency>
 
     <dependency>
+      <groupId>com.samskivert</groupId>
+      <artifactId>jmustache</artifactId>
+    </dependency>
+
+    <dependency>
       <groupId>org.projectlombok</groupId>
       <artifactId>lombok</artifactId>
       <optional>true</optional>
@@ -70,11 +75,6 @@
     <dependency>
       <groupId>org.pf4j</groupId>
       <artifactId>pf4j-spring</artifactId>
-    </dependency>
-
-    <dependency>
-      <groupId>com.github.spullara.mustache.java</groupId>
-      <artifactId>compiler</artifactId>
     </dependency>
 
     <dependency>

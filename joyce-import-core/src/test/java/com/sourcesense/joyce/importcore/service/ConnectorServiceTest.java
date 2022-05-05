@@ -13,6 +13,7 @@ import com.sourcesense.joyce.core.model.uri.JoyceURIFactory;
 import com.sourcesense.joyce.importcore.test.TestUtility;
 import com.sourcesense.joyce.schemacore.model.dto.SchemaSave;
 import com.sourcesense.joyce.schemacore.service.SchemaService;
+import com.sourcesense.joyce.schemaengine.templating.mustache.resolver.MustacheTemplateResolver;
 import org.apache.commons.lang3.StringUtils;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
@@ -58,6 +59,10 @@ public class ConnectorServiceTest implements TestUtility {
 
 	@Mock
 	private SchemaService schemaService;
+
+	@Mock
+	private MustacheTemplateResolver mustacheTemplateResolver;
+
 	private MockRestServiceServer mockServer;
 	private ConnectorService connectorService;
 
@@ -65,7 +70,7 @@ public class ConnectorServiceTest implements TestUtility {
 	public void init() {
 		RestTemplate restTemplate = new RestTemplate();
 		mockServer = MockRestServiceServer.createServer(restTemplate);
-		connectorService = new ConnectorService(jsonMapper, restTemplate, schemaService,  KAFKA_CONNECT_HOST);
+		connectorService = new ConnectorService(jsonMapper, restTemplate, schemaService, mustacheTemplateResolver, KAFKA_CONNECT_HOST);
 	}
 
 	@Test
@@ -122,6 +127,7 @@ public class ConnectorServiceTest implements TestUtility {
 		this.shouldExecuteOperationOnConnector(
 				"schema/save/01.json",
 				"connector/existing/01.json",
+				"connector/config/01.json",
 				"connector/save/01.json",
 				"connector/status/01.json",
 				ConnectorEndpoint.CONNECTORS,
@@ -135,6 +141,7 @@ public class ConnectorServiceTest implements TestUtility {
 		this.shouldExecuteOperationOnConnector(
 				"schema/save/02.json",
 				"connector/existing/02.json",
+				"connector/config/02.json",
 				"connector/save/02.json",
 				"connector/status/02.json",
 				ConnectorEndpoint.CONNECTOR_CONFIG,
@@ -148,6 +155,7 @@ public class ConnectorServiceTest implements TestUtility {
 		this.shouldExecuteOperationOnConnector(
 				"schema/save/03.json",
 				"connector/existing/03.json",
+				"connector/config/03.json",
 				"connector/save/03.json",
 				"connector/status/03.json",
 				ConnectorEndpoint.CONNECTOR,
@@ -230,6 +238,7 @@ public class ConnectorServiceTest implements TestUtility {
 	private void shouldExecuteOperationOnConnector(
 			String schemaPath,
 			String existingConnectorPath,
+			String connectorConfigPath,
 			String newConnectorPath,
 			String statusPath,
 			ConnectorEndpoint opEndpoint,
@@ -244,8 +253,11 @@ public class ConnectorServiceTest implements TestUtility {
 		byte[] existingConnectors = this.computeResourceAsByteArray(existingConnectorPath);
 		this.mockRestCall(existingConnectorsEndpoint, null, existingConnectors, HttpMethod.GET, HttpStatus.OK);
 
-		String connectorConfig = this.computeResourceAsString(newConnectorPath);
-		this.mockRestCall(operationEndpoint, connectorConfig, new byte[0], operationMethod, operationStatus);
+		JsonNode connectorConfig = this.computeResourceAsObject(connectorConfigPath, JsonNode.class);
+		when(mustacheTemplateResolver.resolve(connectorConfig)).thenReturn(connectorConfig);
+
+		String connectorEnrichedConfig = this.computeResourceAsString(newConnectorPath);
+		this.mockRestCall(operationEndpoint, connectorEnrichedConfig, new byte[0], operationMethod, operationStatus);
 
 		List<ConnectorOperationStatus> expected = this.computeResourceAsObject(statusPath, new TypeReference<>() {});
 		List<ConnectorOperationStatus> actual = connectorService.computeConnectors(schema);
