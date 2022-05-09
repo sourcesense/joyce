@@ -64,9 +64,9 @@ public class GrpcClient implements SchemaClient {
 
 	@Override
 	public List<SchemaEntity> getAllByDomainAndProduct(String domain, String product, Boolean rootOnly) {
-		GetAllSchemasBySubtypeAndNamespaceRequest request = this.buildGetAllSchemasBySubtypeAndNamespaceRequest(domain, product, rootOnly);
+		GetAllSchemasByDomainAndProductRequest request = this.buildGetAllSchemasByDomainAndProductRequest(domain, product, rootOnly);
 		return schemaMapper.protosToEntities(
-				schemaStub.getAllSchemasBySubtypeAndNamespace(request).getSchemasList()
+				schemaStub.getAllSchemasByDomainAndProduct(request).getSchemasList()
 		);
 	}
 
@@ -78,24 +78,18 @@ public class GrpcClient implements SchemaClient {
 		);
 	}
 
-	@Override
-	public List<String> getAllNamespaces() {
-		Empty request = Empty.getDefaultInstance();
-		return schemaStub.getAllNamespaces(request).getNamespacesList();
-	}
-
 	private GetAllSchemasRequest buildGetAllSchemasRequest(Boolean rootOnly) {
 		return GetAllSchemasRequest.newBuilder()
 				.setRootOnly(Boolean.toString(rootOnly))
 				.build();
 	}
 
-	private GetAllSchemasBySubtypeAndNamespaceRequest buildGetAllSchemasBySubtypeAndNamespaceRequest(
+	private GetAllSchemasByDomainAndProductRequest buildGetAllSchemasByDomainAndProductRequest(
 			String domain,
 			String product,
 			Boolean rootOnly) {
 
-		return GetAllSchemasBySubtypeAndNamespaceRequest.newBuilder()
+		return GetAllSchemasByDomainAndProductRequest.newBuilder()
 				.setDomain(domain)
 				.setProduct(product)
 				.setRootOnly(Boolean.toString(rootOnly))

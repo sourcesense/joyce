@@ -24,16 +24,12 @@ public abstract class SchemaGrpcService extends SchemaApiGrpc.SchemaApiImplBase 
 		this.handleRequest(request, responseObserver, this::getAllSchemas);
 	}
 
-	public void getAllSchemasBySubtypeAndNamespace(GetAllSchemasBySubtypeAndNamespaceRequest request, StreamObserver<GetSchemasResponse> responseObserver) {
-		this.handleRequest(request, responseObserver, this::getAllSchemasBySubtypeAndNamespace);
+	public void getAllSchemasByDomainAndProduct(GetAllSchemasByDomainAndProductRequest request, StreamObserver<GetSchemasResponse> responseObserver) {
+		this.handleRequest(request, responseObserver, this::getAllSchemasByDomainAndProduct);
 	}
 
 	public void getAllSchemasByReportsIsNotEmpty(Empty request, StreamObserver<GetSchemasResponse> responseObserver) {
 		this.handleRequest(request, responseObserver, this::getAllSchemasByReportsIsNotEmpty);
-	}
-
-	public void getAllNamespaces(Empty request, StreamObserver<GetNamespacesResponse> responseObserver) {
-		this.handleRequest(request, responseObserver, this::getAllNamespaces);
 	}
 
 	private GetSchemaResponse getSchema(GetSchemaRequest request) {
@@ -51,7 +47,7 @@ public abstract class SchemaGrpcService extends SchemaApiGrpc.SchemaApiImplBase 
 		return this.buildSchemasResponse(schemas);
 	}
 
-	private GetSchemasResponse getAllSchemasBySubtypeAndNamespace(GetAllSchemasBySubtypeAndNamespaceRequest request) {
+	private GetSchemasResponse getAllSchemasByDomainAndProduct(GetAllSchemasByDomainAndProductRequest request) {
 		List<SchemaEntity> schemas = schemaService.getAllByDomainAndProduct(
 				request.getDomain(),
 				request.getProduct(),
@@ -65,20 +61,9 @@ public abstract class SchemaGrpcService extends SchemaApiGrpc.SchemaApiImplBase 
 		return this.buildSchemasResponse(schemas);
 	}
 
-	public GetNamespacesResponse getAllNamespaces(Empty request) {
-		List<String> namespaces = schemaService.getAllNamespaces();
-		return this.buildNamespacesResponse(namespaces);
-	}
-
 	private GetSchemasResponse buildSchemasResponse(List<SchemaEntity> schemas) {
 		return GetSchemasResponse.newBuilder()
 				.addAllSchemas(schemaMapper.entitiesToProtos(schemas))
-				.build();
-	}
-
-	private GetNamespacesResponse buildNamespacesResponse(List<String> namespaces) {
-		return GetNamespacesResponse.newBuilder()
-				.addAllNamespaces(namespaces)
 				.build();
 	}
 }

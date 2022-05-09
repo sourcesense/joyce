@@ -97,21 +97,21 @@ public class SchemaGrpcServiceTest implements TestUtility {
 	}
 
 	@Test
-	public void shouldRetrieveSchemasFromGetAllSchemasBySubtypeAndNamespace() throws IOException, URISyntaxException {
+	public void shouldRetrieveSchemasFromGetAllSchemasByDomainAndProduct() throws IOException, URISyntaxException {
 		SchemaEntity schemaEntity = this.computeSchemaEntity("schema.json");
 
 		List<SchemaEntity> schemaEntities = this.computeSchemaEntities(schemaEntity);
 		List<Schema> schemaProtos = this.computeSchemaProtos(schemaEntity);
 
 		StreamRecorder<GetSchemasResponse> responseObserver = StreamRecorder.create();
-		GetAllSchemasBySubtypeAndNamespaceRequest request = GetAllSchemasBySubtypeAndNamespaceRequest.newBuilder()
+		GetAllSchemasByDomainAndProductRequest request = GetAllSchemasByDomainAndProductRequest.newBuilder()
 				.setDomain(DOMAIN)
 				.setProduct(PRODUCT)
 				.setRootOnly(FALSE)
 				.build();
 
 		when(schemaService.getAllByDomainAndProduct(any(), any(), any())).thenReturn(schemaEntities);
-		schemaGrpcService.getAllSchemasBySubtypeAndNamespace(request, responseObserver);
+		schemaGrpcService.getAllSchemasByDomainAndProduct(request, responseObserver);
 
 		assertThat(schemaProtos).hasSameElementsAs(
 				responseObserver.getValues().get(0).getSchemasList()

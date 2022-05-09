@@ -14,5 +14,4 @@ public interface SchemaClient {
 	List<SchemaEntity> getAll(Boolean rootOnly) ;
 	List<SchemaEntity> getAllByDomainAndProduct(String domain, String product, Boolean rootOnly);
 	List<SchemaEntity> getAllByReportsIsNotEmpty();
-	List<String> getAllNamespaces();
 }

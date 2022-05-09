@@ -10,9 +10,8 @@ import "model/schema.proto";
 service SchemaApi {
   rpc GetSchema(GetSchemaRequest) returns (GetSchemaResponse);
   rpc GetAllSchemas(GetAllSchemasRequest) returns (GetSchemasResponse);
-  rpc GetAllSchemasBySubtypeAndNamespace(GetAllSchemasBySubtypeAndNamespaceRequest) returns (GetSchemasResponse);
+  rpc GetAllSchemasByDomainAndProduct(GetAllSchemasByDomainAndProductRequest) returns (GetSchemasResponse);
   rpc GetAllSchemasByReportsIsNotEmpty(google.protobuf.Empty) returns (GetSchemasResponse);
-  rpc GetAllNamespaces(google.protobuf.Empty) returns (GetNamespacesResponse);
 }
 
 message GetSchemaRequest {
@@ -23,7 +22,7 @@ message GetAllSchemasRequest {
   string rootOnly = 1;
 }
 
-message GetAllSchemasBySubtypeAndNamespaceRequest {
+message GetAllSchemasByDomainAndProductRequest {
   string domain = 1;
   string product = 2;
   string rootOnly = 3;
@@ -37,6 +36,3 @@ message GetSchemasResponse {
   repeated Schema schemas = 1;
 }
 
-message GetNamespacesResponse {
-  repeated string namespaces = 1;
-}

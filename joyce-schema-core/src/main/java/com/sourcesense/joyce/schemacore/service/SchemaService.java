@@ -105,16 +105,6 @@ public class SchemaService implements SchemaClient {
 		return schemaMapper.entitiesFromDocuments(schemas);
 	}
 
-	//Todo: Idk if this must remain
-	public List<String> getAllNamespaces() {
-		DistinctIterable<String> distinctIterable = mongoTemplate
-				.getCollection(mongodbProperties.getSchemaCollection())
-				.distinct("metadata.namespace", String.class);
-
-		return StreamSupport.stream(distinctIterable.spliterator(), false)
-				.collect(Collectors.toList());
-	}
-
 	public JoyceSchemaURI save(SchemaSave schema) {
 		SchemaEntity schemaEntity = schemaMapper.toEntity(schema);
 
