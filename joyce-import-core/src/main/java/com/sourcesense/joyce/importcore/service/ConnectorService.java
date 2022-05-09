@@ -5,13 +5,14 @@ import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.databind.node.JsonNodeFactory;
 import com.fasterxml.jackson.databind.node.ObjectNode;
-import com.sourcesense.joyce.core.dto.ConnectorOperationStatus;
 import com.sourcesense.joyce.core.enumeration.ConnectorOperation;
 import com.sourcesense.joyce.core.exception.RestException;
-import com.sourcesense.joyce.core.model.JoyceSchemaMetadata;
-import com.sourcesense.joyce.core.model.JoyceSchemaMetadataExtraConnector;
-import com.sourcesense.joyce.core.model.JoyceURI;
-import com.sourcesense.joyce.core.model.SchemaEntity;
+import com.sourcesense.joyce.core.model.dto.ConnectorOperationStatus;
+import com.sourcesense.joyce.core.model.entity.JoyceSchemaMetadata;
+import com.sourcesense.joyce.core.model.entity.JoyceSchemaMetadataExtraConnector;
+import com.sourcesense.joyce.core.model.entity.SchemaEntity;
+import com.sourcesense.joyce.core.model.uri.JoyceSchemaURI;
+import com.sourcesense.joyce.core.model.uri.JoyceURIFactory;
 import com.sourcesense.joyce.importcore.dto.JoyceSchemaImportMetadataExtra;
 import com.sourcesense.joyce.importcore.exception.ConnectorOperationException;
 import com.sourcesense.joyce.schemacore.model.dto.SchemaSave;
@@ -31,8 +32,6 @@ import java.util.*;
 import java.util.function.Function;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
-
-import static com.sourcesense.joyce.core.model.JoyceURI.NAMESPACE_SEPARATOR;
 
 @Service
 public class ConnectorService {
@@ -69,62 +68,67 @@ public class ConnectorService {
 	}
 
 	public List<JoyceSchemaMetadataExtraConnector> getConnectors(
-			String subtype,
-			String namespace,
+			String domain,
+			String product,
 			String name) {
 
-		SchemaEntity schema = this.computeSchema(subtype, namespace, name);
+		SchemaEntity schema = this.computeSchema(domain, product, name);
 		return this.computeSchemaConnectors(schema);
 	}
 
 	public JsonNode getConnectorStatus(
-			String namespace,
+			String domain,
+			String product,
 			String name,
 			String connector) {
 
-		String connectorStatusEndpoint = String.format("%s/status", this.computeConnectorsEndpoint(namespace, name, connector));
+		String connectorStatusEndpoint = String.format("%s/status", this.computeConnectorsEndpoint(domain, product, name, connector));
 		return this.executeRest(connectorStatusEndpoint, HttpMethod.GET, HttpStatus.OK);
 	}
 
 	public Boolean restartConnector(
-			String namespace,
+			String domain,
+			String product,
 			String name,
 			String connector) {
 
-		String connectorRestartEndpoint = String.format("%s/restart", this.computeConnectorsEndpoint(namespace, name, connector));
+		String connectorRestartEndpoint = String.format("%s/restart", this.computeConnectorsEndpoint(domain, product, name, connector));
 		this.executeRest(connectorRestartEndpoint, HttpMethod.POST, HttpStatus.NO_CONTENT);
 		return true;
 	}
 
 	public Boolean pauseConnector(
-			String namespace,
+			String domain,
+			String product,
 			String name,
 			String connector) {
 
-		String connectorPauseEndpoint = String.format("%s/pause", this.computeConnectorsEndpoint(namespace, name, connector));
+		String connectorPauseEndpoint = String.format("%s/pause", this.computeConnectorsEndpoint(domain, product, name, connector));
 		this.executeRest(connectorPauseEndpoint, HttpMethod.PUT, HttpStatus.ACCEPTED);
 		return true;
 	}
 
 	public Boolean resumeConnector(
-			String namespace,
+			String domain,
+			String product,
 			String name,
 			String connector) {
 
-		String connectorResumeEndpoint = String.format("%s/resume", this.computeConnectorsEndpoint(namespace, name, connector));
+		String connectorResumeEndpoint = String.format("%s/resume", this.computeConnectorsEndpoint(domain, product, name, connector));
 		this.executeRest(connectorResumeEndpoint, HttpMethod.PUT, HttpStatus.ACCEPTED);
 		return true;
 	}
 
 	public Boolean restartConnectorTask(
-			String namespace,
+			String domain,
+			String product,
 			String name,
 			String connector,
 			String task) {
 
 		String connectorTaskRestartEndpoint = String.format(
 				"%s/tasks/%s/restart",
-				this.computeConnectorsEndpoint(namespace, name, connector),
+				this.computeConnectorsEndpoint(domain, product, name, connector),
 				task
 		);
 		this.executeRest(connectorTaskRestartEndpoint, HttpMethod.POST, HttpStatus.NO_CONTENT);
@@ -139,11 +143,11 @@ public class ConnectorService {
 	}
 
 	public List<ConnectorOperationStatus> deleteConnectors(
-			String subtype,
-			String namespace,
+			String domain,
+			String product,
 			String name) {
 
-		SchemaEntity schema = this.computeSchema(subtype, namespace, name);
+		SchemaEntity schema = this.computeSchema(domain, product, name);
 		return this.deleteSchemaConnectors(schema);
 	}
 
@@ -160,23 +164,23 @@ public class ConnectorService {
 				.map(JoyceSchemaImportMetadataExtra::getConnectors)
 				.orElse(new ArrayList<>()).stream()
 				.collect(Collectors.toMap(
-						connector -> this.computeConnectorName(metadata.getNamespace(), metadata.getName(), connector.getName()),
+						connector -> this.computeConnectorName(metadata.getDomain(), metadata.getProduct(), metadata.getName(), connector.getName()),
 						Function.identity()
 				));
 	}
 
 	private List<String> computeExistingConnectors(JoyceSchemaMetadata metadata) {
-		String connectorPrefix = this.computeConnectorPrefix(metadata.getNamespace(), metadata.getName());
+		String connectorPrefix = this.computeConnectorPrefix(metadata.getDomain(), metadata.getProduct(), metadata.getName());
 		List<String> existingConnectors = this.executeRestWithResponse(this.computeConnectorsEndpoint(), HttpMethod.GET, HttpStatus.OK);
 		return existingConnectors.stream()
 				.filter(connector -> connector.startsWith(connectorPrefix))
 				.collect(Collectors.toList());
 	}
 
-	private SchemaEntity computeSchema(String subtype, String namespace, String name) {
-		JoyceURI.Subtype joyceUriSubtype = JoyceURI.Subtype.getOrElseThrow(subtype);
-		JoyceURI schemaUri = JoyceURI.makeNamespaced(JoyceURI.Type.SCHEMA, joyceUriSubtype, namespace, name);
-		return schemaService.getOrElseThrow(schemaUri.toString());
+	private SchemaEntity computeSchema(String domain, String product, String name) {
+		return schemaService.getOrElseThrow(
+				JoyceURIFactory.getInstance().createSchemaURIOrElseThrow(domain, product, name).toString()
+		);
 	}
 
 	private List<JoyceSchemaMetadataExtraConnector> computeSchemaConnectors(SchemaEntity schema) {
@@ -235,7 +239,7 @@ public class ConnectorService {
 		List<ConnectorOperationStatus> statusList = new ArrayList<>();
 		connectors.stream()
 				.map(JoyceSchemaMetadataExtraConnector::getName)
-				.map(connector -> this.computeConnectorName(metadata.getNamespace(), metadata.getName(), connector))
+				.map(connector -> this.computeConnectorName(metadata.getDomain(), metadata.getProduct(), metadata.getName(), connector))
 				.forEach(connectorName -> this.executeConnectorOperation(
 						this.computeConnectorsEndpoint(connectorName),
 						connectorName,
@@ -300,7 +304,12 @@ public class ConnectorService {
 			JoyceSchemaMetadata metadata,
 			JoyceSchemaMetadataExtraConnector connector) {
 
-		JoyceURI schemaUri = JoyceURI.makeNamespaced(JoyceURI.Type.SCHEMA, metadata.getSubtype(), metadata.getNamespace(), metadata.getName());
+		JoyceSchemaURI schemaUri = JoyceURIFactory.getInstance().createSchemaURIOrElseThrow(
+				metadata.getDomain(),
+				metadata.getProduct(),
+				metadata.getName()
+		);
+
 		enrichedConfig.put(TRANSFORMS, transforms);
 		enrichedConfig.put(TRANSFORMS_JOYCE_KEY_UID, connector.getImportKeyUid());
 		enrichedConfig.put(TRANSFORMS_JOYCE_KEY_SOURCE, connector.getName());
@@ -380,18 +389,18 @@ public class ConnectorService {
 				return String.format("http://%s/connectors", kafkaConnectHost);
 			case 1:
 				return String.format("http://%s/connectors/%s", kafkaConnectHost, parts[0]);
-			case 3:
-				return String.format("http://%s/connectors/%s", kafkaConnectHost, this.computeConnectorName(parts[0], parts[1], parts[2]));
+			case 4:
+				return String.format("http://%s/connectors/%s", kafkaConnectHost, this.computeConnectorName(parts[0], parts[1], parts[2], parts[3]));
 			default:
 				return StringUtils.EMPTY;
 		}
 	}
 
-	private String computeConnectorName(String namespace, String name, String connector) {
-		return this.computeConnectorPrefix(namespace, name) + connector;
+	private String computeConnectorName(String domain, String product, String name, String connector) {
+		return this.computeConnectorPrefix(domain, product, name) + connector;
 	}
 
-	private String computeConnectorPrefix(String namespace, String name) {
-		return namespace + NAMESPACE_SEPARATOR + name + NAMESPACE_SEPARATOR;
+	private String computeConnectorPrefix(String domain, String product, String name) {
+		return String.format("%s:%s:%s:", domain, product, name);
 	}
 }

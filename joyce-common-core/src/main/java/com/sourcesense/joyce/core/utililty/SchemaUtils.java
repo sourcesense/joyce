@@ -20,9 +20,9 @@ import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.sourcesense.joyce.core.exception.InvalidMetadataException;
 import com.sourcesense.joyce.core.exception.SchemaParsingException;
-import com.sourcesense.joyce.core.model.JoyceSchemaMetadata;
-import com.sourcesense.joyce.core.model.JoyceSchemaMetadataExtra;
-import com.sourcesense.joyce.core.model.SchemaEntity;
+import com.sourcesense.joyce.core.model.entity.JoyceSchemaMetadata;
+import com.sourcesense.joyce.core.model.entity.JoyceSchemaMetadataExtra;
+import com.sourcesense.joyce.core.model.entity.SchemaEntity;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Component;
 

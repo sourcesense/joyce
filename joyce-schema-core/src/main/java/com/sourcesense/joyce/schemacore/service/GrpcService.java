@@ -5,6 +5,7 @@ import com.sourcesense.joyce.core.exception.handler.CustomExceptionHandler;
 import io.grpc.stub.StreamObserver;
 
 import java.util.List;
+import java.util.Optional;
 import java.util.function.Function;
 
 public interface GrpcService {
@@ -16,8 +17,9 @@ public interface GrpcService {
 			Function<REQ, RES> requestHandler) {
 
 		try {
-			RES response = requestHandler.apply(request);
-			responseObserver.onNext(response);
+			Optional.ofNullable(request)
+					.map(requestHandler)
+					.ifPresent(responseObserver::onNext);
 
 		} catch (Exception exception) {
 			customExceptionHandler.handleException(exception);

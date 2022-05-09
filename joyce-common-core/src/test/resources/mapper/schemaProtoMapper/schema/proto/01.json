@@ -1,0 +1,26 @@
+{
+  "uid": "joyce:content:test:default:user:schema",
+  "schema": "https://joyce.sourcesense.com/v1/schema",
+  "metadata": {
+    "type": "import",
+    "domain": "test",
+    "product": "default",
+    "name": "user",
+    "description": "A test schema",
+    "development": true,
+    "store": "true",
+    "validation": "true",
+    "indexed": "true",
+    "connectors": "false",
+    "export": "false",
+    "uidKey": "id",
+    "collection": "test-default-user"
+  },
+  "type": "object",
+  "properties": {
+    "id": {
+      "type": "integer",
+      "$path": "$.id"
+    }
+  }
+}

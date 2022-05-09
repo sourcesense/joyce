@@ -14,8 +14,8 @@ import static java.lang.annotation.RetentionPolicy.RUNTIME;
  * {@link NotificationAspect}
  * that will send a notification to kafka notification topic using
  * the data retrieved by the method parameters annotated with:
- * {@link RawUri}
- * {@link ContentUri}
+ * {@link SourceUri}
+ * {@link DocumentUri}
  * {@link EventPayload}
  * {@link EventMetadata}
  */

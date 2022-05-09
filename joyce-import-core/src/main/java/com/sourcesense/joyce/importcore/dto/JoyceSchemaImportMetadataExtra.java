@@ -1,9 +1,8 @@
 package com.sourcesense.joyce.importcore.dto;
 
-import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.node.TextNode;
-import com.sourcesense.joyce.core.model.JoyceSchemaMetadataExtra;
-import com.sourcesense.joyce.core.model.JoyceSchemaMetadataExtraConnector;
+import com.sourcesense.joyce.core.model.entity.JoyceSchemaMetadataExtra;
+import com.sourcesense.joyce.core.model.entity.JoyceSchemaMetadataExtraConnector;
 import lombok.Data;
 import lombok.EqualsAndHashCode;
 

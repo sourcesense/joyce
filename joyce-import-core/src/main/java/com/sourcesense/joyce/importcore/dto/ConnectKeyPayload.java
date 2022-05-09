@@ -16,6 +16,7 @@
 
 package com.sourcesense.joyce.importcore.dto;
 
+import com.sourcesense.joyce.core.model.uri.JoyceSchemaURI;
 import lombok.Data;
 
 /**
@@ -24,8 +25,8 @@ import lombok.Data;
  */
 @Data
 public class ConnectKeyPayload {
-	private String schema;
-	private String uid;
-	private String source;
 
+	private JoyceSchemaURI schema;
+	private String origin;
+	private String uid;
 }

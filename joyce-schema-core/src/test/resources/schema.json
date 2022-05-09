@@ -2,7 +2,7 @@
   "$schema": "https://joyce.sourcesensce.com/v1/schema",
   "$metadata": {
     "name": "test",
-    "subtype": "import",
+    "type": "import",
     "uid": "uid",
     "collection": "users"
   },

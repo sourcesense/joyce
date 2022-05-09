@@ -4,12 +4,12 @@ package com.sourcesense.joyce.sink.mongodb.service;
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.mongodb.client.model.IndexOptions;
-import com.sourcesense.joyce.core.annotation.ContentUri;
+import com.sourcesense.joyce.core.annotation.DocumentUri;
 import com.sourcesense.joyce.core.annotation.EventPayload;
 import com.sourcesense.joyce.core.annotation.Notify;
 import com.sourcesense.joyce.core.enumeration.NotificationEvent;
 import com.sourcesense.joyce.core.utililty.SchemaUtils;
-import com.sourcesense.joyce.core.model.SchemaEntity;
+import com.sourcesense.joyce.core.model.entity.SchemaEntity;
 import com.sourcesense.joyce.sink.mongodb.exception.MongodbSinkException;
 import com.sourcesense.joyce.core.configuration.mongo.MongodbProperties;
 import com.sourcesense.joyce.sink.mongodb.model.MongoIndex;
@@ -46,7 +46,7 @@ public class CollectionEnhancerService {
 	 */
 	@Notify(failureEvent = NotificationEvent.SINK_MONGODB_SCHEMA_PARSING_FAILED)
 	public <T> T computeSchema(
-			@ContentUri String schemaUri,
+			@DocumentUri String schemaUri,
 			@EventPayload JsonNode jsonSchema,
 			Class<T> clazz) {
 
@@ -70,12 +70,12 @@ public class CollectionEnhancerService {
 			failureEvent = NotificationEvent.SINK_MONGODB_CREATE_COLLECTION_FAILED
 	)
 	public void initCollection(
-			@ContentUri String schemaUri,
+			@DocumentUri String schemaUri,
 			@EventPayload SchemaEntity schema) {
 
 		log.debug("Creating collection '{}' for schema '{}'", schema.getMetadata().getCollection(), schemaUri);
-		if (!mongoTemplate.collectionExists(schema.getMetadata().getNamespacedCollection())) {
-			mongoTemplate.createCollection(schema.getMetadata().getNamespacedCollection());
+		if (!mongoTemplate.collectionExists(schema.getMetadata().getCollection())) {
+			mongoTemplate.createCollection(schema.getMetadata().getCollection());
 		}
 	}
 
@@ -92,14 +92,14 @@ public class CollectionEnhancerService {
 			failureEvent = NotificationEvent.SINK_MONGODB_UPDATE_VALIDATION_SCHEMA_FAILED
 	)
 	public void upsertCollectionValidator(
-			@ContentUri String schemaUri,
+			@DocumentUri String schemaUri,
 			@EventPayload SchemaEntity schema,
 			JsonSchemaEntry jsonSchemaEntry) {
 
 		if (schema.getMetadata().getValidation()) {
 			log.debug("Updating validation schema for schema: '{}'", schemaUri);
 			LinkedHashMap<String, Object> validatorCommand = new LinkedHashMap<>();
-			validatorCommand.put("collMod", schema.getMetadata().getNamespacedCollection());
+			validatorCommand.put("collMod", schema.getMetadata().getCollection());
 			validatorCommand.put("validator", this.computeValidationSchema(jsonSchemaEntry));
 			mongoTemplate.executeCommand(new Document(validatorCommand));
 		}
@@ -119,7 +119,7 @@ public class CollectionEnhancerService {
 			failureEvent = NotificationEvent.SINK_MONGODB_CREATE_INDEXES_FAILED
 	)
 	public void createIndexes(
-			@ContentUri String schemaUri,
+			@DocumentUri String schemaUri,
 			@EventPayload SchemaEntity schema) {
 
 		if (schema.getMetadata().getIndexed()) {
@@ -127,7 +127,7 @@ public class CollectionEnhancerService {
 			List<Map<String, Object>> fieldIndexes = schema.getMetadata().getIndexes();
 			this.insertIndexes(
 					this.computeMongoIndexes(fieldIndexes),
-					schema.getMetadata().getNamespacedCollection()
+					schema.getMetadata().getCollection()
 			);
 		}
 	}

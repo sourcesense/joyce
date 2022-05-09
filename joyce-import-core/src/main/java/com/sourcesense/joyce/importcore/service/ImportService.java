@@ -22,15 +22,18 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.databind.node.ObjectNode;
 import com.sourcesense.joyce.core.annotation.EventPayload;
 import com.sourcesense.joyce.core.annotation.Notify;
-import com.sourcesense.joyce.core.annotation.RawUri;
+import com.sourcesense.joyce.core.annotation.SourceUri;
 import com.sourcesense.joyce.core.enumeration.FileExtension;
 import com.sourcesense.joyce.core.enumeration.KafkaCustomHeaders;
 import com.sourcesense.joyce.core.enumeration.NotificationEvent;
-import com.sourcesense.joyce.core.exception.InvalidJoyceUriException;
+import com.sourcesense.joyce.core.enumeration.uri.JoyceURIChannel;
 import com.sourcesense.joyce.core.exception.InvalidMetadataException;
-import com.sourcesense.joyce.core.model.JoyceSchemaMetadata;
-import com.sourcesense.joyce.core.model.JoyceURI;
-import com.sourcesense.joyce.core.model.SchemaEntity;
+import com.sourcesense.joyce.core.model.entity.JoyceSchemaMetadata;
+import com.sourcesense.joyce.core.model.entity.SchemaEntity;
+import com.sourcesense.joyce.core.model.uri.JoyceDocumentURI;
+import com.sourcesense.joyce.core.model.uri.JoyceSchemaURI;
+import com.sourcesense.joyce.core.model.uri.JoyceSourceURI;
+import com.sourcesense.joyce.core.model.uri.JoyceURIFactory;
 import com.sourcesense.joyce.core.producer.ContentProducer;
 import com.sourcesense.joyce.core.service.CsvMappingService;
 import com.sourcesense.joyce.core.utililty.SchemaUtils;
@@ -46,6 +49,7 @@ import io.opentracing.Span;
 import io.opentracing.util.GlobalTracer;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import org.apache.commons.lang3.ObjectUtils;
 import org.apache.commons.lang3.StringUtils;
 import org.springframework.stereotype.Service;
 import org.springframework.web.multipart.MultipartFile;
@@ -87,61 +91,75 @@ public class ImportService {
 	 * @throws JsonProcessingException parsing exception
 	 */
 	@Notify(failureEvent = NotificationEvent.IMPORT_FAILED_INVALID_MESSAGE_KEY)
-	public JoyceURI computeRawURI(
-			@RawUri String messageKey,
+	public JoyceSourceURI computeSourceURI(
+			@SourceUri String messageKey,
 			Map<String, String> headers) throws JsonProcessingException {
 
 		if (headers.get(KafkaCustomHeaders.IMPORT_SCHEMA) == null) {
-
 			ConnectKeyPayload key = jsonMapper.readValue(messageKey, ConnectKeyPayload.class);
-			checkValidKey(key);
-			return JoyceURI.make(JoyceURI.Type.RAW, JoyceURI.Subtype.OTHER, key.getSource(), key.getUid());
+			this.checkValidKey(key);
+			return JoyceURIFactory.getInstance().createSourceURIOrElseThrow(
+					key.getSchema().getDomain(),
+					key.getSchema().getProduct(),
+					key.getSchema().getName(),
+					JoyceURIChannel.CONNECT,
+					key.getOrigin(),
+					key.getUid()
+			);
 		}
-
-		return JoyceURI.createURI(messageKey)
-				.orElseThrow(() -> new InvalidJoyceUriException(String.format("Uri [%s] is not a valid Joyce Uri", messageKey)));
+		return JoyceURIFactory.getInstance().createURIOrElseThrow(messageKey, JoyceSourceURI.class);
 	}
 
 	/**
 	 * Builds the uri of the schema that will be used to process the message
+	 * Builds the schema uri in two different ways:
+	 * 1)If import schema is in kafka headers we use that one. (joyce connector)
+	 * 2)Else we will receive the key as a JsonNode (kafka connect)
 	 *
 	 * @param messageKey the key associated with the consumed kafka message
 	 * @param headers    headers associated with the consumed kafka message. Obtaining the schema value from the headers
 	 *                   will be suppressed in future releases and only the message key value will be used to calculate
 	 *                   the JoyceURI
-	 * @param rawUri     Uri used to trace the message if an error happens
+	 * @param sourceURI  Uri used to trace the message if an error happens
 	 * @return Uri calculated starting from the schema value present in the message key or in the headers.
 	 * @throws JsonProcessingException parsing exception
 	 */
 	@Notify(failureEvent = NotificationEvent.IMPORT_FAILED_INVALID_SCHEMA)
-	public JoyceURI computeValidSchemaUri(
+	public JoyceSchemaURI computeSchemaURI(
 			String messageKey,
 			Map<String, String> headers,
-			@RawUri JoyceURI rawUri) throws JsonProcessingException {
+			@SourceUri JoyceSourceURI sourceURI) throws JsonProcessingException {
 
-		return this.computeSchemaUri(messageKey, headers)
-				.filter(joyceURI -> JoyceURI.Subtype.IMPORT.equals(joyceURI.getSubtype()))
-				.orElseThrow(
-						() -> new InvalidJoyceUriException(
-								String.format("Schema is not a valid schema uri. key: %s", messageKey))
-				);
+		// If we have the header we're receiving messages from a joyce connector
+		String stringURI = headers.get(KafkaCustomHeaders.IMPORT_SCHEMA);
+		if (stringURI != null) {
+			return JoyceURIFactory.getInstance().createURIOrElseThrow(stringURI, JoyceSchemaURI.class);
+
+			// else we expect to have a key in json format in the format of ConnectKeyPayload and derive from that the
+			// information we need.
+			// It's the case of using plain kafka connect
+		} else {
+			ConnectKeyPayload key = jsonMapper.readValue(messageKey, ConnectKeyPayload.class);
+			checkValidKey(key);
+			return key.getSchema();
+		}
 	}
 
 	/**
 	 * Uses the schema uri to fetch the schema.
 	 *
 	 * @param schemaUri Computed schema uri
-	 * @param rawUri    Uri used to trace the message if an error happens
+	 * @param sourceURI    Uri used to trace the message if an error happens
 	 * @return Schema used to process raw message
 	 */
 	@Notify(failureEvent = NotificationEvent.IMPORT_FAILED_INVALID_SCHEMA)
 	public SchemaEntity computeSchema(
-			JoyceURI schemaUri,
-			@RawUri JoyceURI rawUri) {
+			JoyceSchemaURI schemaUri,
+			@SourceUri JoyceSourceURI sourceURI) {
 
 		return schemaService.getOrElseThrow(
-				schemaUri.getSubtype(),
-				schemaUri.getNamespace(),
+				schemaUri.getDomain(),
+				schemaUri.getProduct(),
 				schemaUri.getName()
 		);
 	}
@@ -149,14 +167,14 @@ public class ImportService {
 	/**
 	 * Process a document with the schema specified and processImport it on joyce_content topic
 	 *
-	 * @param rawUri   Uri used to trace the message if an error happens
-	 * @param document Raw message payload
-	 * @param schema   Schema used to process raw message
+	 * @param sourceURI Uri used to trace the message if an error happens
+	 * @param document  Raw message payload
+	 * @param schema    Schema used to process raw message
 	 * @return true if the operation succeeded
 	 */
 	@Notify(failureEvent = NotificationEvent.IMPORT_INSERT_FAILED)
 	public SingleImportResult processImport(
-			@RawUri JoyceURI rawUri,
+			@SourceUri JoyceSourceURI sourceURI,
 			@EventPayload JsonNode document,
 			SchemaEntity schema) {
 
@@ -164,7 +182,7 @@ public class ImportService {
 		if (jsonLogicService.filter(document, metadata)) {
 
 			Span span = GlobalTracer.get().buildSpan("process").start();
-			span.setTag("uri", this.computeTracerUri(rawUri));
+			span.setTag("uri", Objects.nonNull(sourceURI) ? sourceURI.toString() : StringUtils.EMPTY);
 
 			JsonNode result = schemaEngine.process(schema, document, null);
 
@@ -172,30 +190,30 @@ public class ImportService {
 					.ifPresent(parentMetadata -> {
 						metadata.setUidKey(parentMetadata.getUidKey());
 						metadata.setCollection(parentMetadata.getCollection());
-						metadata.setNamespace(parentMetadata.getNamespace());
+						metadata.setDomain(parentMetadata.getDomain());
+						metadata.setProduct(parentMetadata.getProduct());
 					});
 
-			JoyceURI contentURI = computeContentURI(result, metadata);
+			JoyceDocumentURI contentURI = this.computeDocumentURI(result, metadata);
 			span.finish();
 
-			contentProducer.publish(schema, rawUri, contentURI, result, metadata);
-			return SingleImportResult.builder().uri(rawUri).processStatus(ProcessStatus.IMPORTED).build();
+			contentProducer.publish(schema, sourceURI.toString(), contentURI.toString(), result, metadata);
+			return SingleImportResult.builder().uri(sourceURI).processStatus(ProcessStatus.IMPORTED).build();
 
 		} else {
-			log.info("Document with uri {} wasn't processed cause it didn't pass metadata filter.", rawUri);
-			return SingleImportResult.builder().uri(rawUri).processStatus(ProcessStatus.SKIPPED).build();
+			log.info("Document with uri {} wasn't processed cause it didn't pass metadata filter.", sourceURI);
+			return SingleImportResult.builder().uri(sourceURI).processStatus(ProcessStatus.SKIPPED).build();
 		}
 	}
 
 	@Notify(successEvent = NotificationEvent.IMPORT_BULK_INSERT_FAILED_INVALID_FILE)
 	public List<JsonNode> computeDocumentsFromFile(
-			@RawUri JoyceURI rawUri,
+			@SourceUri JoyceSourceURI sourceURI,
 			MultipartFile data,
 			Character columnSeparator,
 			String arraySeparator) throws IOException {
 
 		FileExtension fileExtension = FileExtension.getFileExtensionFromName(data.getOriginalFilename());
-
 		switch (fileExtension) {
 			case CSV:
 				return csvMappingService.convertCsvFileToDocuments(data, columnSeparator, arraySeparator);
@@ -210,7 +228,7 @@ public class ImportService {
 
 	@Notify(successEvent = NotificationEvent.IMPORT_BULK_INSERT_SUCCESS)
 	public BulkImportResult notifyBulkImportSuccess(
-			@RawUri JoyceURI rawUri,
+			@SourceUri JoyceSourceURI sourceURI,
 			@EventPayload BulkImportResult report) {
 
 		return report;
@@ -220,18 +238,17 @@ public class ImportService {
 	 * Sends a message to kafka content topic that contains everything is needed to
 	 * trigger document removal.
 	 *
-	 * @param rawUri   Uri used to trace the message if an error happens
+	 * @param sourceURI   Uri used to trace the message if an error happens
 	 * @param document Raw message payload
 	 * @param schema   Schema used to process raw message
 	 */
 	@Notify(failureEvent = NotificationEvent.IMPORT_REMOVE_FAILED)
 	public SingleImportResult removeDocument(
-			@RawUri JoyceURI rawUri,
+			@SourceUri JoyceSourceURI sourceURI,
 			@EventPayload ObjectNode document,
 			SchemaEntity schema) {
 
 		JoyceSchemaMetadata metadata = schemaUtils.metadataFromSchemaOrElseThrow(schema);
-
 		JsonNode result = schemaEngine.process(schema, document, null);
 
 		computeParentMetadata(metadata, result, false)
@@ -240,11 +257,11 @@ public class ImportService {
 					metadata.setCollection(parentMetadata.getCollection());
 				});
 
-		JoyceURI contentURI = computeContentURI(result, metadata);
+		JoyceDocumentURI documentURI = computeDocumentURI(result, metadata);
 
-		contentProducer.remove(rawUri, contentURI, metadata);
+		contentProducer.remove(sourceURI.toString(), documentURI.toString(), metadata);
 		return SingleImportResult.builder()
-				.uri(rawUri)
+				.uri(sourceURI)
 				.processStatus(ProcessStatus.DELETED)
 				.build();
 	}
@@ -254,18 +271,18 @@ public class ImportService {
 	 * trigger document removal.
 	 * Used by {@link com.sourcesense.joyce.importcore.consumer.ImportConsumer}
 	 *
-	 * @param rawUri Uri used to trace the message if an error happens
+	 * @param sourceURI Uri used to trace the message if an error happens
 	 * @param schema Schema used to process raw message
 	 */
 	@Notify(failureEvent = NotificationEvent.IMPORT_REMOVE_FAILED)
 	public void removeDocument(
-			@RawUri JoyceURI rawUri,
+			@SourceUri JoyceSourceURI sourceURI,
 			SchemaEntity schema) {
 
 		if (Objects.isNull(schema.getMetadata())) {
 			throw new InvalidMetadataException("Schema has no metadata, cannot remove document");
 		}
-		contentProducer.remove(rawUri, schema.getMetadata());
+		contentProducer.remove(sourceURI.toString(), schema.getMetadata());
 	}
 
 	/**
@@ -276,51 +293,26 @@ public class ImportService {
 	 * @return Processed message
 	 */
 	public SingleImportResult importDryRun(
-			JoyceURI rawUri,
+			JoyceSourceURI sourceURI,
 			JsonNode document,
 			SchemaEntity schema) {
-
 
 		JoyceSchemaMetadata metadata = schemaUtils.metadataFromSchemaOrElseThrow(schema);
 		if (jsonLogicService.filter(document, metadata)) {
 
 			JsonNode result = schemaEngine.process(schema, document, null);
-
 			return SingleImportResult.builder()
-					.uri(rawUri)
+					.uri(sourceURI)
 					.processStatus(ProcessStatus.IMPORTED)
 					.result(result)
 					.build();
 
 		} else {
-			log.info("Document with uri {} wasn't processed cause it didn't pass metadata filter.", rawUri);
-			return SingleImportResult.builder().uri(rawUri).processStatus(ProcessStatus.SKIPPED).build();
-		}
-	}
-
-	/**
-	 * Builds the schema uri in two different ways:
-	 * 1)If import schema is in kafka headers we use that one. (joyce connector)
-	 * 2)Else we will receive the key as a JsonNode (kafka connect)
-	 *
-	 * @param messageKey message key
-	 * @param headers headers
-	 * @return Optional Schema Uri
-	 * @throws JsonProcessingException parsing exception
-	 */
-	private Optional<JoyceURI> computeSchemaUri(String messageKey, Map<String, String> headers) throws JsonProcessingException {
-
-		// If we have the header we're receiving messages from a joyce connector
-		if (headers.get(KafkaCustomHeaders.IMPORT_SCHEMA) != null) {
-			return JoyceURI.createURI(headers.get(KafkaCustomHeaders.IMPORT_SCHEMA));
-
-			// else we expect to have a key in json format in the format of ConnectKeyPayload and derive from that the
-			// information we need.
-			// It's the case of using plain kafka connect
-		} else {
-			ConnectKeyPayload key = jsonMapper.readValue(messageKey, ConnectKeyPayload.class);
-			checkValidKey(key);
-			return JoyceURI.createURI(key.getSchema());
+			log.info("Document with uri {} wasn't processed cause it didn't pass metadata filter.", sourceURI);
+			return SingleImportResult.builder()
+					.uri(sourceURI)
+					.processStatus(ProcessStatus.SKIPPED)
+					.build();
 		}
 	}
 
@@ -328,37 +320,30 @@ public class ImportService {
 	 * Build the content uri that will be used as key when
 	 * we will send the processed message to kafka content topic
 	 *
-	 * @param result result
+	 * @param result   result
 	 * @param metadata metadata
 	 * @return Content uri
 	 */
-	private JoyceURI computeContentURI(JsonNode result, JoyceSchemaMetadata metadata) {
-		String uid = Optional.ofNullable(result.get(metadata.getUidKey()))
+	private JoyceDocumentURI computeDocumentURI(JsonNode result, JoyceSchemaMetadata metadata) {
+		String uid = Optional.ofNullable(metadata.getUidKey())
+				.map(result::get)
 				.orElseThrow(() -> new InvalidMetadataException(
 						String.format("Missing [%s] key from document, cannot processImport document", metadata.getUidKey()))
 				).asText();
 
-		return JoyceURI.make(JoyceURI.Type.CONTENT, metadata.getSubtype(), metadata.getNamespacedCollection(), uid);
+		return JoyceURIFactory.getInstance().createDocumentURIOrElseThrow(
+				metadata.getDomain(),
+				metadata.getProduct(),
+				metadata.getName(),
+				uid
+		);
 	}
-
-//	/**
-//	 * Retrieves the metadata from the schema
-//	 *
-//	 * @param schema
-//	 * @return Schema metadata
-//	 */
-//	private JoyceSchemaMetadata computeMetadata(JsonNode schema) {
-//		return Optional.ofNullable(schema)
-//				.map(s -> s.get(SchemaEngine.METADATA))
-//				.map(metadataNode -> mapper.convertValue(metadataNode, JoyceSchemaMetadata.class))
-//				.orElseThrow(() -> new InvalidMetadataException("Schema has no metadata"));
-//	}
 
 	/**
 	 * Retrieves the parent metadata from the schema
 	 *
 	 * @param metadata metadata
-	 * @param result result
+	 * @param result   result
 	 * @param validate validate
 	 * @return Optional schema parent metadata
 	 */
@@ -367,7 +352,6 @@ public class ImportService {
 		 * If schema has a parent we validate with the parent
 		 * and change some metadata with metadata from the parent
 		 */
-
 		if (metadata.getParent() != null) {
 			SchemaEntity parent = this.computeParentSchema(metadata);
 
@@ -388,27 +372,20 @@ public class ImportService {
 	private SchemaEntity computeParentSchema(JoyceSchemaMetadata metadata) {
 		return Optional.of(metadata)
 				.map(JoyceSchemaMetadata::getParent)
-				.map(JoyceURI::toString)
+				.map(JoyceSchemaURI::toString)
 				.flatMap(schemaService::get)
 				.orElseThrow(() -> new JoyceSchemaEngineException(
 						String.format("Parent schema [%s] does not exists", metadata.getParent())
 				));
 	}
 
-	private String computeTracerUri(JoyceURI rawUri) {
-		return Optional.ofNullable(rawUri)
-				.map(JoyceURI::toString)
-				.orElse("");
-	}
-
 	/**************** UTILITY METHODS *******************/
 
 	private void checkValidKey(ConnectKeyPayload key) {
-
-		if (StringUtils.isEmpty(key.getSchema())) {
+		if (Objects.isNull(key.getSchema())) {
 			throw new ImportException("Missing [schema] from key");
 		}
-		if (StringUtils.isEmpty(key.getSource())) {
+		if (StringUtils.isEmpty(key.getOrigin())) {
 			throw new ImportException("Missing [source] from key");
 		}
 		if (StringUtils.isEmpty(key.getUid())) {

@@ -27,70 +27,62 @@ import org.springframework.util.concurrent.ListenableFuture;
 import org.springframework.util.concurrent.ListenableFutureCallback;
 
 @RequiredArgsConstructor
-public abstract class KafkaMessageProducer<Z,T> {
+public abstract class KafkaMessageProducer<Z, T> {
 
-    protected final ObjectMapper jsonMapper;
-    private final KafkaTemplate<Z, T> kafkaTemplate;
+	protected final ObjectMapper jsonMapper;
+	private final KafkaTemplate<Z, T> kafkaTemplate;
 
-    public abstract void handleMessageSuccess(
-            Message<T> message,
-            SendResult<Z, T> result,
-            String rawUri,
-            String contentUri,
-            T eventPayload,
-            JsonNode eventMetadata
-    );
+	public abstract void handleMessageSuccess(
+			Message<T> message,
+			SendResult<Z, T> result,
+			String sourceURI,
+			String documentURI,
+			T eventPayload,
+			JsonNode eventMetadata
+	);
 
-    public abstract void handleMessageFailure(
-            Message<T> message,
-            Throwable throwable,
-            String rawUri,
-            String contentUri,
-            T eventPayload,
-            JsonNode eventMetadata);
+	public abstract void handleMessageFailure(
+			Message<T> message,
+			Throwable throwable,
+			String sourceURI,
+			String documentURI,
+			T eventPayload,
+			JsonNode eventMetadata);
 
-    protected ListenableFuture<SendResult<Z, T>> sendMessage(String rawUri, String contentUri, Message<T> message) {
-			ListenableFuture<SendResult<Z, T>> future = kafkaTemplate.send(message);
-			future.addCallback(new ListenableFutureCallback<>() {
+	protected ListenableFuture<SendResult<Z, T>> sendMessage(String sourceURI, String documentURI, Message<T> message) {
+		ListenableFuture<SendResult<Z, T>> future = kafkaTemplate.send(message);
+		future.addCallback(new ListenableFutureCallback<>() {
 
-				@Override
-				public void onSuccess(SendResult<Z, T> result) {
-					handleMessageSuccess(
-							message,
-							result,
-							rawUri,
-							contentUri,
-							message.getPayload(),
-							formatRecordMetadata(result.getRecordMetadata())
-					);
-				}
+			@Override
+			public void onSuccess(SendResult<Z, T> result) {
+				handleMessageSuccess(
+						message, result, sourceURI, documentURI,
+						message.getPayload(), formatRecordMetadata(result.getRecordMetadata())
+				);
+			}
 
-				@Override
-				public void onFailure(Throwable throwable) {
-					handleMessageFailure(
-							message,
-							throwable,
-							rawUri,
-							contentUri,
-							message.getPayload(),
-							formatError(throwable.getMessage())
-					);
-				}
-			});
+			@Override
+			public void onFailure(Throwable throwable) {
+				handleMessageFailure(
+						message, throwable, sourceURI, documentURI,
+						message.getPayload(), formatError(throwable.getMessage())
+				);
+			}
+		});
 
-			return future;
-    }
+		return future;
+	}
 
-    protected JsonNode formatRecordMetadata(RecordMetadata recordMetadata) {
-        return jsonMapper.createObjectNode()
-                .put("topic", recordMetadata.topic())
-                .put("partition", recordMetadata.partition())
-                .put("offset", recordMetadata.offset())
-                .put("timestamp", recordMetadata.timestamp());
-    }
+	protected JsonNode formatRecordMetadata(RecordMetadata recordMetadata) {
+		return jsonMapper.createObjectNode()
+				.put("topic", recordMetadata.topic())
+				.put("partition", recordMetadata.partition())
+				.put("offset", recordMetadata.offset())
+				.put("timestamp", recordMetadata.timestamp());
+	}
 
-    protected JsonNode formatError(String error) {
-        return jsonMapper.createObjectNode()
-                .put("error", error);
-    }
+	protected JsonNode formatError(String error) {
+		return jsonMapper.createObjectNode()
+				.put("error", error);
+	}
 }

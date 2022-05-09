@@ -18,10 +18,13 @@ package com.sourcesense.joyce.importcore.consumer;
 
 import com.fasterxml.jackson.databind.node.ObjectNode;
 import com.sourcesense.joyce.core.enumeration.ImportAction;
+import com.sourcesense.joyce.core.enumeration.JoyceSchemaType;
 import com.sourcesense.joyce.core.enumeration.KafkaCustomHeaders;
+import com.sourcesense.joyce.core.exception.InvalidMetadataException;
 import com.sourcesense.joyce.core.exception.handler.CustomExceptionHandler;
-import com.sourcesense.joyce.core.model.JoyceURI;
-import com.sourcesense.joyce.core.model.SchemaEntity;
+import com.sourcesense.joyce.core.model.entity.SchemaEntity;
+import com.sourcesense.joyce.core.model.uri.JoyceSchemaURI;
+import com.sourcesense.joyce.core.model.uri.JoyceSourceURI;
 import com.sourcesense.joyce.importcore.service.ImportService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.kafka.annotation.KafkaListener;
@@ -56,19 +59,23 @@ public class ImportConsumer {
 			@Headers Map<String, String> headers) {
 
 		try {
-			JoyceURI rawURI = importService.computeRawURI(messageKey, headers);
-			JoyceURI schemaURI = importService.computeValidSchemaUri(messageKey, headers, rawURI);
-			SchemaEntity schema = importService.computeSchema(schemaURI, rawURI);
+			JoyceSourceURI sourceURI = importService.computeSourceURI(messageKey, headers);
+			JoyceSchemaURI schemaURI = importService.computeSchemaURI(messageKey, headers, sourceURI);
+			SchemaEntity schema = importService.computeSchema(schemaURI, sourceURI);
 
-			//TODO: understand how to deal with deletion with kafka connect ingested
+			if(!JoyceSchemaType.IMPORT.equalsIgnoreCase(schema.getMetadata().getType())) {
+				throw new InvalidMetadataException(String.format(
+						"Impossible to consume message %s, schema %s isn't an import scheme", sourceURI, schemaURI
+				));
+			}
+
 			String action = headers.getOrDefault(KafkaCustomHeaders.MESSAGE_ACTION, ImportAction.INSERT.name());
-
 			switch (ImportAction.valueOf(action)) {
 				case DELETE:
-					importService.removeDocument(rawURI, schema);
+					importService.removeDocument(sourceURI, schema);
 					break;
 				case INSERT:
-					importService.processImport(rawURI, message, schema);
+					importService.processImport(sourceURI, message, schema);
 					break;
 			}
 		} catch (Exception exception) {

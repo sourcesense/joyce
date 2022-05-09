@@ -1,5 +1,5 @@
 {
-  "uid": "joyce://schema/import/enhanced-user",
+  "uid": "joyce:content:test:default:enhanced-user:schema",
   "type": "object",
   "required": null,
   "properties": {
@@ -9,12 +9,13 @@
   },
   "$schema": "https://joyce.sourcesensce.com/v1/schema",
   "$metadata": {
-    "subtype": "import",
-    "collection": "enhanced-users",
+    "domain": "test",
+    "product": "default",
     "name": "enhanced-user",
+    "collection": "test-default-enhanced-users",
     "description": "A test schema",
     "development": true,
-    "parent": "joyce://schema/import/user",
+    "parent": "joyce:content:test:default:user:schema",
     "uid": "code"
   }
 }

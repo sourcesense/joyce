@@ -1,0 +1,13 @@
+{
+  "$schema": "https://joyce.sourcesense.com/v1/schema",
+  "$metadata": {
+    "parent": "joyce:content:test:default:parent:schema"
+  },
+  "type": "object",
+  "properties": {
+    "field": {
+      "type": "string",
+      "$path": "$.field"
+    }
+  }
+}

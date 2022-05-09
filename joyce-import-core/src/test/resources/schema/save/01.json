@@ -1,16 +1,17 @@
 {
   "$schema": "https://joyce.sourcesense.com/v1/schema",
   "$metadata": {
-    "subtype": "import",
+    "type": "import",
+    "domain": "test",
+    "product": "default",
+    "name": "user",
+    "collection": "test-default-user",
     "uid": "id",
-    "namespace": "test",
-    "name": "schema",
-    "collection": "schema",
     "description": "Notizie feed del corriere",
     "extra": {
       "connectors": [
         {
-          "name": "connector",
+          "name": "user-connector",
           "importKeyUid": "id",
           "config": {
             "tasks.max": 3,

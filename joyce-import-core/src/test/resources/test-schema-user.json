@@ -1,5 +1,5 @@
 {
-  "uid": "joyce://schema/import/user",
+  "uid": "joyce:content:test:default:user:schema",
   "type": "object",
   "required": null,
   "properties": {
@@ -25,9 +25,10 @@
   },
   "$schema": "https://joyce.sourcesensce.com/v1/schema",
   "$metadata": {
-    "subtype": "import",
-    "collection": "users",
+    "domain": "test",
+    "product": "default",
     "name": "user",
+    "collection": "test-default-user",
     "description": "A test schema",
     "development": true,
     "parent": null,

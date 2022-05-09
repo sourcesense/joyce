@@ -1,10 +1,9 @@
 package com.sourcesense.joyce.schemacore.service;
 
 import com.google.protobuf.Empty;
-import com.sourcesense.joyce.core.mapping.mapper.SchemaProtoMapper;
-import com.sourcesense.joyce.core.model.SchemaEntity;
+import com.sourcesense.joyce.core.mapping.mapstruct.SchemaProtoMapper;
+import com.sourcesense.joyce.core.model.entity.SchemaEntity;
 import com.sourcesense.joyce.protobuf.api.*;
-import com.sourcesense.joyce.protobuf.model.Schema;
 import io.grpc.stub.StreamObserver;
 import lombok.RequiredArgsConstructor;
 
@@ -17,39 +16,20 @@ public abstract class SchemaGrpcService extends SchemaApiGrpc.SchemaApiImplBase 
 	protected final SchemaService schemaService;
 	protected final SchemaProtoMapper schemaMapper;
 
-	public void getSchema(
-			GetSchemaRequest request,
-			StreamObserver<GetSchemaResponse> responseObserver) {
-
+	public void getSchema(GetSchemaRequest request, StreamObserver<GetSchemaResponse> responseObserver) {
 		this.handleRequest(request, responseObserver, this::getSchema);
 	}
 
-	public void getAllSchemas(
-			GetAllSchemasRequest request,
-			StreamObserver<GetSchemasResponse> responseObserver) {
-
+	public void getAllSchemas(GetAllSchemasRequest request, StreamObserver<GetSchemasResponse> responseObserver) {
 		this.handleRequest(request, responseObserver, this::getAllSchemas);
 	}
 
-	public void getAllSchemasBySubtypeAndNamespace(
-			GetAllSchemasBySubtypeAndNamespaceRequest request,
-			StreamObserver<GetSchemasResponse> responseObserver) {
-
-		this.handleRequest(request, responseObserver, this::getAllSchemasBySubtypeAndNamespace);
+	public void getAllSchemasByDomainAndProduct(GetAllSchemasByDomainAndProductRequest request, StreamObserver<GetSchemasResponse> responseObserver) {
+		this.handleRequest(request, responseObserver, this::getAllSchemasByDomainAndProduct);
 	}
 
-	public void getAllSchemasByReportsIsNotEmpty(
-			Empty request,
-			StreamObserver<GetSchemasResponse> responseObserver) {
-
+	public void getAllSchemasByReportsIsNotEmpty(Empty request, StreamObserver<GetSchemasResponse> responseObserver) {
 		this.handleRequest(request, responseObserver, this::getAllSchemasByReportsIsNotEmpty);
-	}
-
-	public void getAllNamespaces(
-			Empty request,
-			StreamObserver<GetNamespacesResponse> responseObserver) {
-
-		this.handleRequest(request, responseObserver, this::getAllNamespaces);
 	}
 
 	private GetSchemaResponse getSchema(GetSchemaRequest request) {
@@ -57,7 +37,7 @@ public abstract class SchemaGrpcService extends SchemaApiGrpc.SchemaApiImplBase 
 				.map(schemaMapper::entityToProto)
 				.map(GetSchemaResponse.newBuilder()::setSchema)
 				.map(GetSchemaResponse.Builder::build)
-				.orElseGet(() -> GetSchemaResponse.newBuilder().setSchema((Schema) null).build());
+				.orElse(null);
 	}
 
 	private GetSchemasResponse getAllSchemas(GetAllSchemasRequest request) {
@@ -67,10 +47,10 @@ public abstract class SchemaGrpcService extends SchemaApiGrpc.SchemaApiImplBase 
 		return this.buildSchemasResponse(schemas);
 	}
 
-	private GetSchemasResponse getAllSchemasBySubtypeAndNamespace(GetAllSchemasBySubtypeAndNamespaceRequest request) {
-		List<SchemaEntity> schemas = schemaService.getAllBySubtypeAndNamespace(
-				schemaMapper.joyceUriSubtypeProtoToEntity(request.getSubtype()),
-				request.getNamespace(),
+	private GetSchemasResponse getAllSchemasByDomainAndProduct(GetAllSchemasByDomainAndProductRequest request) {
+		List<SchemaEntity> schemas = schemaService.getAllByDomainAndProduct(
+				request.getDomain(),
+				request.getProduct(),
 				Boolean.parseBoolean(request.getRootOnly())
 		);
 		return this.buildSchemasResponse(schemas);
@@ -81,20 +61,9 @@ public abstract class SchemaGrpcService extends SchemaApiGrpc.SchemaApiImplBase 
 		return this.buildSchemasResponse(schemas);
 	}
 
-	public GetNamespacesResponse getAllNamespaces(Empty request) {
-		List<String> namespaces = schemaService.getAllNamespaces();
-		return this.buildNamespacesResponse(namespaces);
-	}
-
 	private GetSchemasResponse buildSchemasResponse(List<SchemaEntity> schemas) {
 		return GetSchemasResponse.newBuilder()
 				.addAllSchemas(schemaMapper.entitiesToProtos(schemas))
-				.build();
-	}
-
-	private GetNamespacesResponse buildNamespacesResponse(List<String> namespaces) {
-		return GetNamespacesResponse.newBuilder()
-				.addAllNamespaces(namespaces)
 				.build();
 	}
 }

@@ -18,17 +18,16 @@ package com.sourcesense.joyce.schemacore.api;
 
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.JsonNode;
-import com.sourcesense.joyce.core.model.SchemaObject;
+import com.sourcesense.joyce.core.model.entity.SchemaObject;
 import com.sourcesense.joyce.schemacore.model.dto.SchemaInfo;
 import com.sourcesense.joyce.schemacore.model.dto.SchemaSave;
 import com.sourcesense.joyce.schemacore.model.dto.SchemaShort;
-import com.sourcesense.joyce.core.model.JoyceSchemaMetadataExtraConnector;
-import com.sourcesense.joyce.core.model.SchemaEntity;
+import com.sourcesense.joyce.core.model.entity.JoyceSchemaMetadataExtraConnector;
+import com.sourcesense.joyce.core.model.entity.SchemaEntity;
 import io.swagger.v3.oas.annotations.media.Content;
 import io.swagger.v3.oas.annotations.responses.ApiResponse;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import org.springframework.http.HttpStatus;
-import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
@@ -36,9 +35,6 @@ import java.util.List;
 @RequestMapping(value = "/api")
 @Tag(name = "Schema API", description = "Schema	 Management API")
 public interface SchemaRestApi {
-
-	@GetMapping(value = "/namespace", produces = "application/json; charset=utf-8")
-	List<String> getAllNamespaces();
 
 	@GetMapping(value = "/schema", produces = "application/json; charset=utf-8")
 	@ResponseStatus(code = HttpStatus.OK)
@@ -53,12 +49,12 @@ public interface SchemaRestApi {
 					)
 			)
 	)
-	List<SchemaObject> getAllSchema(
+	List<SchemaObject> getAllSchemas(
 			@RequestParam(defaultValue = "false", name = "full_schema") Boolean fullSchema,
 			@RequestParam(defaultValue = "false", name = "root_only") Boolean rootOnly
 	);
 
-	@GetMapping(value = "/schema/{subtype}/{namespace}", produces = "application/json; charset=utf-8")
+	@GetMapping(value = "/schema/{domain}/{product}", produces = "application/json; charset=utf-8")
 	@ResponseStatus(code = HttpStatus.OK)
 	@ApiResponse(
 			responseCode = "200",
@@ -71,26 +67,26 @@ public interface SchemaRestApi {
 					)
 			)
 	)
-	List<SchemaObject> getAllSchemaForNamespace(
-			@PathVariable String subtype,
-			@PathVariable String namespace,
+	List<SchemaObject> getAllSchemasForDomainAndProduct(
+			@PathVariable String domain,
+			@PathVariable String product,
 			@RequestParam(defaultValue = "false", name = "full_schema") Boolean fullSchema,
 			@RequestParam(defaultValue = "false", name = "root_only") Boolean rootOnly
 	);
 
-	@GetMapping(value = "/schema/{subtype}/{namespace}/{name}", produces = "application/json; charset=utf-8")
+	@GetMapping(value = "/schema/{domain}/{product}/{name}", produces = "application/json; charset=utf-8")
 	@ResponseStatus(code = HttpStatus.OK)
 	SchemaEntity getSchema(
-			@PathVariable String subtype,
-			@PathVariable String namespace,
+			@PathVariable String domain,
+			@PathVariable String product,
 			@PathVariable String name
 	);
 
-	@DeleteMapping("/schema/{subtype}/{namespace}/{name}")
+	@DeleteMapping("/schema/{domain}/{product}/{name}")
 	@ResponseStatus(code = HttpStatus.ACCEPTED)
 	SchemaInfo deleteSchema(
-			@PathVariable String subtype,
-			@PathVariable String namespace,
+			@PathVariable String domain,
+			@PathVariable String product,
 			@PathVariable String name
 	);
 
@@ -102,55 +98,55 @@ public interface SchemaRestApi {
 	@ResponseStatus(code = HttpStatus.CREATED)
 	SchemaInfo saveSchemaYaml(@RequestBody SchemaSave schema) throws JsonProcessingException;
 
-	@GetMapping(value = "/schema/{subtype}/{namespace}/{name}/connectors")
+	@GetMapping(value = "/schema/{domain}/{product}/{name}/connectors")
 	@ResponseStatus(code = HttpStatus.OK)
 	List<JoyceSchemaMetadataExtraConnector> getConnectors(
-			@PathVariable String subtype,
-			@PathVariable String namespace,
+			@PathVariable String domain,
+			@PathVariable String product,
 			@PathVariable String name
 	);
 
-	@GetMapping(value = "/schema/{subtype}/{namespace}/{name}/connectors/{connector}/status")
+	@GetMapping(value = "/schema/{domain}/{product}/{name}/connectors/{connector}/status")
 	@ResponseStatus(code = HttpStatus.OK)
 	JsonNode getConnectorStatus(
-			@PathVariable String subtype,
-			@PathVariable String namespace,
+			@PathVariable String domain,
+			@PathVariable String product,
 			@PathVariable String name,
 			@PathVariable String connector
 	);
 
-	@PostMapping(value = "/schema/{subtype}/{namespace}/{name}/connectors/{connector}/restart")
+	@PostMapping(value = "/schema/{domain}/{product}/{name}/connectors/{connector}/restart")
 	@ResponseStatus(code = HttpStatus.OK)
 	Boolean restartConnector(
-			@PathVariable String subtype,
-			@PathVariable String namespace,
+			@PathVariable String domain,
+			@PathVariable String product,
 			@PathVariable String name,
 			@PathVariable String connector
 	);
 
-	@PutMapping(value = "/schema/{subtype}/{namespace}/{name}/connectors/{connector}/pause")
+	@PutMapping(value = "/schema/{domain}/{product}/{name}/connectors/{connector}/pause")
 	@ResponseStatus(code = HttpStatus.OK)
 	Boolean pauseConnector(
-			@PathVariable String subtype,
-			@PathVariable String namespace,
+			@PathVariable String domain,
+			@PathVariable String product,
 			@PathVariable String name,
 			@PathVariable String connector
 	);
 
-	@PutMapping(value = "/schema/{subtype}/{namespace}/{name}/connectors/{connector}/resume")
+	@PutMapping(value = "/schema/{domain}/{product}/{name}/connectors/{connector}/resume")
 	@ResponseStatus(code = HttpStatus.OK)
 	Boolean resumeConnector(
-			@PathVariable String subtype,
-			@PathVariable String namespace,
+			@PathVariable String domain,
+			@PathVariable String product,
 			@PathVariable String name,
 			@PathVariable String connector
 	);
 
-	@PostMapping(value = "/schema/{subtype}/{namespace}/{name}/connectors/{connector}/tasks/{task}/restart")
+	@PostMapping(value = "/schema/{domain}/{product}/{name}/connectors/{connector}/tasks/{task}/restart")
 	@ResponseStatus(code = HttpStatus.OK)
 	Boolean restartConnectorTask(
-			@PathVariable String subtype,
-			@PathVariable String namespace,
+			@PathVariable String domain,
+			@PathVariable String product,
 			@PathVariable String name,
 			@PathVariable String connector,
 			@PathVariable String task

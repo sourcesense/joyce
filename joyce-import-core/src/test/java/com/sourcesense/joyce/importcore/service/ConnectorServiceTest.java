@@ -3,12 +3,13 @@ package com.sourcesense.joyce.importcore.service;
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.core.type.TypeReference;
 import com.fasterxml.jackson.databind.JsonNode;
-import com.sourcesense.joyce.core.dto.ConnectorOperationStatus;
 import com.sourcesense.joyce.core.exception.RestException;
 import com.sourcesense.joyce.core.exception.SchemaNotFoundException;
-import com.sourcesense.joyce.core.model.JoyceSchemaMetadataExtraConnector;
-import com.sourcesense.joyce.core.model.JoyceURI;
-import com.sourcesense.joyce.core.model.SchemaEntity;
+import com.sourcesense.joyce.core.model.dto.ConnectorOperationStatus;
+import com.sourcesense.joyce.core.model.entity.JoyceSchemaMetadataExtraConnector;
+import com.sourcesense.joyce.core.model.entity.SchemaEntity;
+import com.sourcesense.joyce.core.model.uri.JoyceSchemaURI;
+import com.sourcesense.joyce.core.model.uri.JoyceURIFactory;
 import com.sourcesense.joyce.importcore.test.TestUtility;
 import com.sourcesense.joyce.schemacore.model.dto.SchemaSave;
 import com.sourcesense.joyce.schemacore.service.SchemaService;
@@ -48,13 +49,13 @@ import static org.mockito.Mockito.when;
 public class ConnectorServiceTest implements TestUtility {
 
 	private static final String KAFKA_CONNECT_HOST = "test:6682";
-	private static final String SUBTYPE = "import";
-	private static final String NAMESPACE = "test";
-	private static final String NAME = "schema";
-	private static final String CONNECTOR = "connector";
+	private static final String DOMAIN = "test";
+	private static final String PRODUCT = "default";
+	private static final String NAME = "user";
+	private static final String CONNECTOR = "user-connector";
 	private static final String TASK_ID = "0";
-	private static final String NAMESPACED_CONNECTOR = computeNamespacedConnector();
-	private static final String JOYCE_SCHEMA_URI = computeSchemaUri();
+	private static final String CONNECTOR_FULL_NAME = String.format("%s:%s:%s:%s", DOMAIN, PRODUCT, NAME, CONNECTOR);
+	private static final JoyceSchemaURI JOYCE_SCHEMA_URI = JoyceURIFactory.getInstance().createSchemaURIOrElseThrow(DOMAIN, PRODUCT, NAME);
 
 	@Mock
 	private SchemaService schemaService;
@@ -75,9 +76,9 @@ public class ConnectorServiceTest implements TestUtility {
 	@Test
 	void shouldGetConnectors() throws IOException, URISyntaxException {
 		SchemaEntity schema = this.computeResourceAsObject("schema/save/01.json", SchemaEntity.class);
-		when(schemaService.getOrElseThrow(JOYCE_SCHEMA_URI)).thenReturn(schema);
+		when(schemaService.getOrElseThrow(JOYCE_SCHEMA_URI.toString())).thenReturn(schema);
 
-		List<JoyceSchemaMetadataExtraConnector> actual = connectorService.getConnectors(SUBTYPE, NAMESPACE, NAME);
+		List<JoyceSchemaMetadataExtraConnector> actual = connectorService.getConnectors(DOMAIN, PRODUCT, NAME);
 		List<JoyceSchemaMetadataExtraConnector> expected = this.computeResourceAsObject("connector/saved/01.json", new TypeReference<>() {});
 
 		assertThat(expected).hasSameElementsAs(actual);
@@ -89,7 +90,7 @@ public class ConnectorServiceTest implements TestUtility {
 		JsonNode expected = jsonMapper.createObjectNode().put("status", "OK");
 		byte[] responseBody = jsonMapper.writeValueAsBytes(expected);
 		this.mockRestCall(endpoint, null, responseBody, HttpMethod.GET, HttpStatus.OK);
-		JsonNode actual = connectorService.getConnectorStatus(NAMESPACE, NAME, CONNECTOR);
+		JsonNode actual = connectorService.getConnectorStatus(DOMAIN, PRODUCT, NAME, CONNECTOR);
 		assertEquals(expected, actual);
 	}
 
@@ -97,28 +98,28 @@ public class ConnectorServiceTest implements TestUtility {
 	void shouldRestartConnector() {
 		String endpoint = this.computeEndpoint(ConnectorEndpoint.RESTART_CONNECTOR);
 		this.mockRestCall(endpoint, null, new byte[0], HttpMethod.POST, HttpStatus.NO_CONTENT);
-		assertTrue(connectorService.restartConnector(NAMESPACE, NAME, CONNECTOR));
+		assertTrue(connectorService.restartConnector(DOMAIN, PRODUCT, NAME, CONNECTOR));
 	}
 
 	@Test
 	void shouldPauseConnector() {
 		String endpoint = this.computeEndpoint(ConnectorEndpoint.PAUSE_CONNECTOR);
 		this.mockRestCall(endpoint, null, new byte[0], HttpMethod.PUT, HttpStatus.ACCEPTED);
-		assertTrue(connectorService.pauseConnector(NAMESPACE, NAME, CONNECTOR));
+		assertTrue(connectorService.pauseConnector(DOMAIN, PRODUCT, NAME, CONNECTOR));
 	}
 
 	@Test
 	void shouldResumeConnector() {
 		String endpoint = this.computeEndpoint(ConnectorEndpoint.RESUME_CONNECTOR);
 		this.mockRestCall(endpoint, null, new byte[0], HttpMethod.PUT, HttpStatus.ACCEPTED);
-		assertTrue(connectorService.resumeConnector(NAMESPACE, NAME, CONNECTOR));
+		assertTrue(connectorService.resumeConnector(DOMAIN, PRODUCT, NAME, CONNECTOR));
 	}
 
 	@Test
 	void shouldRestartConnectorTask() {
 		String endpoint = this.computeEndpoint(ConnectorEndpoint.RESTART_CONNECTOR_TASK);
 		this.mockRestCall(endpoint, null, new byte[0], HttpMethod.POST, HttpStatus.NO_CONTENT);
-		assertTrue(connectorService.restartConnectorTask(NAMESPACE, NAME, CONNECTOR, TASK_ID));
+		assertTrue(connectorService.restartConnectorTask(DOMAIN, PRODUCT, NAME, CONNECTOR, TASK_ID));
 	}
 
 	@Test
@@ -169,31 +170,23 @@ public class ConnectorServiceTest implements TestUtility {
 		String operationEndpoint = this.computeEndpoint(ConnectorEndpoint.CONNECTOR);
 
 		SchemaEntity schema = this.computeResourceAsObject("schema/existing/04.json", SchemaEntity.class);
-		when(schemaService.getOrElseThrow(JOYCE_SCHEMA_URI)).thenReturn(schema);
+		when(schemaService.getOrElseThrow(JOYCE_SCHEMA_URI.toString())).thenReturn(schema);
 
 		String connectorConfig = this.computeResourceAsString("connector/save/04.json");
 		this.mockRestCall(operationEndpoint, connectorConfig, new byte[0], HttpMethod.DELETE, HttpStatus.NO_CONTENT);
 
 		List<ConnectorOperationStatus> expected = this.computeResourceAsObject("connector/status/04.json", new TypeReference<>() {});
-		List<ConnectorOperationStatus> actual = connectorService.deleteConnectors(SUBTYPE, NAMESPACE, NAME);
+		List<ConnectorOperationStatus> actual = connectorService.deleteConnectors(DOMAIN, PRODUCT, NAME);
 
 		assertThat(expected).hasSameElementsAs(actual);
 	}
 
 	@Test
-	void shouldThrowImportExceptionWhenWrongSubtype() {
-		assertThrows(
-				IllegalArgumentException.class,
-				() -> connectorService.getConnectors("wrong subtype", NAMESPACE, NAME)
-		);
-	}
-
-	@Test
 	void shouldThrowSchemaNotFoundExceptionWhenMissingSchema() {
-		when(schemaService.getOrElseThrow(JOYCE_SCHEMA_URI)).thenThrow(SchemaNotFoundException.class);
+		when(schemaService.getOrElseThrow(JOYCE_SCHEMA_URI.toString())).thenThrow(SchemaNotFoundException.class);
 		assertThrows(
 				SchemaNotFoundException.class,
-				() -> connectorService.getConnectors(SUBTYPE, NAMESPACE, NAME)
+				() -> connectorService.getConnectors(DOMAIN, PRODUCT, NAME)
 		);
 	}
 
@@ -202,7 +195,7 @@ public class ConnectorServiceTest implements TestUtility {
 		this.shouldThrowsRestException(
 				ConnectorEndpoint.CONNECTOR_STATUS,
 				HttpMethod.GET,
-				() -> connectorService.getConnectorStatus(NAMESPACE, NAME, CONNECTOR)
+				() -> connectorService.getConnectorStatus(DOMAIN, PRODUCT, NAME, CONNECTOR)
 		);
 	}
 
@@ -211,7 +204,7 @@ public class ConnectorServiceTest implements TestUtility {
 		this.shouldThrowsRestException(
 				ConnectorEndpoint.RESTART_CONNECTOR,
 				HttpMethod.POST,
-				() -> connectorService.restartConnector(NAMESPACE, NAME, CONNECTOR)
+				() -> connectorService.restartConnector(DOMAIN, PRODUCT, NAME, CONNECTOR)
 		);
 	}
 
@@ -220,7 +213,7 @@ public class ConnectorServiceTest implements TestUtility {
 		this.shouldThrowsRestException(
 				ConnectorEndpoint.PAUSE_CONNECTOR,
 				HttpMethod.PUT,
-				() -> connectorService.pauseConnector(NAMESPACE, NAME, CONNECTOR)
+				() -> connectorService.pauseConnector(DOMAIN, PRODUCT, NAME, CONNECTOR)
 		);
 	}
 
@@ -229,7 +222,7 @@ public class ConnectorServiceTest implements TestUtility {
 		this.shouldThrowsRestException(
 				ConnectorEndpoint.RESUME_CONNECTOR,
 				HttpMethod.PUT,
-				() -> connectorService.resumeConnector(NAMESPACE, NAME, CONNECTOR)
+				() -> connectorService.resumeConnector(DOMAIN, PRODUCT, NAME, CONNECTOR)
 		);
 	}
 
@@ -238,7 +231,7 @@ public class ConnectorServiceTest implements TestUtility {
 		this.shouldThrowsRestException(
 				ConnectorEndpoint.RESTART_CONNECTOR_TASK,
 				HttpMethod.POST,
-				() -> connectorService.restartConnectorTask(NAMESPACE, NAME, CONNECTOR, TASK_ID)
+				() -> connectorService.restartConnectorTask(DOMAIN, PRODUCT, NAME, CONNECTOR, TASK_ID)
 		);
 	}
 
@@ -319,30 +312,22 @@ public class ConnectorServiceTest implements TestUtility {
 			case CONNECTORS:
 				return String.format("http://%s/connectors", KAFKA_CONNECT_HOST);
 			case CONNECTOR:
-				return String.format("http://%s/connectors/%s", KAFKA_CONNECT_HOST, NAMESPACED_CONNECTOR);
+				return String.format("http://%s/connectors/%s", KAFKA_CONNECT_HOST, CONNECTOR_FULL_NAME);
 			case CONNECTOR_CONFIG:
-				return String.format("http://%s/connectors/%s/config", KAFKA_CONNECT_HOST, NAMESPACED_CONNECTOR);
+				return String.format("http://%s/connectors/%s/config", KAFKA_CONNECT_HOST, CONNECTOR_FULL_NAME);
 			case CONNECTOR_STATUS:
-				return String.format("http://%s/connectors/%s/status", KAFKA_CONNECT_HOST, NAMESPACED_CONNECTOR);
+				return String.format("http://%s/connectors/%s/status", KAFKA_CONNECT_HOST, CONNECTOR_FULL_NAME);
 			case RESTART_CONNECTOR:
-				return String.format("http://%s/connectors/%s/restart", KAFKA_CONNECT_HOST, NAMESPACED_CONNECTOR);
+				return String.format("http://%s/connectors/%s/restart", KAFKA_CONNECT_HOST, CONNECTOR_FULL_NAME);
 			case PAUSE_CONNECTOR:
-				return String.format("http://%s/connectors/%s/pause", KAFKA_CONNECT_HOST, NAMESPACED_CONNECTOR);
+				return String.format("http://%s/connectors/%s/pause", KAFKA_CONNECT_HOST, CONNECTOR_FULL_NAME);
 			case RESUME_CONNECTOR:
-				return String.format("http://%s/connectors/%s/resume", KAFKA_CONNECT_HOST, NAMESPACED_CONNECTOR);
+				return String.format("http://%s/connectors/%s/resume", KAFKA_CONNECT_HOST, CONNECTOR_FULL_NAME);
 			case RESTART_CONNECTOR_TASK:
-				return String.format("http://%s/connectors/%s/tasks/%s/restart", KAFKA_CONNECT_HOST, NAMESPACED_CONNECTOR, TASK_ID);
+				return String.format("http://%s/connectors/%s/tasks/%s/restart", KAFKA_CONNECT_HOST, CONNECTOR_FULL_NAME, TASK_ID);
 			default:
 				return StringUtils.EMPTY;
 		}
-	}
-
-	private static String computeNamespacedConnector() {
-		return NAMESPACE + JoyceURI.NAMESPACE_SEPARATOR + NAME + JoyceURI.NAMESPACE_SEPARATOR + CONNECTOR;
-	}
-
-	private static String computeSchemaUri() {
-		return JoyceURI.makeNamespaced(JoyceURI.Type.SCHEMA, JoyceURI.Subtype.IMPORT, NAMESPACE, NAME).toString();
 	}
 
 	public enum ConnectorEndpoint {

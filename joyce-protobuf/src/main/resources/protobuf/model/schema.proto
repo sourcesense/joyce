@@ -5,7 +5,6 @@ option java_outer_classname = "SchemaProto";
 option java_package = "com.sourcesense.joyce.protobuf.model";
 
 import "google/protobuf/struct.proto";
-import "model/schema_metadata.proto";
 
 message Schema {
   string uid = 1;
@@ -14,6 +13,29 @@ message Schema {
   string type = 4;
   repeated string required = 5;
   google.protobuf.Struct properties = 6;
+}
+
+message SchemaMetadata {
+  string uidKey = 1;
+  string type = 2;
+  string domain = 3;
+  string product = 4;
+  string name = 5;
+  string collection = 6;
+  string description = 7;
+  string parent = 8;
+  repeated MongoIndex indexes = 9;
+  string development = 10;
+  string store = 11;
+  string validation = 12;
+  string indexed = 13;
+  string connectors = 14;
+  string export = 15;
+  string extra = 16;
+}
+
+message MongoIndex{
+  map<string, int32> index = 1;
 }
 
 

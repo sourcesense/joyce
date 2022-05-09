@@ -24,6 +24,7 @@ public class NotificationEvent {
 	public static final String SINK_MONGODB_STORE_SUCCESS = "SINK_MONGODB_STORE_SUCCESS";
 	public static final String SINK_MONGODB_STORE_FAILED = "SINK_MONGODB_STORE_FAILED";
 	public static final String SINK_MONGODB_DELETE_SUCCESS = "SINK_MONGODB_DELETE_SUCCESS";
+	public static final String SINK_MONGODB_DELETE_FAILED = "SINK_MONGODB_DELETE_FAILED";
 
 	//Schema Sink Events
 	public static final String SINK_MONGODB_SCHEMA_PARSING_FAILED = "SINK_MONGODB_SCHEMA_PARSING_FAILED";

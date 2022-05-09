@@ -1,6 +1,6 @@
 [
   {
-    "name": "connector",
+    "name": "user-connector",
     "importKeyUid": "id",
     "config": {
       "tasks.max": 3,

@@ -2,11 +2,10 @@ package com.sourcesense.joyce.core.service;
 
 import com.google.protobuf.Empty;
 import com.sourcesense.joyce.core.exception.SchemaNotFoundException;
-import com.sourcesense.joyce.core.mapping.mapper.SchemaProtoMapper;
-import com.sourcesense.joyce.core.model.JoyceURI;
-import com.sourcesense.joyce.core.model.SchemaEntity;
+import com.sourcesense.joyce.core.mapping.mapstruct.SchemaProtoMapper;
+import com.sourcesense.joyce.core.model.entity.SchemaEntity;
+import com.sourcesense.joyce.core.model.uri.JoyceURIFactory;
 import com.sourcesense.joyce.protobuf.api.*;
-import com.sourcesense.joyce.protobuf.model.Schema;
 import lombok.RequiredArgsConstructor;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnProperty;
 import org.springframework.context.annotation.DependsOn;
@@ -14,7 +13,6 @@ import org.springframework.stereotype.Service;
 
 import java.util.List;
 import java.util.Optional;
-import java.util.function.Predicate;
 
 @Service
 @RequiredArgsConstructor
@@ -34,9 +32,10 @@ public class GrpcClient implements SchemaClient {
 	}
 
 	@Override
-	public Optional<SchemaEntity> get(JoyceURI.Subtype subtype, String namespace, String name) {
-		JoyceURI schemaUri = JoyceURI.makeNamespaced(JoyceURI.Type.SCHEMA, subtype, namespace, name);
-		return this.get(schemaUri.toString());
+	public Optional<SchemaEntity> get(String domain, String product, String name) {
+		return this.get(
+				JoyceURIFactory.getInstance().createSchemaURIOrElseThrow(domain, product, name).toString()
+		);
 	}
 
 	@Override
@@ -48,11 +47,10 @@ public class GrpcClient implements SchemaClient {
 	}
 
 	@Override
-	public SchemaEntity getOrElseThrow(JoyceURI.Subtype subtype, String namespace, String name) {
-		JoyceURI schemaUri = JoyceURI.makeNamespaced(JoyceURI.Type.SCHEMA, subtype, namespace, name);
-		return this.get(schemaUri.toString())
+	public SchemaEntity getOrElseThrow(String domain, String product, String name) {
+		return this.get(domain, product, name)
 				.orElseThrow(() -> new SchemaNotFoundException(
-						String.format("Schema [%s] doesn not exist", schemaUri)
+						String.format("Schema for [%s:%s:%s] doesn not exist", domain, product, name)
 				));
 	}
 
@@ -65,10 +63,10 @@ public class GrpcClient implements SchemaClient {
 	}
 
 	@Override
-	public List<SchemaEntity> getAllBySubtypeAndNamespace(JoyceURI.Subtype subtype, String namespace, Boolean rootOnly) {
-		GetAllSchemasBySubtypeAndNamespaceRequest request = this.buildGetAllSchemasBySubtypeAndNamespaceRequest(subtype, namespace, rootOnly);
+	public List<SchemaEntity> getAllByDomainAndProduct(String domain, String product, Boolean rootOnly) {
+		GetAllSchemasByDomainAndProductRequest request = this.buildGetAllSchemasByDomainAndProductRequest(domain, product, rootOnly);
 		return schemaMapper.protosToEntities(
-				schemaStub.getAllSchemasBySubtypeAndNamespace(request).getSchemasList()
+				schemaStub.getAllSchemasByDomainAndProduct(request).getSchemasList()
 		);
 	}
 
@@ -80,26 +78,20 @@ public class GrpcClient implements SchemaClient {
 		);
 	}
 
-	@Override
-	public List<String> getAllNamespaces() {
-		Empty request = Empty.getDefaultInstance();
-		return schemaStub.getAllNamespaces(request).getNamespacesList();
-	}
-
 	private GetAllSchemasRequest buildGetAllSchemasRequest(Boolean rootOnly) {
 		return GetAllSchemasRequest.newBuilder()
 				.setRootOnly(Boolean.toString(rootOnly))
 				.build();
 	}
 
-	private GetAllSchemasBySubtypeAndNamespaceRequest buildGetAllSchemasBySubtypeAndNamespaceRequest(
-			JoyceURI.Subtype subtype,
-			String namespace,
+	private GetAllSchemasByDomainAndProductRequest buildGetAllSchemasByDomainAndProductRequest(
+			String domain,
+			String product,
 			Boolean rootOnly) {
 
-		return GetAllSchemasBySubtypeAndNamespaceRequest.newBuilder()
-				.setSubtype(schemaMapper.joyceUriSubtypeEntityToProto(subtype))
-				.setNamespace(namespace)
+		return GetAllSchemasByDomainAndProductRequest.newBuilder()
+				.setDomain(domain)
+				.setProduct(product)
 				.setRootOnly(Boolean.toString(rootOnly))
 				.build();
 	}

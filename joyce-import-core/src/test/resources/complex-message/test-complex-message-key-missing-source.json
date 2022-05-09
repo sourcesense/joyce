@@ -1,4 +1,4 @@
 {
-  "schema": "joyce://schema/import/user",
+  "schema": "joyce:content:test:default:user:schema",
   "uid": "1"
 }

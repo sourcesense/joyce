@@ -2,12 +2,11 @@ package com.sourcesense.joyce.schemacore.service;
 
 
 import com.google.protobuf.Empty;
-import com.sourcesense.joyce.core.mapping.mapper.ProtoConverter;
-import com.sourcesense.joyce.core.mapping.mapper.SchemaProtoMapper;
-import com.sourcesense.joyce.core.mapping.mapper.SchemaProtoMapperImpl;
-import com.sourcesense.joyce.core.model.SchemaEntity;
+import com.sourcesense.joyce.core.mapping.mapstruct.ProtoConverter;
+import com.sourcesense.joyce.core.mapping.mapstruct.SchemaProtoMapper;
+import com.sourcesense.joyce.core.mapping.mapstruct.SchemaProtoMapperImpl;
+import com.sourcesense.joyce.core.model.entity.SchemaEntity;
 import com.sourcesense.joyce.protobuf.api.*;
-import com.sourcesense.joyce.protobuf.enumeration.JoyceUriSubtype;
 import com.sourcesense.joyce.protobuf.model.Schema;
 import com.sourcesense.joyce.schemacore.test.TestUtility;
 import io.grpc.internal.testing.StreamRecorder;
@@ -31,10 +30,10 @@ import static org.mockito.Mockito.when;
 @ExtendWith(MockitoExtension.class)
 public class SchemaGrpcServiceTest implements TestUtility {
 
-	private static final String SCHEMA_ID_NAMESPACE = "default";
+	private static final String DOMAIN = "test";
+	private static final String PRODUCT = "default";
 	private static final String FALSE = Boolean.toString(false);
-	private static final String SCHEMA_ID = "joyce:/schema/import/default.test";
-	private static final List<String> SCHEMA_ID_NAMESPACES = Collections.singletonList(SCHEMA_ID_NAMESPACE);
+	private static final String SCHEMA_URI = "joyce:content:test:default:user:schema";
 
 
 	private SchemaProtoMapper schemaMapper;
@@ -56,11 +55,10 @@ public class SchemaGrpcServiceTest implements TestUtility {
 		SchemaEntity schemaEntity = this.computeSchemaEntity("schema.json");
 		Schema schemaProto = this.computeSchemaProto(schemaEntity);
 
-		GetSchemaRequest request = GetSchemaRequest.newBuilder().setId(SCHEMA_ID).build();
+		GetSchemaRequest request = GetSchemaRequest.newBuilder().setId(SCHEMA_URI).build();
 		StreamRecorder<GetSchemaResponse> responseObserver = StreamRecorder.create();
 
 		when(schemaService.get(any())).thenReturn(Optional.of(schemaEntity));
-
 		schemaGrpcService.getSchema(request, responseObserver);
 
 		assertEquals(
@@ -71,17 +69,13 @@ public class SchemaGrpcServiceTest implements TestUtility {
 
 	@Test
 	public void shouldRetrieveNullFromGetSchema() {
-		GetSchemaRequest request = GetSchemaRequest.newBuilder().setId(SCHEMA_ID).build();
+		GetSchemaRequest request = GetSchemaRequest.newBuilder().setId(SCHEMA_URI).build();
 		StreamRecorder<GetSchemaResponse> responseObserver = StreamRecorder.create();
 
 		when(schemaService.get(any())).thenReturn(Optional.empty());
-
 		schemaGrpcService.getSchema(request, responseObserver);
 
-		assertEquals(
-				Collections.emptyList(),
-				responseObserver.getValues()
-		);
+		assertThat(responseObserver.getValues()).hasSize(0);
 	}
 
 	@Test
@@ -95,7 +89,6 @@ public class SchemaGrpcServiceTest implements TestUtility {
 		GetAllSchemasRequest request = GetAllSchemasRequest.newBuilder().setRootOnly(FALSE).build();
 
 		when(schemaService.getAll(false)).thenReturn(schemaEntities);
-
 		schemaGrpcService.getAllSchemas(request, responseObserver);
 
 		assertThat(schemaProtos).hasSameElementsAs(
@@ -104,22 +97,21 @@ public class SchemaGrpcServiceTest implements TestUtility {
 	}
 
 	@Test
-	public void shouldRetrieveSchemasFromGetAllSchemasBySubtypeAndNamespace() throws IOException, URISyntaxException {
+	public void shouldRetrieveSchemasFromGetAllSchemasByDomainAndProduct() throws IOException, URISyntaxException {
 		SchemaEntity schemaEntity = this.computeSchemaEntity("schema.json");
 
 		List<SchemaEntity> schemaEntities = this.computeSchemaEntities(schemaEntity);
 		List<Schema> schemaProtos = this.computeSchemaProtos(schemaEntity);
 
 		StreamRecorder<GetSchemasResponse> responseObserver = StreamRecorder.create();
-		GetAllSchemasBySubtypeAndNamespaceRequest request = GetAllSchemasBySubtypeAndNamespaceRequest.newBuilder()
-				.setSubtype(JoyceUriSubtype.IMPORT)
-				.setNamespace(SCHEMA_ID_NAMESPACE)
+		GetAllSchemasByDomainAndProductRequest request = GetAllSchemasByDomainAndProductRequest.newBuilder()
+				.setDomain(DOMAIN)
+				.setProduct(PRODUCT)
 				.setRootOnly(FALSE)
 				.build();
 
-		when(schemaService.getAllBySubtypeAndNamespace(any(), any(), any())).thenReturn(schemaEntities);
-
-		schemaGrpcService.getAllSchemasBySubtypeAndNamespace(request, responseObserver);
+		when(schemaService.getAllByDomainAndProduct(any(), any(), any())).thenReturn(schemaEntities);
+		schemaGrpcService.getAllSchemasByDomainAndProduct(request, responseObserver);
 
 		assertThat(schemaProtos).hasSameElementsAs(
 				responseObserver.getValues().get(0).getSchemasList()
@@ -136,24 +128,10 @@ public class SchemaGrpcServiceTest implements TestUtility {
 		StreamRecorder<GetSchemasResponse> responseObserver = StreamRecorder.create();
 
 		when(schemaService.getAllByReportsIsNotEmpty()).thenReturn(schemaEntities);
-
 		schemaGrpcService.getAllSchemasByReportsIsNotEmpty(Empty.getDefaultInstance(), responseObserver);
 
 		assertThat(schemaProtos).hasSameElementsAs(
 				responseObserver.getValues().get(0).getSchemasList()
-		);
-	}
-
-	@Test
-	public void shouldRetrieveNamespacesFromGetAllNamespaces() {
-		StreamRecorder<GetNamespacesResponse> responseObserver = StreamRecorder.create();
-
-		when(schemaService.getAllNamespaces()).thenReturn(SCHEMA_ID_NAMESPACES);
-
-		schemaGrpcService.getAllNamespaces(Empty.getDefaultInstance(), responseObserver);
-
-		assertThat(SCHEMA_ID_NAMESPACES).hasSameElementsAs(
-				responseObserver.getValues().get(0).getNamespacesList()
 		);
 	}
 
