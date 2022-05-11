@@ -12,12 +12,12 @@ public class ProcessingException extends NotificationException{
 
     public ProcessingException(
             String message,
-            String rawUri,
-            String contentUri,
+            String contentURI,
+            String sourceURI,
             NotificationEvent event,
             HttpStatus httpStatus) {
 
-        super(message, rawUri, contentUri, event);
+        super(message, contentURI, sourceURI, event);
         this.httpStatus = httpStatus;
     }
 }

@@ -1,22 +1,18 @@
 package com.sourcesense.joyce.sink.mongodb.consumer;
 
 import com.fasterxml.jackson.databind.node.ObjectNode;
-import com.sourcesense.joyce.core.enumeration.ImportAction;
-import com.sourcesense.joyce.core.enumeration.KafkaCustomHeaders;
+import com.sourcesense.joyce.core.enumeration.JoyceAction;
 import com.sourcesense.joyce.core.exception.handler.CustomExceptionHandler;
-import com.sourcesense.joyce.core.model.entity.SchemaEntity;
-import com.sourcesense.joyce.sink.mongodb.model.JsonSchemaEntry;
+import com.sourcesense.joyce.core.model.entity.JoyceKafkaKey;
+import com.sourcesense.joyce.core.model.entity.JoyceKafkaKeyDefaultMetadata;
+import com.sourcesense.joyce.core.model.uri.JoyceSchemaURI;
 import com.sourcesense.joyce.sink.mongodb.service.CollectionEnhancerService;
 import lombok.RequiredArgsConstructor;
-import org.apache.commons.lang3.StringUtils;
-import org.springframework.data.mongodb.core.MongoTemplate;
 import org.springframework.kafka.annotation.KafkaListener;
-import org.springframework.messaging.handler.annotation.Headers;
+import org.springframework.kafka.support.KafkaHeaders;
+import org.springframework.messaging.handler.annotation.Header;
 import org.springframework.messaging.handler.annotation.Payload;
 import org.springframework.stereotype.Component;
-
-import java.util.Map;
-import java.util.Optional;
 
 
 @Component
@@ -25,7 +21,6 @@ public class SchemaConsumer {
 
 	private final CustomExceptionHandler customExceptionHandler;
 	private final CollectionEnhancerService collectionEnhancerService;
-	private final MongoTemplate mongoTemplate;
 
 	/**
 	 * This method provides the following enhancement to the mongo collection for a certain schema:
@@ -36,40 +31,24 @@ public class SchemaConsumer {
 	 * @param jsonSchema The starting json schema
 	 */
 	@KafkaListener(topics = "${joyce.kafka.schema.topic:joyce_schema}")
-	public void receive(@Payload ObjectNode jsonSchema,
-											@Headers Map<String, String> headers) {
+	public void receive(
+			@Payload ObjectNode jsonSchema,
+			@Header(KafkaHeaders.RECEIVED_MESSAGE_KEY) String messageKey) {
 		try {
-			ImportAction action = this.computeAction(headers);
+			JoyceKafkaKey<JoyceSchemaURI, JoyceKafkaKeyDefaultMetadata> kafkaKey = collectionEnhancerService.computeJoyceKafkaKey(messageKey);
 
-			if (ImportAction.INSERT.equals(action)) {
-				this.createCollection(jsonSchema);
+			JoyceAction action = collectionEnhancerService.computeAction(kafkaKey);
+			String collection = collectionEnhancerService.computeCollection(kafkaKey);
+
+			if (JoyceAction.INSERT.equals(action)) {
+				//Todo: Check this part
+				collectionEnhancerService.createCollection(jsonSchema, kafkaKey.getUri());
 			} else {
-				this.dropCollection(headers);
+				//TODO: check what collection should be deleted (parent or son)
+				collectionEnhancerService.dropCollection(kafkaKey.getUri(), collection);
 			}
 		} catch (Exception exception) {
 			customExceptionHandler.handleException(exception);
 		}
-	}
-
-	private void createCollection(ObjectNode jsonSchema) {
-		SchemaEntity schema = collectionEnhancerService.computeSchema(StringUtils.EMPTY, jsonSchema, SchemaEntity.class);
-		JsonSchemaEntry jsonSchemaEntry = collectionEnhancerService.computeSchema(schema.getUid().toString(), jsonSchema, JsonSchemaEntry.class);
-
-		collectionEnhancerService.initCollection(schema.getUid().toString(), schema);
-		collectionEnhancerService.upsertCollectionValidator(schema.getUid().toString(), schema, jsonSchemaEntry);
-		collectionEnhancerService.createIndexes(schema.getUid().toString(), schema);
-	}
-
-	private void dropCollection(Map<String, String> headers) {
-		Optional.of(KafkaCustomHeaders.COLLECTION)
-				.map(headers::get)
-				.ifPresent(mongoTemplate::dropCollection);
-	}
-
-	private ImportAction computeAction(Map<String, String> headers) {
-		return Optional.of(KafkaCustomHeaders.MESSAGE_ACTION)
-				.map(headers::get)
-				.map(ImportAction::valueOf)
-				.orElse(ImportAction.INSERT);
 	}
 }

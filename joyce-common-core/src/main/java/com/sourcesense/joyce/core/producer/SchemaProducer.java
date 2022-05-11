@@ -3,10 +3,12 @@ package com.sourcesense.joyce.core.producer;
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.sourcesense.joyce.core.configuration.mongo.MongodbProperties;
-import com.sourcesense.joyce.core.enumeration.ImportAction;
-import com.sourcesense.joyce.core.enumeration.KafkaCustomHeaders;
+import com.sourcesense.joyce.core.enumeration.JoyceAction;
 import com.sourcesense.joyce.core.enumeration.NotificationEvent;
+import com.sourcesense.joyce.core.model.entity.JoyceKafkaKey;
+import com.sourcesense.joyce.core.model.entity.JoyceKafkaKeyDefaultMetadata;
 import com.sourcesense.joyce.core.model.entity.SchemaEntity;
+import com.sourcesense.joyce.core.model.uri.JoyceSchemaURI;
 import com.sourcesense.joyce.core.service.NotificationService;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnProperty;
@@ -39,27 +41,41 @@ public class SchemaProducer extends KafkaMessageProducer<String,JsonNode> {
 
 	public void publish(SchemaEntity schemaEntity) {
 		this.sendMessage(
-				schemaEntity.getUid().toString(),
-				schemaEntity.getUid().toString(),
-				this.buildSchemaMessage(schemaEntity, jsonMapper.convertValue(schemaEntity, JsonNode.class), ImportAction.INSERT.name())
+				schemaEntity.getUid(),
+				jsonMapper.convertValue(schemaEntity, JsonNode.class),
+				this.computeKafkaKey(schemaEntity, JoyceAction.INSERT)
 		);
 	}
 
 	public void delete(SchemaEntity schemaEntity) {
 		this.sendMessage(
-				schemaEntity.getUid().toString(),
-				schemaEntity.getUid().toString(),
-				this.buildSchemaMessage(schemaEntity, jsonMapper.createObjectNode(), ImportAction.DELETE.name())
+				schemaEntity.getUid(),
+				jsonMapper.createObjectNode(),
+				this.computeKafkaKey(schemaEntity, JoyceAction.DELETE)
 		);
 	}
 
-	private Message<JsonNode> buildSchemaMessage(SchemaEntity schemaEntity, JsonNode payload, Object action) {
-		return MessageBuilder
+	private void sendMessage(
+			JoyceSchemaURI schemaURI,
+			JsonNode payload,
+			JoyceKafkaKey<JoyceSchemaURI, JoyceKafkaKeyDefaultMetadata> kafkaKey) {
+
+		Message<JsonNode> message = MessageBuilder
 				.withPayload(payload)
 				.setHeader(KafkaHeaders.TOPIC, mongodbProperties.getSchemaCollection())
-				.setHeader(KafkaCustomHeaders.COLLECTION, schemaEntity.getMetadata().getCollection())
-				.setHeader(KafkaCustomHeaders.MESSAGE_ACTION, action)
-				.setHeader(KafkaHeaders.MESSAGE_KEY, schemaEntity.getUid().toString())
+				.setHeader(KafkaHeaders.MESSAGE_KEY, this.kafkaKeyToJson(kafkaKey))
+				.build();
+
+		this.sendMessage(schemaURI, message);
+	}
+
+	private JoyceKafkaKey<JoyceSchemaURI, JoyceKafkaKeyDefaultMetadata> computeKafkaKey(SchemaEntity schemaEntity, JoyceAction action) {
+		return JoyceKafkaKey.<JoyceSchemaURI, JoyceKafkaKeyDefaultMetadata>builder()
+				.uri(schemaEntity.getUid())
+				.action(action)
+				.metadata(JoyceKafkaKeyDefaultMetadata.builder()
+						.parentURI(schemaEntity.getMetadata().getParent())
+						.build())
 				.build();
 	}
 
@@ -67,15 +83,15 @@ public class SchemaProducer extends KafkaMessageProducer<String,JsonNode> {
 	public void handleMessageSuccess(
 			Message<JsonNode> message,
 			SendResult<String, JsonNode> result,
-			String rawUri,
-			String contentUri,
+			String contentURI,
+			String sourceURI,
 			JsonNode eventPayload,
 			JsonNode eventMetadata) {
 
 		log.debug("Correctly sent message: {} to schema topic", message);
 		notificationService.ok(
-				rawUri,
-				contentUri,
+				contentURI,
+				sourceURI,
 				NotificationEvent.SCHEMA_PUBLISH_SUCCESS,
 				eventMetadata,
 				eventPayload
@@ -86,15 +102,15 @@ public class SchemaProducer extends KafkaMessageProducer<String,JsonNode> {
 	public void handleMessageFailure(
 			Message<JsonNode> message,
 			Throwable throwable,
-			String rawUri,
-			String contentUri,
+			String contentURI,
+			String sourceURI,
 			JsonNode eventPayload,
 			JsonNode eventMetadata) {
 
 		log.error("Unable to send message=[{}] due to : [{}]", message, throwable.getMessage());
 		notificationService.ko(
-				rawUri,
-				contentUri,
+				contentURI,
+				sourceURI,
 				NotificationEvent.SCHEMA_PUBLISH_FAILED,
 				eventMetadata,
 				eventPayload

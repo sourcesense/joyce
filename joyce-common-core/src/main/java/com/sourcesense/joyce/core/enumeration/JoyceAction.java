@@ -1,5 +1,5 @@
 /*
- * Copyright 2021 Sourcesense Spa
+ *  Copyright 2021 Sourcesense Spa
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -14,19 +14,9 @@
  * limitations under the License.
  */
 
-package com.sourcesense.joyce.importcore.dto;
+package com.sourcesense.joyce.core.enumeration;
 
-import com.sourcesense.joyce.core.model.uri.JoyceSchemaURI;
-import lombok.Data;
-
-/**
- *  This class maps the structure of the messageKey coming
- *  from a kafka connect
- */
-@Data
-public class ConnectKeyPayload {
-
-	private JoyceSchemaURI schema;
-	private String origin;
-	private String uid;
+public enum JoyceAction {
+    INSERT,
+    DELETE;
 }

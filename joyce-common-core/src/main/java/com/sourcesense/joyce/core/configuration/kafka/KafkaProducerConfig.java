@@ -45,34 +45,30 @@ import java.util.Map;
 @EnableKafka
 @RequiredArgsConstructor
 public class KafkaProducerConfig {
-		final private Tracer tracer;
-    @Value("${joyce.kafka.bootstrapAddress}")
-    String bootstrapAddress;
 
-    @Bean
-    @Scope("prototype")
-    public ProducerFactory<String, JsonNode> producerFactory() {
-        Map<String, Object> configProps = new HashMap<>();
-				configProps.put(
-					ProducerConfig.BOOTSTRAP_SERVERS_CONFIG,
-					bootstrapAddress);
-        configProps.put(
-                ProducerConfig.MAX_REQUEST_SIZE_CONFIG,
-						2097152);
-        configProps.put(
-                ProducerConfig.KEY_SERIALIZER_CLASS_CONFIG,
-                StringSerializer.class);
-        configProps.put(
-                ProducerConfig.VALUE_SERIALIZER_CLASS_CONFIG,
-                JsonSerializer.class);
-				//configProps.put(ProducerConfig.INTERCEPTOR_CLASSES_CONFIG,  Collections.singletonList(TracingProducerInterceptor.class));
+	@Value("${joyce.kafka.bootstrapAddress}")
+	private String bootstrapAddress;
 
-			return new TracingProducerFactory<>(new DefaultKafkaProducerFactory<>(configProps), tracer);
-    }
+	private final Tracer tracer;
 
-    @Bean
-    @Scope("prototype")
-    public KafkaTemplate<String, JsonNode> kafkaTemplate(ProducerFactory<String, JsonNode> producerFactory) {
-        return new KafkaTemplate<>(producerFactory);
-    }
+
+	@Bean
+	@Scope("prototype")
+	public ProducerFactory<String, JsonNode> producerFactory() {
+		Map<String, Object> configProps = new HashMap<>();
+		configProps.put(ProducerConfig.BOOTSTRAP_SERVERS_CONFIG, bootstrapAddress);
+		configProps.put(ProducerConfig.MAX_REQUEST_SIZE_CONFIG, 2097152);
+
+		configProps.put(ProducerConfig.KEY_SERIALIZER_CLASS_CONFIG, StringSerializer.class);
+		configProps.put(ProducerConfig.VALUE_SERIALIZER_CLASS_CONFIG, JsonSerializer.class);
+		//configProps.put(ProducerConfig.INTERCEPTOR_CLASSES_CONFIG,  Collections.singletonList(TracingProducerInterceptor.class));
+
+		return new TracingProducerFactory<>(new DefaultKafkaProducerFactory<>(configProps), tracer);
+	}
+
+	@Bean
+	@Scope("prototype")
+	public KafkaTemplate<String, JsonNode> kafkaTemplate(ProducerFactory<String, JsonNode> producerFactory) {
+		return new KafkaTemplate<>(producerFactory);
+	}
 }

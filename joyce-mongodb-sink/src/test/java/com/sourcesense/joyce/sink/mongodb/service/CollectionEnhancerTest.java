@@ -59,16 +59,16 @@ class CollectionEnhancerTest implements ResourceLoader {
 
 	@Test
 	void shouldComputeMetadataIndexes() {
-		Map<String, Object> rawUri = Map.of("raw_uri", 1);
-		Map<String, Object> schemaUid = Map.of("schema_uid", 1);
-		Map<String, Object> rawUriSchemaUid = new LinkedHashMap<>();
-		rawUriSchemaUid.put("raw_uri", 1);
-		rawUriSchemaUid.put("schema_uid", 1);
+		Map<String, Object> sourceURI = Map.of("source_uri", 1);
+		Map<String, Object> schemaURI = Map.of("schema_uri", 1);
+		Map<String, Object> sourceURISchemaURI = new LinkedHashMap<>();
+		sourceURISchemaURI.put("source_uri", 1);
+		sourceURISchemaURI.put("schema_uri", 1);
 
 		MongodbProperties mongodbProperties = new MongodbProperties(
 				true,
 				SCHEMA_COLLECTION,
-				List.of(rawUri, schemaUid, rawUriSchemaUid)
+				List.of(sourceURI, schemaURI, sourceURISchemaURI)
 		);
 
 		List<MongoIndex> actual = this.computeMongoIndexes(
@@ -77,9 +77,9 @@ class CollectionEnhancerTest implements ResourceLoader {
 		);
 
 		List<MongoIndex> expected = List.of(
-				new MongoIndex("raw_uri", rawUri),
-				new MongoIndex("schema_uid", schemaUid),
-				new MongoIndex("raw_uri_schema_uid", rawUriSchemaUid)
+				new MongoIndex("source_uri", sourceURI),
+				new MongoIndex("schema_uri", schemaURI),
+				new MongoIndex("source_uri_schema_uri", sourceURISchemaURI)
 		);
 
 		assertThat(expected).hasSameElementsAs(actual);
@@ -87,19 +87,19 @@ class CollectionEnhancerTest implements ResourceLoader {
 
 	@Test
 	void shouldComputeFieldIndexes() {
-		Map<String, Object> rawUri = Map.of("raw_uri", 1);
-		Map<String, Object> schemaUid = Map.of("schema_uid", 1);
-		Map<String, Object> rawUriSchemaUid = new LinkedHashMap<>();
-		rawUriSchemaUid.put("raw_uri", 1);
-		rawUriSchemaUid.put("schema_uid", 1);
+		Map<String, Object> sourceURI = Map.of("source_uri", 1);
+		Map<String, Object> schemaURI = Map.of("schema_uri", 1);
+		Map<String, Object> sourceURISchemaURI = new LinkedHashMap<>();
+		sourceURISchemaURI.put("source_uri", 1);
+		sourceURISchemaURI.put("schema_uri", 1);
 
-		List<Map<String, Object>> fieldIndexes = List.of(rawUri, schemaUid, rawUriSchemaUid);
+		List<Map<String, Object>> fieldIndexes = List.of(sourceURI, schemaURI, sourceURISchemaURI);
 		List<MongoIndex> actual = this.computeMongoIndexes(fieldIndexes, new MongodbProperties());
 
 		List<MongoIndex> expected = List.of(
-				new MongoIndex("raw_uri", rawUri),
-				new MongoIndex("schema_uid", schemaUid),
-				new MongoIndex("raw_uri_schema_uid", rawUriSchemaUid)
+				new MongoIndex("source_uri", sourceURI),
+				new MongoIndex("schema_uri", schemaURI),
+				new MongoIndex("source_uri_schema_uri", sourceURISchemaURI)
 		);
 
 		assertThat(expected).hasSameElementsAs(actual);
@@ -109,20 +109,20 @@ class CollectionEnhancerTest implements ResourceLoader {
 	@Test
 	void shouldComputeMixedIndexes() {
 		Map<String, Object> fullName = Map.of("full_name", 1);
-		Map<String, Object> rawUri = Map.of("raw_uri", 1);
+		Map<String, Object> sourceURI = Map.of("source_uri", 1);
 
 		List<Map<String, Object>> fieldIndexes = List.of(fullName);
 
 		MongodbProperties mongodbProperties = new MongodbProperties(
 				true,
 				SCHEMA_COLLECTION,
-				List.of(rawUri)
+				List.of(sourceURI)
 		);
 
 		List<MongoIndex> actual = this.computeMongoIndexes(fieldIndexes, mongodbProperties);
 		List<MongoIndex> expected = List.of(
 				new MongoIndex("full_name", fullName),
-				new MongoIndex("raw_uri", rawUri)
+				new MongoIndex("source_uri", sourceURI)
 		);
 
 		assertThat(expected).hasSameElementsAs(actual);

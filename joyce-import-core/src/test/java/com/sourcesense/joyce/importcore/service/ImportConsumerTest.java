@@ -19,28 +19,28 @@ package com.sourcesense.joyce.importcore.service;
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.node.JsonNodeFactory;
 import com.fasterxml.jackson.databind.node.ObjectNode;
-import com.sourcesense.joyce.core.enumeration.ImportAction;
+import com.sourcesense.joyce.core.enumeration.JoyceAction;
 import com.sourcesense.joyce.core.enumeration.JoyceSchemaType;
-import com.sourcesense.joyce.core.enumeration.KafkaCustomHeaders;
 import com.sourcesense.joyce.core.exception.handler.CustomExceptionHandler;
+import com.sourcesense.joyce.core.model.entity.JoyceKafkaKey;
+import com.sourcesense.joyce.core.model.entity.JoyceKafkaKeyDefaultMetadata;
 import com.sourcesense.joyce.core.model.entity.JoyceSchemaMetadata;
 import com.sourcesense.joyce.core.model.entity.SchemaEntity;
 import com.sourcesense.joyce.core.model.uri.JoyceSchemaURI;
 import com.sourcesense.joyce.core.model.uri.JoyceSourceURI;
 import com.sourcesense.joyce.core.model.uri.JoyceURIFactory;
 import com.sourcesense.joyce.importcore.consumer.ImportConsumer;
+import com.sourcesense.joyce.importcore.test.TestUtility;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
 
-import java.util.Map;
-
 import static org.mockito.Mockito.*;
 
 @ExtendWith(MockitoExtension.class)
-class ImportConsumerTest {
+class ImportConsumerTest implements TestUtility {
 
 	// Mocked components
 	@Mock
@@ -68,16 +68,25 @@ class ImportConsumerTest {
 	void testActionInsert() throws JsonProcessingException {
 
 		// mocking and stubbing data for test execution
-		ObjectNode message = new ObjectNode(JsonNodeFactory.instance);
-		Map<String, String> headers = computeHeaders(ImportAction.INSERT);
+		ObjectNode message = jsonMapper.createObjectNode();
+		String kafkaKey = jsonMapper.createObjectNode()
+				.put("uri", JOYCE_SOURCE_URI.toString())
+				.put("action", JoyceAction.INSERT.name())
+				.toString();
+
+		JoyceKafkaKey<JoyceSourceURI, JoyceKafkaKeyDefaultMetadata> joyceKafkaKey =  JoyceKafkaKey
+				.<JoyceSourceURI, JoyceKafkaKeyDefaultMetadata>builder()
+				.uri(JOYCE_SOURCE_URI)
+				.action(JoyceAction.INSERT)
+				.build();
+
 		SchemaEntity schema = this.computeSchemaEntity();
 
-		when(importService.computeSourceURI(SOURCE_URI, headers)).thenReturn(JOYCE_SOURCE_URI);
-		when(importService.computeSchemaURI(SOURCE_URI, headers, JOYCE_SOURCE_URI)).thenReturn(JOYCE_SCHEMA_URI);
-		when(importService.computeSchema(JOYCE_SCHEMA_URI, JOYCE_SOURCE_URI)).thenReturn(schema);
+		when(importService.computeJoyceKafkaKey(kafkaKey)).thenReturn(joyceKafkaKey);
+		when(importService.computeSchema(JOYCE_SOURCE_URI)).thenReturn(schema);
 
 		//  Subject under test
-		importConsumer.consumeMessage(message, SOURCE_URI, headers);
+		importConsumer.consumeMessage(message, kafkaKey);
 
 		// asserts
 		verify(importService, times(1)).processImport(any(), any(), any());
@@ -88,15 +97,24 @@ class ImportConsumerTest {
 
 		// mocking and stubbing data for test execution
 		ObjectNode message = new ObjectNode(JsonNodeFactory.instance);
-		Map<String, String> headers = computeHeaders(ImportAction.DELETE);
+		String kafkaKey = jsonMapper.createObjectNode()
+				.put("uri", JOYCE_SOURCE_URI.toString())
+				.put("action", JoyceAction.DELETE.name())
+				.toString();
+
+		JoyceKafkaKey<JoyceSourceURI, JoyceKafkaKeyDefaultMetadata> joyceKafkaKey =  JoyceKafkaKey
+				.<JoyceSourceURI, JoyceKafkaKeyDefaultMetadata>builder()
+				.uri(JOYCE_SOURCE_URI)
+				.action(JoyceAction.DELETE)
+				.build();
+
 		SchemaEntity schema = this.computeSchemaEntity();
 
-		when(importService.computeSourceURI(SOURCE_URI, headers)).thenReturn(JOYCE_SOURCE_URI);
-		when(importService.computeSchemaURI(SOURCE_URI, headers, JOYCE_SOURCE_URI)).thenReturn(JOYCE_SCHEMA_URI);
-		when(importService.computeSchema(JOYCE_SCHEMA_URI, JOYCE_SOURCE_URI)).thenReturn(schema);
+		when(importService.computeJoyceKafkaKey(kafkaKey)).thenReturn(joyceKafkaKey);
+		when(importService.computeSchema(JOYCE_SOURCE_URI)).thenReturn(schema);
 
 		//  Subject under test
-		importConsumer.consumeMessage(message, SOURCE_URI, headers);
+		importConsumer.consumeMessage(message, kafkaKey);
 
 		// asserts
 		verify(importService, times(1)).removeDocument(any(), any());
@@ -111,12 +129,5 @@ class ImportConsumerTest {
 		joyceSchemaMetadata.setType(JoyceSchemaType.IMPORT);
 		schemaEntity.setMetadata(joyceSchemaMetadata);
 		return schemaEntity;
-	}
-
-	private Map<String, String> computeHeaders(ImportAction delete) {
-		return Map.of(
-				KafkaCustomHeaders.MESSAGE_ACTION, delete.toString(),
-				KafkaCustomHeaders.IMPORT_SCHEMA, SCHEMA_URI
-		);
 	}
 }

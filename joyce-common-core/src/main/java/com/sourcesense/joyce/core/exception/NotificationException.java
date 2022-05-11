@@ -7,20 +7,20 @@ import lombok.Getter;
 @Getter
 public class NotificationException extends RuntimeException{
 
-    protected final String rawUri;
-    protected final String contentUri;
+    protected final String contentURI;
+    protected final String sourceURI;
     protected final NotificationEvent event;
 
     @Builder
     public NotificationException(
             String message,
-            String rawUri,
-            String contentUri,
+            String contentURI,
+            String sourceURI,
             NotificationEvent event) {
 
         super(message);
-        this.rawUri = rawUri;
-        this.contentUri = contentUri;
+        this.contentURI = contentURI;
+        this.sourceURI = sourceURI;
         this.event = event;
     }
 }

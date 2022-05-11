@@ -22,8 +22,5 @@ public class KafkaCustomHeaders {
     public static final String MESSAGE_ACTION   = "X-Joyce-Action";
     public static final String IMPORT_SCHEMA    = "X-Joyce-Schema";
     public static final String COLLECTION       = "X-Joyce-Collection";
-    public static final String STORE_CONTENT    = "X-Joyce-Store-Content";
-    public static final String SCHEMA_NAME      = "X-Joyce-Schema-Name";
-    public static final String SCHEMA_PARENT    = "X-Joyce-Schema-Parent";
-    public static final String SCHEMA_TYPE      = "X-Joyce-Schema-Type";
+
 }

@@ -16,6 +16,7 @@
 
 package com.sourcesense.joyce.core.configuration.jackson;
 
+import com.fasterxml.jackson.annotation.JsonInclude;
 import com.fasterxml.jackson.databind.DeserializationFeature;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.databind.PropertyNamingStrategy;
@@ -36,14 +37,15 @@ public class JacksonMappersConfiguration {
 
 	@Bean
 	@Primary
-	ObjectMapper jsonMapper() {
+	public ObjectMapper jsonMapper() {
 		return new ObjectMapper()
 				.disable(DeserializationFeature.FAIL_ON_UNKNOWN_PROPERTIES)
-				.disable(SerializationFeature.FAIL_ON_EMPTY_BEANS);
+				.disable(SerializationFeature.FAIL_ON_EMPTY_BEANS)
+				.setSerializationInclusion(JsonInclude.Include.NON_NULL);
 	}
 
 	@Bean
-	CsvMapper csvMapper() {
+	public CsvMapper csvMapper() {
 		return new CsvMapper()
 				.enable(CsvParser.Feature.TRIM_SPACES)
 				.enable(CsvParser.Feature.ALLOW_COMMENTS)
@@ -53,7 +55,7 @@ public class JacksonMappersConfiguration {
 	}
 
 	@Bean
-	YAMLMapper yamlMapper() {
+	public YAMLMapper yamlMapper() {
 		YAMLMapper yamlMapper = new YAMLMapper();
 		yamlMapper.disable(YAMLGenerator.Feature.SPLIT_LINES);
 		yamlMapper.enable(YAMLGenerator.Feature.INDENT_ARRAYS);
