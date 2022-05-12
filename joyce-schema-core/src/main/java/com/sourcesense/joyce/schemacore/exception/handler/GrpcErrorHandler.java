@@ -1,7 +1,6 @@
 package com.sourcesense.joyce.schemacore.exception.handler;
 
 import com.sourcesense.joyce.core.exception.InvalidMetadataException;
-import com.sourcesense.joyce.core.exception.ProcessingException;
 import com.sourcesense.joyce.core.exception.SchemaNotFoundException;
 import com.sourcesense.joyce.core.exception.handler.CustomExceptionHandler;
 import io.grpc.Status;
@@ -30,11 +29,6 @@ public class GrpcErrorHandler {
 	@GrpcExceptionHandler(SchemaNotFoundException.class)
 	public StatusRuntimeException handler(SchemaNotFoundException exception) {
 		return this.logExceptionAndComputeErrorResponse(exception, Status.NOT_FOUND);
-	}
-
-	@GrpcExceptionHandler(ProcessingException.class)
-	public StatusRuntimeException handler(ProcessingException exception) {
-		return this.logExceptionAndComputeErrorResponse(exception, Status.INTERNAL);
 	}
 
 	@GrpcExceptionHandler(Exception.class)

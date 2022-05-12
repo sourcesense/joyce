@@ -94,7 +94,7 @@ public class ImportService extends ConsumerService {
 	 */
 	@Notify(failureEvent = NotificationEvent.IMPORT_ERROR_INVALID_MESSAGE_KEY)
 	public JoyceKafkaKey<JoyceSourceURI, JoyceKafkaKeyDefaultMetadata> computeJoyceKafkaKey(@SourceURI String messageKey) throws JsonProcessingException {
-		return super.computeKafkaKey(messageKey);
+		return super.computeKafkaKey(messageKey, JoyceSourceURI.class, JoyceKafkaKeyDefaultMetadata.class);
 	}
 
 	/**

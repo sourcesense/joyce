@@ -21,7 +21,7 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 import com.sourcesense.joyce.core.exception.handler.InvalidKafkaKeyException;
 import com.sourcesense.joyce.core.model.entity.JoyceKafkaKey;
 import com.sourcesense.joyce.core.model.entity.JoyceKafkaKeyMetadata;
-import com.sourcesense.joyce.core.model.uri.*;
+import com.sourcesense.joyce.core.model.uri.JoyceURI;
 import lombok.NonNull;
 import lombok.RequiredArgsConstructor;
 import org.apache.kafka.clients.producer.RecordMetadata;
@@ -35,33 +35,33 @@ import org.springframework.util.concurrent.ListenableFutureCallback;
 import java.util.Objects;
 
 @RequiredArgsConstructor
-public abstract class KafkaMessageProducer<Z, T> {
+public abstract class KafkaMessageProducer<K, V> {
 
 	protected final ObjectMapper jsonMapper;
-	private final KafkaTemplate<Z, T> kafkaTemplate;
+	private final KafkaTemplate<K, V> kafkaTemplate;
 
 	public abstract void handleMessageSuccess(
-			Message<T> message,
-			SendResult<Z, T> result,
+			Message<V> message,
+			SendResult<K, V> result,
 			String contentURI,
 			String sourceURI,
-			T eventPayload,
+			V eventPayload,
 			JsonNode eventMetadata
 	);
 
 	public abstract void handleMessageFailure(
-			Message<T> message,
+			Message<V> message,
 			Throwable throwable,
 			String contentURI,
 			String sourceURI,
-			T eventPayload,
+			V eventPayload,
 			JsonNode eventMetadata);
 
-	protected ListenableFuture<SendResult<Z, T>> sendMessage(JoyceURI id, Message<T> message) {
+	protected ListenableFuture<SendResult<K, V>> sendMessage(JoyceURI id, Message<V> message) {
 		return this.sendMessage(id, null, message);
 	}
 
-	protected ListenableFuture<SendResult<Z, T>> sendMessage(JoyceURI id, JoyceURI source, Message<T> message) {
+	protected ListenableFuture<SendResult<K, V>> sendMessage(JoyceURI id, JoyceURI source, Message<V> message) {
 		return this.sendMessage(
 				Objects.nonNull(id) ? id.toString(): Strings.EMPTY,
 				Objects.nonNull(source) ? source.toString() : Strings.EMPTY,
@@ -69,16 +69,16 @@ public abstract class KafkaMessageProducer<Z, T> {
 		);
 	}
 
-	protected ListenableFuture<SendResult<Z, T>> sendMessage(String id, Message<T> message) {
+	protected ListenableFuture<SendResult<K, V>> sendMessage(String id, Message<V> message) {
 		return this.sendMessage(id, Strings.EMPTY, message);
 	}
 
-	private ListenableFuture<SendResult<Z, T>> sendMessage(String id, String source, Message<T> message) {
-		ListenableFuture<SendResult<Z, T>> future = kafkaTemplate.send(message);
+	private ListenableFuture<SendResult<K, V>> sendMessage(String id, String source, Message<V> message) {
+		ListenableFuture<SendResult<K, V>> future = kafkaTemplate.send(message);
 		future.addCallback(new ListenableFutureCallback<>() {
 
 			@Override
-			public void onSuccess(SendResult<Z, T> result) {
+			public void onSuccess(SendResult<K, V> result) {
 				handleMessageSuccess(
 						message, result, id, source,
 						message.getPayload(), formatRecordMetadata(result.getRecordMetadata())

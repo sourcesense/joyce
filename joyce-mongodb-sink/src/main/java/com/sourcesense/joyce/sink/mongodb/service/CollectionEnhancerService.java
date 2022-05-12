@@ -7,6 +7,7 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.databind.node.ObjectNode;
 import com.mongodb.client.model.IndexOptions;
 import com.sourcesense.joyce.core.annotation.ContentURI;
+import com.sourcesense.joyce.core.annotation.EventPayload;
 import com.sourcesense.joyce.core.annotation.Notify;
 import com.sourcesense.joyce.core.configuration.mongo.MongodbProperties;
 import com.sourcesense.joyce.core.enumeration.NotificationEvent;
@@ -51,7 +52,7 @@ public class CollectionEnhancerService extends ConsumerService {
 
 	@Notify(failureEvent = NotificationEvent.SINK_MONGODB_ERROR_INVALID_MESSAGE_KEY)
 	public JoyceKafkaKey<JoyceSchemaURI, JoyceKafkaKeyDefaultMetadata> computeJoyceKafkaKey(@ContentURI String messageKey) throws JsonProcessingException {
-		return super.computeKafkaKey(messageKey);
+		return super.computeKafkaKey(messageKey, JoyceSchemaURI.class, JoyceKafkaKeyDefaultMetadata.class);
 	}
 
 	/**
@@ -65,22 +66,22 @@ public class CollectionEnhancerService extends ConsumerService {
 			successEvent = NotificationEvent.SINK_MONGODB_CREATE_COLLECTION_SUCCESS,
 			failureEvent = NotificationEvent.SINK_MONGODB_CREATE_COLLECTION_FAILED
 	)
-	public void createCollection(ObjectNode jsonSchema, JoyceSchemaURI schemaURI) {
+	public void createCollection(@EventPayload ObjectNode jsonSchema, @ContentURI JoyceSchemaURI schemaURI) {
 		SchemaEntity schema = this.computeSchema(jsonSchema, schemaURI, SchemaEntity.class);
-		this.initCollection(schema, schemaURI);
+		this.initCollection(schema);
 
-		this.createIndexes(schema, schemaURI);
+		this.createIndexes(schema);
 
-		JsonSchemaEntry jsonSchemaEntry = this.computeSchema(jsonSchema, schema.getUid(), JsonSchemaEntry.class);
-		this.upsertCollectionValidator(schema, schemaURI, jsonSchemaEntry);
+		JsonSchemaEntry jsonSchemaEntry = this.computeSchema(jsonSchema, schemaURI, JsonSchemaEntry.class);
+		this.upsertCollectionValidator(schema, jsonSchemaEntry);
 	}
 
 	@Notify(
 			successEvent = NotificationEvent.SINK_MONGODB_DELETE_COLLECTION_SUCCESS,
 			failureEvent = NotificationEvent.SINK_MONGODB_DELETE_COLLECTION_FAILED
 	)
-	public void dropCollection(@ContentURI JoyceSchemaURI schemaURI, String collection) {
-		mongoTemplate.dropCollection(collection);
+	public void dropCollection(@ContentURI JoyceSchemaURI schemaURI) {
+		mongoTemplate.dropCollection(schemaURI.getCollection());
 	}
 
 	/**
@@ -100,8 +101,8 @@ public class CollectionEnhancerService extends ConsumerService {
 				)));
 	}
 
-	private void initCollection(SchemaEntity schema, JoyceSchemaURI schemaURI) {
-		log.debug("Creating collection '{}' for schema '{}'", schema.getMetadata().getCollection(), schemaURI);
+	private void initCollection(SchemaEntity schema) {
+		log.debug("Creating collection '{}' for schema '{}'", schema.getMetadata().getCollection(), schema.getUid());
 		if (!mongoTemplate.collectionExists(schema.getMetadata().getCollection())) {
 			mongoTemplate.createCollection(schema.getMetadata().getCollection());
 		}
@@ -112,16 +113,14 @@ public class CollectionEnhancerService extends ConsumerService {
 	 * starting from a joyce schema.
 	 *
 	 * @param schema          Schema's body
-	 * @param schemaURI       Schema uri
 	 * @param jsonSchemaEntry Schema's body normalized for mongodb validation
 	 */
 	private void upsertCollectionValidator(
 			SchemaEntity schema,
-			JoyceSchemaURI schemaURI,
 			JsonSchemaEntry jsonSchemaEntry) {
 
 		if (schema.getMetadata().getValidation()) {
-			log.debug("Updating validation schema for schema: '{}'", schemaURI);
+			log.debug("Updating validation schema for schema: '{}'", schema.getUid());
 			LinkedHashMap<String, Object> validatorCommand = new LinkedHashMap<>();
 			validatorCommand.put("collMod", schema.getMetadata().getCollection());
 			validatorCommand.put("validator", this.computeValidationSchema(jsonSchemaEntry));
@@ -136,11 +135,10 @@ public class CollectionEnhancerService extends ConsumerService {
 	 * Metadata field indexes that must be created are written in the application yaml.
 	 *
 	 * @param schema    Schema's body
-	 * @param schemaURI Schema uri
 	 */
-	private void createIndexes(SchemaEntity schema, JoyceSchemaURI schemaURI) {
+	private void createIndexes(SchemaEntity schema) {
 		if (schema.getMetadata().getIndexed()) {
-			log.debug("Creating indexes for schema: '{}'", schemaURI);
+			log.debug("Creating indexes for schema: '{}'", schema.getUid());
 			List<Map<String, Object>> fieldIndexes = schema.getMetadata().getIndexes();
 			this.insertIndexes(
 					this.computeMongoIndexes(fieldIndexes),

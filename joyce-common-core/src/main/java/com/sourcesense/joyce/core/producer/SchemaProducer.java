@@ -24,15 +24,14 @@ import org.springframework.stereotype.Service;
 @ConditionalOnProperty(value = "joyce.kafka.producer.enabled", havingValue = "true")
 public class SchemaProducer extends KafkaMessageProducer<String,JsonNode> {
 
-	private final NotificationService notificationService;
 	private final MongodbProperties mongodbProperties;
-
+	private final NotificationService notificationService;
 
 	public SchemaProducer(
 			ObjectMapper jsonMapper,
-			KafkaTemplate<String, JsonNode> kafkaTemplate,
+			MongodbProperties mongodbProperties,
 			NotificationService notificationService,
-			MongodbProperties mongodbProperties) {
+			KafkaTemplate<String, JsonNode> kafkaTemplate) {
 
 		super(jsonMapper, kafkaTemplate);
 		this.notificationService = notificationService;
@@ -41,22 +40,19 @@ public class SchemaProducer extends KafkaMessageProducer<String,JsonNode> {
 
 	public void publish(SchemaEntity schemaEntity) {
 		this.sendMessage(
-				schemaEntity.getUid(),
 				jsonMapper.convertValue(schemaEntity, JsonNode.class),
-				this.computeKafkaKey(schemaEntity, JoyceAction.INSERT)
+				this.buildKafkaKey(schemaEntity, JoyceAction.INSERT)
 		);
 	}
 
 	public void delete(SchemaEntity schemaEntity) {
 		this.sendMessage(
-				schemaEntity.getUid(),
 				jsonMapper.createObjectNode(),
-				this.computeKafkaKey(schemaEntity, JoyceAction.DELETE)
+				this.buildKafkaKey(schemaEntity, JoyceAction.DELETE)
 		);
 	}
 
 	private void sendMessage(
-			JoyceSchemaURI schemaURI,
 			JsonNode payload,
 			JoyceKafkaKey<JoyceSchemaURI, JoyceKafkaKeyDefaultMetadata> kafkaKey) {
 
@@ -66,10 +62,10 @@ public class SchemaProducer extends KafkaMessageProducer<String,JsonNode> {
 				.setHeader(KafkaHeaders.MESSAGE_KEY, this.kafkaKeyToJson(kafkaKey))
 				.build();
 
-		this.sendMessage(schemaURI, message);
+		this.sendMessage(kafkaKey.getUri(), message);
 	}
 
-	private JoyceKafkaKey<JoyceSchemaURI, JoyceKafkaKeyDefaultMetadata> computeKafkaKey(SchemaEntity schemaEntity, JoyceAction action) {
+	private JoyceKafkaKey<JoyceSchemaURI, JoyceKafkaKeyDefaultMetadata> buildKafkaKey(SchemaEntity schemaEntity, JoyceAction action) {
 		return JoyceKafkaKey.<JoyceSchemaURI, JoyceKafkaKeyDefaultMetadata>builder()
 				.uri(schemaEntity.getUid())
 				.action(action)

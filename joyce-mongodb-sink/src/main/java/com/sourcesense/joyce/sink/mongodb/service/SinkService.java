@@ -36,7 +36,7 @@ public class SinkService extends ConsumerService {
 
 	@Notify(failureEvent = NotificationEvent.SINK_MONGODB_ERROR_INVALID_MESSAGE_KEY)
 	public JoyceKafkaKey<JoyceContentURI, JoyceKafkaKeyDefaultMetadata> computeJoyceKafkaKey(@ContentURI String messageKey) throws JsonProcessingException {
-		return super.computeKafkaKey(messageKey);
+		return super.computeKafkaKey(messageKey, JoyceContentURI.class, JoyceKafkaKeyDefaultMetadata.class);
 	}
 
 	/**

@@ -48,11 +48,9 @@ import java.util.stream.StreamSupport;
 @ConditionalOnProperty(value = "joyce.data.mongodb.enabled", havingValue = "true")
 public class SchemaService implements SchemaClient {
 
-	private final MongoTemplate mongoTemplate;
 	private final SchemaDtoMapper schemaMapper;
 	private final SchemaProducer schemaProducer;
 	private final SchemaRepository schemaRepository;
-	private final MongodbProperties mongodbProperties;
 	private final SchemaEngine<SchemaEntity> schemaEngine;
 
 
@@ -108,13 +106,13 @@ public class SchemaService implements SchemaClient {
 	public JoyceSchemaURI save(SchemaSave schema) {
 		SchemaEntity schemaEntity = schemaMapper.toEntity(schema);
 
-		JoyceSchemaURI schemaUid = JoyceURIFactory.getInstance().createSchemaURIOrElseThrow(
+		JoyceSchemaURI schemaURI = JoyceURIFactory.getInstance().createSchemaURIOrElseThrow(
 				schemaEntity.getMetadata().getDomain(),
 				schemaEntity.getMetadata().getProduct(),
 				schemaEntity.getMetadata().getName()
 		);
 
-		schemaEntity.setUid(schemaUid);
+		schemaEntity.setUid(schemaURI);
 
 		// Validate schema
 		schema.getMetadata().validate();
@@ -129,7 +127,7 @@ public class SchemaService implements SchemaClient {
 		SchemaDocument document = schemaMapper.documentFromEntity(schemaEntity);
 		schemaRepository.save(document);
 		schemaProducer.publish(schemaEntity);
-		return schemaUid;
+		return schemaURI;
 	}
 
 	public void delete(String domain, String product, String name) {

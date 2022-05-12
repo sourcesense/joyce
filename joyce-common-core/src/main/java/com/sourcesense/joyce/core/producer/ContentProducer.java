@@ -98,14 +98,14 @@ public class ContentProducer extends KafkaMessageProducer<String, JsonNode> {
 
 		this.sendMessage(
 				this.computeEnrichedContent(schema, sourceURI, content),
-				this.computeKafkaKey(contentURI, sourceURI, metadata, JoyceAction.INSERT)
+				this.buildKafkaKey(contentURI, sourceURI, metadata, JoyceAction.INSERT)
 		);
 	}
 
 	private void sendRemovalMessage(JoyceContentURI contentURI, JoyceSourceURI sourceURI, JoyceSchemaMetadata metadata) {
 		this.sendMessage(
 				jsonMapper.createObjectNode(),
-				this.computeKafkaKey(contentURI, sourceURI, metadata, JoyceAction.DELETE)
+				this.buildKafkaKey(contentURI, sourceURI, metadata, JoyceAction.DELETE)
 		);
 	}
 
@@ -138,7 +138,7 @@ public class ContentProducer extends KafkaMessageProducer<String, JsonNode> {
 		return enrichedContent;
 	}
 
-	private JoyceKafkaKey<JoyceContentURI, JoyceKafkaKeyDefaultMetadata> computeKafkaKey(
+	private JoyceKafkaKey<JoyceContentURI, JoyceKafkaKeyDefaultMetadata> buildKafkaKey(
 			JoyceContentURI contentURI,
 			JoyceSourceURI sourceURI,
 			JoyceSchemaMetadata metadata,

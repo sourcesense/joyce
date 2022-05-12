@@ -34,18 +34,17 @@ public class SchemaConsumer {
 	public void receive(
 			@Payload ObjectNode jsonSchema,
 			@Header(KafkaHeaders.RECEIVED_MESSAGE_KEY) String messageKey) {
+
 		try {
 			JoyceKafkaKey<JoyceSchemaURI, JoyceKafkaKeyDefaultMetadata> kafkaKey = collectionEnhancerService.computeJoyceKafkaKey(messageKey);
+			if(!collectionEnhancerService.keyContainsParent(kafkaKey)) {
 
-			JoyceAction action = collectionEnhancerService.computeAction(kafkaKey);
-			String collection = collectionEnhancerService.computeCollection(kafkaKey);
-
-			if (JoyceAction.INSERT.equals(action)) {
-				//Todo: Check this part
-				collectionEnhancerService.createCollection(jsonSchema, kafkaKey.getUri());
-			} else {
-				//TODO: check what collection should be deleted (parent or son)
-				collectionEnhancerService.dropCollection(kafkaKey.getUri(), collection);
+				JoyceAction action = collectionEnhancerService.computeAction(kafkaKey);
+				if (JoyceAction.INSERT.equals(action)) {
+					collectionEnhancerService.createCollection(jsonSchema, kafkaKey.getUri());
+				} else {
+					collectionEnhancerService.dropCollection(kafkaKey.getUri());
+				}
 			}
 		} catch (Exception exception) {
 			customExceptionHandler.handleException(exception);

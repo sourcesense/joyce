@@ -4,8 +4,7 @@
   "rss.urls": "http://someurl/rss/homepage.xml",
   "topic": "joyce_import",
   "transforms": "joyceKey",
-  "transforms.joyceKey.uid": "id",
-  "transforms.joyceKey.source": "user-connector",
-  "transforms.joyceKey.schema": "joyce:content:test:default:user:schema",
+  "transforms.joyceKey.sourceUidField": "id",
+  "transforms.joyceKey.sourceUri": "joyce:content:test:default:user:src:connect:user-connector:[uid]",
   "transforms.joyceKey.type": "com.sourcesense.joyce.connect.custom.InsertJoyceMessageKey"
 }
