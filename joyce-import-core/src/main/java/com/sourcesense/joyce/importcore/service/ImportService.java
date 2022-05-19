@@ -105,7 +105,6 @@ public class ImportService extends ConsumerService {
 	 */
 	@Notify(failureEvent = NotificationEvent.IMPORT_ERROR_INVALID_SCHEMA)
 	public SchemaEntity computeSchema(@SourceURI JoyceSourceURI sourceURI) {
-
 		return schemaService.getOrElseThrow(
 				sourceURI.getDomain(),
 				sourceURI.getProduct(),
@@ -155,7 +154,7 @@ public class ImportService extends ConsumerService {
 		}
 	}
 
-	@Notify(successEvent = NotificationEvent.IMPORT_BULK_INSERT_FAILED_INVALID_FILE)
+	@Notify(failureEvent = NotificationEvent.IMPORT_BULK_INSERT_FAILED_INVALID_FILE)
 	public List<JsonNode> computeDocumentsFromFile(
 			@SourceURI JoyceSourceURI sourceURI,
 			MultipartFile data,

@@ -8,33 +8,23 @@ import com.sourcesense.joyce.core.mapping.mongo.JoyceURIMongoConverters;
 import io.opentracing.Tracer;
 import io.opentracing.contrib.mongo.common.TracingCommandListener;
 import lombok.RequiredArgsConstructor;
-import org.springframework.beans.factory.annotation.Value;
-import org.springframework.boot.autoconfigure.condition.ConditionalOnProperty;
 import org.springframework.context.ApplicationContext;
-import org.springframework.context.annotation.Configuration;
 import org.springframework.data.mongodb.MongoDatabaseFactory;
 import org.springframework.data.mongodb.config.AbstractMongoClientConfiguration;
 import org.springframework.data.mongodb.core.MongoTemplate;
 import org.springframework.data.mongodb.core.convert.MappingMongoConverter;
 import org.springframework.data.mongodb.core.convert.MongoCustomConversions;
 import org.springframework.data.mongodb.core.mapping.MongoMappingContext;
-import org.springframework.data.mongodb.repository.config.EnableMongoRepositories;
 
-@Configuration
 @RequiredArgsConstructor
-@EnableMongoRepositories(basePackages = "com.sourcesense.joyce")
-@ConditionalOnProperty(value = "joyce.data.mongodb.enabled", havingValue = "true")
-public class MongodbConfig extends AbstractMongoClientConfiguration {
+public abstract class AbstractMongodbConfiguration extends AbstractMongoClientConfiguration {
 
-	private final Tracer tracer;
-	private final ApplicationContext applicationContext;
-	private final JoyceURIMongoConverters joyceURIMongoConverters;
+	protected final String database;
+	protected final String mongoUri;
 
-	@Value("${joyce.data.mongodb.uri:mongodb://localhost:27017/joyce}")
-	String mongoUri;
-
-	@Value("${joyce.data.mongodb.database:joyce}")
-	String database;
+	protected final Tracer tracer;
+	protected final ApplicationContext applicationContext;
+	protected final JoyceURIMongoConverters joyceURIMongoConverters;
 
 	@Override
 	public MongoClient mongoClient() {
@@ -57,9 +47,8 @@ public class MongodbConfig extends AbstractMongoClientConfiguration {
 	}
 
 	@Override
-	public MongoTemplate mongoTemplate(MongoDatabaseFactory databaseFactory, MappingMongoConverter converter) {
-		converter.setMapKeyDotReplacement("_");
-		return new MongoTemplate(databaseFactory, converter);
+	protected void configureConverters(MongoCustomConversions.MongoConverterConfigurationAdapter converterConfigurationAdapter) {
+		joyceURIMongoConverters.getConverters().forEach(converterConfigurationAdapter::registerConverter);
 	}
 
 	@Override
@@ -67,8 +56,8 @@ public class MongodbConfig extends AbstractMongoClientConfiguration {
 		return database;
 	}
 
-	@Override
-	protected void configureConverters(MongoCustomConversions.MongoConverterConfigurationAdapter converterConfigurationAdapter) {
-		joyceURIMongoConverters.getConverters().forEach(converterConfigurationAdapter::registerConverter);
+	protected MongoTemplate computeMongoTemplate(MongoDatabaseFactory databaseFactory, MappingMongoConverter converter) {
+		converter.setMapKeyDotReplacement("_");
+		return new MongoTemplate(databaseFactory, converter);
 	}
 }

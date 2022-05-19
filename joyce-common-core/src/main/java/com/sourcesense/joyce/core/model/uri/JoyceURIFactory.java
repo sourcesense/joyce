@@ -53,6 +53,16 @@ public class JoyceURIFactory {
 		);
 	}
 
+	public Optional<JoyceDocumentURI> createDocumentURI(String domain, String product, String name, String uid) {
+		try {
+			return Optional.ofNullable(
+					this.createDocumentURIOrElseThrow(domain, product, name, uid)
+			);
+		} catch (Exception exception) {
+			return Optional.empty();
+		}
+	}
+
 	public JoyceDocumentURI createDocumentURIOrElseThrow(String domain, String product, String name, String uid) {
 		return this.createURIOrElseThrow(
 				String.format("%s:%s:%s:%s:%s:%s:%s", JoyceURI.URI_SCHEMA, JoyceURIKind.CONTENT, domain, product, name, JoyceURIContentType.DOCUMENT, uid),

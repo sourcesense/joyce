@@ -29,7 +29,7 @@ public class ContentConsumer {
 	 * If the storeContent param retrieved from kafka headers is set to false, the insert/removal is skipped.
 	 *
 	 * @param message Processed document body
-	 * @param messageKey     Document key
+	 * @param messageKey Document key
 	 */
 	@KafkaListener(topics = "${joyce.kafka.content.topic:joyce_content}")
 	public void receive(
