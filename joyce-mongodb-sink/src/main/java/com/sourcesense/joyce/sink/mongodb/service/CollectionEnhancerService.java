@@ -102,9 +102,9 @@ public class CollectionEnhancerService extends ConsumerService {
 	}
 
 	private void initCollection(SchemaEntity schema) {
-		log.debug("Creating collection '{}' for schema '{}'", schema.getMetadata().getCollection(), schema.getUid());
-		if (!mongoTemplate.collectionExists(schema.getMetadata().getCollection())) {
-			mongoTemplate.createCollection(schema.getMetadata().getCollection());
+		log.debug("Creating collection '{}' for schema '{}'", schema.getUid().getCollection(), schema.getUid());
+		if (!mongoTemplate.collectionExists(schema.getUid().getCollection())) {
+			mongoTemplate.createCollection(schema.getUid().getCollection());
 		}
 	}
 
@@ -122,7 +122,7 @@ public class CollectionEnhancerService extends ConsumerService {
 		if (schema.getMetadata().getValidation()) {
 			log.debug("Updating validation schema for schema: '{}'", schema.getUid());
 			LinkedHashMap<String, Object> validatorCommand = new LinkedHashMap<>();
-			validatorCommand.put("collMod", schema.getMetadata().getCollection());
+			validatorCommand.put("collMod", schema.getUid().getCollection());
 			validatorCommand.put("validator", this.computeValidationSchema(jsonSchemaEntry));
 			mongoTemplate.executeCommand(new Document(validatorCommand));
 		}
@@ -142,7 +142,7 @@ public class CollectionEnhancerService extends ConsumerService {
 			List<Map<String, Object>> fieldIndexes = schema.getMetadata().getIndexes();
 			this.insertIndexes(
 					this.computeMongoIndexes(fieldIndexes),
-					schema.getMetadata().getCollection()
+					schema.getUid().getCollection()
 			);
 		}
 	}

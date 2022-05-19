@@ -110,6 +110,10 @@ public class SchemaEngine<T> {
 		return process(schemaJsonNode, sourceJsonNode, null);
 	}
 
+	public JsonNode process(T schema, JsonNode source) {
+		return this.process(source, source, null);
+	}
+
 	public JsonNode process(T schema, JsonNode source, Object context) {
 		JsonNode jsonSchema = jsonMapper.valueToTree(schema);
 		return this.process(jsonSchema, source, context);

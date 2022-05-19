@@ -26,8 +26,14 @@ import com.sourcesense.joyce.core.annotation.SourceURI;
 import com.sourcesense.joyce.core.enumeration.FileExtension;
 import com.sourcesense.joyce.core.enumeration.NotificationEvent;
 import com.sourcesense.joyce.core.exception.InvalidMetadataException;
-import com.sourcesense.joyce.core.model.entity.*;
-import com.sourcesense.joyce.core.model.uri.*;
+import com.sourcesense.joyce.core.model.entity.JoyceKafkaKey;
+import com.sourcesense.joyce.core.model.entity.JoyceKafkaKeyDefaultMetadata;
+import com.sourcesense.joyce.core.model.entity.JoyceSchemaMetadata;
+import com.sourcesense.joyce.core.model.entity.SchemaEntity;
+import com.sourcesense.joyce.core.model.uri.JoyceDocumentURI;
+import com.sourcesense.joyce.core.model.uri.JoyceSchemaURI;
+import com.sourcesense.joyce.core.model.uri.JoyceSourceURI;
+import com.sourcesense.joyce.core.model.uri.JoyceURIFactory;
 import com.sourcesense.joyce.core.producer.ContentProducer;
 import com.sourcesense.joyce.core.service.ConsumerService;
 import com.sourcesense.joyce.core.service.CsvMappingService;
@@ -134,10 +140,9 @@ public class ImportService extends ConsumerService {
 
 			JsonNode result = schemaEngine.process(schema, document, null);
 
-			computeParentMetadata(metadata, result, true)
+			this.computeParentMetadata(metadata, result, true)
 					.ifPresent(parentMetadata -> {
 						metadata.setUidKey(parentMetadata.getUidKey());
-						metadata.setCollection(parentMetadata.getCollection());
 						metadata.setDomain(parentMetadata.getDomain());
 						metadata.setProduct(parentMetadata.getProduct());
 					});
@@ -199,11 +204,9 @@ public class ImportService extends ConsumerService {
 		JoyceSchemaMetadata metadata = schemaUtils.metadataFromSchemaOrElseThrow(schema);
 		JsonNode result = schemaEngine.process(schema, document, null);
 
-		computeParentMetadata(metadata, result, false)
-				.ifPresent(parentMetadata -> {
-					metadata.setUidKey(parentMetadata.getUidKey());
-					metadata.setCollection(parentMetadata.getCollection());
-				});
+		this.computeParentMetadata(metadata, result, false)
+				.map(JoyceSchemaMetadata::getUidKey)
+				.ifPresent(metadata::setUidKey);
 
 		JoyceDocumentURI documentURI = computeDocumentURI(result, metadata);
 
