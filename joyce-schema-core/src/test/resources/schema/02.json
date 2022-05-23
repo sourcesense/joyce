@@ -2,7 +2,7 @@
   {
     "uid": "joyce://schema/import/test.object",
     "$schema": "https://joyce.sourcesense.com/v1/schema",
-    "$metadata": {
+    "metadata": {
       "subtype": "import",
       "name": "object",
       "description": "A test schema",
@@ -21,7 +21,7 @@
   {
     "uid": "joyce://schema/import/test.object2",
     "$schema": "https://joyce.sourcesense.com/v1/schema",
-    "$metadata": {
+    "metadata": {
       "subtype": "import",
       "name": "object2",
       "description": "A test schema",

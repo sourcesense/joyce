@@ -1,6 +1,6 @@
 {
   "$schema": "https://joyce.sourcesensce.com/v1/schema",
-  "$metadata": {
+  "metadata": {
     "name": "asd"
   },
   "type": "object",

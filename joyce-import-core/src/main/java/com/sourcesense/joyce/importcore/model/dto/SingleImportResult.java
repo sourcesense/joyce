@@ -1,4 +1,4 @@
-package com.sourcesense.joyce.importcore.dto;
+package com.sourcesense.joyce.importcore.model.dto;
 
 import com.fasterxml.jackson.databind.JsonNode;
 import com.sourcesense.joyce.core.model.uri.JoyceSourceURI;

@@ -1,4 +1,4 @@
-package com.sourcesense.joyce.importcore.dto;
+package com.sourcesense.joyce.importcore.model.entity;
 
 import com.fasterxml.jackson.databind.node.TextNode;
 import com.sourcesense.joyce.core.model.entity.JoyceSchemaMetadataExtra;

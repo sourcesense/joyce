@@ -1,7 +1,7 @@
 {
   "uid": "joyce://schema/import/test.object",
   "$schema": "https://joyce.sourcesense.com/v1/schema",
-  "$metadata": {
+  "metadata": {
     "subtype": "import",
     "name": "object",
     "description": "A test schema",

@@ -41,7 +41,7 @@ The configuration file is really simple:
 
 The file is read at startup so you have to already have the schema stored within the import gateway.
 
-`Joyce-API` reads the schema and parses its [$metadata](schema#metadata) and properties, knowing the shape of the content, the collection and unique id of content.
+`Joyce-API` reads the schema and parses its [metadata](schema#metadata) and properties, knowing the shape of the content, the collection and unique id of content.
 
 There are a number of env vars needed to setup the inner configuration of `Joyce-API`, the most relevant are:
 

@@ -4,10 +4,10 @@ sidebar_label: Schema
 
 # What is a schema?
 
-A schema is first of all a [json-schema](https://json-schema.org/).  
-It represent how you want your content to be shaped, it represent a single entity with properties and property types, if you are familiar with Swagger, the syntax it's the same (swagger files are json-schema too).  
+A schema is first of all a [json-schema](https://json-schema.org/).
+It represent how you want your content to be shaped, it represent a single entity with properties and property types, if you are familiar with Swagger, the syntax it's the same (swagger files are json-schema too).
 
-What Joyce adds, are **keywords** (prepended with a `$` sign) in properties definition, that drive how to **tranform** the source into the described content.   
+What Joyce adds, are **keywords** (prepended with a `$` sign) in properties definition, that drive how to **tranform** the source into the described content.
 
 In this way a Schema is a DSL that describe an *entity* and how to trasform a source in this *entity*.
 
@@ -15,7 +15,7 @@ Let's see an example:
 
 ```yaml
 $schema: https://joyce.sourcesensce.com/v1/schema
-$metadata:
+metadata:
   name: user
   description: A test schema
   subtype: import
@@ -68,33 +68,33 @@ Will result in this transformed content:
 }
 ```
 
-Let's dissect the schema.  
+Let's dissect the schema.
 
-The `$schema` node is part of the json-schema specification.  
-`$metadata` node stores information used during all the flows of the content.  See [$metadata](#metadata)
+The `$schema` node is part of the json-schema specification.
+`metadata` node stores information used during all the flows of the content.  See [metadata](#metadata)
 
-Then starts a standard json-schema object that descibe our desired content, the keys `$path` and `$fixed` are joyce specific nodes that tells the schema engine how to precess the source.  
+Then starts a standard json-schema object that descibe our desired content, the keys `$path` and `$fixed` are joyce specific nodes that tells the schema engine how to precess the source.
 
 Those key are tied to built-in [Handlers](#handlers), that implements a logic. You can [extend the Schema DSL](extending) defining your own.
 
 ## How it works
 
-The engine that process the schema takes as in put a schema and a source json and output a transofrmed json.   
+The engine that process the schema takes as in put a schema and a source json and output a transofrmed json.
 It iterates through properties of the schema and for each one of them:
 
 - if it finds an Handler's key, applies the handler and put the result as the value of the property (*code*, *full_name*, *kind*)
 - if it does not find an Handler's key, tries to get the value from the source json with the same key. (*email*)
 
-It does it cascading for nodes of `array` and `object` types.   
+It does it cascading for nodes of `array` and `object` types.
 Tries to convert types autonomously (*code*)
 
 ## Namespace
 
 A schema is characterized by a namespace, a namespace is expressed with dot notation, like a package ( `clients.automotive.ford` ). The namespace is used as a prefix for the name that identifies a schema, as well for the collection where the content will be saved.
 
-A schema with this metadata: 
+A schema with this metadata:
 ```yaml
-$metadata:
+metadata:
   name: italian-car
   collection: cars
   namespace: clients.automotive.ford
@@ -109,7 +109,7 @@ Namespace will give you a way to organize schemas in a hierarchical way.
 
 You can define a schema to have a parent schema:
 ```yaml
-$metadata:
+metadata:
   name: user-child
   description: A test child schema
   subtype: import
@@ -123,7 +123,7 @@ The schema having a parent schema, will have those metadata values overriden (th
 
 The processed content is validated not only against the child schema but also against the parent.
 
-This is useful when you have content coming from different import sources that is in different shapes, so you need different schemas to transform it, but you want as anoutput the same entity and store it together in a common collection.   
+This is useful when you have content coming from different import sources that is in different shapes, so you need different schemas to transform it, but you want as anoutput the same entity and store it together in a common collection.
 See this [Tutorial](/tutorial-accomodations).
 
 
@@ -153,21 +153,21 @@ extra:
 
 ## Metadata
 
-The `$metadata` node is one of the enhancement that Joyce adds, it stores metadata information that will be used during all the flow of the content.
+The `metadata` node is one of the enhancement that Joyce adds, it stores metadata information that will be used during all the flow of the content.
 
 ### name
 
-*(required)*  
-Is the name of the schema, along with the namespace and subtype, identifies univocally the schema inside the system. 
+*(required)*
+Is the name of the schema, along with the namespace and subtype, identifies univocally the schema inside the system.
 
 ### subtype
 
-*(required)*  
+*(required)*
 Indicates the type of the schema. It participates in the creation of the [Joyce URI](joyce-uris) of the schema.
 ### namespace
 
-*[default: default]*  
-Organize and  group schema in a hierarchical way, it is defined with  a package like dot notation (like java packages). 
+*[default: default]*
+Organize and  group schema in a hierarchical way, it is defined with  a package like dot notation (like java packages).
 
 ### description
 
@@ -175,23 +175,23 @@ Is just an optional description of the schema.
 
 ### uid
 
-*(required)*  
+*(required)*
 Tells which key of the defined entity is to be used as Unique Identifier of the content.
 
 ### collection
 
-*(required)*  
+*(required)*
 Is the name of the collection (prefixed by teh namespace) in which the produced content will be stored.
 
 
 ### store
 
-*[default: true]*  
+*[default: true]*
 If **false** content generated from this schema is published to the `joyce_content` topic but not stored by the Sink
 
 ### indexes
 
-*[default: []]*  
+*[default: []]*
 A list of `Map<String,Int>` that defines indexes to be created by the sink in the content collection.
 
 ie. the following configuration created an index on field **section** DESC, and a composite index on fields **section DESC**, **published_date ASC**.
@@ -205,26 +205,26 @@ indexes:
 
 ### development
 
-*(default false)*  
+*(default false)*
 If true mark the schema as a development schema and saving the schema changed will skip [versioning controls].(import-gateway#versioning)
 
 ### parent
 
-If specified it must be a valid Schema [Joyce URI](joyce-uris).  
+If specified it must be a valid Schema [Joyce URI](joyce-uris).
 See [Schema Inheritance](#schema-inheritance)
 
 
-### extra 
-*(default {})*  
+### extra
+*(default {})*
 This node has extra features that are specific for the type of schema.
 
 ### extra.filter
 
-From version `1.3` you can enter a [JSON Logic](https://jsonlogic.com/) expression that will filter content to be imported with this schema. If the expression evaluate to false the content get skipped.   
-It is useful when a  connector produce a lota of data that we don't want to get processed.   
-See [JSON logic docs](https://jsonlogic.com/operations.html) know how to express the filter. 
+From version `1.3` you can enter a [JSON Logic](https://jsonlogic.com/) expression that will filter content to be imported with this schema. If the expression evaluate to false the content get skipped.
+It is useful when a  connector produce a lota of data that we don't want to get processed.
+See [JSON logic docs](https://jsonlogic.com/operations.html) know how to express the filter.
 ### extra.connectors
-*(default {})*  
+*(default {})*
 
 This node is an array of connectors configuration, these connectors are automatically configured to build a suitable key ([see Connectors section](connectors) for more info) to use the schema we are working on.
 
@@ -256,7 +256,7 @@ As an add on feature you can specify a default value just inside the json-path e
 
 ### $meta
 
-It's the same as `$path` handler but the json-path expression is applied to the `$metadata` node instead of the source json.
+It's the same as `$path` handler but the json-path expression is applied to the `metadata` node instead of the source json.
 
 ### $fixed
 
@@ -282,11 +282,11 @@ def wrapper(source, metadata, context):
 This handler is configured with this parameters:
 
 #### Configuration
-- `language`   
+- `language`
 the language used by the script, at the moment you can  use these 3 engines: **python**, **javascript** and **groovy**.
-- `online`   
+- `online`
 **[default: true]** Whether the script is a oneliner or multiline. If it is a multiline script **YOU MUST write a return statement**. The return value is implicit if you use online script.
-- `code`  
+- `code`
 The code of the script.
 
 #### Example
@@ -302,11 +302,11 @@ $script:
 
 ### $rest
 
-With this handler you can populate a schema property value with the result of an http call.  
+With this handler you can populate a schema property value with the result of an http call.
 You can control pretty much everything of the http call: Method, Headers, Body and Url parameters.
 
-There is a special config `vars` where you can define variables that you can use in the aformentioned fields values (headers, url, body).  
-These variables can be populated with a `josn-path` expression executed on the source data.  
+There is a special config `vars` where you can define variables that you can use in the aformentioned fields values (headers, url, body).
+These variables can be populated with a `josn-path` expression executed on the source data.
 
 In request construction fields `url`, `headers`, `body` you can use the variables using a [Mustache](https://mustache.github.io/mustache.5.html) template syntax.
 
@@ -317,16 +317,16 @@ The handler expects the http call to return json.
 :::
 
 #### Configuration
-- `url`   
-The url to call, include here url get parameters as you wish, in every part of the url you can use a variable.  
+- `url`
+The url to call, include here url get parameters as you wish, in every part of the url you can use a variable.
 (ie. `http://example.com/api/{{resource}}?startfrom={{date}}`).
-- `method`   
+- `method`
 The http method, GET, POST, ...
-- `headers`  
+- `headers`
 A map of headers to include in the request. You can use variables in teh value of the request
-- `vars`  
+- `vars`
 A map of vars that you can use as variables in other field, the value of every key is a `json-path` expression to extract fields from the source.
-- `extract`  
+- `extract`
 The `json-path` expression used to extract the result
 #### examples
 

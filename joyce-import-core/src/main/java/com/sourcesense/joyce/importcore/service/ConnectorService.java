@@ -14,7 +14,7 @@ import com.sourcesense.joyce.core.model.entity.JoyceSchemaMetadataExtraConnector
 import com.sourcesense.joyce.core.model.entity.SchemaEntity;
 import com.sourcesense.joyce.core.model.uri.JoyceSourceURI;
 import com.sourcesense.joyce.core.model.uri.JoyceURIFactory;
-import com.sourcesense.joyce.importcore.dto.JoyceSchemaImportMetadataExtra;
+import com.sourcesense.joyce.importcore.model.entity.JoyceSchemaImportMetadataExtra;
 import com.sourcesense.joyce.importcore.exception.ConnectorOperationException;
 import com.sourcesense.joyce.schemacore.model.dto.SchemaSave;
 import com.sourcesense.joyce.schemacore.service.SchemaService;

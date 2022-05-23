@@ -1,5 +1,5 @@
 $schema: https://joyce.sourcesense.com/v1/schema
-$metadata:
+metadata:
   subtype: import
   namespace: default
   name: user
@@ -20,7 +20,7 @@ properties:
     $path: $.last_name
   full_name:
     type: string
-    $script: 
+    $script:
       language: python
       code: "'_'.join([source['first_name'].upper(), source['last_name'].upper()])"
   email:

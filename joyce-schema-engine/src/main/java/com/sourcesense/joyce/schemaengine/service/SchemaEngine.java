@@ -38,7 +38,7 @@ import java.util.stream.StreamSupport;
 @Service
 public class SchemaEngine<T> {
 
-	public static final String METADATA = "$metadata";
+	public static final String METADATA = "metadata";
 
 	protected final ObjectMapper jsonMapper;
 	protected final MustacheTemplateResolver mustacheTemplateResolver;

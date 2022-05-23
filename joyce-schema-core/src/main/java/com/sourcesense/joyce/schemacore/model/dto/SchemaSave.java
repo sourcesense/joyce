@@ -34,13 +34,9 @@ public class SchemaSave {
 
 	@JsonProperty("$schema")
 	private String schema;
-
-	@JsonProperty("$metadata")
 	private JoyceSchemaMetadata metadata;
 
 	private String type;
 	private List<String> required;
-
 	private JsonNode properties;
-
 }

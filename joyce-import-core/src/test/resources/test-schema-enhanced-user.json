@@ -8,7 +8,7 @@
     }
   },
   "$schema": "https://joyce.sourcesensce.com/v1/schema",
-  "$metadata": {
+  "metadata": {
     "domain": "test",
     "product": "default",
     "name": "enhanced-user",
