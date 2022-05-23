@@ -114,7 +114,7 @@ class ImportServiceTest implements TestUtility {
 		SchemaEntity schema = computeSchema(TEST_SCHEMA_JSON_USER);
 		when(schemaUtils.metadataFromSchemaOrElseThrow(any())).thenReturn(schema.getMetadata());
 		when(jsonLogicService.filter(any(), any())).thenReturn(true);
-		when(schemaEngine.process(any(SchemaEntity.class), any(), any()))
+		when(schemaEngine.process(any(SchemaEntity.class), any()))
 				.thenReturn(jsonMapper.valueToTree(Map.of("code", "1337")));
 
 		// Subject under test
@@ -144,7 +144,7 @@ class ImportServiceTest implements TestUtility {
 		// mocking and stubbing data for test execution
 		SchemaEntity schema = computeSchema(TEST_SCHEMA_JSON_USER);
 		when(jsonLogicService.filter(any(), any())).thenReturn(true);
-		when(schemaEngine.process(any(SchemaEntity.class), any(), any()))
+		when(schemaEngine.process(any(SchemaEntity.class), any()))
 				.thenThrow(InvalidSchemaException.class);
 
 		// asserts
@@ -168,7 +168,7 @@ class ImportServiceTest implements TestUtility {
 		SchemaEntity schema = computeSchema(TEST_SCHEMA_JSON_ENHANCED_USER);
 		when(schemaUtils.metadataFromSchemaOrElseThrow(any())).thenReturn(schema.getMetadata());
 		when(jsonLogicService.filter(any(), any())).thenReturn(true);
-		when(schemaEngine.process(any(SchemaEntity.class), any(), any()))
+		when(schemaEngine.process(any(SchemaEntity.class), any()))
 				.thenReturn(jsonMapper.valueToTree(Map.of("code", "1337")));
 		when(schemaService.get(any()))
 				.thenReturn(Optional.of(computeSchema(TEST_SCHEMA_JSON_USER)));

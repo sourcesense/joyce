@@ -9,6 +9,7 @@ import com.sourcesense.joyce.core.model.entity.JoyceKafkaKeyDefaultMetadata;
 import com.sourcesense.joyce.core.model.entity.JoyceKafkaKeyMetadata;
 import com.sourcesense.joyce.core.model.uri.JoyceContentURI;
 import lombok.RequiredArgsConstructor;
+import org.apache.logging.log4j.util.Strings;
 
 import java.util.Optional;
 
@@ -35,11 +36,21 @@ public abstract class ConsumerService {
 	}
 
 	public <J extends JoyceContentURI, M extends JoyceKafkaKeyMetadata> JoyceAction computeAction(JoyceKafkaKey<J, M> kafkaKey) {
-		return Optional.ofNullable(kafkaKey.getAction()).orElse(JoyceAction.INSERT);
+		return Optional.of(kafkaKey)
+				.map(JoyceKafkaKey::getAction)
+				.orElse(JoyceAction.INSERT);
+	}
+
+	public <J extends JoyceContentURI> String computeSchemaType(JoyceKafkaKey<J, JoyceKafkaKeyDefaultMetadata> kafkaKey) {
+		return Optional.of(kafkaKey)
+				.map(JoyceKafkaKey::getMetadata)
+				.map(JoyceKafkaKeyDefaultMetadata::getSchemaType)
+				.orElse(Strings.EMPTY);
 	}
 
 	public <J extends JoyceContentURI> boolean computeStoreContent(JoyceKafkaKey<J, JoyceKafkaKeyDefaultMetadata> kafkaKey) {
-		return Optional.ofNullable(kafkaKey.getMetadata())
+		return Optional.of(kafkaKey)
+				.map(JoyceKafkaKey::getMetadata)
 				.map(JoyceKafkaKeyDefaultMetadata::getStore)
 				.orElse(true);
 	}

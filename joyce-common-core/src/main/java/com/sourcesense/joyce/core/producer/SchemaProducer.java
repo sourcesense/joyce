@@ -70,6 +70,8 @@ public class SchemaProducer extends KafkaMessageProducer<String,JsonNode> {
 				.uri(schemaEntity.getUid())
 				.action(action)
 				.metadata(JoyceKafkaKeyDefaultMetadata.builder()
+						.schemaType(schemaEntity.getMetadata().getType())
+						.schemaURI(schemaEntity.getUid())
 						.parentURI(schemaEntity.getMetadata().getParent())
 						.build())
 				.build();

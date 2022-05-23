@@ -84,6 +84,7 @@ class ImportConsumerTest implements TestUtility {
 
 		when(importService.computeJoyceKafkaKey(kafkaKey)).thenReturn(joyceKafkaKey);
 		when(importService.computeSchema(JOYCE_SOURCE_URI)).thenReturn(schema);
+		when(importService.computeAction(joyceKafkaKey)).thenReturn(JoyceAction.INSERT);
 
 		//  Subject under test
 		importConsumer.consumeMessage(message, kafkaKey);
@@ -112,6 +113,7 @@ class ImportConsumerTest implements TestUtility {
 
 		when(importService.computeJoyceKafkaKey(kafkaKey)).thenReturn(joyceKafkaKey);
 		when(importService.computeSchema(JOYCE_SOURCE_URI)).thenReturn(schema);
+		when(importService.computeAction(joyceKafkaKey)).thenReturn(JoyceAction.DELETE);
 
 		//  Subject under test
 		importConsumer.consumeMessage(message, kafkaKey);

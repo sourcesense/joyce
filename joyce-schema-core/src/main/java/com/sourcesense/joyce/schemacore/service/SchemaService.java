@@ -16,8 +16,6 @@
 
 package com.sourcesense.joyce.schemacore.service;
 
-import com.mongodb.client.DistinctIterable;
-import com.sourcesense.joyce.core.configuration.mongo.MongodbProperties;
 import com.sourcesense.joyce.core.exception.SchemaNotFoundException;
 import com.sourcesense.joyce.core.model.entity.SchemaEntity;
 import com.sourcesense.joyce.core.model.uri.JoyceSchemaURI;
@@ -31,16 +29,12 @@ import com.sourcesense.joyce.schemacore.repository.SchemaRepository;
 import com.sourcesense.joyce.schemaengine.exception.JoyceSchemaEngineException;
 import com.sourcesense.joyce.schemaengine.service.SchemaEngine;
 import lombok.RequiredArgsConstructor;
-import org.bson.Document;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnProperty;
 import org.springframework.context.annotation.Primary;
-import org.springframework.data.mongodb.core.MongoTemplate;
 import org.springframework.stereotype.Service;
 
 import java.util.List;
 import java.util.Optional;
-import java.util.stream.Collectors;
-import java.util.stream.StreamSupport;
 
 @Primary
 @Service

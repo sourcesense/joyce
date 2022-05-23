@@ -138,7 +138,7 @@ public class ImportService extends ConsumerService {
 			Span span = GlobalTracer.get().buildSpan("process").start();
 			span.setTag("uri", Objects.nonNull(sourceURI) ? sourceURI.toString() : StringUtils.EMPTY);
 
-			JsonNode result = schemaEngine.process(schema, document, null);
+			JsonNode result = schemaEngine.process(schema, document);
 
 			this.computeParentMetadata(metadata, result, true)
 					.ifPresent(parentMetadata -> {
@@ -202,7 +202,7 @@ public class ImportService extends ConsumerService {
 			SchemaEntity schema) {
 
 		JoyceSchemaMetadata metadata = schemaUtils.metadataFromSchemaOrElseThrow(schema);
-		JsonNode result = schemaEngine.process(schema, document, null);
+		JsonNode result = schemaEngine.process(schema, document);
 
 		this.computeParentMetadata(metadata, result, false)
 				.map(JoyceSchemaMetadata::getUidKey)
@@ -251,7 +251,7 @@ public class ImportService extends ConsumerService {
 		JoyceSchemaMetadata metadata = schemaUtils.metadataFromSchemaOrElseThrow(schema);
 		if (jsonLogicService.filter(document, metadata)) {
 
-			JsonNode result = schemaEngine.process(schema, document, null);
+			JsonNode result = schemaEngine.process(schema, document);
 			return SingleImportResult.builder()
 					.uri(sourceURI)
 					.processStatus(ProcessStatus.IMPORTED)
@@ -276,10 +276,11 @@ public class ImportService extends ConsumerService {
 	 * @return Content uri
 	 */
 	private JoyceDocumentURI computeDocumentURI(JsonNode result, JoyceSchemaMetadata metadata) {
-		String uid = Optional.ofNullable(metadata.getUidKey())
+		String uid = Optional.of(metadata)
+				.map(JoyceSchemaMetadata::getUidKey)
 				.map(result::get)
 				.orElseThrow(() -> new InvalidMetadataException(
-						String.format("Missing [%s] key from document, cannot processImport document", metadata.getUidKey()))
+						String.format("Missing [%s] key from document, cannot process document", metadata.getUidKey()))
 				).asText();
 
 		return JoyceURIFactory.getInstance().createDocumentURIOrElseThrow(

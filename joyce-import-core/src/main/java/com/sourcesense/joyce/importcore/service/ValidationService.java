@@ -1,14 +1,15 @@
 package com.sourcesense.joyce.importcore.service;
 
-import com.fasterxml.jackson.databind.JsonNode;
+import com.sourcesense.joyce.core.enumeration.JoyceSchemaType;
 import com.sourcesense.joyce.core.model.uri.JoyceSchemaURI;
-import com.sourcesense.joyce.core.service.SchemaClient;
+import com.sourcesense.joyce.core.model.uri.JoyceURIFactory;
 import com.sourcesense.joyce.importcore.exception.ValidationException;
 import com.sourcesense.joyce.schemacore.model.dto.SchemaSave;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 import org.springframework.util.ObjectUtils;
 
+import java.util.Objects;
 import java.util.Optional;
 import java.util.function.Predicate;
 
@@ -16,28 +17,37 @@ import java.util.function.Predicate;
 @RequiredArgsConstructor
 public class ValidationService {
 
-	private final SchemaClient schemaClient;
-
-	public boolean validateSchema(SchemaSave schema) {
-		if(! this.isParentSchemaPresent(schema.getMetadata().getParent())) {
-			this.validateSchemaUid(schema.getMetadata().getUidKey(), schema.getProperties());
-		}
-		return true;
+	public void validateSchema(SchemaSave schema) {
+		this.validateParent(schema);
+		this.validateSchemaUid(schema);
 	}
 
-	protected void validateSchemaUid(String schemaUid, JsonNode properties) {
-		Optional.ofNullable(schemaUid)
+	protected void validateParent(SchemaSave schema) {
+		if(! JoyceSchemaType.IMPORT.equalsIgnoreCase(schema.getMetadata().getType())
+				&& Objects.nonNull(schema.getMetadata().getParent())) {
+
+			throw new ValidationException(String.format(
+					"Impossible to save schema '%s'. Only schemas with '%s' type can have a parent but actual type is '%s'",
+					this.computeSchemaURI(schema), JoyceSchemaType.IMPORT, schema.getMetadata().getType()
+			));
+		}
+	}
+
+	protected void validateSchemaUid(SchemaSave schemaSave) {
+		Optional.ofNullable(schemaSave.getMetadata().getUidKey())
 				.filter(Predicate.not(ObjectUtils::isEmpty))
-				.map(properties::get)
-				.orElseThrow(() -> new ValidationException(
-						String.format("Schema uid '%s' not found in schema properties", schemaUid)
+				.map(schemaSave.getProperties()::get)
+				.orElseThrow(() -> new ValidationException(String.format(
+						"Schema uid '%s' not found in properties for schema '%s'",
+						schemaSave.getMetadata().getUidKey(), this.computeSchemaURI(schemaSave))
 				));
 	}
 
-	protected boolean isParentSchemaPresent(JoyceSchemaURI parentURI) {
-		return Optional.ofNullable(parentURI)
-				.map(JoyceSchemaURI::toString)
-				.flatMap(schemaClient::get)
-				.isPresent();
+	protected JoyceSchemaURI computeSchemaURI(SchemaSave schemaSave) {
+		return JoyceURIFactory.getInstance().createSchemaURIOrElseThrow(
+				schemaSave.getMetadata().getDomain(),
+				schemaSave.getMetadata().getProduct(),
+				schemaSave.getMetadata().getName()
+		);
 	}
 }

@@ -50,7 +50,7 @@ public class CollectionEnhancerService extends ConsumerService {
 		this.mongodbProperties = mongodbProperties;
 	}
 
-	@Notify(failureEvent = NotificationEvent.SINK_MONGODB_ERROR_INVALID_MESSAGE_KEY)
+	@Notify(failureEvent = NotificationEvent.SINK_MONGODB_ERROR_INVALID_SCHEMA_MESSAGE_KEY)
 	public JoyceKafkaKey<JoyceSchemaURI, JoyceKafkaKeyDefaultMetadata> computeJoyceKafkaKey(@ContentURI String messageKey) throws JsonProcessingException {
 		return super.computeKafkaKey(messageKey, JoyceSchemaURI.class, JoyceKafkaKeyDefaultMetadata.class);
 	}

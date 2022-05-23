@@ -103,6 +103,7 @@ public class ContentProducer extends KafkaMessageProducer<String, JsonNode> {
 	}
 
 	private void sendRemovalMessage(JoyceContentURI contentURI, JoyceSourceURI sourceURI, JoyceSchemaMetadata metadata) {
+		//Todo: The body of this message needs to be the full document body
 		this.sendMessage(
 				jsonMapper.createObjectNode(),
 				this.buildKafkaKey(contentURI, sourceURI, metadata, JoyceAction.DELETE)

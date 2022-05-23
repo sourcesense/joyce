@@ -12,7 +12,6 @@ import com.sourcesense.joyce.core.enumeration.NotificationEvent;
 import com.sourcesense.joyce.core.enumeration.uri.JoyceURIContentType;
 import com.sourcesense.joyce.core.model.entity.JoyceKafkaKey;
 import com.sourcesense.joyce.core.model.entity.JoyceKafkaKeyDefaultMetadata;
-import com.sourcesense.joyce.core.model.entity.JoyceKafkaKeyMetadata;
 import com.sourcesense.joyce.core.model.uri.JoyceContentURI;
 import com.sourcesense.joyce.core.service.ConsumerService;
 import com.sourcesense.joyce.sink.mongodb.exception.MongodbSinkException;
@@ -34,7 +33,7 @@ public class SinkService extends ConsumerService {
 		this.mongoTemplate = mongoTemplate;
 	}
 
-	@Notify(failureEvent = NotificationEvent.SINK_MONGODB_ERROR_INVALID_MESSAGE_KEY)
+	@Notify(failureEvent = NotificationEvent.SINK_MONGODB_ERROR_INVALID_CONTENT_MESSAGE_KEY)
 	public JoyceKafkaKey<JoyceContentURI, JoyceKafkaKeyDefaultMetadata> computeJoyceKafkaKey(@ContentURI String messageKey) throws JsonProcessingException {
 		return super.computeKafkaKey(messageKey, JoyceContentURI.class, JoyceKafkaKeyDefaultMetadata.class);
 	}

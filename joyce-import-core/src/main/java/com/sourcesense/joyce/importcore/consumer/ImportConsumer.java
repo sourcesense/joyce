@@ -33,8 +33,6 @@ import org.springframework.messaging.handler.annotation.Header;
 import org.springframework.messaging.handler.annotation.Payload;
 import org.springframework.stereotype.Service;
 
-import java.util.Optional;
-
 @Service
 @RequiredArgsConstructor
 public class ImportConsumer {
@@ -64,7 +62,7 @@ public class ImportConsumer {
 						"Impossible to consume message %s, schema %s isn't an import schema", kafkaKey.getUri(), schema.getUid()
 				));
 			}
-			JoyceAction action = Optional.ofNullable(kafkaKey.getAction()).orElse(JoyceAction.INSERT);
+			JoyceAction action = importService.computeAction(kafkaKey);
 			switch (action) {
 				case DELETE:
 					importService.removeDocument(kafkaKey.getUri(), schema);

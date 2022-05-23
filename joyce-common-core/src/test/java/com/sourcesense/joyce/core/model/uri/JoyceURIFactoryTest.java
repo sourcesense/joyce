@@ -197,7 +197,7 @@ public class JoyceURIFactoryTest {
 		this.testJoyceTaxonomyURI(joyceURI, stringURI, kind);
 		assertEquals(contentType, joyceURI.getContentType());
 		assertEquals(TEST_COLLECTION, joyceURI.getCollection());
-		assertEquals(TEST_SCHEMA_URI, joyceURI.getSchemaUri());
+		assertEquals(TEST_SCHEMA_URI, joyceURI.getSchemaURI().toString());
 	}
 
 	private void testJoyceSchemaURI(JoyceSchemaURI joyceURI, String stringURI, String kind) throws URISyntaxException {
