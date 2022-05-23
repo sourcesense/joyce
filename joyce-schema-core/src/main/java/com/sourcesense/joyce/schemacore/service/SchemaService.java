@@ -16,8 +16,6 @@
 
 package com.sourcesense.joyce.schemacore.service;
 
-import com.mongodb.client.DistinctIterable;
-import com.sourcesense.joyce.core.configuration.mongo.MongodbProperties;
 import com.sourcesense.joyce.core.exception.SchemaNotFoundException;
 import com.sourcesense.joyce.core.model.entity.SchemaEntity;
 import com.sourcesense.joyce.core.model.uri.JoyceSchemaURI;
@@ -31,16 +29,12 @@ import com.sourcesense.joyce.schemacore.repository.SchemaRepository;
 import com.sourcesense.joyce.schemaengine.exception.JoyceSchemaEngineException;
 import com.sourcesense.joyce.schemaengine.service.SchemaEngine;
 import lombok.RequiredArgsConstructor;
-import org.bson.Document;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnProperty;
 import org.springframework.context.annotation.Primary;
-import org.springframework.data.mongodb.core.MongoTemplate;
 import org.springframework.stereotype.Service;
 
 import java.util.List;
 import java.util.Optional;
-import java.util.stream.Collectors;
-import java.util.stream.StreamSupport;
 
 @Primary
 @Service
@@ -48,11 +42,9 @@ import java.util.stream.StreamSupport;
 @ConditionalOnProperty(value = "joyce.data.mongodb.enabled", havingValue = "true")
 public class SchemaService implements SchemaClient {
 
-	private final MongoTemplate mongoTemplate;
 	private final SchemaDtoMapper schemaMapper;
 	private final SchemaProducer schemaProducer;
 	private final SchemaRepository schemaRepository;
-	private final MongodbProperties mongodbProperties;
 	private final SchemaEngine<SchemaEntity> schemaEngine;
 
 
@@ -108,13 +100,13 @@ public class SchemaService implements SchemaClient {
 	public JoyceSchemaURI save(SchemaSave schema) {
 		SchemaEntity schemaEntity = schemaMapper.toEntity(schema);
 
-		JoyceSchemaURI schemaUid = JoyceURIFactory.getInstance().createSchemaURIOrElseThrow(
+		JoyceSchemaURI schemaURI = JoyceURIFactory.getInstance().createSchemaURIOrElseThrow(
 				schemaEntity.getMetadata().getDomain(),
 				schemaEntity.getMetadata().getProduct(),
 				schemaEntity.getMetadata().getName()
 		);
 
-		schemaEntity.setUid(schemaUid);
+		schemaEntity.setUid(schemaURI);
 
 		// Validate schema
 		schema.getMetadata().validate();
@@ -129,7 +121,7 @@ public class SchemaService implements SchemaClient {
 		SchemaDocument document = schemaMapper.documentFromEntity(schemaEntity);
 		schemaRepository.save(document);
 		schemaProducer.publish(schemaEntity);
-		return schemaUid;
+		return schemaURI;
 	}
 
 	public void delete(String domain, String product, String name) {

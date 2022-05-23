@@ -87,7 +87,7 @@ public class SchemaEngine<T> {
 	public JsonNode process(String jsonSchema, String sourceJson) throws JsonProcessingException {
 		JsonNode schemaJsonNode = jsonMapper.readValue(jsonSchema, JsonNode.class);
 		JsonNode sourceJsonNode = jsonMapper.readValue(sourceJson, JsonNode.class);
-		return process(schemaJsonNode, sourceJsonNode, null);
+		return process(schemaJsonNode, sourceJsonNode);
 	}
 
 	/**
@@ -98,21 +98,29 @@ public class SchemaEngine<T> {
 	 * @return
 	 * @throws JsonProcessingException
 	 */
-	public JsonNode process(String jsonSchema, Map sourceJson) throws JsonProcessingException {
+	public JsonNode process(String jsonSchema, Map<?, ?> sourceJson) throws JsonProcessingException {
 		JsonNode schemaJsonNode = jsonMapper.readValue(jsonSchema, JsonNode.class);
 		JsonNode sourceJsonNode = jsonMapper.convertValue(sourceJson, JsonNode.class);
-		return process(schemaJsonNode, sourceJsonNode, null);
+		return process(schemaJsonNode, sourceJsonNode);
 	}
 
-	public JsonNode process(Map jsonSchema, Map sourceJson) {
+	public JsonNode process(Map<?, ?> jsonSchema, Map<?, ?> sourceJson) {
 		JsonNode schemaJsonNode = jsonMapper.convertValue(jsonSchema, JsonNode.class);
 		JsonNode sourceJsonNode = jsonMapper.convertValue(sourceJson, JsonNode.class);
-		return process(schemaJsonNode, sourceJsonNode, null);
+		return process(schemaJsonNode, sourceJsonNode);
+	}
+
+	public JsonNode process(T schema, JsonNode source) {
+		return this.process(schema, source, null);
 	}
 
 	public JsonNode process(T schema, JsonNode source, Object context) {
 		JsonNode jsonSchema = jsonMapper.valueToTree(schema);
 		return this.process(jsonSchema, source, context);
+	}
+
+	public JsonNode process(JsonNode schema, JsonNode source) {
+		return this.process(schema, source, null);
 	}
 
 	/**
@@ -124,11 +132,13 @@ public class SchemaEngine<T> {
 	 */
 	public JsonNode process(JsonNode schema, JsonNode source, Object context) {
 		JsonSchema jsonSchema = factory.getSchema(schema);
-		Optional<JsonNode> metadata = Optional.ofNullable(jsonSchema.getSchemaNode().get(METADATA));
-		JsonNode result = this.parse(null, jsonSchema.getSchemaNode(), source, metadata, Optional.ofNullable(context));
+		JsonNode result = this.parse(
+				null, jsonSchema.getSchemaNode(), source,
+				Optional.ofNullable(jsonSchema.getSchemaNode().get(METADATA)),
+				Optional.ofNullable(context)
+		);
 
 		validate(schema, result);
-
 		return result;
 	}
 
@@ -230,7 +240,7 @@ public class SchemaEngine<T> {
 					tempSchema.remove(transformerHandlers.keySet());
 
 					tempSchema.set("type", schema.get("type"));
-					JsonNode transformedNode = schema.get("type").asText().equalsIgnoreCase("object")
+					JsonNode transformedNode = "object".equalsIgnoreCase(schema.get("type").asText())
 							? transformed.get()
 							: node;
 					return this.parse(key, tempSchema, transformedNode, metadata, context);

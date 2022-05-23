@@ -39,7 +39,6 @@ public class JoyceSchemaMetadata {
 	private String domain;
 	private String product;
 	private String name;
-	private String collection;
 	private String description;
 
 	private JoyceSchemaURI parent;
@@ -49,8 +48,6 @@ public class JoyceSchemaMetadata {
 	private Boolean store = true;
 	private Boolean validation = true;
 	private Boolean indexed = true;
-	private Boolean connectors = false;
-	private Boolean export = false;
 
 	private Map<String, Object> extra;
 
@@ -65,21 +62,14 @@ public class JoyceSchemaMetadata {
 		if (name == null) {
 			throw new InvalidMetadataException("Missing [name] from metadata");
 		}
-
 		if (type == null) {
 			throw new InvalidMetadataException("Missing [subtype] from metadata");
 		}
-
 		if (parent != null) {
 			return this;
 		}
-
 		if (uidKey == null) {
 			throw new InvalidMetadataException("Missing [uid] from metadata");
-		}
-
-		if (collection == null) {
-			throw new InvalidMetadataException("Missing [collection] from metadata");
 		}
 		return this;
 	}

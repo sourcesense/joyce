@@ -40,8 +40,8 @@ class Notification {
 
 	private final String source;
 	private final String event;
-	private final String rawUri;
-	private final String contentUri;
+	private final String contentURI;
+	private final String sourceURI;
 	private final Boolean success;
 	private final JsonNode metadata;
 	private final JsonNode content;
@@ -52,8 +52,8 @@ class Notification {
 		return "Notification{" +
 				"source='" + source + '\'' +
 				", event='" + event + '\'' +
-				", rawUri='" + rawUri + '\'' +
-				", contentUri" + contentUri + '\'' +
+				", contentURI='" + contentURI + '\'' +
+				", sourceURI" + sourceURI + '\'' +
 				", success=" + success +
 				", metadata=" + metadata +
 				'}';
@@ -83,44 +83,41 @@ public class NotificationService {
 	}
 
 
-	public void ok(String rawUri, String contentUri, String event) {
-		this.sendNotification(rawUri, contentUri, event, null, null, true);
+	public void ok(String contentURI, String sourceURI, String event) {
+		this.sendNotification(contentURI, sourceURI, event, null, null, true);
 	}
 
-	public <T> void ok(String rawUri, String contentUri, String event, T metadata) {
-		this.sendNotification(rawUri, contentUri, event, metadata, null, true);
+	public <T> void ok(String contentURI, String sourceURI, String event, T metadata) {
+		this.sendNotification(contentURI, sourceURI, event, metadata, null, true);
 	}
 
-	public <T> void ok(String rawUri, String contentUri, String event, T metadata, T payload) {
-		this.sendNotification(rawUri, contentUri, event, metadata, payload, true);
+	public <T> void ok(String contentURI, String sourceURI, String event, T metadata, T payload) {
+		this.sendNotification(contentURI, sourceURI, event, metadata, payload, true);
 	}
 
-	public void ko(String rawUri, String contentUri, String event, String error) {
+	public void ko(String contentURI, String sourceURI, String event, String error) {
 		ObjectNode meta = jsonMapper.createObjectNode();
 		meta.put("error", error);
-		this.sendNotification(rawUri, contentUri, event, meta, null, false);
+		this.sendNotification(contentURI, sourceURI, event, meta, null, false);
 	}
 
-	public <T> void ko(String rawUri, String contentUri, String event, T metadata) {
-		this.sendNotification(rawUri, contentUri, event, metadata, null, false);
+	public <T> void ko(String contentURI, String sourceURI, String event, T metadata) {
+		this.sendNotification(contentURI, sourceURI, event, metadata, null, false);
 	}
 
-	public <T> void ko(String rawUri, String contentUri, String event, T metadata, T payload) {
-		this.sendNotification(rawUri, contentUri, event, metadata, payload, false);
+	public <T> void ko(String contentURI, String sourceURI, String event, T metadata, T payload) {
+		this.sendNotification(contentURI, sourceURI, event, metadata, payload, false);
 	}
 
 	private <T> void sendNotification(
-			String rawUri,
-			String contentUri,
-			String event,
-			T metadata,
-			T payload,
+			String contentURI,	String sourceURI,
+			String event, T metadata, T payload,
 			boolean success) {
 
 		this.sendNotification(Notification.builder()
 				.success(success)
-				.rawUri(rawUri)
-				.contentUri(contentUri)
+				.contentURI(contentURI)
+				.sourceURI(sourceURI)
 				.event(event)
 				.source(properties.getSource())
 				.metadata(jsonMapper.valueToTree(metadata))

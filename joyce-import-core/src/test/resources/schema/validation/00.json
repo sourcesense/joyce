@@ -1,9 +1,12 @@
 {
+  "$schema": "https://joyce.sourcesense.com/v1/schema",
   "$metadata": {
     "domain": "test",
     "product": "default",
     "name": "validation",
-    "uid": ""
+    "type": "import",
+    "uid": "id",
+    "parent": "joyce:content:test:default:parent:schema"
   },
   "type": "object",
   "properties": {

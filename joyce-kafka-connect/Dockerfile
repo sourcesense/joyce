@@ -5,7 +5,7 @@ RUN confluent-hub install --no-prompt jcustenborder/kafka-connect-spooldir:lates
 RUN confluent-hub install --no-prompt castorm/kafka-connect-http:0.8.6
 RUN confluent-hub install --no-prompt kaliy/kafka-connect-rss:0.1.0
 RUN confluent-hub install --no-prompt confluentinc/kafka-connect-elasticsearch:latest
-RUN confluent-hub install  --no-prompt redhatinsights/expandjsonsmt:0.0.7
+RUN confluent-hub install --no-prompt redhatinsights/expandjsonsmt:0.0.7
 
 RUN mkdir -p /usr/share/java/joyce
 RUN wget -O /usr/share/java/joyce/kafka-connect-aws.tar.gz https://github.com/lensesio/stream-reactor/releases/download/3.0.1/kafka-connect-aws-s3-3.0.1-2.5.0-all.tar.gz && \
@@ -29,7 +29,7 @@ ENV CONNECT_GROUP_ID=joyce-jdbc-connector
 ENV CONNECT_CONFIG_STORAGE_TOPIC=joyce-kafka-connector-config
 ENV CONNECT_OFFSET_STORAGE_TOPIC=joyce-kafka-connector-offsets
 ENV CONNECT_STATUS_STORAGE_TOPIC=joyce-kafka-connector-status
-ENV CONNECT_CONFIG_STORAGE_REPLICATION_FACTOR=1 
-ENV CONNECT_OFFSET_STORAGE_REPLICATION_FACTOR=1 
+ENV CONNECT_CONFIG_STORAGE_REPLICATION_FACTOR=1
+ENV CONNECT_OFFSET_STORAGE_REPLICATION_FACTOR=1
 ENV CONNECT_STATUS_STORAGE_REPLICATION_FACTOR=1
 ENV CONNECT_REST_ADVERTISED_HOST_NAME=localhost

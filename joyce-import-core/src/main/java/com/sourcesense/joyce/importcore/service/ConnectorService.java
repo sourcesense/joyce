@@ -6,12 +6,13 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.databind.node.JsonNodeFactory;
 import com.fasterxml.jackson.databind.node.ObjectNode;
 import com.sourcesense.joyce.core.enumeration.ConnectorOperation;
+import com.sourcesense.joyce.core.enumeration.uri.JoyceURIChannel;
 import com.sourcesense.joyce.core.exception.RestException;
 import com.sourcesense.joyce.core.model.dto.ConnectorOperationStatus;
 import com.sourcesense.joyce.core.model.entity.JoyceSchemaMetadata;
 import com.sourcesense.joyce.core.model.entity.JoyceSchemaMetadataExtraConnector;
 import com.sourcesense.joyce.core.model.entity.SchemaEntity;
-import com.sourcesense.joyce.core.model.uri.JoyceSchemaURI;
+import com.sourcesense.joyce.core.model.uri.JoyceSourceURI;
 import com.sourcesense.joyce.core.model.uri.JoyceURIFactory;
 import com.sourcesense.joyce.importcore.dto.JoyceSchemaImportMetadataExtra;
 import com.sourcesense.joyce.importcore.exception.ConnectorOperationException;
@@ -42,9 +43,8 @@ public class ConnectorService {
 	private final static String JOYCE_KEY = "joyceKey";
 
 	private final static String TRANSFORMS = "transforms";
-	private final static String TRANSFORMS_JOYCE_KEY_UID = "transforms.joyceKey.uid";
-	private final static String TRANSFORMS_JOYCE_KEY_SOURCE = "transforms.joyceKey.source";
-	private final static String TRANSFORMS_JOYCE_KEY_SCHEMA = "transforms.joyceKey.schema";
+	private final static String TRANSFORMS_JOYCE_KEY_SOURCE_UID_FIELD = "transforms.joyceKey.sourceUidField";
+	private final static String TRANSFORMS_JOYCE_KEY_SOURCE_URI = "transforms.joyceKey.sourceUri";
 	private final static String TRANSFORMS_JOYCE_KEY_TYPE = "transforms.joyceKey.type";
 
 	private final String kafkaConnectHost;
@@ -304,16 +304,13 @@ public class ConnectorService {
 			JoyceSchemaMetadata metadata,
 			JoyceSchemaMetadataExtraConnector connector) {
 
-		JoyceSchemaURI schemaUri = JoyceURIFactory.getInstance().createSchemaURIOrElseThrow(
-				metadata.getDomain(),
-				metadata.getProduct(),
-				metadata.getName()
+		JoyceSourceURI sourceURI = JoyceURIFactory.getInstance().createSourceURIOrElseThrow(
+				metadata.getDomain(),	metadata.getProduct(), metadata.getName(),
+				JoyceURIChannel.CONNECT, connector.getName(), "[uid]"
 		);
-
 		enrichedConfig.put(TRANSFORMS, transforms);
-		enrichedConfig.put(TRANSFORMS_JOYCE_KEY_UID, connector.getImportKeyUid());
-		enrichedConfig.put(TRANSFORMS_JOYCE_KEY_SOURCE, connector.getName());
-		enrichedConfig.put(TRANSFORMS_JOYCE_KEY_SCHEMA, schemaUri.toString());
+		enrichedConfig.put(TRANSFORMS_JOYCE_KEY_SOURCE_UID_FIELD, connector.getImportKeyUid());
+		enrichedConfig.put(TRANSFORMS_JOYCE_KEY_SOURCE_URI, sourceURI.toString());
 		enrichedConfig.put(TRANSFORMS_JOYCE_KEY_TYPE, "com.sourcesense.joyce.connect.custom.InsertJoyceMessageKey");
 	}
 
@@ -341,8 +338,7 @@ public class ConnectorService {
 
 		return jsonMapper.convertValue(
 				this.executeRest(endpoint, method, requiredStatus),
-				new TypeReference<>() {
-				}
+				new TypeReference<>() {}
 		);
 	}
 

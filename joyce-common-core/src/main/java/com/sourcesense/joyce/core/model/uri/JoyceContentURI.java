@@ -1,7 +1,5 @@
 package com.sourcesense.joyce.core.model.uri;
 
-import com.sourcesense.joyce.core.enumeration.uri.JoyceURIContentType;
-import com.sourcesense.joyce.core.enumeration.uri.JoyceURIKind;
 import lombok.EqualsAndHashCode;
 import lombok.Getter;
 
@@ -18,8 +16,8 @@ public class JoyceContentURI extends JoyceTaxonomyURI {
 		this.contentType = contentType;
 	}
 
-	public String getSchemaUri() {
-		return String.format("%s:%s:%s:%s:%s:%s", URI_SCHEMA, JoyceURIKind.CONTENT, domain, product, name, JoyceURIContentType.SCHEMA);
+	public JoyceSchemaURI getSchemaURI() {
+		return JoyceURIFactory.getInstance().createSchemaURIOrElseThrow(domain, product, name);
 	}
 
 	public String getCollection() {

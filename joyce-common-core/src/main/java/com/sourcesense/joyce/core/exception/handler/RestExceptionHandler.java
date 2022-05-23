@@ -2,7 +2,6 @@ package com.sourcesense.joyce.core.exception.handler;
 
 import com.sourcesense.joyce.core.model.dto.ApiError;
 import com.sourcesense.joyce.core.exception.InvalidMetadataException;
-import com.sourcesense.joyce.core.exception.ProcessingException;
 import com.sourcesense.joyce.core.exception.RestException;
 import com.sourcesense.joyce.core.exception.SchemaNotFoundException;
 import lombok.RequiredArgsConstructor;
@@ -46,13 +45,6 @@ public class RestExceptionHandler {
 	@ResponseStatus(HttpStatus.NOT_FOUND)
 	@ExceptionHandler(SchemaNotFoundException.class)
 	public ApiError handler(SchemaNotFoundException exception, WebRequest request) {
-		return this.logExceptionAndComputeErrorResponse(exception);
-	}
-
-	@ResponseBody
-	@ResponseStatus(HttpStatus.INTERNAL_SERVER_ERROR)
-	@ExceptionHandler(ProcessingException.class)
-	ApiError handler(ProcessingException exception) {
 		return this.logExceptionAndComputeErrorResponse(exception);
 	}
 

@@ -1,6 +1,9 @@
 {
-  "$schema": "https://joyce.sourcesense.com/v1/schema",
-  "$metadata": {},
+  "$metadata": {
+    "domain": "test",
+    "product": "default",
+    "name": "validation"
+  },
   "type": "object",
   "properties": {
     "id": {

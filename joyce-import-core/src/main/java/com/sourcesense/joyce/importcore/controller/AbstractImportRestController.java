@@ -152,6 +152,9 @@ public abstract class AbstractImportRestController implements ImportRestApi {
 			Map<ProcessStatus, List<SingleImportResult>> results,
 			ProcessStatus status) {
 
-		return results.getOrDefault(status, new ArrayList<>()).size();
+		return Optional.ofNullable(status)
+				.map(results::get)
+				.map(List::size)
+				.orElse(0);
 	}
 }

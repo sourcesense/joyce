@@ -2,64 +2,81 @@ package com.sourcesense.joyce.connect.custom;
 
 import org.apache.kafka.common.config.ConfigDef;
 import org.apache.kafka.connect.connector.ConnectRecord;
+import org.apache.kafka.connect.data.Struct;
 import org.apache.kafka.connect.transforms.Transformation;
 import org.apache.kafka.connect.transforms.util.SimpleConfig;
 
 import java.util.HashMap;
 import java.util.Map;
+import java.util.Optional;
 
-import static org.apache.kafka.connect.transforms.util.Requirements.requireMap;
+public class InsertJoyceMessageKey<R extends ConnectRecord<R>> implements Transformation<R> {
 
-public  class InsertJoyceMessageKey<R extends ConnectRecord<R>> implements Transformation<R> {
-    private final static String KEY_UID = "uid";
-    private final static String KEY_SCHEMA = "schema";
-    private final static String KEY_SOURCE = "source";
-    public static final String OVERVIEW_DOC =
-            "Insert a Joyce Message Key based on configuration";
+	private final static String KEY_SOURCE_UID_FIELD = "sourceUidField";
+	private final static String KEY_SOURCE_UID_FIELD_DEFAULT = "id";
 
-    public static final ConfigDef CONFIG_DEF = new ConfigDef()
-            .define(KEY_UID, ConfigDef.Type.STRING, "id",
-                    ConfigDef.Importance.HIGH, "document field name of unique id")
-            .define(KEY_SCHEMA, ConfigDef.Type.STRING, "joyce://schema/import/test",
-                    ConfigDef.Importance.HIGH, "Schema uri to use with produced content")
-            .define(KEY_SOURCE, ConfigDef.Type.STRING, "test-connector-default",
-                    ConfigDef.Importance.HIGH, "String identifier of the current connector configuration");;
+	private final static String KEY_SOURCE_URI = "sourceUri";
+	private final static String KEY_SOURCE_URI_DEFAULT = "joyce:content:test:default:user:src:connect:user-connector:%s";
 
-    private String uid;
-    private String schema;
-    private String source;
+	private final static String KEY_URI = "uri";
+	private final static String KEY_URI_DEFAULT = "joyce:content:test:default:user:src:connect:user-connector:-1";
 
-    @Override
-    public void configure(Map<String, ?> props) {
+	private final static String KEY_ACTION = "action";
+	private final static String KEY_ACTION_DEFAULT = "INSERT";
 
-        final SimpleConfig config = new SimpleConfig(CONFIG_DEF, props);
-        uid = config.getString(KEY_UID);
-        schema = config.getString(KEY_SCHEMA);
-        source = config.getString(KEY_SOURCE);
+	private final static ConfigDef CONFIG_DEF = computeConfigDef();
 
-    }
+	private String sourceUidField;
+	private String sourceUri;
 
-    @Override
-    public R apply(R record) {
-        final Map<String, Object> updatedKey = new HashMap<>();
+	@Override
+	public void configure(Map<String, ?> props) {
+		SimpleConfig config = new SimpleConfig(CONFIG_DEF, props);
+		sourceUidField = config.getString(KEY_SOURCE_UID_FIELD);
+		sourceUri = config.getString(KEY_SOURCE_URI);
+	}
 
-        updatedKey.put(KEY_UID, uid);
-        updatedKey.put(KEY_SCHEMA, schema);
-        updatedKey.put(KEY_SOURCE, source);
-        return record.newRecord(record.topic(), record.kafkaPartition(), null, updatedKey, record.valueSchema(), record.value(), record.timestamp());
-    }
+	@Override
+	public R apply(R record) {
+		Map<String, Object> updatedKey = new HashMap<>();
+		updatedKey.put(KEY_URI, this.computeUri(record));
+		updatedKey.put(KEY_ACTION, this.computeAction(record));
+		return record.newRecord(record.topic(), record.kafkaPartition(), null, updatedKey, record.valueSchema(), record.value(), record.timestamp());
+	}
 
+	@Override
+	public ConfigDef config() {
+		return CONFIG_DEF;
+	}
 
+	@Override
+	public void close() {}
 
-    @Override
-    public ConfigDef config() {
-        return CONFIG_DEF;
-    }
+	private String computeUri(R record) {
+		return Optional.of(record)
+				.map(R::value)
+				.filter(Struct.class::isInstance)
+				.map(Struct.class::cast)
+				.map(value -> value.get(sourceUidField))
+				.map(Object::toString)
+				.map(sourceUid -> sourceUri.replace("[uid]", sourceUid))
+				.orElse(KEY_URI_DEFAULT);
+	}
 
-    @Override
-    public void close() {
+	//Todo: Might be retrieved from record in the future
+	private String computeAction(R record) {
+		 return KEY_ACTION_DEFAULT;
+	}
 
-    }
-
-
+	private static ConfigDef computeConfigDef() {
+		return new ConfigDef()
+				.define(
+						KEY_SOURCE_UID_FIELD, ConfigDef.Type.STRING,
+						KEY_SOURCE_UID_FIELD_DEFAULT, ConfigDef.Importance.HIGH,
+						"Name of the field of the source that will be used as uid")
+				.define(
+						KEY_SOURCE_URI, ConfigDef.Type.STRING,
+						KEY_SOURCE_URI_DEFAULT, ConfigDef.Importance.HIGH,
+						"Source uri missing the uid");
+	}
 }

@@ -239,7 +239,7 @@ public class SchemaEngineTest implements TestUtility {
 		schemaEngine.defaultInit();
 
 		JsonNode expected = this.getResourceAsNode(resultPath);
-		JsonNode actual = schemaEngine.process(schema, source, null);
+		JsonNode actual = schemaEngine.process(schema, source);
 
 		assertEquals(expected, actual);
 	}

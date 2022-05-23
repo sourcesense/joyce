@@ -25,8 +25,8 @@ import java.util.function.Predicate;
  * Aspect that intercept method annotated with
  * {@link Notify}
  * It retrieves data from the method parameters annotated with
- * {@link SourceUri}
- * {@link DocumentUri}
+ * {@link SourceURI}
+ * {@link ContentURI}
  * {@link EventPayload}
  * {@link EventMetadata}
  * and sends notifications to kafka notification topic
@@ -59,12 +59,12 @@ public class NotificationAspect implements MethodAspect {
 		Method method = this.computeMethod(joinPoint);
 		Parameter[] params = method.getParameters();
 
-		String rawUri = this.computeUri(params, joinPoint.getArgs(), SourceUri.class);
-		String contentUri = this.computeUri(params, joinPoint.getArgs(), DocumentUri.class);
+		String contentURI = this.computeUri(params, joinPoint.getArgs(), ContentURI.class);
+		String sourceURI = this.computeUri(params, joinPoint.getArgs(), SourceURI.class);
 		JsonNode eventPayload = this.computeNode(params, joinPoint.getArgs(), EventPayload.class);
 		JsonNode eventMetadata = this.computeNode(params, joinPoint.getArgs(), EventMetadata.class);
 
-		return this.notify(joinPoint, method, rawUri, contentUri, eventPayload, eventMetadata);
+		return this.notify(joinPoint, method, contentURI, sourceURI, eventPayload, eventMetadata);
 	}
 
 	/**
@@ -73,8 +73,8 @@ public class NotificationAspect implements MethodAspect {
 	 *
 	 * @param joinPoint
 	 * @param method
-	 * @param rawUri
-	 * @param contentUri
+	 * @param contentURI
+	 * @param sourceURI
 	 * @param eventPayload
 	 * @param eventMetadata
 	 * @return
@@ -82,15 +82,15 @@ public class NotificationAspect implements MethodAspect {
 	private Object notify(
 			ProceedingJoinPoint joinPoint,
 			Method method,
-			String rawUri,
-			String contentUri,
+			String contentURI,
+			String sourceURI,
 			JsonNode eventPayload,
 			JsonNode eventMetadata) {
 
 		try {
 			Object result = joinPoint.proceed();
 			this.computeNotificationEvent(method, Notify::successEvent).ifPresent(
-					successEvent -> notificationService.ok(rawUri, contentUri, successEvent, eventMetadata, eventPayload)
+					successEvent -> notificationService.ok(contentURI, sourceURI, successEvent, eventMetadata, eventPayload)
 			);
 
 			return result;
@@ -100,7 +100,7 @@ public class NotificationAspect implements MethodAspect {
 				this.computeNotificationEvent(method, Notify::failureEvent)
 						.ifPresent(failureEvent -> {
 									JsonNode enrichedMetadata = this.enrichMetadataWithError(eventMetadata, exception);
-									notificationService.ko(rawUri, contentUri, failureEvent, enrichedMetadata, eventPayload);
+									notificationService.ko(contentURI, sourceURI, failureEvent, enrichedMetadata, eventPayload);
 								}
 						);
 				throw new NotifiedException(exception);
@@ -128,8 +128,8 @@ public class NotificationAspect implements MethodAspect {
 
 	/**
 	 * Retrieves an uri from a param of the intercepted method
-	 * annotated with {@link SourceUri}
-	 * or {@link DocumentUri}
+	 * annotated with {@link SourceURI}
+	 * or {@link ContentURI}
 	 * Uri can of type JoyceURI or String.
 	 *
 	 * @param params

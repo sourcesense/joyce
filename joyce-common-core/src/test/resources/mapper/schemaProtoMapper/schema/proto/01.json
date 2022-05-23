@@ -11,10 +11,7 @@
     "store": "true",
     "validation": "true",
     "indexed": "true",
-    "connectors": "false",
-    "export": "false",
-    "uidKey": "id",
-    "collection": "test-default-user"
+    "uidKey": "id"
   },
   "type": "object",
   "properties": {

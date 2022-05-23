@@ -107,135 +107,6 @@ class ImportServiceTest implements TestUtility {
 		importService = new ImportService(jsonMapper, schemaUtils, schemaService, contentProducer, jsonLogicService, csvMappingService, schemaEngine);
 	}
 
-	/*
-	computeSourceURI tests
- */
-	@Test
-	void shouldComputeSourceURIWhenImportSchemaIsNotNull() throws JsonProcessingException {
-		Map<String, String> headers = this.computeHeaders(SCHEMA_URI);
-
-		JoyceSourceURI actualSourceURI = importService.computeSourceURI(SINGLE_REST_URI, headers);
-
-		assertEquals(JOYCE_SINGLE_REST_URI, actualSourceURI);
-	}
-
-	@Test
-	void shouldComputeSourceURIWhenImportSchemaIsNull() throws IOException, URISyntaxException {
-		Map<String, String> headers = this.computeHeaders(null);
-		String messageKey = this.computeResourceAsString(CONNECT_KEY_CORRECT);
-
-		JoyceSourceURI actualSourceURI = importService.computeSourceURI(messageKey, headers);
-
-		assertEquals(JOYCE_CONNECT_URI, actualSourceURI);
-	}
-
-	@Test
-	void shouldThrowInvalidJoyceURIExceptionWhenJoyceURIIsInvalid() {
-		Map<String, String> headers = this.computeHeaders(SCHEMA_URI);
-
-		assertThrows(
-				InvalidJoyceURIException.class,
-				() -> importService.computeSourceURI(INVALID_REST_URI, headers)
-		);
-	}
-
-	/*
-			computeValidSchemaURI tests
-	 */
-	@Test
-	void shouldComputeValidSchemaURIWhenImportSchemaIsNotNull() throws JsonProcessingException {
-		Map<String, String> headers = this.computeHeaders(SCHEMA_URI);
-
-		JoyceSchemaURI actualSchemaURI = importService.computeSchemaURI(null, headers, null);
-
-		assertEquals(JOYCE_SCHEMA_URI, actualSchemaURI);
-	}
-
-	@Test
-	void shouldComputeValidSchemaURIWhenImportSchemaIsNull() throws IOException, URISyntaxException {
-		Map<String, String> headers = this.computeHeaders(null);
-		String messageKey = this.computeResourceAsString(CONNECT_KEY_CORRECT);
-
-		JoyceSchemaURI actualSchemaURI = importService.computeSchemaURI(messageKey, headers, null);
-
-		assertEquals(JOYCE_SCHEMA_URI, actualSchemaURI);
-	}
-
-	@Test
-	void shouldThrowInvalidJoyceURIExceptionIfSubtypeIsNotImport() {
-		Map<String, String> headers = this.computeHeaders(INVALID_SCHEMA_URI);
-
-		assertThrows(
-				InvalidJoyceURIException.class,
-				() -> importService.computeSchemaURI(null, headers, null)
-		);
-	}
-
-	/*
-		checkValidKey tests
-	 */
-	@Test
-	void shouldThrowImportExceptionWhenSchemaIsMissing() throws IOException, URISyntaxException {
-		Map<String, String> headers = this.computeHeaders(null);
-		String messageKey = this.computeResourceAsString(CONNECT_KEY_MISSING_SCHEMA);
-
-		assertThrows(
-				ImportException.class,
-				() -> importService.computeSourceURI(messageKey, headers)
-		);
-
-		assertThrows(
-				ImportException.class,
-				() -> importService.computeSchemaURI(messageKey, headers, null)
-		);
-	}
-
-	@Test
-	void shouldThrowImportExceptionWhenUidIsMissing() throws IOException, URISyntaxException {
-		Map<String, String> headers = this.computeHeaders(null);
-		String messageKey = this.computeResourceAsString(CONNECT_KEY_MISSING_UID);
-
-		assertThrows(
-				ImportException.class,
-				() -> importService.computeSourceURI(messageKey, headers)
-		);
-
-		assertThrows(
-				ImportException.class,
-				() -> importService.computeSchemaURI(messageKey, headers, null)
-		);
-	}
-
-	@Test
-	void shouldThrowImportExceptionWhenSourceIsMissing() throws IOException, URISyntaxException {
-		Map<String, String> headers = this.computeHeaders(null);
-		String messageKey = this.computeResourceAsString(CONNECT_KEY_MISSING_SOURCE);
-
-		assertThrows(
-				ImportException.class,
-				() -> importService.computeSourceURI(messageKey, headers)
-		);
-
-		assertThrows(
-				ImportException.class,
-				() -> importService.computeSchemaURI(messageKey, headers, null)
-		);
-	}
-
-	/*
-			computeSchema tests
-	 */
-	@Test
-	void shouldThrowSchemaNotFoundExceptionIfMissing() {
-
-		when(schemaService.getOrElseThrow(any(), any(), any())).thenThrow(SchemaNotFoundException.class);
-
-		assertThrows(
-				SchemaNotFoundException.class,
-				() -> importService.computeSchema(JOYCE_SCHEMA_URI, null)
-		);
-	}
-
 	@Test
 	void shouldProcessImportWhenTheInputDataIsCorrect() throws IOException {
 
@@ -243,7 +114,7 @@ class ImportServiceTest implements TestUtility {
 		SchemaEntity schema = computeSchema(TEST_SCHEMA_JSON_USER);
 		when(schemaUtils.metadataFromSchemaOrElseThrow(any())).thenReturn(schema.getMetadata());
 		when(jsonLogicService.filter(any(), any())).thenReturn(true);
-		when(schemaEngine.process(any(SchemaEntity.class), any(), any()))
+		when(schemaEngine.process(any(SchemaEntity.class), any()))
 				.thenReturn(jsonMapper.valueToTree(Map.of("code", "1337")));
 
 		// Subject under test
@@ -273,7 +144,7 @@ class ImportServiceTest implements TestUtility {
 		// mocking and stubbing data for test execution
 		SchemaEntity schema = computeSchema(TEST_SCHEMA_JSON_USER);
 		when(jsonLogicService.filter(any(), any())).thenReturn(true);
-		when(schemaEngine.process(any(SchemaEntity.class), any(), any()))
+		when(schemaEngine.process(any(SchemaEntity.class), any()))
 				.thenThrow(InvalidSchemaException.class);
 
 		// asserts
@@ -297,7 +168,7 @@ class ImportServiceTest implements TestUtility {
 		SchemaEntity schema = computeSchema(TEST_SCHEMA_JSON_ENHANCED_USER);
 		when(schemaUtils.metadataFromSchemaOrElseThrow(any())).thenReturn(schema.getMetadata());
 		when(jsonLogicService.filter(any(), any())).thenReturn(true);
-		when(schemaEngine.process(any(SchemaEntity.class), any(), any()))
+		when(schemaEngine.process(any(SchemaEntity.class), any()))
 				.thenReturn(jsonMapper.valueToTree(Map.of("code", "1337")));
 		when(schemaService.get(any()))
 				.thenReturn(Optional.of(computeSchema(TEST_SCHEMA_JSON_USER)));
