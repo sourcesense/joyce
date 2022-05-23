@@ -44,7 +44,7 @@ public class JoyceSchemaMetadata {
 	private JoyceSchemaURI parent;
 	private List<Map<String, Object>> indexes;
 
-	private Boolean development = false;
+	private Boolean production = false;
 	private Boolean store = true;
 	private Boolean validation = true;
 	private Boolean indexed = true;

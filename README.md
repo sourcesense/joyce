@@ -65,7 +65,7 @@ metadata:
   namespace: default
   name: user
   description: A test schema
-  development: true
+  production: false
   uuuid: code
   collection: users
 type: object

@@ -144,14 +144,17 @@ public class SchemaService implements SchemaClient {
 		Optional<SchemaEntity> existingSchema = this.get(schemaEntity.getUid().toString());
 		if (existingSchema.isPresent()) {
 			/*
-			 * If schema is in development mode we skip schema checks,
-			 * but we block if previous schema is not in dev mode
+			 * If schema is in not in production mode we skip schema checks,
+			 * but we block if previous schema is in production mode
 			 */
-			if (schemaEntity.getMetadata().getDevelopment() && !existingSchema.get().getMetadata().getDevelopment()) {
-				throw new JoyceSchemaEngineException("Previous schema is not in development mode");
+			if (!schemaEntity.getMetadata().getProduction() && existingSchema.get().getMetadata().getProduction()) {
+				throw new JoyceSchemaEngineException(String.format(
+						"Unable to save schema '%s'. Found existing schema in production mode, cannot switch to development mode.",
+						schemaEntity.getUid()
+				));
 			}
 
-			if (!schemaEntity.getMetadata().getDevelopment() && !existingSchema.get().getMetadata().getDevelopment()) {
+			if (schemaEntity.getMetadata().getProduction() && existingSchema.get().getMetadata().getProduction()) {
 				schemaEngine.checkForBreakingChanges(existingSchema.get(), schemaEntity);
 			}
 		}

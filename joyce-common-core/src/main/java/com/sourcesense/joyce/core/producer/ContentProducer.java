@@ -129,7 +129,7 @@ public class ContentProducer extends KafkaMessageProducer<String, JsonNode> {
 		ObjectNode content_metadata = jsonMapper.createObjectNode();
 		content_metadata.put("schema_uri", schema.getUid().toString());
 		content_metadata.put("schema_type", schema.getMetadata().getType());
-		content_metadata.put("schema_development", schema.getMetadata().getDevelopment());
+		content_metadata.put("schema_production", schema.getMetadata().getProduction());
 		if (Objects.nonNull(sourceURI)) {
 			content_metadata.put("source_uri", sourceURI.toString());
 		}

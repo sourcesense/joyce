@@ -6,7 +6,7 @@
     "name": "user",
     "namespace": "default",
     "description": "A test schema",
-    "development": true,
+    "production": false,
     "validation": false,
     "uid": "code"
   },

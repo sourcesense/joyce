@@ -4,7 +4,7 @@
     "subtype": "import",
     "name": "test",
     "description": "A test schema",
-    "development": true,
+    "production": false,
     "uid": "id",
     "collection": "test"
   },

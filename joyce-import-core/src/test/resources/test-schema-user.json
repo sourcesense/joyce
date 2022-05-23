@@ -30,7 +30,7 @@
     "name": "user",
     "collection": "test-default-user",
     "description": "A test schema",
-    "development": true,
+    "production": false,
     "parent": null,
     "uid": "code"
   }

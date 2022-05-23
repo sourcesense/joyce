@@ -4,7 +4,7 @@
     "subtype": "import",
     "name": "user",
     "description": "A test schema",
-    "development": true,
+    "production": false,
     "uid": "code",
     "collection": "users",
     "store": false,

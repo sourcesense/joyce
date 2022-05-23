@@ -55,7 +55,7 @@ metadata:
   namespace: default
   name: technology-news
   description: Technology  news from rss feeds
-  development: true
+  production: false
   collection: technology-news
   validation: false
   uid: link
@@ -336,7 +336,7 @@ metadata:
   namespace: default
   name: technology-news
   description: Technology  news from rss feeds
-  development: true
+  production: false
   collection: technology-news
   validation: false
   uid: link

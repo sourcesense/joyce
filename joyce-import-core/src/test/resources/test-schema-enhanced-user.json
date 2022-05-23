@@ -14,7 +14,7 @@
     "name": "enhanced-user",
     "collection": "test-default-enhanced-users",
     "description": "A test schema",
-    "development": true,
+    "production": false,
     "parent": "joyce:content:test:default:user:schema",
     "uid": "code"
   }

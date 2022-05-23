@@ -21,7 +21,7 @@ metadata:
   subtype: import
   uid: code
   collection: users
-  development: true
+  production: false
   namespace: clients
   store: true
   indexes:
@@ -203,10 +203,10 @@ indexes:
     published_date: 0
 ```
 
-### development
+### production
 
 *(default false)*
-If true mark the schema as a development schema and saving the schema changed will skip [versioning controls].(import-gateway#versioning)
+If false mark the schema as a development schema and saving the schema changed will skip [versioning controls].(import-gateway#versioning)
 
 ### parent
 

@@ -82,12 +82,12 @@ Where you are in the process of developing a schema, you can bypass these checks
 ```yaml
 metadata:
   ...
-  development: true
+  production: false
 ```
 
 This will save the content but it doesn't gurantee that data is validated against the schema when saved in the storage.
 
-Once you set `development: false` in a schema you **cannot go back**.
+Once you set `production: true` in a schema you **cannot go back**.
 
 
 ## Connectors API
