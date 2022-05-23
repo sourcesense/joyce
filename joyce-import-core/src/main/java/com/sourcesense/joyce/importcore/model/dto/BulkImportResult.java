@@ -1,4 +1,4 @@
-package com.sourcesense.joyce.importcore.dto;
+package com.sourcesense.joyce.importcore.model.dto;
 
 import lombok.AllArgsConstructor;
 import lombok.Builder;

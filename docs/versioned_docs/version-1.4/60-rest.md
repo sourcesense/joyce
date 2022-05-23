@@ -1,7 +1,7 @@
 
 # Joyce API
 
-`joyce-rest` is the main interface to consume the final output of Joyce transofrmations.  
+`joyce-rest` is the main interface to consume the final output of Joyce transofrmations.
 It expose a **REST** and a **GraphQL** interface to *read* and a **JSON-RPC** interface to propagate other operations to the source backend systems.
 
 ## Configuration
@@ -11,7 +11,7 @@ The api needs a json config file that defines which schemas to serve, this enabl
 The configuration file is really simple:
 
 ```json
-{   
+{
     "schemas": {
         "[PATH]": {
             "source": "[JOYCE_URI_OF_SCHEMA]"
@@ -22,7 +22,7 @@ The configuration file is really simple:
 
 ie.
 ```json
-{   
+{
     "schemas": {
         "users": {
             "source": "http://import-gateway:6651/api/schema/user"
@@ -36,9 +36,9 @@ ie.
 
 The file is read at startup so you have to already have the schema stored within the import gateway.
 
-`joyce-rest` read the schema and parses its [$metadata](schema#$metadata), knowing the shape of the content, the collection and unique id of content.
+`joyce-rest` read the schema and parses its [metadata](schema#metadata), knowing the shape of the content, the collection and unique id of content.
 
-## REST 
+## REST
 
 With this information it will expose a Swagger documentation of the API at `/docs`.
 
@@ -55,5 +55,5 @@ There is a `/jrpc` endpoint where you can send [json-rpc](https://www.jsonrpc.or
 
 ## GraphQL
 
-This service will expose also a [GraphQL](https://graphql.org/) interface at `/query` and a playground at `/graphql`. 
+This service will expose also a [GraphQL](https://graphql.org/) interface at `/query` and a playground at `/graphql`.
 The schema is transposed to a graphql schema automatically by using [GraphQL Mesh](https://www.graphql-mesh.com/)

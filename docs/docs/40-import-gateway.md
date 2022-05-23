@@ -4,7 +4,7 @@
 
 # Import Gateway
 
-The Import Gateway is the single point where you ingest your data into the system.   
+The Import Gateway is the single point where you ingest your data into the system.
 It manages import schemas and applies them to the content you send to it.
 
 You can image it as a function that given a schema and a content as input it outputs the content transformed as the schema describes.
@@ -17,8 +17,8 @@ Import Gateway has two interface to process source content a **REST API** and a 
 
 ### REST API
 
-Swagger docuemntation can be find here [http://localhost:6651/docs](http://localhost:6651/docs).   
-To specify the schema to use you have to set a custem header `X-Joyce-Schema-Id`.   
+Swagger docuemntation can be find here [http://localhost:6651/docs](http://localhost:6651/docs).
+To specify the schema to use you have to set a custem header `X-Joyce-Schema-Id`.
 Different endpoints let you insert/delete a single content, bulk insert from a csv or just testing a scehma transformation with a dry run.
 
 
@@ -32,7 +32,7 @@ Applies the **schema** specified by `X-Joyce-Schema-Id` and publish an empty mes
 
 #### POST /api/import/bulk
 
-Applies the **schema** specified by `X-Joyce-Schema-Id` to every line of the csv sent as multipart along the http request and publish a message to `content-topic` for every line transofrmed.  
+Applies the **schema** specified by `X-Joyce-Schema-Id` to every line of the csv sent as multipart along the http request and publish a message to `content-topic` for every line transofrmed.
 The csv has to be valid and the first line is parsed as header giving name to columns.
 
 #### POST /api/import/dryrun
@@ -52,7 +52,7 @@ Import Gateway consumes messages from `joyce_import`, it exepcts the message to 
 }
 ```
 
-- `uid` is a unique identifier of the imported content 
+- `uid` is a unique identifier of the imported content
 - `schema` is the uri of the schema to apply
 - `source` identify the source of the content
 
@@ -65,7 +65,7 @@ If you specify the [connectors inside the schema](schema#connectors) the transfo
 
 Input Gateway has a CRUD REST interface to manage [Schemas](schema), you can access its swagger documentation at [http://localhost:6651/docs](http://localhost:6651/docs).
 
-With it you can do what you expect, create, read, update and delete schemas for a namespace, you can also list namespaces. 
+With it you can do what you expect, create, read, update and delete schemas for a namespace, you can also list namespaces.
 Updating schemas has few constraints, because the system tries to keep consistency within the data inside the system, preventing changes to the schema that can corrupt previous imported data.
 
 When you upsert a schema, checks are made to understand what has changed, if there are **breaking changes** the schema cannot be saved.
@@ -74,20 +74,20 @@ Breaking changes are:
 
 - remove a required property
 - change the type of property
-  
+
 ### Developing mode
 
 Where you are in the process of developing a schema, you can bypass these checks by flagging the schema in developing mode, by putting this value in the Schema metadata
 
 ```yaml
-$metadata:
+metadata:
   ...
   development: true
 ```
 
 This will save the content but it doesn't gurantee that data is validated against the schema when saved in the storage.
 
-Once you set `development: false` in a schema you **cannot go back**. 
+Once you set `development: false` in a schema you **cannot go back**.
 
 
 ## Connectors API

@@ -20,7 +20,7 @@ If configured, use the Schema as mongodb [Schema Validation](https://docs.mongod
 The user used to connect to mongodb must have the right roles to issue `collMod` command.
 You can do it this way:
 ```
-db.grantRolesToUser( "user", [ 
+db.grantRolesToUser( "user", [
     { role: "dbAdmin", db: "joyce" }
     ])
 ```
@@ -40,9 +40,9 @@ When the schema changes new indexes are created, **indexes removed from the Sche
 
 ## Configuration
 
-We can change and tune its behaviour "per schema" with settings in the metadata node of the [Schema](schema):  
+We can change and tune its behaviour "per schema" with settings in the metadata node of the [Schema](schema):
 
-- `$metadata.collection` is the collaction name where content is stored.
-- `$metadata.uid` is the key of the content to be used as `_id` in mongodb.
-- `$metadata.store` by putting this settings as false the Sink will NOT store the content
-- `$metadata.indexes` it's an array of Maps defining the indexes (single or composite) to create in the colelction
+- `metadata.collection` is the collaction name where content is stored.
+- `metadata.uid` is the key of the content to be used as `_id` in mongodb.
+- `metadata.store` by putting this settings as false the Sink will NOT store the content
+- `metadata.indexes` it's an array of Maps defining the indexes (single or composite) to create in the colelction

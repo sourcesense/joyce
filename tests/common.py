@@ -15,17 +15,17 @@ API="http://localhost:6650"
 def load_schema(name, namespace):
   with open(path.join("resources", f"{name}.json")) as f:
     s = json.load(f)
-    s['$metadata']['namespace'] = namespace
+    s['metadata']['namespace'] = namespace
     return s
 
 def save_schema(schema:dict):
-  return requests.post(f"{IMPORT_GATEWAY}/schema", 
+  return requests.post(f"{IMPORT_GATEWAY}/schema",
         headers={
             'Content-Type': 'application/json'
         }, json=schema)
 
 def import_doc_dryrun(doc, schema_uri):
-  return requests.post(f"{IMPORT_GATEWAY}/import/dryrun", 
+  return requests.post(f"{IMPORT_GATEWAY}/import/dryrun",
         headers={
             'Content-Type': 'application/json',
             'X-Joyce-Schema-Id': schema_uri
@@ -33,27 +33,27 @@ def import_doc_dryrun(doc, schema_uri):
         json=doc)
 
 def save_schema_to_api(name, schema_url):
-  schemas = {   
+  schemas = {
     "schemas": {}
   }
   if path.exists('schemas.json'):
       with open('schemas.json', 'r') as f:
           schemas = json.load(f)
-  
+
   if not schemas["schemas"].get(name):
     schemas['schemas'][name] = {
       "source": schema_url
     }
     with open('schemas.json', 'w') as f:
         json.dump(schemas, f)
-    print("restarting rest...")    
+    print("restarting rest...")
     docker.compose.stop(['rest'])
     docker.compose.up(['rest'], detach=True)
 
 @contextmanager
 def check_trace(span_hashes):
     uuid = random_uuid()
-    
+
     yield uuid
     # exec everything then check the trace
 
@@ -64,7 +64,7 @@ def check_trace(span_hashes):
         'service': 'import-gateway',
         'tags': json.dumps({"jaeger-debug-id": uuid})
         })
-    
+
     assert traces_response.status_code == 200
     traces = traces_response.json()
     assert len(traces['data']) == 1

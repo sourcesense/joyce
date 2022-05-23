@@ -19,8 +19,8 @@ package com.sourcesense.joyce.importcore.api;
 
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.node.ObjectNode;
-import com.sourcesense.joyce.importcore.dto.BulkImportResult;
-import com.sourcesense.joyce.importcore.dto.SingleImportResult;
+import com.sourcesense.joyce.importcore.model.dto.BulkImportResult;
+import com.sourcesense.joyce.importcore.model.dto.SingleImportResult;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.MediaType;

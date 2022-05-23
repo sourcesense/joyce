@@ -4,16 +4,16 @@ title: Tutorial
 
 # How to build with Joyce a Unified API for italian regional hotels
 
-This tutorial is a practical, non trivial, real world example of how you can use Joyce platform.  
+This tutorial is a practical, non trivial, real world example of how you can use Joyce platform.
 We'll go step by step through the creation a complete flow of data integration and serving of a final API.
 
 ## Goal
 
-We want to create an API that expose information on all italian territory tourism accomodation (Hotels, B&B, ...). Our data source are the data that every singular region publishes as open data on [this site](http://www.datiopen.it/en/catalogo-opendata/turismo-0).   
-We can download csv data of the accomodation region by region, the only problem is that every region exports data in similar but slighlty different way, some information are present or not, others have different column names.   
+We want to create an API that expose information on all italian territory tourism accomodation (Hotels, B&B, ...). Our data source are the data that every singular region publishes as open data on [this site](http://www.datiopen.it/en/catalogo-opendata/turismo-0).
+We can download csv data of the accomodation region by region, the only problem is that every region exports data in similar but slighlty different way, some information are present or not, others have different column names.
 
-What we want is to have a unified api for all the data and be able to update it over time.   
-We'll use Joyce to do everything, we'll define the shape of the final data with a Schema, and then we'll write a child schema for every different data source and describe its transofrmation.  
+What we want is to have a unified api for all the data and be able to update it over time.
+We'll use Joyce to do everything, we'll define the shape of the final data with a Schema, and then we'll write a child schema for every different data source and describe its transofrmation.
 We then use the bulk import capability of joyce to  import and transform all the data.
 
 ## Setup
@@ -43,20 +43,20 @@ First things first, let's shape the data we ant for our accomodation api.
 
 ## Write Schemas
 
-A schema inside Joyce is a `json-schema` with an embedded DSL to make transformation, see [Schema docs](/docs/schema).   
+A schema inside Joyce is a `json-schema` with an embedded DSL to make transformation, see [Schema docs](/docs/schema).
 In our case things are more complex, we want a parent Schema with no transformations that represents the data we will serve, and several child schema with the actual transformation, one for every different source format (every italian region exports a csv with a different set of fields).
 
 Something like this:
 
 ![schemas](/img/tutorial-compose/Schemas.png)
 
-### Parent Schema 
+### Parent Schema
 
 Save this file to `import-accomodation.yaml`
 
 ```yaml
 $schema: https://joyce.sourcesense.com/v1/schema
-$metadata:
+metadata:
   subtype: import
   namespace: default
   name: accomodation
@@ -87,14 +87,14 @@ properties:
         type: integer
 ```
 
-This is a simple `json-schema` that shape and validate our data, the only strange thing is the `$metadata` node, this tells our system what to do with content generated with this schema, most important fields are `collection` and `uid` taht respectively tells Joyce to which collection content  will  be  stored and which key is to be considered as unique id.  
+This is a simple `json-schema` that shape and validate our data, the only strange thing is the `metadata` node, this tells our system what to do with content generated with this schema, most important fields are `collection` and `uid` taht respectively tells Joyce to which collection content  will  be  stored and which key is to be considered as unique id.
 Refer to [Schema docs](/docs/schema) for further info.
 
 ### Save schema
 
 Now we will register this schema to the `import-gateway`, either use following curl or do the same with the swagger ui.
 
-```bash 
+```bash
 curl -X POST -H "Content-Type: application/x-yaml" --data-binary @import-accomodation.yaml http://localhost:6651/api/schema
 ```
 
@@ -114,14 +114,14 @@ Edit `docker-compose.yaml` and add this to environment variables of `joyce-rest`
 ```
 and this volume:
 ```yaml
-volumes: 
+volumes:
   - "./schemas.json:/opt/schemas.json"
 ```
 
 then save this json to `schemas.json`
 
 ```json
-{   
+{
     "schemas": {
         "accomodation": {
             "source": "http://import-gateway:6651/api/schema/import/default/accomodation"
@@ -162,7 +162,7 @@ Here's the result, save it to `import-accomodation-veneto.yaml`
 
 ```yaml
 $schema: https://joyce.sourcesense.com/v1/schema
-$metadata:
+metadata:
   subtype: import
   namespace: default
   name: accomodation-veneto
@@ -205,12 +205,12 @@ properties:
 
 You see it has the same shape of our parent schema, but for every field we've used the `$path` handler to retrieve with a `json-path` expression the actual value we wanted (see [docs](/docs/schema) for other handlers and their usage ).
 
-We also added a field `tipology` that we will store, but not serve within the api because it is not present on every source data.   
+We also added a field `tipology` that we will store, but not serve within the api because it is not present on every source data.
 
 Go ahead and save this schema too as before.
 
 
-```bash 
+```bash
 curl -X POST -H "Content-Type: application/x-yaml" --data-binary @import-accomodation-veneto.yaml http://localhost:6651/api/schema
 ```
 
@@ -240,7 +240,7 @@ We are now ready to test our schema, get a sample json from the csv with this py
 head -n 2 Regione-Veneto---Elenco-strutture-ricettive.csv | python -c 'import csv;import json; from io import StringIO; import sys;reader = csv.DictReader(StringIO(sys.stdin.read()), delimiter=";"); print(json.dumps(list(reader), indent=2))'
 ```
 
-Copy the json element and use `import-gateway` swagger-ui to test the schema by using `​/api​/import​/dryrun` dryrun endpoint, in the header put the schema id ``. 
+Copy the json element and use `import-gateway` swagger-ui to test the schema by using `​/api​/import​/dryrun` dryrun endpoint, in the header put the schema id ``.
 
 Put in schema id `accomodation-veneto` and you should have the transofrmed json as output:
 
@@ -273,7 +273,7 @@ curl "http://localhost:6650/accomodation?orderBy=asc&sortBy=name"
 You should see your imported document transofrmed.
 ## Bulk import the file
 
-Time now to import the whole document.   
+Time now to import the whole document.
 from swagger use the `​/api​/import​/bulk` import, set the schema id and change the separators accordingly `;` for column and `,` for array elemnts.
 
 Then choose the csv to import.
@@ -286,7 +286,7 @@ Output will be an error message, something like :
 }
 ```
 This means something went wrong processing an entry.
-When bulk importing, the process stops at the first error giving you notice of it syncronously, but indeed the good ones before were correctly processed. 
+When bulk importing, the process stops at the first error giving you notice of it syncronously, but indeed the good ones before were correctly processed.
 
 You can consume the api to see it:
 
@@ -312,7 +312,7 @@ you'll see that the json has `"CAP":""` the cause of our error.
 
 Now based on how you want your data, either you can ignore the error and reject the entry, being sure all entry have the correct info, or you can relax the schema and import content with this missing data anyway.
 
-For the purpose of exercise we'll change the schema to accept nullable values on `cap` field.   
+For the purpose of exercise we'll change the schema to accept nullable values on `cap` field.
 Open `import-accomodation-veneto.yaml` and change the description of `cap` field as follows
 
 ```yaml
@@ -361,7 +361,7 @@ Go to [the site](http://www.datiopen.it/en/catalogo-opendata/turismo-0) and down
 curl "http://www.datiopen.it/export/csv/Regione-Sicilia---Mappa-delle-strutture-ricettive.csv" | iconv -f iso8859-1 -t utf-8 > sicily.csv
 ```
 
-Again with python kung-fu get one entry to view how data is: 
+Again with python kung-fu get one entry to view how data is:
 
 ```bash
 head -n 2 data/connect/toprocess/Regione-Sicilia---Mappa-delle-strutture-ricettive.csv | python -c 'import csv;import json; from io import StringIO; import sys;reader = csv.DictReader(StringIO(sys.stdin.read()), delimiter=";"); print(json.dumps(list(reader), indent=2))'
@@ -371,7 +371,7 @@ and write a new schema to `import-accomodation-sicily.yaml`
 
 ```yaml
 $schema: https://joyce.sourcesense.com/v1/schema
-$metadata:
+metadata:
   subtype: import
   namespace: default
   name: accomodation-sicilia
@@ -416,7 +416,7 @@ curl -H "Content-Type: application/x-yaml" --data-binary @import-accomodation-si
 
 Bulk import this file using the new schema `joyce://schema/import/default.accomodation-sicilia`.
 
-Quering `joyce-rest` you should see also the data from Sicily: 
+Quering `joyce-rest` you should see also the data from Sicily:
 
 ```bash
 curl "http://localhost:6650/accomodations?orderBy=asc&sortBy=name&size=5&location.region=Sicily"

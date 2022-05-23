@@ -5,7 +5,7 @@ import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.databind.node.TextNode;
 import com.sourcesense.joyce.core.model.entity.JoyceSchemaMetadata;
-import com.sourcesense.joyce.importcore.dto.JoyceSchemaImportMetadataExtra;
+import com.sourcesense.joyce.importcore.model.entity.JoyceSchemaImportMetadataExtra;
 import com.sourcesense.joyce.importcore.exception.JsonLogicException;
 import io.github.jamsesso.jsonlogic.JsonLogic;
 import lombok.RequiredArgsConstructor;

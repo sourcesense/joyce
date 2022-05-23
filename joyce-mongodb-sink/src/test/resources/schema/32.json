@@ -1,6 +1,6 @@
 {
   "$schema": "https://joyce.sourcesense.com/v1/schema",
-  "$metadata": {
+  "metadata": {
     "subtype": "import",
     "name": "test",
     "description": "A test schema",

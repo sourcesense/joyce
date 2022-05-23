@@ -60,7 +60,7 @@ Let's try to save one.
 ```bash
 cat > import-user.yaml  <<- "EOF"
 $schema: https://joyce.sourcesense.com/v1/schema
-$metadata:
+metadata:
   subtype: import
   namespace: default
   name: user

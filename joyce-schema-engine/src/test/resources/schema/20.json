@@ -1,6 +1,6 @@
 {
   "$schema": "https://joyce.sourcesense.com/v1/schema",
-  "$metadata": {
+  "metadata": {
     "message_key": "$.id"
   },
   "type": "object",

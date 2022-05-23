@@ -1,6 +1,6 @@
 # How to build an API that enrich and aggregates rss feeds.
 
-This tutorial is a practical, non trivial, real world example of how you can use Joyce platform.  
+This tutorial is a practical, non trivial, real world example of how you can use Joyce platform.
 We'll go step by step through the creation a complete flow of data integration and serving of a final API.
 
 ## Goal
@@ -50,7 +50,7 @@ It's trivial to write a schema that reshape this content, save this to `news.yam
 
 ```yaml
 $schema: https://joyce.sourcesense.com/v1/schema
-$metadata:
+metadata:
   subtype: import
   namespace: default
   name: technology-news
@@ -60,7 +60,7 @@ $metadata:
   validation: false
   uid: link
   extra:
-    connectors: 
+    connectors:
       - name: arstechnica
         importKeyUid: link
         config:
@@ -85,7 +85,7 @@ properties:
 
 And than send it to the import-gateway:
 
-```bash 
+```bash
 curl -X POST -H "Content-Type: application/x-yaml" --data-binary @news.yaml http://localhost:6651/api/schema
 ```
 
@@ -145,14 +145,14 @@ The result of the transoformation is good, but we want to enrich what arrives fr
 - a summary more relevant than what could arrive from the feed.
 
 
-How can we do it? We'll be using the power of joyce [transformation handlers](/docs/schema#handlers), in particular  **$script** and **$rest**.   
+How can we do it? We'll be using the power of joyce [transformation handlers](/docs/schema#handlers), in particular  **$script** and **$rest**.
 Let's see how.
 
 ### Categorization of the content
 
 We need to extracts topics from the article text, there are tons of way to do it with NLP libraries and custom code, but we go'll the short way and use a service that does it with an exposed API.
 
-Head over [https://www.textrazor.com/signup](https://www.textrazor.com/signup) and signup for a free account, you'll obtain an api token that is everything we need to use their service.   
+Head over [https://www.textrazor.com/signup](https://www.textrazor.com/signup) and signup for a free account, you'll obtain an api token that is everything we need to use their service.
 Have a look at their [rest api documentation](https://www.textrazor.com/docs/rest) and try this call to extract topics from a random link:
 
 ```bash
@@ -182,7 +182,7 @@ We are ready to enrich our imported model with topics by using this call inside 
       $path: $.label
 ```
 
-What are we doing here??   
+What are we doing here??
 We're adding a field `topics` that is an array of string, we populate it with a `$rest` handler that calls the TextRazor api and extract the topics label, we used some filtering in the json path expression to take more relevant extracted topics (see [json-path docs](https://github.com/json-path/JsonPath)).
 
 Save the yaml, and update the schema:
@@ -206,8 +206,8 @@ Every news site, usually, includes [Open Graph](https://ogp.me/) tags, we could 
 
 Joyce ships with a `$script` handler that gives the ability to use scripting language to make transformations, currently you can write scripts in `python`,  `javascript`, `groovy`.
 
-We'll go with python.  
-We need to obtain the http from the url, parse the html and get the metadata tags we need.   
+We'll go with python.
+We need to obtain the http from the url, parse the html and get the metadata tags we need.
 
 With some python/regex kung-fu we can write a small script to do that, add this property to the Schema:
 
@@ -224,7 +224,7 @@ With some python/regex kung-fu we can write a small script to do that, add this 
         img =  re.search("<meta[^\>]*property=\"og:image\"[^\>]*content=\"(.+?)\"[^\>]*>", html)
         desc = re.search("<meta[^\>]*property=\"og:description\"[^\>]*content=\"(.+?)\"[^\>]*>", html)
         return {
-          'image': img.group(1) if img is not None else "", 
+          'image': img.group(1) if img is not None else "",
           'description': desc.group(1) if desc is not None else ""
         }
     properties:
@@ -282,14 +282,14 @@ Edit `docker-compose.yaml` and add this to environment variables of `joyce-rest`
 ```
 and this volume:
 ```yaml
-volumes: 
+volumes:
   - "./schemas.json:/opt/schemas.json"
 ```
 
 then save this json to `schemas.json`
 
 ```json
-{   
+{
     "schemas": {
         "news": {
             "source": "http://import-gateway:6651/api/schema/import/default/technology-news"
@@ -314,7 +314,7 @@ Yay, News!
 
 ## Add other sources
 
-Time now to add another rss source, add this element to `$metadata.extra.connectors`  array:
+Time now to add another rss source, add this element to `metadata.extra.connectors`  array:
 
 ```yaml
       - name: engadget
@@ -331,7 +331,7 @@ Your schema now, should be something like this:
 
 ```yaml
 $schema: https://joyce.sourcesense.com/v1/schema
-$metadata:
+metadata:
   subtype: import
   namespace: default
   name: technology-news
@@ -341,7 +341,7 @@ $metadata:
   validation: false
   uid: link
   extra:
-    connectors: 
+    connectors:
       - name: arstechnica
         importKeyUid: link
         config:
@@ -360,7 +360,7 @@ properties:
     type: string
   title:
     type: string
-  date: 
+  date:
     type: string
   summary:
     type: string
@@ -394,7 +394,7 @@ properties:
         img =  re.search("<meta[^\>]*property=\"og:image\"[^\>]*content=\"(.+?)\"[^\>]*>", html)
         desc =  re.search("<meta[^\>]*property=\"og:description\"[^\>]*content=\"(.+?)\"[^\>]*>", html)
         return {
-          'image': img.group(1) if img is not None else "", 
+          'image': img.group(1) if img is not None else "",
           'description': desc.group(1) if desc is not None else ""
         }
     properties:
@@ -406,7 +406,7 @@ properties:
 
 ## Conclusion
 
-You know how to add the third source right?   
+You know how to add the third source right?
 s
-How powerful it is to have **input source**, **modeling data** and **transformation** in a single, declarative file?    
+How powerful it is to have **input source**, **modeling data** and **transformation** in a single, declarative file?
 It is the only thing you should version, no code, just configuration, and you have enriched news news from multiple rss sources.

@@ -1,6 +1,6 @@
 {
   "$schema": "https://joyce.sourcesense.com/v1/schema",
-  "$metadata": {
+  "metadata": {
     "type": "import",
     "domain": "test",
     "product": "default",
