@@ -2,7 +2,7 @@
   "metadata": {
     "collection": "test.object",
     "description": "Atestschema",
-    "development": true,
+    "production": false,
     "extra": null,
     "indexed": true,
     "indexes": null,

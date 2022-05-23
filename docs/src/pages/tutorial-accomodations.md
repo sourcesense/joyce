@@ -61,7 +61,7 @@ metadata:
   namespace: default
   name: accomodation
   description: A model that represents Accomodations
-  development: true
+  production: false
   collection: accomodations
   uid: code
 type: object
@@ -167,7 +167,7 @@ metadata:
   namespace: default
   name: accomodation-veneto
   description: A model that represents Accomodations for Veneto regional data
-  development: true
+  production: false
   parent: joyce://schema/import/default.accomodation
 type: object
 properties:
@@ -223,13 +223,13 @@ curl -Ss http://localhost:6651/api/schema | jq
     "uid": "joyce://schema/import/default.accomodation-veneto",
     "name": "accomodation-veneto",
     "description": "A model that represents Accomodations for Veneto regional data",
-    "development": true
+    "production": false
   },
   {
     "uid": "joyce://schema/import/default.accomodation",
     "name": "accomodation",
     "description": "A model that represents Accomodations",
-    "development": true
+    "production": false
   }
 ]
 ```
@@ -376,7 +376,7 @@ metadata:
   namespace: default
   name: accomodation-sicilia
   description: A model that represents Accomodations for Sicilia regional data
-  development: true
+  production: false
   parent: joyce://schema/import/default.accomodation
 type: object
 properties:

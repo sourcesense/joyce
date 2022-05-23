@@ -3,7 +3,7 @@ metadata:
   subtype: import
   name: user
   description: A test schema
-  development: true
+  production: false
   uid: id
   collection: users
 type: object

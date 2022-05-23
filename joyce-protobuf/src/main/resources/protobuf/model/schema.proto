@@ -25,7 +25,7 @@ message SchemaMetadata {
   string description = 7;
   string parent = 8;
   repeated MongoIndex indexes = 9;
-  string development = 10;
+  string production = 10;
   string store = 11;
   string validation = 12;
   string indexed = 13;
