@@ -26,7 +26,7 @@ import com.sourcesense.joyce.schemaengine.handler.JsonPathTransformerHandler;
 import com.sourcesense.joyce.schemaengine.handler.RestTransformerHandler;
 import com.sourcesense.joyce.schemaengine.handler.SchemaTransformerHandler;
 import com.sourcesense.joyce.schemaengine.handler.ScriptingTransformerHandler;
-import com.sourcesense.joyce.schemaengine.model.SchemaEngineContext;
+import com.sourcesense.joyce.schemaengine.model.dto.SchemaEngineContext;
 import com.sourcesense.joyce.schemaengine.templating.mustache.resolver.MustacheTemplateResolver;
 import com.sourcesense.joyce.schemaengine.test.TestUtility;
 import org.junit.jupiter.api.Assertions;

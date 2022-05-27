@@ -1,4 +1,4 @@
-package com.sourcesense.joyce.schemaengine.model;
+package com.sourcesense.joyce.schemaengine.model.dto;
 
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.node.JsonNodeFactory;

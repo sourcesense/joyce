@@ -6,7 +6,7 @@ import com.sourcesense.joyce.schemaengine.exception.InvalidHandlerKeywordExcepti
 import com.sourcesense.joyce.schemaengine.exception.JoyceSchemaEngineException;
 import com.sourcesense.joyce.schemaengine.handler.JsonPathTransformerHandler;
 import com.sourcesense.joyce.schemaengine.handler.SchemaTransformerHandler;
-import com.sourcesense.joyce.schemaengine.model.SchemaEngineContext;
+import com.sourcesense.joyce.schemaengine.model.dto.SchemaEngineContext;
 import com.sourcesense.joyce.schemaengine.test.TestUtility;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
