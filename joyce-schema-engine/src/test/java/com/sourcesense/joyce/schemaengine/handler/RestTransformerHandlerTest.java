@@ -1,6 +1,7 @@
 package com.sourcesense.joyce.schemaengine.handler;
 
 import com.fasterxml.jackson.databind.JsonNode;
+import com.sourcesense.joyce.schemaengine.model.SchemaEngineContext;
 import com.sourcesense.joyce.schemaengine.test.TestUtility;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
@@ -17,10 +18,8 @@ import java.io.IOException;
 import java.net.URISyntaxException;
 import java.util.Arrays;
 import java.util.List;
-import java.util.Optional;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
-import static org.junit.jupiter.api.Assertions.assertTrue;
 import static org.springframework.test.web.client.response.MockRestResponseCreators.withSuccess;
 
 @ExtendWith(MockitoExtension.class)
@@ -36,7 +35,6 @@ public class RestTransformerHandlerTest implements TestUtility {
 		RestTemplate restTemplate = new RestTemplate();
 		server = MockRestServiceServer.createServer(restTemplate);
 		restTransformerHandler = new RestTransformerHandler(jsonMapper, restTemplate);
-		restTransformerHandler.configure();
 	}
 
 	@Test
@@ -56,7 +54,6 @@ public class RestTransformerHandlerTest implements TestUtility {
 				"rest/request/41.json",
 				"result/41.json"
 		);
-
 	}
 
 	@Test
@@ -105,7 +102,7 @@ public class RestTransformerHandlerTest implements TestUtility {
 		server.expect(request -> {
 			assertEquals(request.getURI().toString(), "http://test:8080/posts/1");
 			assertEquals(request.getMethod(), HttpMethod.GET);
-			assertTrue(testHeaders.equals(request.getHeaders().get("test")));
+			assertEquals(testHeaders, request.getHeaders().get("test"));
 
 		}).andRespond(withSuccess(
 				this.getResourceAsString("rest/response/45.json"),
@@ -118,7 +115,6 @@ public class RestTransformerHandlerTest implements TestUtility {
 				"rest/request/45.json",
 				"result/45.json"
 		);
-
 	}
 
 	private void shouldProcessScript(
@@ -128,10 +124,13 @@ public class RestTransformerHandlerTest implements TestUtility {
 			String resultPath) throws IOException, URISyntaxException {
 
 		JsonNode value = this.getResourceAsNode(valuePath);
-		JsonNode source = this.getResourceAsNode(sourcePath);
+		SchemaEngineContext context = SchemaEngineContext.builder()
+				.out(this.getResourceAsNode(sourcePath))
+				.build();
+
 		assertEquals(
-				this.getResourceAsNode(resultPath).asText(),
-				restTransformerHandler.process(key, "string", value, source, Optional.empty(), Optional.empty()).asText()
+				this.getResourceAsNode(resultPath),
+				restTransformerHandler.process(key, "string", value, context)
 		);
 	}
 }

@@ -18,15 +18,14 @@ package com.sourcesense.joyce.schemaengine.exception;
 
 import com.networknt.schema.ValidationMessage;
 import com.networknt.schema.ValidationResult;
+import lombok.Getter;
 
 import java.util.stream.Collectors;
 
+@Getter
 public class InvalidSchemaException extends JoyceSchemaEngineException {
-	public ValidationResult getValidationResult() {
-		return validationResult;
-	}
 
-	private ValidationResult validationResult;
+	private final ValidationResult validationResult;
 
 	public InvalidSchemaException(ValidationResult validation) {
 		super(validation.getValidationMessages().stream().map(ValidationMessage::getMessage).collect(Collectors.joining()));

@@ -4,7 +4,7 @@ import com.fasterxml.jackson.databind.JsonNode;
 import com.sourcesense.joyce.core.model.dto.ConnectorOperationStatus;
 import com.sourcesense.joyce.core.model.entity.JoyceSchemaMetadataExtraConnector;
 import com.sourcesense.joyce.core.model.entity.SchemaEntity;
-import com.sourcesense.joyce.core.model.entity.SchemaObject;
+import com.sourcesense.joyce.core.model.entity.JoyceSchema;
 import com.sourcesense.joyce.importcore.service.ConnectorService;
 import com.sourcesense.joyce.importcore.service.ValidationService;
 import com.sourcesense.joyce.schemacore.api.SchemaRestApi;
@@ -26,7 +26,7 @@ public abstract class AbstractSchemaRestController implements SchemaRestApi {
 
 
 	@Override
-	public List<SchemaObject> getAllSchemas(
+	public List<JoyceSchema> getAllSchemas(
 			Boolean fullSchema,
 			Boolean rootOnly) {
 
@@ -34,7 +34,7 @@ public abstract class AbstractSchemaRestController implements SchemaRestApi {
 		return schemaMapper.entitiesToShortIfFullSchema(schemas, fullSchema);
 	}
 
-	public List<SchemaObject> getAllSchemasForDomainAndProduct(
+	public List<JoyceSchema> getAllSchemasForDomainAndProduct(
 			String domain,
 			String product,
 			Boolean fullSchema,
@@ -51,12 +51,12 @@ public abstract class AbstractSchemaRestController implements SchemaRestApi {
 
 	@Override
 	public SchemaInfo saveSchemaJson(SchemaSave schema) {
-		return saveSchema(schema);
+		return this.saveSchema(schema);
 	}
 
 	@Override
 	public SchemaInfo saveSchemaYaml(SchemaSave schema) {
-		return saveSchema(schema);
+		return this.saveSchema(schema);
 	}
 
 	@Override

@@ -30,7 +30,7 @@ import static org.junit.jupiter.api.Assertions.assertEquals;
 
 public class MongoCustomConvertersTest extends WithMongoTestBase implements TestUtility {
 
-	private final static String MONGO_CONNECTION_STRING = "mongodb://localhost/joyce";
+	private final static String MONGO_CONNECTION_STRING = "mongodb://localhost:27020/joyce";
 	private final static String MONGO_COLLECTION = "joyceURI";
 
 	private MongoTemplate mongoTemplate;

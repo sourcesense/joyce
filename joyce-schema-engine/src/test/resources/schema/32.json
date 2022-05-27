@@ -12,7 +12,7 @@
   "properties": {
     "id": {
       "type": "integer",
-      "$path": "$.id"
+      "value": "$.src.id"
     },
     "mappedObject": {
       "type": "object",
@@ -24,10 +24,13 @@
           "type": "string"
         }
       },
-      "$script": {
-        "language": "javascript",
-        "code": "{'field1': source.object.objectField, 'field2': 'newField'}"
-      }
+      "apply": [{
+        "handler": "script",
+        "args": {
+          "language": "javascript",
+          "code": "{'field1': ctx.src.object.objectField, 'field2': 'newField'}"
+        }
+      }]
     }
   }
 }

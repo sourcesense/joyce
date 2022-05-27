@@ -20,7 +20,7 @@ import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.sourcesense.joyce.core.model.entity.SchemaEntity;
-import com.sourcesense.joyce.core.model.entity.SchemaObject;
+import com.sourcesense.joyce.core.model.entity.JoyceSchema;
 import com.sourcesense.joyce.core.model.uri.JoyceSchemaURI;
 import com.sourcesense.joyce.core.model.uri.JoyceURIFactory;
 import com.sourcesense.joyce.schemacore.model.dto.SchemaSave;
@@ -28,6 +28,7 @@ import com.sourcesense.joyce.schemacore.model.dto.SchemaShort;
 import com.sourcesense.joyce.schemacore.model.entity.SchemaDocument;
 import org.mapstruct.Mapper;
 import org.mapstruct.Mapping;
+import org.mapstruct.Named;
 import org.springframework.beans.factory.annotation.Autowired;
 
 import java.util.List;
@@ -51,18 +52,21 @@ public abstract class SchemaDtoMapper {
 
 	public abstract SchemaEntity toEntity(SchemaSave dto);
 
-	@Mapping(target = "properties", source = "document")
+	@Mapping(target = "properties", source = "properties", qualifiedByName = "stringToJsonNode")
+	@Mapping(target = "metadata.data", source = "metadata.data", qualifiedByName = "stringToJsonNode")
 	public abstract SchemaEntity entityFromDocument(SchemaDocument document);
 
 	public JoyceSchemaURI joyceSchemaURIFromString(String stringUri) {
 		return JoyceURIFactory.getInstance().createURIOrElseThrow(stringUri, JoyceSchemaURI.class);
 	}
 
-	public JsonNode propertiesFromString(SchemaDocument document) throws JsonProcessingException {
-		return jsonMapper.readTree(document.getProperties());
+	@Named("stringToJsonNode")
+	public JsonNode stringToJsonNode(String string) throws JsonProcessingException {
+		return jsonMapper.readTree(string);
 	}
 
-	@Mapping(target = "properties", source = "entity")
+	@Mapping(target = "properties", source = "properties", qualifiedByName = "jsonNodeToString")
+	@Mapping(target = "metadata.data", source = "metadata.data", qualifiedByName = "jsonNodeToString")
 	public abstract SchemaDocument documentFromEntity(SchemaEntity entity);
 
 	public abstract List<SchemaEntity> entitiesFromDocuments(List<SchemaDocument> documents);
@@ -71,11 +75,12 @@ public abstract class SchemaDtoMapper {
 		return joyceSchemaURI.toString();
 	}
 
-	public String propertiesToString(SchemaEntity entity) throws JsonProcessingException {
-		return jsonMapper.writeValueAsString(entity.getProperties());
+	@Named("jsonNodeToString")
+	public String jsonNodeToString(JsonNode node) throws JsonProcessingException {
+		return jsonMapper.writeValueAsString(node);
 	}
 
-	public List<SchemaObject> entitiesToShortIfFullSchema(List<SchemaEntity> schemas, Boolean fullSchema) {
+	public List<JoyceSchema> entitiesToShortIfFullSchema(List<SchemaEntity> schemas, Boolean fullSchema) {
 		return schemas.stream()
 				.map(fullSchema ? Function.identity() : this::toDtoShort)
 				.collect(Collectors.toList());

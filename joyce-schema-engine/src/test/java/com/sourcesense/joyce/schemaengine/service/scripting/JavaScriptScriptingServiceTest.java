@@ -1,9 +1,9 @@
 package com.sourcesense.joyce.schemaengine.service.scripting;
 
 import com.fasterxml.jackson.databind.JsonNode;
-import com.fasterxml.jackson.databind.ObjectMapper;
 import com.sourcesense.joyce.schemaengine.exception.JoyceSchemaEngineException;
-import com.sourcesense.joyce.schemaengine.model.handler.ScriptHandlerData;
+import com.sourcesense.joyce.schemaengine.model.SchemaEngineContext;
+import com.sourcesense.joyce.schemaengine.model.handler.ScriptHandlerArgs;
 import com.sourcesense.joyce.schemaengine.test.TestUtility;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
@@ -12,7 +12,6 @@ import org.mockito.junit.jupiter.MockitoExtension;
 
 import java.io.IOException;
 import java.net.URISyntaxException;
-import java.util.Optional;
 
 import static org.junit.jupiter.api.Assertions.*;
 
@@ -33,16 +32,14 @@ public class JavaScriptScriptingServiceTest implements TestUtility {
 	void shouldNotProcessVoidScript() throws IOException, URISyntaxException {
 		String key = "void";
 		JsonNode source = this.getResourceAsNode("source/31.json");
-		ScriptHandlerData scriptHandlerData = jsonMapper.convertValue(
+		ScriptHandlerArgs scriptHandlerArgs = jsonMapper.convertValue(
 				this.getResourceAsNode("script/javascript/31.json"),
-				ScriptHandlerData.class
+				ScriptHandlerArgs.class
 		);
 
 		assertThrows(
 				JoyceSchemaEngineException.class,
-				() -> javaScriptScriptingService.eval(
-						key, scriptHandlerData, source, Optional.empty(), Optional.empty()
-				)
+				() -> javaScriptScriptingService.eval(key, scriptHandlerArgs, this.buildContext(source))
 		);
 	}
 
@@ -50,14 +47,14 @@ public class JavaScriptScriptingServiceTest implements TestUtility {
 	void shouldProcessForNoValue() throws IOException, URISyntaxException {
 		String key = "noValue";
 		JsonNode source = this.getResourceAsNode("source/31.json");
-		ScriptHandlerData scriptHandlerData = jsonMapper.convertValue(
+		ScriptHandlerArgs scriptHandlerArgs = jsonMapper.convertValue(
 				this.getResourceAsNode("script/javascript/32.json"),
-				ScriptHandlerData.class
+				ScriptHandlerArgs.class
 		);
 
 		String expected = "n";
 		String actual = javaScriptScriptingService
-				.eval(key, scriptHandlerData, source, Optional.empty(), Optional.empty())
+				.eval(key, scriptHandlerArgs, this.buildContext(source))
 				.textValue();
 
 		assertEquals(expected, actual);
@@ -67,14 +64,14 @@ public class JavaScriptScriptingServiceTest implements TestUtility {
 	void shouldProcessForSimpleField() throws IOException, URISyntaxException {
 		String key = "lowercaseSimpleField";
 		JsonNode source = this.getResourceAsNode("source/31.json");
-		ScriptHandlerData scriptHandlerData = jsonMapper.convertValue(
+		ScriptHandlerArgs scriptHandlerArgs = jsonMapper.convertValue(
 				this.getResourceAsNode("script/javascript/33.json"),
-				ScriptHandlerData.class
+				ScriptHandlerArgs.class
 		);
 
 		String expected = "simplefieldvalue";
 		String actual = javaScriptScriptingService
-				.eval(key, scriptHandlerData, source, Optional.empty(), Optional.empty())
+				.eval(key, scriptHandlerArgs, this.buildContext(source))
 				.textValue();
 
 		assertEquals(expected, actual);
@@ -84,14 +81,14 @@ public class JavaScriptScriptingServiceTest implements TestUtility {
 	void shouldProcessForStringArray() throws IOException, URISyntaxException {
 		String key = "reducedStringArray";
 		JsonNode source = this.getResourceAsNode("source/31.json");
-		ScriptHandlerData scriptHandlerData = jsonMapper.convertValue(
+		ScriptHandlerArgs scriptHandlerArgs = jsonMapper.convertValue(
 				this.getResourceAsNode("script/javascript/34.json"),
-				ScriptHandlerData.class
+				ScriptHandlerArgs.class
 		);
 
 		String expected = "start-stringArrayValue1-stringArrayValue2-stringArrayValueN";
 		String actual = javaScriptScriptingService
-				.eval(key, scriptHandlerData, source, Optional.empty(), Optional.empty())
+				.eval(key, scriptHandlerArgs, this.buildContext(source))
 				.textValue();
 
 		assertEquals(expected, actual);
@@ -101,14 +98,14 @@ public class JavaScriptScriptingServiceTest implements TestUtility {
 	void shouldProcessForComplexArray() throws IOException, URISyntaxException {
 		String key = "uppercaseComplexArrayField";
 		JsonNode source = this.getResourceAsNode("source/31.json");
-		ScriptHandlerData scriptHandlerData = jsonMapper.convertValue(
+		ScriptHandlerArgs scriptHandlerArgs = jsonMapper.convertValue(
 				this.getResourceAsNode("script/javascript/35.json"),
-				ScriptHandlerData.class
+				ScriptHandlerArgs.class
 		);
 
 		String expected = "COMPLEXARRAYVALUE1";
 		String actual = javaScriptScriptingService
-				.eval(key, scriptHandlerData, source, Optional.empty(), Optional.empty())
+				.eval(key, scriptHandlerArgs, this.buildContext(source))
 				.textValue();
 
 		assertEquals(expected, actual);
@@ -119,9 +116,9 @@ public class JavaScriptScriptingServiceTest implements TestUtility {
 	void shouldProcessForObject() throws IOException, URISyntaxException {
 		String key = "mapComplexArrayToValues";
 		JsonNode source = this.getResourceAsNode("source/31.json");
-		ScriptHandlerData scriptHandlerData = jsonMapper.convertValue(
+		ScriptHandlerArgs scriptHandlerArgs = jsonMapper.convertValue(
 				this.getResourceAsNode("script/javascript/36.json"),
-				ScriptHandlerData.class
+				ScriptHandlerArgs.class
 		);
 
 		Object[] expected = {
@@ -130,7 +127,7 @@ public class JavaScriptScriptingServiceTest implements TestUtility {
 				"nestedObjectComplexArrayValueN"
 		};
 		Object[] actual = jsonMapper.convertValue(
-				javaScriptScriptingService.eval(key, scriptHandlerData, source, Optional.empty(), Optional.empty()),
+				javaScriptScriptingService.eval(key, scriptHandlerArgs, this.buildContext(source)),
 				Object[].class
 		);
 		assertArrayEquals(expected, actual);
@@ -140,16 +137,23 @@ public class JavaScriptScriptingServiceTest implements TestUtility {
 	void shouldProcessMultilineScript() throws IOException, URISyntaxException {
 		String key = "multilineScript";
 		JsonNode source = this.getResourceAsNode("source/31.json");
-		ScriptHandlerData scriptHandlerData = jsonMapper.convertValue(
+		ScriptHandlerArgs scriptHandlerArgs = jsonMapper.convertValue(
 				this.getResourceAsNode("script/javascript/38.json"),
-				ScriptHandlerData.class
+				ScriptHandlerArgs.class
 		);
 
 		String expected = "multiline";
 		String actual = javaScriptScriptingService
-				.eval(key, scriptHandlerData, source, Optional.empty(), Optional.empty())
+				.eval(key, scriptHandlerArgs, this.buildContext(source))
 				.textValue();
 
 		assertEquals(expected, actual);
+	}
+
+	private SchemaEngineContext buildContext(JsonNode source) {
+		return SchemaEngineContext.builder()
+				.src(source)
+				.out(source)
+				.build();
 	}
 }

@@ -4,8 +4,10 @@ import com.fasterxml.jackson.databind.JsonNode;
 import com.sourcesense.joyce.schemaengine.annotation.SchemaTransformationHandler;
 import com.sourcesense.joyce.schemaengine.exception.InvalidHandlerKeywordException;
 import com.sourcesense.joyce.schemaengine.exception.JoyceSchemaEngineException;
-import com.sourcesense.joyce.schemaengine.handler.FixedValueTransformerHandler;
+import com.sourcesense.joyce.schemaengine.handler.JsonPathTransformerHandler;
 import com.sourcesense.joyce.schemaengine.handler.SchemaTransformerHandler;
+import com.sourcesense.joyce.schemaengine.model.SchemaEngineContext;
+import com.sourcesense.joyce.schemaengine.test.TestUtility;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.junit.jupiter.MockitoExtension;
@@ -15,16 +17,15 @@ import org.springframework.context.ApplicationContext;
 
 import java.util.Collections;
 import java.util.Map;
-import java.util.Optional;
 
+import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertThrows;
-import static org.junit.jupiter.api.Assertions.assertTrue;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.when;
 
 @ExtendWith(MockitoExtension.class)
 @MockitoSettings(strictness = Strictness.LENIENT)
-public class SchemaTransformerConfigTest {
+public class SchemaTransformerConfigTest implements TestUtility {
 
 	@Test
 	void shouldLoadNoHandler() {
@@ -36,39 +37,23 @@ public class SchemaTransformerConfigTest {
 		Map<String, SchemaTransformerHandler> actual = schemaTransformerConfig.transformerHandlers();
 		Map<String, SchemaTransformerHandler> expected = Collections.emptyMap();
 
-		assertTrue(actual.equals(expected));
+		assertEquals(actual, expected);
 	}
 
 	@Test
 	void shouldLoadCustomHandler() {
 		ApplicationContext context = mock(ApplicationContext.class);
-		FixedValueTransformerHandler transformerHandler = new FixedValueTransformerHandler();
+		JsonPathTransformerHandler transformerHandler = new JsonPathTransformerHandler(jsonMapper);
 		Map<String, Object> customHandlers = Map.of(
-				"fixedValueTransformerHandler", transformerHandler
+				"jsonPathTransformerHandler", transformerHandler
 		);
 		when(context.getBeansWithAnnotation(SchemaTransformationHandler.class)).thenReturn(customHandlers);
 		SchemaTransformerConfig schemaTransformerConfig = new SchemaTransformerConfig(context);
 
 		Map<String, SchemaTransformerHandler> actual = schemaTransformerConfig.transformerHandlers();
-		Map<String, SchemaTransformerHandler> expected = Map.of("$fixed", transformerHandler);
+		Map<String, SchemaTransformerHandler> expected = Map.of("extract", transformerHandler);
 
-		assertTrue(actual.equals(expected));
-	}
-
-	@Test
-	void shouldAddDollarSignIfMissing() {
-		ApplicationContext context = mock(ApplicationContext.class);
-		TestNoDollarTransformerHandler transformerHandler = new TestNoDollarTransformerHandler();
-		Map<String, Object> customHandlers = Map.of(
-				"testNoDollarTransformerHandler", transformerHandler
-		);
-		when(context.getBeansWithAnnotation(SchemaTransformationHandler.class)).thenReturn(customHandlers);
-		SchemaTransformerConfig schemaTransformerConfig = new SchemaTransformerConfig(context);
-
-		Map<String, SchemaTransformerHandler> actual = schemaTransformerConfig.transformerHandlers();
-		Map<String, SchemaTransformerHandler> expected = Map.of("$test", transformerHandler);
-
-		assertTrue(actual.equals(expected));
+		assertEquals(actual, expected);
 	}
 
 	@Test
@@ -109,17 +94,9 @@ public class SchemaTransformerConfigTest {
 
 	@SchemaTransformationHandler
 	private static class TestEmptyKeywordTransformerHandler implements SchemaTransformerHandler {
-		@Override
-		public JsonNode process(String key, String type, JsonNode value, JsonNode source, Optional<JsonNode> metadata, Optional<Object> context) {
-			return null;
-		}
-	}
-
-	@SchemaTransformationHandler(keyword = "test")
-	private static class TestNoDollarTransformerHandler implements SchemaTransformerHandler {
 
 		@Override
-		public JsonNode process(String key, String type, JsonNode value, JsonNode source, Optional<JsonNode> metadata, Optional<Object> context) {
+		public JsonNode process(String key, String type, JsonNode args, SchemaEngineContext context) {
 			return null;
 		}
 	}

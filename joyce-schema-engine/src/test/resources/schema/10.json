@@ -10,7 +10,10 @@
   "properties": {
     "uid": {
       "type": "string",
-      "$path": ["asd-", "$.id"]
+      "apply": [{
+        "handler": "extract",
+        "args": ["asd-", "$.id"]
+      }]
     },
     "name": {
       "type": "string",
@@ -19,19 +22,21 @@
     "mail": {
       "type": "string",
       "required": true,
-      "$path": "$.email"
+      "value": "$.email"
     },
     "docType": {
       "type": ["string", "null"],
-      "$fixed": "simpleUser"
+      "apply": [{
+        "handler": "fixed",
+        "args": "simpleUser"
+      }]
     },
     "address": {
       "type": "string",
-      "$path": [
-        "$.address.city",
-        ", ",
-        "$.address.street"
-      ]
+      "apply": [{
+        "handler": "extract",
+        "args": ["$.address.city", ", ", "$.address.street"]
+      }]
     }
   }
 }

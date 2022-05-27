@@ -3,6 +3,5 @@
   "method": "GET",
   "headers": {
     "Content-Type": "application/json"
-  },
-  "extract": "$.response"
+  }
 }

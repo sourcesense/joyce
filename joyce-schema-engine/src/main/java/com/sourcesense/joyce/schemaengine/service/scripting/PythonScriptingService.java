@@ -27,20 +27,20 @@ public class PythonScriptingService extends ScriptingService {
 
 	@Override
 	protected String getMultilineScriptingFunction(String scriptCode) {
-		String cleanedMultiline = Arrays.stream(scriptCode.split("\n"))
-				.collect(Collectors.joining("\n\t\t"));
+		String cleanedMultiline = String.join("\n\t\t", scriptCode.split("\n"));
+
 		return this.buildScriptFunction(String.format(
-				"def wrapper(source, metadata, context):\n" +
+				"def wrapper(ctx):\n" +
 				"\t\t%s\n" +
-				"\tresult = wrapper(source, metadata, context)\n", cleanedMultiline));
+				"\tresult = wrapper(ctx)\n",
+				cleanedMultiline
+		));
 	}
 
 	private String buildScriptFunction(String scriptResult) {
 		return "import json\n" +
-				"def executeScript(__source, __metadata, __context):\n" +
-				"\tsource = json.loads(__source)\n" +
-				"\tmetadata = json.loads(__metadata)\n" +
-				"\tcontext = json.loads(__context)\n" +
+				"def executeScript(__ctx):\n" +
+				"\tctx = json.loads(__ctx)\n" +
 				"\t" + scriptResult +
 				"\treturn json.dumps(result)\n";
 	}

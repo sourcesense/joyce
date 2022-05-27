@@ -18,7 +18,7 @@ package com.sourcesense.joyce.schemacore.api;
 
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.JsonNode;
-import com.sourcesense.joyce.core.model.entity.SchemaObject;
+import com.sourcesense.joyce.core.model.entity.JoyceSchema;
 import com.sourcesense.joyce.schemacore.model.dto.SchemaInfo;
 import com.sourcesense.joyce.schemacore.model.dto.SchemaSave;
 import com.sourcesense.joyce.schemacore.model.dto.SchemaShort;
@@ -49,7 +49,7 @@ public interface SchemaRestApi {
 					)
 			)
 	)
-	List<SchemaObject> getAllSchemas(
+	List<JoyceSchema> getAllSchemas(
 			@RequestParam(defaultValue = "false", name = "full_schema") Boolean fullSchema,
 			@RequestParam(defaultValue = "false", name = "root_only") Boolean rootOnly
 	);
@@ -67,7 +67,7 @@ public interface SchemaRestApi {
 					)
 			)
 	)
-	List<SchemaObject> getAllSchemasForDomainAndProduct(
+	List<JoyceSchema> getAllSchemasForDomainAndProduct(
 			@PathVariable String domain,
 			@PathVariable String product,
 			@RequestParam(defaultValue = "false", name = "full_schema") Boolean fullSchema,

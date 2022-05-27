@@ -51,12 +51,12 @@ It's trivial to write a schema that reshape this content, save this to `news.yam
 ```yaml
 $schema: https://joyce.sourcesense.com/v1/schema
 metadata:
-  subtype: import
-  namespace: default
+  type: import
+  domain: test
+  product: default
   name: technology-news
-  description: Technology  news from rss feeds
+  description: Technology news from rss feeds
   production: false
-  collection: technology-news
   validation: false
   uid: link
   extra:
@@ -77,10 +77,10 @@ properties:
     type: string
   summary:
     type: string
-    $path: $.content
+    value: $.src.content
   source:
     type: string
-    $path: $.feed.title
+    value: $.src.feed.title
 ```
 
 And than send it to the import-gateway:
@@ -168,18 +168,19 @@ We are ready to enrich our imported model with topics by using this call inside 
 ```yaml
   topics:
     type: array
-    $rest:
-      url: https://api.textrazor.com/
-      method: POST
-      headers:
-        x-textrazor-key: YOURAPIKEY
-      body: extractors=topics&url={{url}}
-      vars:
-        url: "$.url"
-      extract: "$.response.topics[?(@.score > 0.9)]"
+    apply:
+      - handler: rest
+        args:
+          url: https://api.textrazor.com/
+          method: POST
+          headers:
+            x-textrazor-key: YOURAPIKEY
+          body: "extractors=topics&url={{ ctx.src.url }}"
+      - handler: extract
+        args: "$.out.response.topics[?(@.score > 0.9)]"
     items:
       type: string
-      $path: $.label
+      value: $.src.label
 ```
 
 What are we doing here??
@@ -332,12 +333,12 @@ Your schema now, should be something like this:
 ```yaml
 $schema: https://joyce.sourcesense.com/v1/schema
 metadata:
-  subtype: import
-  namespace: default
+  type: import
+  domain: test
+  product: default
   name: technology-news
-  description: Technology  news from rss feeds
+  description: Technology news from rss feeds
   production: false
-  collection: technology-news
   validation: false
   uid: link
   extra:
@@ -364,39 +365,42 @@ properties:
     type: string
   summary:
     type: string
-    $path: $.content
+    value: $.src.content
   source:
     type: string
-    $path: $.feed.title
+    value: $.src.feed.title
   topics:
     type: array
-    $rest:
-      url: https://api.textrazor.com/
-      method: POST
-      headers:
-        x-textrazor-key: 8023291c131f0afb1c5ef775356bf04d2ee3f1af39ba64a9e03c98c5
-      body: extractors=topics&url={{url}}
-      vars:
-        url: "$.link"
-      extract: "$.response.topics[?(@.score > 0.9)]"
+    apply:
+      - handler: rest
+        args:
+          url: https://api.textrazor.com/
+          method: POST
+          headers:
+            x-textrazor-key: 8023291c131f0afb1c5ef775356bf04d2ee3f1af39ba64a9e03c98c5
+          body: extractors=topics&url={{ ctx.src.link }}
+      - handler: extract
+        args: "$.out.response.topics[?(@.score > 0.9)]"
     items:
       type: string
-      $path: $.label
+      value: $.src.label
   metadata:
     type: object
-    $script:
-      language: python
-      oneLine: false
-      code: |
-        import urllib
-        import re
-        html = urllib.urlopen(source['link']).read()
-        img =  re.search("<meta[^\>]*property=\"og:image\"[^\>]*content=\"(.+?)\"[^\>]*>", html)
-        desc =  re.search("<meta[^\>]*property=\"og:description\"[^\>]*content=\"(.+?)\"[^\>]*>", html)
-        return {
-          'image': img.group(1) if img is not None else "",
-          'description': desc.group(1) if desc is not None else ""
-        }
+    apply:
+      - handler: script
+        args:
+          language: python
+          oneLine: false
+          code: |
+            import urllib
+            import re
+            html = urllib.urlopen(source['link']).read()
+            img =  re.search("<meta[^\>]*property=\"og:image\"[^\>]*content=\"(.+?)\"[^\>]*>", html)
+            desc =  re.search("<meta[^\>]*property=\"og:description\"[^\>]*content=\"(.+?)\"[^\>]*>", html)
+            return {
+              'image': img.group(1) if img is not None else "",
+              'description': desc.group(1) if desc is not None else ""
+            }
     properties:
       image:
         type: string

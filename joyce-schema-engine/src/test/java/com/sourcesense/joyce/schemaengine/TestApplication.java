@@ -25,6 +25,7 @@ import org.springframework.context.annotation.Bean;
 
 @SpringBootApplication(scanBasePackages = "com.sourcesense.joyce")
 public class TestApplication {
+
 	@Bean
 	ObjectMapper mapper(){
 		return new ObjectMapper();
@@ -32,7 +33,6 @@ public class TestApplication {
 
 	@Bean(name = "fooHandler")
 	SchemaTransformerHandler handler(){
-		SchemaTransformerHandler schemaTransformerHandler = (key, type, schema, sourceJsonNode, metadata, context) -> new TextNode("bar");
-		return schemaTransformerHandler;
+		return (key, type, args, context) -> new TextNode("bar");
 	}
 }

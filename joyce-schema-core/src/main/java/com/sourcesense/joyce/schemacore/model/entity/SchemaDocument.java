@@ -14,7 +14,7 @@ public class SchemaDocument {
 	@Id
 	private String uid;
 	private String schema;
-	private JoyceSchemaMetadata metadata;
+	private SchemaMetadata metadata;
 	private String type;
 	private List<String> required;
 	private String properties;

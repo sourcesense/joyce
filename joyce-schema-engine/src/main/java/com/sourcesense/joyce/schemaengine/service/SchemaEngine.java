@@ -25,20 +25,34 @@ import com.sourcesense.joyce.schemaengine.exception.InvalidSchemaException;
 import com.sourcesense.joyce.schemaengine.exception.JoyceSchemaEngineException;
 import com.sourcesense.joyce.schemaengine.handler.SchemaTransformerHandler;
 import com.sourcesense.joyce.schemaengine.model.JoyceMetaSchema;
+import com.sourcesense.joyce.schemaengine.model.SchemaEngineContext;
+import com.sourcesense.joyce.schemaengine.model.handler.SchemaPropertyHandler;
+import com.sourcesense.joyce.schemaengine.model.handler.SchemaPropertyHandlers;
 import com.sourcesense.joyce.schemaengine.templating.mustache.resolver.MustacheTemplateResolver;
 import org.apache.commons.lang.StringUtils;
+import org.apache.logging.log4j.util.Strings;
 import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.stereotype.Service;
 
 import javax.annotation.PostConstruct;
 import java.util.*;
+import java.util.function.Predicate;
 import java.util.stream.Collectors;
-import java.util.stream.StreamSupport;
+import java.util.stream.Stream;
 
 @Service
 public class SchemaEngine<T> {
 
+	public static final String SCHEMA = "$schema";
+	public static final String UID = "uid";
+	public static final String DATA = "data";
 	public static final String METADATA = "metadata";
+
+	public static final String TYPE = "type";
+	public static final String VALUE = "value";
+	public static final String APPLY = "apply";
+	public static final String ITEMS = "items";
+	public static final String PROPERTIES = "properties";
 
 	protected final ObjectMapper jsonMapper;
 	protected final MustacheTemplateResolver mustacheTemplateResolver;
@@ -130,15 +144,23 @@ public class SchemaEngine<T> {
 	 * @param source
 	 * @return
 	 */
-	public JsonNode process(JsonNode schema, JsonNode source, Object context) {
-		JsonSchema jsonSchema = factory.getSchema(schema);
-		JsonNode result = this.parse(
-				null, jsonSchema.getSchemaNode(), source,
-				Optional.ofNullable(jsonSchema.getSchemaNode().get(METADATA)),
-				Optional.ofNullable(context)
-		);
+	protected JsonNode process(JsonNode schema, JsonNode source, Object extra) {
 
-		validate(schema, result);
+		JsonNode jsonSchema = factory.getSchema(schema).getSchemaNode();
+		JsonNode data = this.computeData(schema, source, extra);
+		JsonNode metadata = this.computeMetadataWithoutData(jsonSchema.get(METADATA));
+
+		SchemaEngineContext internalContext = SchemaEngineContext.builder()
+				.src(source)
+				.data(data)
+				.metadata(metadata)
+				.out(source)
+				.extra(extra)
+				.build();
+
+		JsonNode result = this.parse(null, jsonSchema, internalContext);
+
+		this.validate(schema, result);
 		return result;
 	}
 
@@ -191,9 +213,11 @@ public class SchemaEngine<T> {
 				.collect(Collectors.toList());
 
 		if (missingFromNewSchema.size() > 0) {
-			throw new JoyceSchemaEngineException(String.format("New Schema is not valid some key were deleted or type changed %s", String.join(", ", missingFromNewSchema)));
+			throw new JoyceSchemaEngineException(String.format(
+					"New Schema is not valid some key were deleted or type changed %s",
+					String.join(", ", missingFromNewSchema))
+			);
 		}
-
 		return newDeprecated > prevDeprecated;
 	}
 
@@ -221,75 +245,79 @@ public class SchemaEngine<T> {
 	 *
 	 * @param key
 	 * @param schema
-	 * @param sourceJsonNode
 	 * @param context
 	 * @return
 	 */
-	protected JsonNode parse(String key, JsonNode schema, JsonNode sourceJsonNode, Optional<JsonNode> metadata, Optional<Object> context) {
+	protected JsonNode parse(String key, JsonNode schema, SchemaEngineContext context) {
+		if (!JsonNodeType.OBJECT.equals(schema.getNodeType())) {
+			throw new JoyceSchemaEngineException(String.format(
+					"Cannot parse schema '%s', type is not object",
+					schema.get(UID)
+			));
+		}
 		try {
-			if (schema.getNodeType().equals(JsonNodeType.OBJECT)) {
-				// Apply custom handlers
-				Optional<JsonNode> transformed = this.applyHandlers(key, schema, sourceJsonNode, metadata, context);
-				if (transformed.isPresent()) {
-					ObjectNode node = jsonMapper.createObjectNode();
-					if (key == null) {
-						return transformed.get();
-					}
-					node.set(key, transformed.get());
-					ObjectNode tempSchema = schema.deepCopy();
-					tempSchema.remove(transformerHandlers.keySet());
-
-					tempSchema.set("type", schema.get("type"));
-					JsonNode transformedNode = "object".equalsIgnoreCase(schema.get("type").asText())
-							? transformed.get()
-							: node;
-					return this.parse(key, tempSchema, transformedNode, metadata, context);
+			// Apply custom handlers
+			Optional<JsonNode> transformed = this.applyHandlers(key, schema, context);
+			if (transformed.isPresent()) {
+				if (key == null) {
+					return transformed.get();
 				}
-				JsonNode type = Optional.ofNullable(schema.get("type")).orElse(new TextNode("string"));
-				if (type.getNodeType().equals(JsonNodeType.ARRAY)) {
+				ObjectNode node = jsonMapper.createObjectNode();
+				node.set(key, transformed.get());
 
-					for (JsonNode aType : type) {
-						JsonNode result = parseType(key, schema, sourceJsonNode, metadata, context, aType.asText());
-						if (result != null) {
-							return result;
-						}
+				ObjectNode tempSchema = schema.deepCopy();
+				tempSchema.remove(VALUE);
+				tempSchema.remove(APPLY);
+
+				JsonNode transformedNode = "object".equals(schema.get(TYPE).asText())
+						? transformed.get()
+						: node;
+
+				return this.parse(key, tempSchema, context.withUpdatedOutput(transformedNode));
+			}
+			JsonNode type = Optional.ofNullable(schema.get(TYPE)).orElse(new TextNode("string"));
+			if (type.getNodeType().equals(JsonNodeType.ARRAY)) {
+				for (JsonNode aType : type) {
+					JsonNode result = this.parseType(aType.asText(), key, schema, context);
+					if (result != null) {
+						return result;
 					}
-					return null;
-				} else {
-					return parseType(key, schema, sourceJsonNode, metadata, context, type.asText());
 				}
+				return null;
+			} else {
+				return parseType(type.asText(), key, schema, context);
 			}
 		} catch (Exception e) {
-			throw new JoyceSchemaEngineException(String.format("Cannot parse [%s]: %s", key, e.getMessage()));
+			throw new JoyceSchemaEngineException(String.format(
+					"Cannot parse [%s]: %s", key, e.getMessage()
+			));
 		}
-
-		return null;
 	}
 
-	protected JsonNode parseType(String key, JsonNode schema, JsonNode sourceJsonNode, Optional<JsonNode> metadata, Optional<Object> context, String type) {
-		if (type.equals("object")) {
+	protected JsonNode parseType(String type, String key, JsonNode schema, SchemaEngineContext context) {
+		if ("object".equals(type)) {
 			ObjectNode objectNode = jsonMapper.createObjectNode();
-			JsonNode props = schema.get("properties");
+			JsonNode props = schema.get(PROPERTIES);
 			if (props != null) {
 				Iterator<Map.Entry<String, JsonNode>> iter = props.fields();
 				while (iter.hasNext()) {
 					Map.Entry<String, JsonNode> entry = iter.next();
-					JsonNode node = this.parse(entry.getKey(), entry.getValue(), sourceJsonNode, metadata, context);
+					JsonNode node = this.parse(entry.getKey(), entry.getValue(), context);
 					objectNode.set(entry.getKey(), node);
 				}
 			}
 			return objectNode;
-		} else if (type.equals("array")) {
+		} else if ("array".equals(type)) {
 			ArrayNode arrayNode = jsonMapper.createArrayNode();
-			for (JsonNode item : sourceJsonNode.get(key)) {
-				JsonNode parsedItem = this.parse(null, schema.get("items"), item, metadata, context);
+			for (JsonNode item : context.getOut().get(key)) {
+				JsonNode parsedItem = this.parse(null, schema.get(ITEMS), context.withUpdatedOutput(item));
 				if (!parsedItem.isNull()) {
 					arrayNode.add(parsedItem);
 				}
 			}
 			return arrayNode;
 		} else {
-			JsonNode result = StringUtils.isNotEmpty(key) ? sourceJsonNode.get(key) : sourceJsonNode;
+			JsonNode result = StringUtils.isNotEmpty(key) ? context.getOut().get(key) : context.getOut();
 			if (result == null) {
 				return null;
 			}
@@ -312,50 +340,85 @@ public class SchemaEngine<T> {
 	 *
 	 * @param key
 	 * @param schema
-	 * @param sourceJsonNode
 	 * @param context
 	 * @return
 	 */
-	protected Optional<JsonNode> applyHandlers(String key, JsonNode schema, JsonNode sourceJsonNode, Optional<JsonNode> metadata, Optional<Object> context) {
-
-		if (sourceJsonNode.getNodeType() != JsonNodeType.OBJECT) {
+	protected Optional<JsonNode> applyHandlers(String key, JsonNode schema, SchemaEngineContext context) {
+		if (! JsonNodeType.OBJECT.equals(context.getOut().getNodeType())) {
 			return Optional.empty();
 		}
-
 		// Apply handlers in cascade
-		Spliterator<String> schemaFieldNames = Spliterators.spliteratorUnknownSize(schema.fieldNames(), Spliterator.ORDERED);
-		List<String> knownHandlerKeys = StreamSupport.stream(schemaFieldNames, false)
-				.filter(transformerHandlers.keySet()::contains)
+		SchemaPropertyHandlers propertyHandlers = jsonMapper.convertValue(schema, SchemaPropertyHandlers.class);
+		if(Strings.isEmpty(propertyHandlers.getValue()) && propertyHandlers.getApply().isEmpty()) {
+			return Optional.empty();
+		}
+		Optional<SchemaPropertyHandler> valueHandler = this.computeValueHandler(propertyHandlers);
+		List<SchemaPropertyHandler> knownHandlers = Stream.concat(valueHandler.stream(), propertyHandlers.getApply().stream())
+				.filter(propertyHandler -> transformerHandlers.containsKey(propertyHandler.getHandler()))
 				.collect(Collectors.toList());
 
-		if (knownHandlerKeys.size() < 1) {
+		if (knownHandlers.size() < 1) {
 			return Optional.empty();
 		}
+		JsonNode returnNode = context.getOut().deepCopy();
+		for (SchemaPropertyHandler knownHandler : knownHandlers) {
 
-		JsonNode returnNode = sourceJsonNode.deepCopy();
-		for (String handlerKey : knownHandlerKeys) {
-
-			String handlerType = schema.get("type").asText();
-			JsonNode handlerConfig = mustacheTemplateResolver.resolve(
-					schema.get(handlerKey),
-					sourceJsonNode
+			JsonNode handlerArgs = mustacheTemplateResolver.resolve(knownHandler.getArgs(), context);
+			SchemaTransformerHandler handler = transformerHandlers.get(knownHandler.getHandler());
+			returnNode = handler.process(
+					key, propertyHandlers.getType().asText(),
+					handlerArgs, context.withUpdatedOutput(returnNode)
 			);
-
-			SchemaTransformerHandler handler = transformerHandlers.get(handlerKey);
-			returnNode = handler.process(key, handlerType, handlerConfig, returnNode, metadata, context);
 		}
 		return Optional.ofNullable(returnNode);
 	}
 
 	protected List<String> getTypesList(Map.Entry<String, JsonNode> stringJsonNodeEntry) {
 		List<String> list = new ArrayList<>();
-		if (stringJsonNodeEntry.getValue().get("type").getNodeType().equals(JsonNodeType.ARRAY)) {
-			for (JsonNode node : stringJsonNodeEntry.getValue().get("type")) {
+		if (stringJsonNodeEntry.getValue().get(TYPE).getNodeType().equals(JsonNodeType.ARRAY)) {
+			for (JsonNode node : stringJsonNodeEntry.getValue().get(TYPE)) {
 				list.add(stringJsonNodeEntry.getKey() + "-" + node.asText());
 			}
 		} else {
-			list.add(stringJsonNodeEntry.getKey() + "-" + stringJsonNodeEntry.getValue().get("type").asText());
+			list.add(stringJsonNodeEntry.getKey() + "-" + stringJsonNodeEntry.getValue().get(TYPE).asText());
 		}
 		return list;
+	}
+
+	private JsonNode computeData(JsonNode jsonSchema, JsonNode source, Object extra) {
+		return Optional.of(jsonSchema)
+				.map(schema -> schema.get(METADATA))
+				.map(meta -> meta.get(DATA))
+				.filter(Predicate.not(JsonNode::isEmpty))
+				.filter(JsonNode::isObject)
+				.map(ObjectNode.class::cast)
+				.map(ObjectNode::deepCopy)
+				.map(dataSchema -> dataSchema.put(SCHEMA, jsonSchema.path(SCHEMA).asText()))
+				.map(dataSchema -> this.process(dataSchema, source, extra))
+				.orElseGet(jsonMapper::createObjectNode);
+	}
+
+	private JsonNode computeMetadataWithoutData(JsonNode metadata) {
+		if(Objects.isNull(metadata) || metadata.isEmpty()) {
+			return jsonMapper.createObjectNode();
+
+		} else if(metadata.has(DATA)) {
+			ObjectNode metadataWithoutData = metadata.deepCopy();
+			metadataWithoutData.remove(DATA);
+			return metadataWithoutData;
+
+		} else {
+			return metadata;
+		}
+	}
+
+	private Optional<SchemaPropertyHandler> computeValueHandler(SchemaPropertyHandlers propertyHandlers) {
+		return Optional.ofNullable(propertyHandlers.getValue())
+				.filter(Strings::isNotEmpty)
+				.map(value -> SchemaPropertyHandler.builder()
+						.handler("extract")
+						.args(new TextNode(value))
+						.build()
+				);
 	}
 }

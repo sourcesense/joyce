@@ -17,6 +17,7 @@
 package com.sourcesense.joyce.schemaengine.handler;
 
 import com.fasterxml.jackson.databind.JsonNode;
+import com.sourcesense.joyce.schemaengine.model.SchemaEngineContext;
 import org.pf4j.ExtensionPoint;
 
 import java.util.Optional;
@@ -24,12 +25,5 @@ import java.util.Optional;
 @FunctionalInterface
 public interface SchemaTransformerHandler extends ExtensionPoint {
 
-	JsonNode process(
-			String key,
-			String type,
-			JsonNode value,
-			JsonNode source,
-			Optional<JsonNode> metadata,
-			Optional<Object> context
-	);
+	JsonNode process(String key, String type, JsonNode args, SchemaEngineContext context);
 }

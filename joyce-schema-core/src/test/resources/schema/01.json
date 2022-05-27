@@ -2,18 +2,19 @@
   "uid": "joyce://schema/import/test.object",
   "$schema": "https://joyce.sourcesense.com/v1/schema",
   "metadata": {
-    "subtype": "import",
+    "type": "import",
+    "domain": "test",
+    "product": "default",
     "name": "object",
     "description": "A test schema",
     "production": false,
-    "uid": "id",
-    "collection": "test.object"
+    "uid": "id"
   },
   "type": "object",
   "properties": {
     "id": {
       "type": "integer",
-      "$path": "$.id"
+      "value": "$.src.id"
     }
   }
 }

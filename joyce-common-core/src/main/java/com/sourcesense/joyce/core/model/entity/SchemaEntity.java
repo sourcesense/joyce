@@ -25,7 +25,7 @@ import org.springframework.data.annotation.Id;
 import java.util.List;
 
 @Data
-public class SchemaEntity implements SchemaObject {
+public class SchemaEntity implements JoyceSchema {
 
 	@Id
 	private JoyceSchemaURI uid;

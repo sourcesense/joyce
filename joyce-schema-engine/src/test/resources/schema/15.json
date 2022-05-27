@@ -12,12 +12,15 @@
     "mail": {
       "type": "string",
       "required": true,
-      "$path": "$.email",
+      "value": "$.src.email",
       "deprecated": true
     },
     "foo": {
       "type": ["integer", "null"],
-      "$foo": null
+      "apply": [{
+        "handler": "foo",
+        "args": null
+      }]
     }
   }
 }

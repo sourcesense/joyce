@@ -61,52 +61,56 @@ Let's try to save one.
 cat > import-user.yaml  <<- "EOF"
 $schema: https://joyce.sourcesense.com/v1/schema
 metadata:
-  subtype: import
-  namespace: default
+  type: import
+  domain: test
+  product: default
   name: user
   description: A test schema
   production: false
-  uuuid: code
-  collection: users
+  uid: code
 type: object
 properties:
   code:
     type: integer
-    $path: $.user_id
+    value: $.src.user_id
   name:
     type: string
-    $path: $.first_name
+    value: $.src.first_name
   surname:
     type: string
-    $path: $.last_name
+    value: $.src.last_name
   full_name:
     type: string
-    $script:
-      language: python
-      code: "'_'.join([source['first_name'].upper(), source['last_name'].upper()])"
+    apply:
+      - handler: script
+        args:
+          language: python
+          code: |
+            '_'.join([ctx['src']['first_name'].upper(), ctx['src']['last_name'].upper()])"
   email:
     type: string
   email_checks:
     type: object
-    $rest:
-      url: "https://api.eva.pingutil.com/email?email={{email}}"
-      method: GET
-      headers:
-        Content-Type: application/json
-      vars:
-        email: "$.email"
-      extract: "$.data"
+    apply:
+      - handler: rest
+        args:
+          url: "https://api.eva.pingutil.com/email?email={{ ctx.src.email }}"
+          method: GET
+          headers:
+            Content-Type: application/json
+      - handler: extract
+        args: $.out.data
     properties:
       valid:
         type: boolean
-        $path: $.valid_syntax
+        value: $.src.valid_syntax
       disposable:
         type: boolean
       spam:
         type: boolean
   kind:
     type: string
-    $fixed: "SimpleUser"
+    value: SimpleUser
 EOF
 ```
 

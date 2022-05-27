@@ -10,20 +10,23 @@ type: object
 properties:
   id:
     type: integer
-    "$path": "$.id"
+    value: "$.src.id"
   mappedObject:
     type: object
     properties:
       rest:
         type: string
-        $rest:
-          url: http://test:8080/posts?test=pv1
-          method: POST
-          headers:
-            Content-Type: application/json
-            test: hv1, hvN
-          body: |
-            {
-             "content": "test"
-            }
-          extract: $.response
+        apply:
+          - handler: rest
+            args:
+              url: http://test:8080/posts?test=pv1
+              method: POST
+              headers:
+                Content-Type: application/json
+                test: hv1, hvN
+              body: |
+                {
+                 "content": "test"
+                }
+          - handler: extract
+            args: $.out.response

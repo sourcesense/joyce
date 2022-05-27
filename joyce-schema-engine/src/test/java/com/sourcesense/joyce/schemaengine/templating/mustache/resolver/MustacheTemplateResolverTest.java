@@ -3,15 +3,9 @@ package com.sourcesense.joyce.schemaengine.templating.mustache.resolver;
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.node.*;
 import com.samskivert.mustache.Mustache;
-import com.samskivert.mustache.Template;
 import com.sourcesense.joyce.schemaengine.test.TestUtility;
-import lombok.RequiredArgsConstructor;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
-
-import java.io.IOException;
-import java.io.Writer;
-import java.util.Map;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
 

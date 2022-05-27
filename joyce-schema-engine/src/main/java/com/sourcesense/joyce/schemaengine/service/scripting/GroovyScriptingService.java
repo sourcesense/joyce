@@ -35,11 +35,9 @@ public class GroovyScriptingService extends ScriptingService {
 
 	private String buildScriptFunction(String scriptResult) {
 		return "import groovy.json.*;\n" +
-				"def executeScript(__source, __metadata, __context) {\n" +
+				"def executeScript(__ctx) {\n" +
 				"def jsonSlurper = new JsonSlurper();\n" +
-				"def source = jsonSlurper.parseText(__source);\n" +
-				"def metadata = jsonSlurper.parseText(__metadata);\n" +
-				"def context = jsonSlurper.parseText(__context);\n" +
+				"def ctx = jsonSlurper.parseText(__ctx);\n" +
 				scriptResult +
 				"return JsonOutput.toJson(result);\n" +
 				"}\n";
