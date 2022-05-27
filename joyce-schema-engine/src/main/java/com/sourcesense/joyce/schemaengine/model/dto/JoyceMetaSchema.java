@@ -14,7 +14,7 @@
  * limitations under the License.
  */
 
-package com.sourcesense.joyce.schemaengine.model;
+package com.sourcesense.joyce.schemaengine.model.dto;
 
 import com.networknt.schema.*;
 
@@ -54,7 +54,10 @@ public class JoyceMetaSchema {
                 new NonValidationKeyword("contentMediaType"),
                 new NonValidationKeyword("contentEncoding"),
                 new NonValidationKeyword("examples"),
-                new NonValidationKeyword("$metadata")
+                new NonValidationKeyword("uid"),
+                new NonValidationKeyword("metadata"),
+                new NonValidationKeyword("apply"),
+                new NonValidationKeyword("value")
         ));
         nonValidationKeywords.addAll(
                 augmentedKeys.stream()

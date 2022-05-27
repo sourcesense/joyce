@@ -2,8 +2,8 @@ package com.sourcesense.joyce.schemaengine.service.scripting;
 
 import com.fasterxml.jackson.databind.JsonNode;
 import com.sourcesense.joyce.schemaengine.exception.JoyceSchemaEngineException;
-import com.sourcesense.joyce.schemaengine.model.SchemaEngineContext;
-import com.sourcesense.joyce.schemaengine.model.handler.ScriptHandlerArgs;
+import com.sourcesense.joyce.schemaengine.model.dto.SchemaEngineContext;
+import com.sourcesense.joyce.schemaengine.model.dto.handler.ScriptHandlerArgs;
 import com.sourcesense.joyce.schemaengine.test.TestUtility;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;

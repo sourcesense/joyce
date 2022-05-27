@@ -31,7 +31,7 @@ import com.jayway.jsonpath.spi.json.JsonProvider;
 import com.jayway.jsonpath.spi.mapper.JacksonMappingProvider;
 import com.jayway.jsonpath.spi.mapper.MappingProvider;
 import com.sourcesense.joyce.schemaengine.annotation.SchemaTransformationHandler;
-import com.sourcesense.joyce.schemaengine.model.SchemaEngineContext;
+import com.sourcesense.joyce.schemaengine.model.dto.SchemaEngineContext;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Component;
