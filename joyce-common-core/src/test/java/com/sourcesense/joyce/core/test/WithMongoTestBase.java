@@ -17,7 +17,7 @@ public class WithMongoTestBase {
     @BeforeEach
     void setup() throws Exception {
         String ip = "localhost";
-        int port = 27017;
+        int port = 27020;
 
         ImmutableMongodConfig mongodConfig = MongodConfig
                 .builder()

@@ -163,44 +163,45 @@ Here's the result, save it to `import-accomodation-veneto.yaml`
 ```yaml
 $schema: https://joyce.sourcesense.com/v1/schema
 metadata:
-  subtype: import
-  namespace: default
+  type: import
+  domain: test
+  product: default
   name: accomodation-veneto
   description: A model that represents Accomodations for Veneto regional data
   production: false
-  parent: joyce://schema/import/default.accomodation
+  parent: joyce:content:test:default:accomodation:schema
 type: object
 properties:
   code:
     type: string
-    $path: "$['Codice identificativo']"
+    value: "$['src']['Codice identificativo']"
   name:
     type: string
-    $path: "$.Denominazione"
+    value: $.src.Denominazione
   email:
     type: string
-    $path: "$['Posta elettronica']"
+    value: "$['src']['Posta elettronica']"
   phone:
     type: string
-    $path: "$.Telefono"
+    value: $.src.Telefono
   website:
     type: string
-    $path: "$['Sito internet']"
+    value: "$['src']['Sito internet']"
   location:
     type: object
     properties:
       city:
         type: string
-        $path: "$.Comune"
+        value: $.src.Comune
       region:
         type: string
-        $fixed: "Veneto"
+        value: "Veneto"
       cap:
         type: integer
-        $path: "$.CAP"
+        value: $.src.CAP
   tipology:
     type: string
-    $path: "$.Tipologia"
+    value: $.src.Tipologia
 ```
 
 You see it has the same shape of our parent schema, but for every field we've used the `$path` handler to retrieve with a `json-path` expression the actual value we wanted (see [docs](/docs/schema) for other handlers and their usage ).
@@ -318,7 +319,7 @@ Open `import-accomodation-veneto.yaml` and change the description of `cap` field
 ```yaml
 cap:
   type: ["integer", "null"]
-  $path: "$.CAP"
+  value: $.src.CAP
 ```
 
 Update the schema on the Import Gateway:
@@ -372,38 +373,39 @@ and write a new schema to `import-accomodation-sicily.yaml`
 ```yaml
 $schema: https://joyce.sourcesense.com/v1/schema
 metadata:
-  subtype: import
-  namespace: default
+  type: import
+  domain: test
+  product: default
   name: accomodation-sicilia
   description: A model that represents Accomodations for Sicilia regional data
   production: false
-  parent: joyce://schema/import/default.accomodation
+  parent: joyce:content:test:default:accomodation:schema
 type: object
 properties:
   code:
     type: string
-    $path: "$.Codice"
+    value: $.src.Codice
   name:
     type: string
-    $path: "$.Nome"
+    value: $.src.Nome
   email:
     type: string
-    $path: "$['Indirizzo posta elettronica']"
+    value: "$['src']['Indirizzo posta elettronica']"
   phone:
     type: string
-    $path: "$.Telefono"
+    value: $.src.Telefono
   website:
     type: string
-    $path: "$['Sito internet']"
+    value: "$['src']['Sito internet']"
   location:
     type: object
     properties:
       city:
         type: string
-        $path: "$.Comune"
+        value: $.src.Comune
       region:
         type: string
-        $fixed: "Sicily"
+        value: "Sicily"
       cap:
         type: "null"
 ```

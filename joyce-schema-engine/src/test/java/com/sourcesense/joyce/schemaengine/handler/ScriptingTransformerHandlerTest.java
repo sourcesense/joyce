@@ -1,7 +1,7 @@
 package com.sourcesense.joyce.schemaengine.handler;
 
 import com.fasterxml.jackson.databind.JsonNode;
-import com.fasterxml.jackson.databind.ObjectMapper;
+import com.sourcesense.joyce.schemaengine.model.SchemaEngineContext;
 import com.sourcesense.joyce.schemaengine.test.TestUtility;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
@@ -13,10 +13,8 @@ import org.springframework.context.ApplicationContext;
 
 import java.io.IOException;
 import java.net.URISyntaxException;
-import java.util.Optional;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
-import static org.mockito.Mockito.mock;
 
 @ExtendWith(MockitoExtension.class)
 @MockitoSettings(strictness = Strictness.LENIENT)
@@ -77,8 +75,12 @@ public class ScriptingTransformerHandlerTest implements TestUtility {
 		JsonNode source = this.getResourceAsNode("source/31.json");
 		JsonNode value = this.getResourceAsNode(valuePath);
 
+		SchemaEngineContext context = SchemaEngineContext.builder()
+				.out(source)
+				.build();
+
 		String actual = scriptingTransformerHandler
-				.process(key, "string", value, source, Optional.empty(), Optional.empty())
+				.process(key, "string", value, context)
 				.asText();
 
 		assertEquals(expected, actual);

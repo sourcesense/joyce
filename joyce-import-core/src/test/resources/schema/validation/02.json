@@ -9,7 +9,7 @@
   "properties": {
     "id": {
       "type": "string",
-      "$path": "$.id"
+      "value": "$.src.id"
     }
   }
 }

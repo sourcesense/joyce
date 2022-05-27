@@ -1,4 +1,4 @@
 {
   "language": "javascript",
-  "code": "source.simpleField.toLowerCase()"
+  "code": "ctx.src.simpleField.toLowerCase()"
 }

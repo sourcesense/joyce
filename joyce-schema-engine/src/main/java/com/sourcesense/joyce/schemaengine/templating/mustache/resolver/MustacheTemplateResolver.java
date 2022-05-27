@@ -12,6 +12,7 @@ import lombok.RequiredArgsConstructor;
 
 import java.util.HashMap;
 import java.util.Map;
+import java.util.Objects;
 
 @RequiredArgsConstructor
 public class MustacheTemplateResolver {
@@ -25,7 +26,7 @@ public class MustacheTemplateResolver {
 		return this.resolve(input, null);
 	}
 
-	public JsonNode resolve(JsonNode input, JsonNode scope) {
+	public JsonNode resolve(JsonNode input, Object scope) {
 		return this.resolveJsonNode(input.deepCopy(), scope);
 	}
 
@@ -33,14 +34,14 @@ public class MustacheTemplateResolver {
 		return this.resolve(template, null);
 	}
 
-	public String resolve(String template, JsonNode scope) {
+	public String resolve(String template, Object scope) {
 		return mustacheCompiler
 				.compile(template)
-				.execute(scope != null && !scope.isMissingNode() ? this.computeEnrichedScope(scope) : mustacheLambdas);
+				.execute(Objects.nonNull(scope) ? this.computeEnrichedScope(scope) : mustacheLambdas);
 	}
 
 
-	private JsonNode resolveJsonNode(JsonNode input, JsonNode scope) {
+	private JsonNode resolveJsonNode(JsonNode input, Object scope) {
 		if (JsonNodeType.STRING.equals(input.getNodeType())) {
 			return JsonNodeFactory.instance.textNode(
 					this.resolve(input.textValue(), scope)
@@ -54,7 +55,7 @@ public class MustacheTemplateResolver {
 		return input;
 	}
 
-	private void resolveObjectNode(ObjectNode input, JsonNode scope) {
+	private void resolveObjectNode(ObjectNode input, Object scope) {
 		input.fields().forEachRemaining(entry -> {
 			JsonNode output = this.resolve(entry.getValue(), scope);
 			if (entry.getValue() != output) {
@@ -63,7 +64,7 @@ public class MustacheTemplateResolver {
 		});
 	}
 
-	private void resolveArrayNode(ArrayNode input, JsonNode scope) {
+	private void resolveArrayNode(ArrayNode input, Object scope) {
 		for (int i = 0; i < input.size(); i++) {
 			JsonNode output = this.resolve(input.path(i), scope);
 			if (input.path(i) != output) {
@@ -72,10 +73,11 @@ public class MustacheTemplateResolver {
 		}
 	}
 
-	private Map<String, Object> computeEnrichedScope(JsonNode scope) {
+	private Map<String, Object> computeEnrichedScope(Object scope) {
+		Map<String, Object> convertedScope = jsonMapper.convertValue(scope, new TypeReference<>() {});
 		Map<String, Object> enrichedScope = new HashMap<>();
+		enrichedScope.put("ctx", convertedScope);
 		enrichedScope.putAll(mustacheLambdas);
-		enrichedScope.putAll(jsonMapper.convertValue(scope, new TypeReference<>() {}));
 		return enrichedScope;
 	}
 }

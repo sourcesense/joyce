@@ -1,12 +1,13 @@
 {
   "$schema": "https://joyce.sourcesense.com/v1/schema",
   "metadata": {
-    "subtype": "import",
+    "type": "import",
+    "domain": "test",
+    "product": "default",
     "name": "user",
     "description": "A test schema",
-    "production": false,
     "uid": "code",
-    "collection": "users",
+    "production": false,
     "store": false,
     "indexes": [
       {
@@ -37,7 +38,7 @@
     },
     "stringProp": {
       "bsonType": "string",
-      "$path": "$['user_id']"
+      "value": "$['src']['user_id']"
     },
     "booleanProp": {
       "bsonType": "boolean"
@@ -55,11 +56,10 @@
         "nestedProp": {
           "bsonType": "string",
           "required": [],
-          "​$path": [
-            "$['first_name']",
-            " ",
-            "$['last_name']"
-          ]
+          "apply": [{
+            "handler": "extract",
+            "args": ["$['src']['first_name']", " ", "$['src']['last_name']"]
+          }]
         }
       }
     },
@@ -84,7 +84,7 @@
               "nestedProp": {
                 "bsonType": "string",
                 "required": [],
-                "$fixed": "SimpleUser"
+                "value": "SimpleUser"
               }
             }
           }

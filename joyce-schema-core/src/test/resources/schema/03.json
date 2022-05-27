@@ -1,27 +1,25 @@
 {
-  "metadata": {
-    "collection": "test.object",
-    "description": "Atestschema",
-    "production": false,
-    "extra": null,
-    "indexed": true,
-    "indexes": null,
-    "name": "object",
-    "parent": null,
-    "root_collection": null,
-    "root_query": null,
-    "store": true,
-    "subtype": "import",
-    "uid": "id",
-    "validation": true
-  },
   "$schema": "https://joyce.sourcesense.com/v1/schema",
+  "metadata": {
+    "type": "import",
+    "name": "object",
+    "domain": "test",
+    "product": "default",
+    "uid": "id",
+    "description": "Atestschema",
+    "parent": null,
+    "production": false,
+    "store": true,
+    "validation": true,
+    "extra": null,
+    "indexes": null
+  },
+  "type": "object",
+  "required": null,
   "properties": {
     "id": {
-      "$path": "$.id",
-      "type": "integer"
+      "type": "integer",
+      "value": "$.src.id"
     }
-  },
-  "required": null,
-  "type": "object"
+  }
 }

@@ -10,7 +10,7 @@ type: object
 properties:
   id:
     type: integer
-    "$path": "$.id"
+    value: "$.src.id"
   mappedObject:
     type: object
     properties:
@@ -18,9 +18,11 @@ properties:
         type: string
       field2:
         type: string
-    $script:
-      language: python
-      oneLine: false
-      code: |
-        asd = source['object']['objectField'].upper()
-        return {'field1': asd, 'field2': 'newField'}
+    apply:
+      - handler: script
+        args:
+          language: python
+          oneLine: false
+          code: |
+            asd = ctx['src']['object']['objectField'].upper()
+            return {'field1': asd, 'field2': 'newField'}

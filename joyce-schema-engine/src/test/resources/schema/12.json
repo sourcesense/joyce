@@ -1,8 +1,6 @@
 {
   "$schema": "https://joyce.sourcesensce.com/v1/schema",
-  "metadata": {
-    "message_key": "$.id"
-  },
+  "metadata": {},
   "type": "object",
   "properties": {
     "name": {
@@ -12,11 +10,14 @@
     "mail": {
       "type": "string",
       "required": true,
-      "$path": "$.email"
+      "value": "$.src.email"
     },
     "foo": {
       "type": "string",
-      "$foo": null
+      "apply": [{
+        "handler": "foo",
+        "args": null
+      }]
     }
   }
 }

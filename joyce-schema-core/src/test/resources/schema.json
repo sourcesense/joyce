@@ -1,16 +1,20 @@
 {
   "$schema": "https://joyce.sourcesensce.com/v1/schema",
   "metadata": {
-    "name": "test",
+    "domain": "test",
+    "product": "default",
     "type": "import",
-    "uid": "uid",
-    "collection": "users"
+    "name": "test",
+    "uid": "uid"
   },
   "type": "object",
   "properties": {
     "uid": {
       "type": "string",
-      "$path": ["asd-", "$.id"]
+      "apply": [{
+          "handler": "extract",
+          "args": ["asd-", "$.src.id"]
+        }]
     },
     "name": {
       "type": "string",
@@ -19,19 +23,18 @@
     "mail": {
       "type": "string",
       "required": true,
-      "$path": "$.email"
+      "value": "$.src.email"
     },
     "docType": {
       "type": ["string", "null"],
-      "$fixed": "simpleUser"
+      "value": "simpleUser"
     },
     "address": {
       "type": "string",
-      "$path": [
-        "$.address.city",
-        ", ",
-        "$.address.street"
-      ]
+      "apply": [{
+        "handler": "extract",
+        "args": ["$.src.address.city", ", ", "$.src.address.street"]
+      }]
     }
   }
 }

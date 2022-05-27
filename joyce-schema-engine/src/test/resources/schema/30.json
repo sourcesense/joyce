@@ -7,21 +7,21 @@
   "properties": {
     "id": {
       "type": "string",
-      "$path": "$.name"
+      "value": "$.src.name"
     },
     "more-id": {
       "type": "integer",
-      "$path": "$.id"
+      "value": "$.src.id"
     },
     "utenti": {
       "type": "array",
-      "$path": "$.complesso.ancora.stacippa.ole",
+      "value": "$.src.complesso.ancora.stacippa.ole",
       "items": {
         "type": "object",
         "properties": {
           "name": {
             "type": "string",
-            "$path": "$.nome"
+            "value": "$.src.nome"
           }
         }
       }

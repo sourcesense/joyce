@@ -17,12 +17,12 @@
 package com.sourcesense.joyce.schemacore.model.dto;
 
 import com.sourcesense.joyce.core.model.entity.JoyceSchemaMetadata;
-import com.sourcesense.joyce.core.model.entity.SchemaObject;
+import com.sourcesense.joyce.core.model.entity.JoyceSchema;
 import com.sourcesense.joyce.core.model.uri.JoyceSchemaURI;
 import lombok.Data;
 
 @Data
-public class SchemaShort implements SchemaObject {
+public class SchemaShort implements JoyceSchema {
 
 	private JoyceSchemaURI uid;
 	private JoyceSchemaMetadata metadata;

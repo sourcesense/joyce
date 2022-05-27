@@ -12,17 +12,20 @@
   "properties": {
     "id": {
       "type": "integer",
-      "$path": "$.id"
+      "value": "$.src.id"
     },
     "mappedArray": {
       "type": "array",
       "items": {
         "type": "string"
       },
-      "$script": {
-        "language": "javascript",
-        "code": "source.stringArray.map(s => s.toUpperCase())"
-      }
+      "apply": [{
+        "handler": "script",
+        "args": {
+          "language": "javascript",
+          "code": "ctx.src.stringArray.map(s => s.toUpperCase())"
+        }
+      }]
     }
   }
 }

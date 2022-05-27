@@ -10,7 +10,7 @@ type: object
 properties:
   id:
     type: integer
-    "$path": "$.id"
+    value: "$.src.id"
   mappedObject:
     type: object
     properties:
@@ -18,6 +18,8 @@ properties:
         type: string
       field2:
         type: string
-    $script:
-      language: python
-      code: " {'field1': source['object']['objectField'], 'field2': 'newField'}"
+    apply:
+      - handler: script
+        args:
+          language: python
+          code: "{'field1': ctx['src']['object']['objectField'], 'field2': 'newField'}"

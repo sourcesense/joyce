@@ -17,7 +17,7 @@
   "properties": {
     "id": {
       "type": "integer",
-      "$path": "$.id"
+      "value": "$.src.id"
     }
   }
 }

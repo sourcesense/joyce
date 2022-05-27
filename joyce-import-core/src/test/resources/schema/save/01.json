@@ -26,23 +26,23 @@
   "properties": {
     "id": {
       "type": "string",
-      "$path": "$.id"
+      "value": "$.src.id"
     },
     "titolo": {
       "type": "string",
-      "$path": "$.title"
+      "value": "$.src.title"
     },
     "data": {
       "type": "string",
-      "$path": "$.date"
+      "value": "$.src.date"
     },
     "sommario": {
       "type": "string",
-      "$path": "$.content"
+      "value": "$.src.content"
     },
     "url": {
       "type": "string",
-      "$path": "$.link"
+      "value": "$.src.link"
     }
   }
 }

@@ -16,13 +16,13 @@ Let's see an example:
 ```yaml
 $schema: https://joyce.sourcesensce.com/v1/schema
 metadata:
+  type: import
+  domain: test
+  product: default
   name: user
   description: A test schema
-  subtype: import
   uid: code
-  collection: users
   production: false
-  namespace: clients
   store: true
   indexes:
     - kind: 1
@@ -32,18 +32,22 @@ type: object
 properties:
   code:
     type: integer
-    $path: "$.user_id"
+    value: $.src.user_id
   full_name:
     type: string
-    $path: ["$.first_name", " ", "$.last_name"]
+    apply:
+     - handler: extract
+       args: ["$.src.first_name", " ", "$.src.last_name"]
   email:
     type: string
   kind:
     type: string
-    $fixed: "SimpleUser"
+    value: SimpleUser
   collection:
     type: string
-    $meta: "$.collection"
+    apply:
+      - handler: extract
+        args: ["$.metadata.domain", "-", "$.metadata.product", "-", "$.metadata.name"]
 ```
 
 Applying this schema to the following source content:

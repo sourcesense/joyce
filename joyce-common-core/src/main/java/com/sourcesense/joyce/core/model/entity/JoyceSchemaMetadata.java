@@ -17,6 +17,7 @@
 package com.sourcesense.joyce.core.model.entity;
 
 import com.fasterxml.jackson.annotation.JsonProperty;
+import com.fasterxml.jackson.databind.JsonNode;
 import com.sourcesense.joyce.core.exception.InvalidMetadataException;
 import com.sourcesense.joyce.core.model.uri.JoyceSchemaURI;
 import lombok.EqualsAndHashCode;
@@ -49,6 +50,7 @@ public class JoyceSchemaMetadata {
 	private Boolean validation = true;
 	private Boolean indexed = true;
 
+	private JsonNode data;
 	private Map<String, Object> extra;
 
 	/**

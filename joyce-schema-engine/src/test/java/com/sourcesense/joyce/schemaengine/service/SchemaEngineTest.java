@@ -22,7 +22,11 @@ import com.fasterxml.jackson.databind.node.TextNode;
 import com.networknt.schema.JsonSchemaException;
 import com.samskivert.mustache.Mustache;
 import com.sourcesense.joyce.schemaengine.exception.JoyceSchemaEngineException;
-import com.sourcesense.joyce.schemaengine.handler.*;
+import com.sourcesense.joyce.schemaengine.handler.JsonPathTransformerHandler;
+import com.sourcesense.joyce.schemaengine.handler.RestTransformerHandler;
+import com.sourcesense.joyce.schemaengine.handler.SchemaTransformerHandler;
+import com.sourcesense.joyce.schemaengine.handler.ScriptingTransformerHandler;
+import com.sourcesense.joyce.schemaengine.model.SchemaEngineContext;
 import com.sourcesense.joyce.schemaengine.templating.mustache.resolver.MustacheTemplateResolver;
 import com.sourcesense.joyce.schemaengine.test.TestUtility;
 import org.junit.jupiter.api.Assertions;
@@ -81,13 +85,11 @@ public class SchemaEngineTest implements TestUtility {
 		String schema = Files.readString(loadResource("schema/10.json"));
 		String source = Files.readString(loadResource("source/10.json"));
 		SchemaTransformerHandler dummyHandler = mock(SchemaTransformerHandler.class);
-		when(dummyHandler.process(any(), any(), any(), any(), any(), any())).thenReturn(new TextNode("foobar"));
+		when(dummyHandler.process(any(), any(), any(), any())).thenReturn(new TextNode("foobar"));
 		Map<String, SchemaTransformerHandler> handlers = Map.of(
-				"$path", dummyHandler,
-				"$fixed", dummyHandler,
-				"$meta", dummyHandler
+				"extract", dummyHandler
 		);
-		SchemaEngine schemaEngine = new SchemaEngine(jsonMapper, mustacheTemplateResolver, handlers);
+		SchemaEngine<?> schemaEngine = new SchemaEngine<>(jsonMapper, mustacheTemplateResolver, handlers);
 		schemaEngine.defaultInit();
 
 		JsonNode result = schemaEngine.process(schema, source);
@@ -101,8 +103,8 @@ public class SchemaEngineTest implements TestUtility {
 		String schema = Files.readString(loadResource("schema/10.json"));
 		String source = Files.readString(loadResource("source/11.json"));
 		SchemaTransformerHandler jsonPathTransformerHandler = mock(SchemaTransformerHandler.class);
-		Map<String, SchemaTransformerHandler> handlers = Map.of("$path", jsonPathTransformerHandler);
-		SchemaEngine schemaEngine = new SchemaEngine(jsonMapper, mustacheTemplateResolver,handlers);
+		Map<String, SchemaTransformerHandler> handlers = Map.of("extract", jsonPathTransformerHandler);
+		SchemaEngine<?> schemaEngine = new SchemaEngine<>(jsonMapper, mustacheTemplateResolver,handlers);
 
 		Assertions.assertThrows(
 				JsonSchemaException.class,
@@ -114,19 +116,26 @@ public class SchemaEngineTest implements TestUtility {
 	void handlersShouldBeAppliedCascading() throws URISyntaxException, IOException {
 		String schema = Files.readString(loadResource("schema/20.json"));
 		String source = Files.readString(loadResource("source/10.json"));
+		JsonNode sourceNode = jsonMapper.readValue(source, JsonNode.class);
 
 		SchemaTransformerHandler handler = mock(SchemaTransformerHandler.class);
-		when(handler.process(any(), any(), eq(new TextNode("$.email")), any(), any(), any()))
+		SchemaEngineContext internalContext = SchemaEngineContext.builder()
+				.src(sourceNode)
+				.out(sourceNode)
+				.build();
+
+		when(handler.process(any(), any(), eq(new TextNode("$.email")), eq(internalContext)))
 				.thenReturn(new TextNode("mario"));
-		when(handler.process(any(), any(), eq(new TextNode("uppercase")), eq(new TextNode("mario")), any(), any()))
+
+		when(handler.process(any(), any(), eq(new TextNode("uppercase")), eq(internalContext.withUpdatedOutput(new TextNode("mario")))))
 				.thenReturn(new TextNode("MARIO"));
 
 		Map<String, SchemaTransformerHandler> handlers = Map.of(
-				"$path", handler,
-				"$transform", handler
+				"extract", handler,
+				"transform", handler
 		);
 
-		SchemaEngine schemaEngine = new SchemaEngine(jsonMapper, mustacheTemplateResolver, handlers);
+		SchemaEngine<JsonNode> schemaEngine = new SchemaEngine<>(jsonMapper, mustacheTemplateResolver, handlers);
 		schemaEngine.defaultInit();
 
 		String expected = "MARIO";
@@ -139,7 +148,7 @@ public class SchemaEngineTest implements TestUtility {
 	void addingFieldShouldNotBreakChanges() throws URISyntaxException, IOException {
 		JsonNode schema = this.readNodeFromResource("schema/11.json");
 		JsonNode newSchema = this.readNodeFromResource("schema/12.json");
-		SchemaEngine schemaEngine = new SchemaEngine(jsonMapper, mustacheTemplateResolver, new HashMap<>());
+		SchemaEngine<?> schemaEngine = new SchemaEngine<>(jsonMapper, mustacheTemplateResolver, new HashMap<>());
 		Boolean ret = schemaEngine.checkForBreakingChanges(schema, newSchema);
 		Assertions.assertFalse(ret);
 	}
@@ -148,7 +157,7 @@ public class SchemaEngineTest implements TestUtility {
 	void deprecatingFieldShouldBreakChanges() throws URISyntaxException, IOException {
 		JsonNode schema = this.readNodeFromResource("schema/12.json");
 		JsonNode newSchema = this.readNodeFromResource("schema/13.json");
-		SchemaEngine schemaEngine = new SchemaEngine(jsonMapper, mustacheTemplateResolver, new HashMap<>());
+		SchemaEngine<?> schemaEngine = new SchemaEngine<>(jsonMapper, mustacheTemplateResolver, new HashMap<>());
 		Boolean ret = schemaEngine.checkForBreakingChanges(schema, newSchema);
 		assertTrue(ret);
 	}
@@ -157,7 +166,7 @@ public class SchemaEngineTest implements TestUtility {
 	void changingTypeShouldThrow() throws URISyntaxException, IOException {
 		JsonNode schema = this.readNodeFromResource("schema/13.json");
 		JsonNode newSchema = this.readNodeFromResource("schema/14.json");
-		SchemaEngine schemaEngine = new SchemaEngine(jsonMapper, mustacheTemplateResolver, new HashMap<>());
+		SchemaEngine<?> schemaEngine = new SchemaEngine<>(jsonMapper, mustacheTemplateResolver, new HashMap<>());
 		Assertions.assertThrows(JoyceSchemaEngineException.class, () ->
 				schemaEngine.checkForBreakingChanges(schema, newSchema)
 		);
@@ -167,7 +176,7 @@ public class SchemaEngineTest implements TestUtility {
 	void changingTypeExtendingTypesShouldNotThrowsAndDoNotBreaks() throws URISyntaxException, IOException {
 		JsonNode schema = this.readNodeFromResource("schema/14.json");
 		JsonNode newSchema = this.readNodeFromResource("schema/15.json");
-		SchemaEngine schemaEngine = new SchemaEngine(jsonMapper, mustacheTemplateResolver, new HashMap<>());
+		SchemaEngine<?> schemaEngine = new SchemaEngine<>(jsonMapper, mustacheTemplateResolver, new HashMap<>());
 		Assertions.assertFalse(schemaEngine.checkForBreakingChanges(schema, newSchema));
 	}
 
@@ -199,7 +208,7 @@ public class SchemaEngineTest implements TestUtility {
 			assertEquals(request.getURI().toString(), "http://test:8080/posts?test=pv1");
 			assertEquals(request.getMethod(), HttpMethod.POST);
 			assertEquals(request.getBody().toString(), "{\n \"content\": \"test\"\n}\n");
-			assertTrue(testHeaders.equals(request.getHeaders().get("test")));
+			assertEquals(testHeaders, request.getHeaders().get("test"));
 
 		}).andRespond(withSuccess(
 				this.getResourceAsString("rest/response/35.json"),
@@ -216,26 +225,19 @@ public class SchemaEngineTest implements TestUtility {
 		JsonNode source = jsonMapper.readTree(sourceContent);
 
 		ScriptingTransformerHandler scriptTransformerHandler = new ScriptingTransformerHandler(jsonMapper, applicationContext);
-		FixedValueTransformerHandler fixedValueTransformerHandler = new FixedValueTransformerHandler();
 
-		MetadataValueTransformerHandler metadataValueTransformerHandler = new MetadataValueTransformerHandler(jsonMapper);
-		metadataValueTransformerHandler.configure();
-
-		JsonPathTransformerHandler jsonPathTransformerHandler = new JsonPathTransformerHandler();
+		JsonPathTransformerHandler jsonPathTransformerHandler = new JsonPathTransformerHandler(jsonMapper);
 		jsonPathTransformerHandler.configure();
 
 		RestTransformerHandler restTransformerHandler = new RestTransformerHandler(jsonMapper, restTemplate);
-		restTransformerHandler.configure();
 
 		Map<String, SchemaTransformerHandler> handlers = Map.of(
-				"$script", scriptTransformerHandler,
-				"$path", jsonPathTransformerHandler,
-				"$meta", metadataValueTransformerHandler,
-				"$fixed", fixedValueTransformerHandler,
-				"$rest", restTransformerHandler
+				"script", scriptTransformerHandler,
+				"extract", jsonPathTransformerHandler,
+				"rest", restTransformerHandler
 		);
 
-		SchemaEngine schemaEngine = new SchemaEngine(jsonMapper, mustacheTemplateResolver, handlers);
+		SchemaEngine<?> schemaEngine = new SchemaEngine<>(jsonMapper, mustacheTemplateResolver, handlers);
 		schemaEngine.defaultInit();
 
 		JsonNode expected = this.getResourceAsNode(resultPath);

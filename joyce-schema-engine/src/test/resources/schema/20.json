@@ -1,15 +1,16 @@
 {
   "$schema": "https://joyce.sourcesense.com/v1/schema",
-  "metadata": {
-    "message_key": "$.id"
-  },
+  "metadata": {},
   "type": "object",
   "properties": {
     "name": {
       "type": "string",
       "required": true,
-      "$path": "$.email",
-      "$transform": "uppercase"
+      "value": "$.email",
+      "apply": [{
+        "handler": "transform",
+        "args": "uppercase"
+      }]
     }
   }
 }

@@ -1,4 +1,4 @@
 {
   "language": "javascript",
-  "code": "source.object.nestedObject.nestedObjectComplexArray.map(e => e.nestedObjectComplexArrayField)"
+  "code": "ctx.src.object.nestedObject.nestedObjectComplexArray.map(e => e.nestedObjectComplexArrayField)"
 }
