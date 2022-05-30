@@ -2,7 +2,7 @@ package com.sourcesense.joyce.schemaengine.handler;
 
 import com.fasterxml.jackson.databind.JsonNode;
 import com.sourcesense.joyce.schemaengine.model.dto.SchemaEngineContext;
-import com.sourcesense.joyce.schemaengine.test.TestUtility;
+import com.sourcesense.joyce.schemaengine.test.SchemaEngineJoyceTest;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
@@ -18,17 +18,14 @@ import static org.junit.jupiter.api.Assertions.assertEquals;
 
 @ExtendWith(MockitoExtension.class)
 @MockitoSettings(strictness = Strictness.LENIENT)
-public class ScriptingTransformerHandlerTest implements TestUtility {
+public class ScriptingTransformerHandlerTest extends SchemaEngineJoyceTest {
 
 	private ScriptingTransformerHandler scriptingTransformerHandler;
 
 	@BeforeEach
 	void init() {
 		ApplicationContext context = initApplicationContext(jsonMapper);
-		scriptingTransformerHandler = new ScriptingTransformerHandler(
-				jsonMapper,
-				context
-		);
+		scriptingTransformerHandler = new ScriptingTransformerHandler(jsonMapper,	context);
 	}
 
 	@Test
@@ -72,8 +69,8 @@ public class ScriptingTransformerHandlerTest implements TestUtility {
 			String valuePath,
 			String expected) throws IOException, URISyntaxException {
 
-		JsonNode source = this.getResourceAsNode("source/31.json");
-		JsonNode value = this.getResourceAsNode(valuePath);
+		JsonNode source = this.computeResourceAsNode("source/31.json");
+		JsonNode value = this.computeResourceAsNode(valuePath);
 
 		SchemaEngineContext context = SchemaEngineContext.builder()
 				.out(source)

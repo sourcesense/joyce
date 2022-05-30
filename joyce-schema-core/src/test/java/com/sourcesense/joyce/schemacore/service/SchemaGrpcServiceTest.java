@@ -8,7 +8,7 @@ import com.sourcesense.joyce.core.mapping.mapstruct.SchemaProtoMapperImpl;
 import com.sourcesense.joyce.core.model.entity.SchemaEntity;
 import com.sourcesense.joyce.protobuf.api.*;
 import com.sourcesense.joyce.protobuf.model.Schema;
-import com.sourcesense.joyce.schemacore.test.TestUtility;
+import com.sourcesense.joyce.schemacore.test.SchemaCoreJoyceTest;
 import io.grpc.internal.testing.StreamRecorder;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
@@ -28,7 +28,7 @@ import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.Mockito.when;
 
 @ExtendWith(MockitoExtension.class)
-public class SchemaGrpcServiceTest implements TestUtility {
+public class SchemaGrpcServiceTest extends SchemaCoreJoyceTest {
 
 	private static final String DOMAIN = "test";
 	private static final String PRODUCT = "default";

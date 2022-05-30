@@ -26,11 +26,10 @@ import com.sourcesense.joyce.core.model.entity.JoyceKafkaKey;
 import com.sourcesense.joyce.core.model.entity.JoyceKafkaKeyDefaultMetadata;
 import com.sourcesense.joyce.core.model.entity.JoyceSchemaMetadata;
 import com.sourcesense.joyce.core.model.entity.SchemaEntity;
-import com.sourcesense.joyce.core.model.uri.JoyceSchemaURI;
 import com.sourcesense.joyce.core.model.uri.JoyceSourceURI;
 import com.sourcesense.joyce.core.model.uri.JoyceURIFactory;
 import com.sourcesense.joyce.importcore.consumer.ImportConsumer;
-import com.sourcesense.joyce.importcore.test.TestUtility;
+import com.sourcesense.joyce.importcore.test.ImportCoreJoyceTest;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
@@ -40,7 +39,7 @@ import org.mockito.junit.jupiter.MockitoExtension;
 import static org.mockito.Mockito.*;
 
 @ExtendWith(MockitoExtension.class)
-class ImportConsumerTest implements TestUtility {
+class ImportConsumerTest extends ImportCoreJoyceTest {
 
 	// Mocked components
 	@Mock
@@ -53,10 +52,8 @@ class ImportConsumerTest implements TestUtility {
 	private ImportConsumer importConsumer;
 
 	// CONSTANTS
-	private static final String SCHEMA_URI = "joyce:content:test:default:user:schema";
 	private static final String SOURCE_URI = "joyce:content:test:default:user:src:rest:single:666";
 
-	private static final JoyceSchemaURI JOYCE_SCHEMA_URI = JoyceURIFactory.getInstance().createURIOrElseThrow(SCHEMA_URI, JoyceSchemaURI.class);
 	private static final JoyceSourceURI JOYCE_SOURCE_URI = JoyceURIFactory.getInstance().createURIOrElseThrow(SOURCE_URI, JoyceSourceURI.class);
 
 	@BeforeEach

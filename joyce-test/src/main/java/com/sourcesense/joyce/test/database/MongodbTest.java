@@ -1,4 +1,4 @@
-package com.sourcesense.joyce.core.test;
+package com.sourcesense.joyce.test.database;
 
 import de.flapdoodle.embed.mongo.MongodExecutable;
 import de.flapdoodle.embed.mongo.MongodStarter;
@@ -7,15 +7,10 @@ import de.flapdoodle.embed.mongo.config.MongodConfig;
 import de.flapdoodle.embed.mongo.config.Net;
 import de.flapdoodle.embed.mongo.distribution.Version;
 import de.flapdoodle.embed.process.runtime.Network;
-import org.junit.jupiter.api.AfterEach;
-import org.junit.jupiter.api.BeforeEach;
 
-public class WithMongoTestBase {
+public interface MongodbTest {
 
-    private MongodExecutable mongodExecutable;
-
-    @BeforeEach
-    void setup() throws Exception {
+		default MongodExecutable initMongodb() throws Exception {
         String ip = "localhost";
         int port = 27020;
 
@@ -26,13 +21,12 @@ public class WithMongoTestBase {
                 .build();
 
         MongodStarter starter = MongodStarter.getDefaultInstance();
-        mongodExecutable = starter.prepare(mongodConfig);
+			  MongodExecutable mongodExecutable = starter.prepare(mongodConfig);
         mongodExecutable.start();
+				return mongodExecutable;
     }
 
-    @AfterEach
-    public void afterAll() {
+    default void stopMongodb(MongodExecutable mongodExecutable) {
         mongodExecutable.stop();
     }
-
 }

@@ -1,14 +1,11 @@
 package com.sourcesense.joyce.sink.mongodb.service;
 
 import com.fasterxml.jackson.core.type.TypeReference;
-import com.fasterxml.jackson.databind.DeserializationFeature;
-import com.fasterxml.jackson.databind.ObjectMapper;
-import com.fasterxml.jackson.databind.SerializationFeature;
 import com.sourcesense.joyce.core.configuration.mongo.MongodbProperties;
-import com.sourcesense.joyce.sink.mongodb.model.MongoIndex;
 import com.sourcesense.joyce.sink.mongodb.model.JsonSchemaEntry;
+import com.sourcesense.joyce.sink.mongodb.model.MongoIndex;
+import com.sourcesense.joyce.sink.mongodb.test.MongodbSinkJoyceTest;
 import org.bson.Document;
-import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.junit.jupiter.MockitoExtension;
@@ -16,7 +13,6 @@ import org.springframework.test.util.ReflectionTestUtils;
 
 import java.io.IOException;
 import java.net.URISyntaxException;
-import java.nio.file.Files;
 import java.util.Collections;
 import java.util.LinkedHashMap;
 import java.util.List;
@@ -26,16 +22,10 @@ import static org.assertj.core.api.Assertions.assertThat;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 
 @ExtendWith(MockitoExtension.class)
-class CollectionEnhancerTest implements ResourceLoader {
+class CollectionEnhancerTest extends MongodbSinkJoyceTest {
 
 	private static final String SCHEMA_COLLECTION = "joyce_schema";
 
-	private ObjectMapper mapper;
-
-	@BeforeEach
-	void init() {
-		this.mapper = this.initMapper();
-	}
 
 	@Test
 	void shouldConvertAllTypes() throws URISyntaxException, IOException {
@@ -129,14 +119,14 @@ class CollectionEnhancerTest implements ResourceLoader {
 	}
 
 	private void compareSchemaAndValidator(String schemaPath, String validatorPath) throws URISyntaxException, IOException {
-		String schemaJson = Files.readString(this.loadResource(schemaPath));
-		String validatorJson = Files.readString(this.loadResource(validatorPath));
+		String schemaJson = this.computeResourceAsString(schemaPath);
+		String validatorJson = this.computeResourceAsString(validatorPath);
 
-		JsonSchemaEntry jsonSchemaEntry = mapper.readValue(schemaJson, JsonSchemaEntry.class);
-		Map<String, Object> validatorMap = mapper.readValue(validatorJson, new TypeReference<>() {
+		JsonSchemaEntry jsonSchemaEntry = jsonMapper.readValue(schemaJson, JsonSchemaEntry.class);
+		Map<String, Object> validatorMap = jsonMapper.readValue(validatorJson, new TypeReference<>() {
 		});
 
-		CollectionEnhancerService collectionEnhancerService = new CollectionEnhancerService(mapper, null, null, null);
+		CollectionEnhancerService collectionEnhancerService = new CollectionEnhancerService(jsonMapper, null, null, null);
 
 		Document expected = new Document("$jsonSchema", new Document(validatorMap));
 		Document actual = ReflectionTestUtils.invokeMethod(collectionEnhancerService, "computeValidationSchema", jsonSchemaEntry);
@@ -148,13 +138,7 @@ class CollectionEnhancerTest implements ResourceLoader {
 			List<Map<String, Object>> fieldIndexes,
 			MongodbProperties mongodbProperties) {
 
-		CollectionEnhancerService collectionEnhancerService = new CollectionEnhancerService(mapper, null, null, mongodbProperties);
+		CollectionEnhancerService collectionEnhancerService = new CollectionEnhancerService(jsonMapper, null, null, mongodbProperties);
 		return ReflectionTestUtils.invokeMethod(collectionEnhancerService, "computeMongoIndexes", fieldIndexes);
-	}
-
-	private ObjectMapper initMapper() {
-		return new ObjectMapper()
-				.disable(DeserializationFeature.FAIL_ON_UNKNOWN_PROPERTIES)
-				.disable(SerializationFeature.FAIL_ON_EMPTY_BEANS);
 	}
 }

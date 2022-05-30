@@ -2,8 +2,7 @@ package com.sourcesense.joyce.core.mapping.mapstruct;
 
 import com.google.protobuf.Message;
 import com.google.protobuf.Struct;
-import com.sourcesense.joyce.core.mapping.mapstruct.ProtoConverter;
-import com.sourcesense.joyce.core.test.TestUtility;
+import com.sourcesense.joyce.core.test.CommonCoreJoyceTest;
 import com.sourcesense.joyce.protobuf.exception.ProtobufParsingException;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
@@ -18,7 +17,7 @@ import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertThrows;
 
 @ExtendWith(MockitoExtension.class)
-public class ProtoConverterTest implements TestUtility {
+public class ProtoConverterTest extends CommonCoreJoyceTest {
 
 	private final static String TEST_JSON_PATH = "mapper/protoConverter/01.json";
 
@@ -90,7 +89,7 @@ public class ProtoConverterTest implements TestUtility {
 	}
 
 	@Test
-	public void shouldNotConvertNullProtoToJson() throws IOException, URISyntaxException {
+	public void shouldNotConvertNullProtoToJson() {
 		assertEquals(
 				protoConverter.protoToJson(null),
 				Optional.empty()

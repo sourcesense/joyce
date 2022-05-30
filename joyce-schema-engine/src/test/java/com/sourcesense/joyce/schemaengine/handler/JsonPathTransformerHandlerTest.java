@@ -20,7 +20,7 @@ import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.node.ArrayNode;
 import com.fasterxml.jackson.databind.node.TextNode;
 import com.sourcesense.joyce.schemaengine.model.dto.SchemaEngineContext;
-import com.sourcesense.joyce.schemaengine.test.TestUtility;
+import com.sourcesense.joyce.schemaengine.test.SchemaEngineJoyceTest;
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
@@ -29,12 +29,9 @@ import org.mockito.junit.jupiter.MockitoExtension;
 
 import java.io.IOException;
 import java.net.URISyntaxException;
-import java.net.URL;
-import java.nio.file.Files;
-import java.nio.file.Path;
 
 @ExtendWith(MockitoExtension.class)
-public class JsonPathTransformerHandlerTest implements TestUtility {
+public class JsonPathTransformerHandlerTest extends SchemaEngineJoyceTest {
 
 	private JsonPathTransformerHandler handler;
 
@@ -103,7 +100,6 @@ public class JsonPathTransformerHandlerTest implements TestUtility {
 
 
 	private JsonNode getSourceJsonNode() throws IOException, URISyntaxException {
-		URL res =  this.getClass().getClassLoader().getResource("source/10.json");
-		return jsonMapper.readValue(Files.readString(Path.of((res.toURI()))), JsonNode.class);
+		return this.computeResourceAsNode("source/10.json");
 	}
 }

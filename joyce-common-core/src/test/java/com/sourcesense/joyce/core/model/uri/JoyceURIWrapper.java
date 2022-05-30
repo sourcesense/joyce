@@ -1,6 +1,5 @@
-package com.sourcesense.joyce.core.test;
+package com.sourcesense.joyce.core.model.uri;
 
-import com.sourcesense.joyce.core.model.uri.JoyceURI;
 import lombok.AllArgsConstructor;
 import lombok.Data;
 import lombok.NoArgsConstructor;

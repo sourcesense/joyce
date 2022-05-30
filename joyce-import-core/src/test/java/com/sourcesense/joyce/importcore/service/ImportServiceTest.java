@@ -18,18 +18,16 @@ package com.sourcesense.joyce.importcore.service;
 
 import com.fasterxml.jackson.core.type.TypeReference;
 import com.fasterxml.jackson.databind.JsonNode;
-import com.sourcesense.joyce.core.enumeration.KafkaCustomHeaders;
 import com.sourcesense.joyce.core.exception.InvalidMetadataException;
 import com.sourcesense.joyce.core.model.entity.SchemaEntity;
-import com.sourcesense.joyce.core.model.uri.JoyceSchemaURI;
 import com.sourcesense.joyce.core.model.uri.JoyceSourceURI;
 import com.sourcesense.joyce.core.model.uri.JoyceURIFactory;
 import com.sourcesense.joyce.core.producer.ContentProducer;
 import com.sourcesense.joyce.core.service.CsvMappingService;
 import com.sourcesense.joyce.core.utililty.SchemaUtils;
-import com.sourcesense.joyce.importcore.model.dto.SingleImportResult;
 import com.sourcesense.joyce.importcore.enumeration.ProcessStatus;
-import com.sourcesense.joyce.importcore.test.TestUtility;
+import com.sourcesense.joyce.importcore.model.dto.SingleImportResult;
+import com.sourcesense.joyce.importcore.test.ImportCoreJoyceTest;
 import com.sourcesense.joyce.schemacore.service.SchemaService;
 import com.sourcesense.joyce.schemaengine.exception.InvalidSchemaException;
 import com.sourcesense.joyce.schemaengine.exception.JoyceSchemaEngineException;
@@ -43,9 +41,10 @@ import org.springframework.mock.web.MockMultipartFile;
 import org.springframework.web.multipart.MultipartFile;
 
 import java.io.IOException;
-import java.io.InputStream;
 import java.net.URISyntaxException;
-import java.util.*;
+import java.util.List;
+import java.util.Map;
+import java.util.Optional;
 
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.junit.jupiter.api.Assertions.assertEquals;
@@ -54,7 +53,7 @@ import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.Mockito.when;
 
 @ExtendWith(MockitoExtension.class)
-class ImportServiceTest implements TestUtility {
+class ImportServiceTest extends ImportCoreJoyceTest {
 
 	// Mocked components
 	@Mock
@@ -74,17 +73,9 @@ class ImportServiceTest implements TestUtility {
 	private ImportService importService;
 
 	// CONSTANTS
-	private static final String SCHEMA_URI = "joyce:content:test:default:user:schema";
-	private static final String INVALID_SCHEMA_URI = "juice:content:test:default:user:schema";
-
-	private static final JoyceSchemaURI JOYCE_SCHEMA_URI = JoyceURIFactory.getInstance().createURIOrElseThrow(SCHEMA_URI, JoyceSchemaURI.class);
-
-	private static final String CONNECT_URI = "joyce:content:test:default:user:src:connect:user-connector:1";
 	private static final String SINGLE_REST_URI = "joyce:content:test:default:user:src:rest:single:666";
 	private static final String BULK_REST_URI = "joyce:content:test:default:user:src:rest:bulk:666.csv";
-	private static final String INVALID_REST_URI = "juice:content:test:default:user:src:rest:single:666";
 
-	private static final JoyceSourceURI JOYCE_CONNECT_URI = JoyceURIFactory.getInstance().createURIOrElseThrow(CONNECT_URI, JoyceSourceURI.class);
 	private static final JoyceSourceURI JOYCE_SINGLE_REST_URI = JoyceURIFactory.getInstance().createURIOrElseThrow(SINGLE_REST_URI, JoyceSourceURI.class);
 	private static final JoyceSourceURI JOYCE_BULK_REST_URI = JoyceURIFactory.getInstance().createURIOrElseThrow(BULK_REST_URI, JoyceSourceURI.class);
 
@@ -92,21 +83,16 @@ class ImportServiceTest implements TestUtility {
 	private static final String TEST_SCHEMA_JSON_USER = "test-schema-user.json";
 	private static final String TEST_SCHEMA_JSON_ENHANCED_USER = "test-schema-enhanced-user.json";
 
-	private static final String CONNECT_KEY_CORRECT = "complex-message/test-complex-message-key-correct.json";
-	private static final String CONNECT_KEY_MISSING_SCHEMA = "complex-message/test-complex-message-key-missing-schema.json";
-	private static final String CONNECT_KEY_MISSING_UID = "complex-message/test-complex-message-key-missing-uid.json";
-	private static final String CONNECT_KEY_MISSING_SOURCE = "complex-message/test-complex-message-key-missing-source.json";
-
 	@BeforeEach
 	void init() {
 		importService = new ImportService(jsonMapper, schemaUtils, schemaService, contentProducer, jsonLogicService, csvMappingService, schemaEngine);
 	}
 
 	@Test
-	void shouldProcessImportWhenTheInputDataIsCorrect() throws IOException {
+	void shouldProcessImportWhenTheInputDataIsCorrect() throws IOException, URISyntaxException {
 
 		// mocking and stubbing data for test execution
-		SchemaEntity schema = computeSchema(TEST_SCHEMA_JSON_USER);
+		SchemaEntity schema = this.computeResourceAsObject(TEST_SCHEMA_JSON_USER, SchemaEntity.class);
 		when(schemaUtils.metadataFromSchemaOrElseThrow(any())).thenReturn(schema.getMetadata());
 		when(jsonLogicService.filter(any(), any())).thenReturn(true);
 		when(schemaEngine.process(any(SchemaEntity.class), any()))
@@ -114,7 +100,7 @@ class ImportServiceTest implements TestUtility {
 
 		// Subject under test
 		SingleImportResult expected = new SingleImportResult(JOYCE_SINGLE_REST_URI, ProcessStatus.IMPORTED, null);
-		SingleImportResult actual = importService.processImport(JOYCE_SINGLE_REST_URI, computeDocument(TEST_USER_JSON), schema);
+		SingleImportResult actual = importService.processImport(JOYCE_SINGLE_REST_URI, this.computeResourceAsNode(TEST_USER_JSON), schema);
 
 		// Asserts
 		assertEquals(expected, actual);
@@ -135,9 +121,9 @@ class ImportServiceTest implements TestUtility {
 	}
 
 	@Test
-	void shouldThrowSchemaIsNotValidExceptionIfSchemaIsNotValidated() throws IOException {
+	void shouldThrowSchemaIsNotValidExceptionIfSchemaIsNotValidated() throws IOException, URISyntaxException {
 		// mocking and stubbing data for test execution
-		SchemaEntity schema = computeSchema(TEST_SCHEMA_JSON_USER);
+		SchemaEntity schema = this.computeResourceAsObject(TEST_SCHEMA_JSON_USER, SchemaEntity.class);
 		when(jsonLogicService.filter(any(), any())).thenReturn(true);
 		when(schemaEngine.process(any(SchemaEntity.class), any()))
 				.thenThrow(InvalidSchemaException.class);
@@ -147,9 +133,9 @@ class ImportServiceTest implements TestUtility {
 	}
 
 	@Test
-	void shouldThrowInvalidSchemaExceptionIfSchemaHasParentButParentSchemaIsNotAlreadyPresentInDb() throws IOException {
+	void shouldThrowInvalidSchemaExceptionIfSchemaHasParentButParentSchemaIsNotAlreadyPresentInDb() throws IOException, URISyntaxException {
 		// mocking and stubbing data for test execution
-		SchemaEntity schema = computeSchema(TEST_SCHEMA_JSON_ENHANCED_USER);
+		SchemaEntity schema = this.computeResourceAsObject(TEST_SCHEMA_JSON_ENHANCED_USER, SchemaEntity.class);
 		when(schemaUtils.metadataFromSchemaOrElseThrow(any())).thenReturn(schema.getMetadata());
 		when(jsonLogicService.filter(any(), any())).thenReturn(true);
 
@@ -158,18 +144,20 @@ class ImportServiceTest implements TestUtility {
 	}
 
 	@Test
-	void shouldProcessImportIfSchemaHasParentAndParentSchemaIsAlreadyPresentInDb() throws IOException {
+	void shouldProcessImportIfSchemaHasParentAndParentSchemaIsAlreadyPresentInDb() throws IOException, URISyntaxException {
 		// mocking and stubbing data for test execution
-		SchemaEntity schema = computeSchema(TEST_SCHEMA_JSON_ENHANCED_USER);
-		when(schemaUtils.metadataFromSchemaOrElseThrow(any())).thenReturn(schema.getMetadata());
+		SchemaEntity parentSchema = this.computeResourceAsObject(TEST_SCHEMA_JSON_USER, SchemaEntity.class);
+		SchemaEntity childSchema = this.computeResourceAsObject(TEST_SCHEMA_JSON_ENHANCED_USER, SchemaEntity.class);
+
+		when(schemaUtils.metadataFromSchemaOrElseThrow(any())).thenReturn(childSchema.getMetadata());
 		when(jsonLogicService.filter(any(), any())).thenReturn(true);
 		when(schemaEngine.process(any(SchemaEntity.class), any()))
 				.thenReturn(jsonMapper.valueToTree(Map.of("code", "1337")));
 		when(schemaService.get(any()))
-				.thenReturn(Optional.of(computeSchema(TEST_SCHEMA_JSON_USER)));
+				.thenReturn(Optional.of(parentSchema));
 
 		SingleImportResult expected = new SingleImportResult(JOYCE_SINGLE_REST_URI, ProcessStatus.IMPORTED, null);
-		SingleImportResult actual = importService.processImport(JOYCE_SINGLE_REST_URI, null, schema);
+		SingleImportResult actual = importService.processImport(JOYCE_SINGLE_REST_URI, null, childSchema);
 
 		// asserts
 		assertEquals(expected, actual);
@@ -180,37 +168,11 @@ class ImportServiceTest implements TestUtility {
 
 		MultipartFile multipartFile = new MockMultipartFile("01", "01.csv", "text/csv", new byte[0]);
 
-		List<JsonNode> expected = this.computeResourceAsNodeList("result/bulk/csv/01.json");
+		List<JsonNode> expected = this.computeResourceAsObject("result/bulk/csv/01.json", new TypeReference<>() {});
 
 		when(csvMappingService.convertCsvFileToDocuments(any(), any(), any())).thenReturn(expected);
 
 		List<JsonNode> actual = importService.computeDocumentsFromFile(JOYCE_BULK_REST_URI, multipartFile, ',', ";");
 		assertThat(expected).hasSameElementsAs(actual);
-	}
-
-	/* UTILITY METHODS */
-	private SchemaEntity computeSchema(String jsonSchemaName) throws IOException {
-		InputStream resource = this.computeResourceAsBytes(jsonSchemaName);
-		return jsonMapper.readValue(resource, SchemaEntity.class);
-	}
-
-	/* UTILITY METHODS */
-	private Map<String, String> computeHeaders(String importSchema) {
-		return Objects.nonNull(importSchema)
-				? Map.of(KafkaCustomHeaders.IMPORT_SCHEMA, importSchema)
-				: new HashMap<>();
-	}
-
-	private JsonNode computeDocument(String path) throws IOException {
-		return jsonMapper.readTree(
-				this.computeResourceAsBytes(path)
-		);
-	}
-
-	private List<JsonNode> computeResourceAsNodeList(String path) throws IOException {
-		return jsonMapper.readValue(
-				this.computeResourceAsBytes(path),
-				new TypeReference<>() {}
-		);
 	}
 }

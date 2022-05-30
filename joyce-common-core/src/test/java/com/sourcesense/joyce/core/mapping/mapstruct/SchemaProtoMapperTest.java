@@ -6,7 +6,7 @@ import com.fasterxml.jackson.databind.JsonNode;
 import com.sourcesense.joyce.core.model.entity.SchemaEntity;
 import com.sourcesense.joyce.core.model.uri.JoyceSchemaURI;
 import com.sourcesense.joyce.core.model.uri.JoyceURIFactory;
-import com.sourcesense.joyce.core.test.TestUtility;
+import com.sourcesense.joyce.core.test.CommonCoreJoyceTest;
 import com.sourcesense.joyce.protobuf.model.Schema;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
@@ -23,7 +23,7 @@ import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertNull;
 
 @ExtendWith(MockitoExtension.class)
-public class SchemaProtoMapperTest implements TestUtility {
+public class SchemaProtoMapperTest extends CommonCoreJoyceTest {
 
 	private static final String SCHEMA_ENTITY_PATH = "mapper/schemaProtoMapper/schema/entity/01.json";
 	private static final String SCHEMA_PROTO_PATH = "mapper/schemaProtoMapper/schema/proto/01.json";

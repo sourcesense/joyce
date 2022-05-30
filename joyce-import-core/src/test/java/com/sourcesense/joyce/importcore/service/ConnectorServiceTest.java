@@ -10,7 +10,7 @@ import com.sourcesense.joyce.core.model.entity.JoyceSchemaMetadataExtraConnector
 import com.sourcesense.joyce.core.model.entity.SchemaEntity;
 import com.sourcesense.joyce.core.model.uri.JoyceSchemaURI;
 import com.sourcesense.joyce.core.model.uri.JoyceURIFactory;
-import com.sourcesense.joyce.importcore.test.TestUtility;
+import com.sourcesense.joyce.importcore.test.ImportCoreJoyceTest;
 import com.sourcesense.joyce.schemacore.model.dto.SchemaSave;
 import com.sourcesense.joyce.schemacore.service.SchemaService;
 import com.sourcesense.joyce.schemaengine.templating.mustache.resolver.MustacheTemplateResolver;
@@ -46,7 +46,7 @@ import static org.mockito.Mockito.when;
 
 @ExtendWith(MockitoExtension.class)
 @MockitoSettings(strictness = Strictness.LENIENT)
-public class ConnectorServiceTest implements TestUtility {
+public class ConnectorServiceTest extends ImportCoreJoyceTest {
 
 	private static final String KAFKA_CONNECT_HOST = "test:6682";
 	private static final String DOMAIN = "test";

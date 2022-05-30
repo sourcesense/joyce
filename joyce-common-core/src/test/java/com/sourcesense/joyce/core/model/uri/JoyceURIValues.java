@@ -1,6 +1,4 @@
-package com.sourcesense.joyce.core.test;
-
-import com.sourcesense.joyce.core.model.uri.*;
+package com.sourcesense.joyce.core.model.uri;
 
 public class JoyceURIValues {
 
