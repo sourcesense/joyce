@@ -4,7 +4,7 @@ import com.fasterxml.jackson.databind.JsonNode;
 import com.sourcesense.joyce.schemaengine.exception.JoyceSchemaEngineException;
 import com.sourcesense.joyce.schemaengine.model.dto.SchemaEngineContext;
 import com.sourcesense.joyce.schemaengine.model.dto.handler.ScriptHandlerArgs;
-import com.sourcesense.joyce.schemaengine.test.TestUtility;
+import com.sourcesense.joyce.schemaengine.test.SchemaEngineJoyceTest;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
@@ -16,24 +16,21 @@ import java.net.URISyntaxException;
 import static org.junit.jupiter.api.Assertions.*;
 
 @ExtendWith(MockitoExtension.class)
-public class JavaScriptScriptingServiceTest implements TestUtility {
+public class JavaScriptScriptingServiceTest extends SchemaEngineJoyceTest {
 
 	private JavaScriptScriptingService javaScriptScriptingService;
 
 	@BeforeEach
 	void init() {
-		javaScriptScriptingService = new JavaScriptScriptingService(
-				jsonMapper,
-				this.initGraalJSScriptEngine()
-		);
+		javaScriptScriptingService = new JavaScriptScriptingService(jsonMapper,	this.initGraalJSScriptEngine());
 	}
 
 	@Test
 	void shouldNotProcessVoidScript() throws IOException, URISyntaxException {
 		String key = "void";
-		JsonNode source = this.getResourceAsNode("source/31.json");
+		JsonNode source = this.computeResourceAsNode("source/31.json");
 		ScriptHandlerArgs scriptHandlerArgs = jsonMapper.convertValue(
-				this.getResourceAsNode("script/javascript/31.json"),
+				this.computeResourceAsNode("script/javascript/31.json"),
 				ScriptHandlerArgs.class
 		);
 
@@ -46,9 +43,9 @@ public class JavaScriptScriptingServiceTest implements TestUtility {
 	@Test
 	void shouldProcessForNoValue() throws IOException, URISyntaxException {
 		String key = "noValue";
-		JsonNode source = this.getResourceAsNode("source/31.json");
+		JsonNode source = this.computeResourceAsNode("source/31.json");
 		ScriptHandlerArgs scriptHandlerArgs = jsonMapper.convertValue(
-				this.getResourceAsNode("script/javascript/32.json"),
+				this.computeResourceAsNode("script/javascript/32.json"),
 				ScriptHandlerArgs.class
 		);
 
@@ -63,9 +60,9 @@ public class JavaScriptScriptingServiceTest implements TestUtility {
 	@Test
 	void shouldProcessForSimpleField() throws IOException, URISyntaxException {
 		String key = "lowercaseSimpleField";
-		JsonNode source = this.getResourceAsNode("source/31.json");
+		JsonNode source = this.computeResourceAsNode("source/31.json");
 		ScriptHandlerArgs scriptHandlerArgs = jsonMapper.convertValue(
-				this.getResourceAsNode("script/javascript/33.json"),
+				this.computeResourceAsNode("script/javascript/33.json"),
 				ScriptHandlerArgs.class
 		);
 
@@ -80,9 +77,9 @@ public class JavaScriptScriptingServiceTest implements TestUtility {
 	@Test
 	void shouldProcessForStringArray() throws IOException, URISyntaxException {
 		String key = "reducedStringArray";
-		JsonNode source = this.getResourceAsNode("source/31.json");
+		JsonNode source = this.computeResourceAsNode("source/31.json");
 		ScriptHandlerArgs scriptHandlerArgs = jsonMapper.convertValue(
-				this.getResourceAsNode("script/javascript/34.json"),
+				this.computeResourceAsNode("script/javascript/34.json"),
 				ScriptHandlerArgs.class
 		);
 
@@ -97,9 +94,9 @@ public class JavaScriptScriptingServiceTest implements TestUtility {
 	@Test
 	void shouldProcessForComplexArray() throws IOException, URISyntaxException {
 		String key = "uppercaseComplexArrayField";
-		JsonNode source = this.getResourceAsNode("source/31.json");
+		JsonNode source = this.computeResourceAsNode("source/31.json");
 		ScriptHandlerArgs scriptHandlerArgs = jsonMapper.convertValue(
-				this.getResourceAsNode("script/javascript/35.json"),
+				this.computeResourceAsNode("script/javascript/35.json"),
 				ScriptHandlerArgs.class
 		);
 
@@ -115,9 +112,9 @@ public class JavaScriptScriptingServiceTest implements TestUtility {
 	@Test
 	void shouldProcessForObject() throws IOException, URISyntaxException {
 		String key = "mapComplexArrayToValues";
-		JsonNode source = this.getResourceAsNode("source/31.json");
+		JsonNode source = this.computeResourceAsNode("source/31.json");
 		ScriptHandlerArgs scriptHandlerArgs = jsonMapper.convertValue(
-				this.getResourceAsNode("script/javascript/36.json"),
+				this.computeResourceAsNode("script/javascript/36.json"),
 				ScriptHandlerArgs.class
 		);
 
@@ -136,9 +133,9 @@ public class JavaScriptScriptingServiceTest implements TestUtility {
 	@Test
 	void shouldProcessMultilineScript() throws IOException, URISyntaxException {
 		String key = "multilineScript";
-		JsonNode source = this.getResourceAsNode("source/31.json");
+		JsonNode source = this.computeResourceAsNode("source/31.json");
 		ScriptHandlerArgs scriptHandlerArgs = jsonMapper.convertValue(
-				this.getResourceAsNode("script/javascript/38.json"),
+				this.computeResourceAsNode("script/javascript/38.json"),
 				ScriptHandlerArgs.class
 		);
 

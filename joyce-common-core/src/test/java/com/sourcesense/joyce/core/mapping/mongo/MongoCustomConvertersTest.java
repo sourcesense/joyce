@@ -6,10 +6,12 @@ import com.sourcesense.joyce.core.mapping.mongo.reading.*;
 import com.sourcesense.joyce.core.mapping.mongo.writing.JoyceURIWritingConverter;
 import com.sourcesense.joyce.core.model.uri.JoyceURI;
 import com.sourcesense.joyce.core.model.uri.JoyceURIFactory;
-import com.sourcesense.joyce.core.test.JoyceURIWrapper;
-import com.sourcesense.joyce.core.test.TestUtility;
-import com.sourcesense.joyce.core.test.WithMongoTestBase;
+import com.sourcesense.joyce.core.model.uri.JoyceURIWrapper;
+import com.sourcesense.joyce.core.test.CommonCoreJoyceTest;
+import com.sourcesense.joyce.test.database.MongodbTest;
+import de.flapdoodle.embed.mongo.MongodExecutable;
 import org.bson.Document;
+import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.springframework.core.convert.converter.Converter;
@@ -25,19 +27,26 @@ import org.springframework.data.mongodb.core.mapping.MongoMappingContext;
 import java.util.List;
 import java.util.Optional;
 
-import static com.sourcesense.joyce.core.test.JoyceURIValues.*;
+import static com.sourcesense.joyce.core.model.uri.JoyceURIValues.*;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 
-public class MongoCustomConvertersTest extends WithMongoTestBase implements TestUtility {
+public class MongoCustomConvertersTest extends CommonCoreJoyceTest implements MongodbTest {
 
 	private final static String MONGO_CONNECTION_STRING = "mongodb://localhost:27020/joyce";
 	private final static String MONGO_COLLECTION = "joyceURI";
 
 	private MongoTemplate mongoTemplate;
+	private MongodExecutable mongodExecutable;
 
 	@BeforeEach
-	public void init() {
+	public void init() throws Exception {
+		mongodExecutable = this.initMongodb();
 		mongoTemplate = this.buildMongoTemplate();
+	}
+
+	@AfterEach
+	public void destroy() {
+		this.stopMongodb(mongodExecutable);
 	}
 
 	@Test

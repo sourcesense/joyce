@@ -25,6 +25,7 @@
     <module>joyce-import-core</module>
     <module>joyce-import-gateway</module>
     <module>joyce-mongodb-sink</module>
+    <module>joyce-test</module>
   </modules>
 
   <properties>
@@ -92,6 +93,7 @@
 
   <dependencyManagement>
     <dependencies>
+      <!-- Joyce Internal Dependencies-->
       <dependency>
         <groupId>com.sourcesense.joyce</groupId>
         <artifactId>joyce-protobuf</artifactId>
@@ -123,111 +125,9 @@
       </dependency>
 
       <dependency>
-        <groupId>org.mapstruct</groupId>
-        <artifactId>mapstruct</artifactId>
-        <version>${org.mapstruct.version}</version>
-      </dependency>
-
-      <dependency>
-        <groupId>org.springdoc</groupId>
-        <artifactId>springdoc-openapi-ui</artifactId>
-        <version>${org.springdoc.version}</version>
-      </dependency>
-
-      <dependency>
-        <groupId>com.jayway.jsonpath</groupId>
-        <artifactId>json-path</artifactId>
-        <version>${com.jayway.jsonpath.version}</version>
-      </dependency>
-
-      <dependency>
-        <groupId>com.networknt</groupId>
-        <artifactId>json-schema-validator</artifactId>
-        <version>${com.networknt.version}</version>
-      </dependency>
-
-      <dependency>
-        <groupId>commons-codec</groupId>
-        <artifactId>commons-codec</artifactId>
-        <version>${commons-codec.version}</version>
-      </dependency>
-
-      <dependency>
-        <groupId>io.reactivex.rxjava2</groupId>
-        <artifactId>rxjava</artifactId>
-        <version>${io.reactivex.rxjava2.version}</version>
-      </dependency>
-
-      <dependency>
-        <groupId>org.pf4j</groupId>
-        <artifactId>pf4j-spring</artifactId>
-        <version>${pf4j-spring.version}</version>
-        <exclusions>
-          <exclusion>
-            <artifactId>slf4j-log4j12</artifactId>
-            <groupId>org.slf4j</groupId>
-          </exclusion>
-        </exclusions>
-      </dependency>
-
-      <dependency>
-        <groupId>io.github.jamsesso</groupId>
-        <artifactId>json-logic-java</artifactId>
-        <version>${json-logic-java.version}</version>
-      </dependency>
-
-      <dependency>
-        <groupId>org.elasticsearch</groupId>
-        <artifactId>elasticsearch</artifactId>
-        <version>${org.elasticsearch.version}</version>
-      </dependency>
-
-      <dependency>
-        <groupId>org.elasticsearch.client</groupId>
-        <artifactId>elasticsearch-rest-high-level-client</artifactId>
-        <version>${org.elasticsearch.version}</version>
-      </dependency>
-
-      <dependency>
-        <groupId>org.jacoco</groupId>
-        <artifactId>jacoco-maven-plugin</artifactId>
-        <version>${jacoco.version}</version>
-      </dependency>
-
-      <dependency>
-        <groupId>io.opentracing.contrib</groupId>
-        <artifactId>opentracing-spring-jaeger-cloud-starter</artifactId>
-        <version>${io.opentracing.contrib.jaeger}</version>
-      </dependency>
-
-      <dependency>
-        <groupId>com.samskivert</groupId>
-        <artifactId>jmustache</artifactId>
-        <version>1.15</version>
-      </dependency>
-
-      <dependency>
-        <groupId>io.opentracing.contrib</groupId>
-        <artifactId>opentracing-kafka-spring</artifactId>
-        <version>0.1.15</version>
-      </dependency>
-
-      <dependency>
-        <groupId>io.opentracing.contrib</groupId>
-        <artifactId>opentracing-mongo-driver</artifactId>
-        <version>0.1.5</version>
-      </dependency>
-
-      <dependency>
-        <groupId>io.opentracing.contrib</groupId>
-        <artifactId>opentracing-elasticsearch-client-common</artifactId>
-        <version>0.1.6</version>
-      </dependency>
-
-      <dependency>
-        <groupId>io.jaegertracing</groupId>
-        <artifactId>jaeger-client</artifactId>
-        <version>1.6.0</version>
+        <groupId>com.sourcesense.joyce</groupId>
+        <artifactId>joyce-test</artifactId>
+        <version>${revision}</version>
       </dependency>
 
       <!-- Scripting dependencies -->
@@ -322,7 +222,104 @@
         <artifactId>grpc-testing</artifactId>
         <version>${grpc.version}</version>
       </dependency>
-    </dependencies>
+
+      <!-- Other Dependecies-->
+      <dependency>
+        <groupId>org.mapstruct</groupId>
+        <artifactId>mapstruct</artifactId>
+        <version>${org.mapstruct.version}</version>
+      </dependency>
+
+      <dependency>
+        <groupId>org.springdoc</groupId>
+        <artifactId>springdoc-openapi-ui</artifactId>
+        <version>${org.springdoc.version}</version>
+      </dependency>
+
+      <dependency>
+        <groupId>com.jayway.jsonpath</groupId>
+        <artifactId>json-path</artifactId>
+        <version>${com.jayway.jsonpath.version}</version>
+      </dependency>
+
+      <dependency>
+        <groupId>com.networknt</groupId>
+        <artifactId>json-schema-validator</artifactId>
+        <version>${com.networknt.version}</version>
+      </dependency>
+
+      <dependency>
+        <groupId>commons-codec</groupId>
+        <artifactId>commons-codec</artifactId>
+        <version>${commons-codec.version}</version>
+      </dependency>
+
+      <dependency>
+        <groupId>io.reactivex.rxjava2</groupId>
+        <artifactId>rxjava</artifactId>
+        <version>${io.reactivex.rxjava2.version}</version>
+      </dependency>
+
+      <dependency>
+        <groupId>org.pf4j</groupId>
+        <artifactId>pf4j-spring</artifactId>
+        <version>${pf4j-spring.version}</version>
+        <exclusions>
+          <exclusion>
+            <artifactId>slf4j-log4j12</artifactId>
+            <groupId>org.slf4j</groupId>
+          </exclusion>
+        </exclusions>
+      </dependency>
+
+      <dependency>
+        <groupId>io.github.jamsesso</groupId>
+        <artifactId>json-logic-java</artifactId>
+        <version>${json-logic-java.version}</version>
+      </dependency>
+
+      <dependency>
+        <groupId>org.jacoco</groupId>
+        <artifactId>jacoco-maven-plugin</artifactId>
+        <version>${jacoco.version}</version>
+      </dependency>
+
+      <dependency>
+        <groupId>io.opentracing.contrib</groupId>
+        <artifactId>opentracing-spring-jaeger-cloud-starter</artifactId>
+        <version>${io.opentracing.contrib.jaeger}</version>
+      </dependency>
+
+      <dependency>
+        <groupId>com.samskivert</groupId>
+        <artifactId>jmustache</artifactId>
+        <version>1.15</version>
+      </dependency>
+
+      <dependency>
+        <groupId>io.opentracing.contrib</groupId>
+        <artifactId>opentracing-kafka-spring</artifactId>
+        <version>0.1.15</version>
+      </dependency>
+
+      <dependency>
+        <groupId>io.opentracing.contrib</groupId>
+        <artifactId>opentracing-mongo-driver</artifactId>
+        <version>0.1.5</version>
+      </dependency>
+
+      <dependency>
+        <groupId>io.opentracing.contrib</groupId>
+        <artifactId>opentracing-elasticsearch-client-common</artifactId>
+        <version>0.1.6</version>
+      </dependency>
+
+      <dependency>
+        <groupId>io.jaegertracing</groupId>
+        <artifactId>jaeger-client</artifactId>
+        <version>1.6.0</version>
+      </dependency>
+   </dependencies>
   </dependencyManagement>
 
   <build>

@@ -7,7 +7,7 @@ import com.sourcesense.joyce.schemaengine.exception.JoyceSchemaEngineException;
 import com.sourcesense.joyce.schemaengine.handler.JsonPathTransformerHandler;
 import com.sourcesense.joyce.schemaengine.handler.SchemaTransformerHandler;
 import com.sourcesense.joyce.schemaengine.model.dto.SchemaEngineContext;
-import com.sourcesense.joyce.schemaengine.test.TestUtility;
+import com.sourcesense.joyce.schemaengine.test.SchemaEngineJoyceTest;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.junit.jupiter.MockitoExtension;
@@ -25,7 +25,7 @@ import static org.mockito.Mockito.when;
 
 @ExtendWith(MockitoExtension.class)
 @MockitoSettings(strictness = Strictness.LENIENT)
-public class SchemaTransformerConfigTest implements TestUtility {
+public class SchemaTransformerConfigTest extends SchemaEngineJoyceTest {
 
 	@Test
 	void shouldLoadNoHandler() {

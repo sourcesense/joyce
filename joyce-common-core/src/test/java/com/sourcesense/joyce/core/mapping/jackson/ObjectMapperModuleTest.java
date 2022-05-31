@@ -3,14 +3,14 @@ package com.sourcesense.joyce.core.mapping.jackson;
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.core.type.TypeReference;
 import com.sourcesense.joyce.core.model.uri.JoyceURI;
-import com.sourcesense.joyce.core.test.JoyceURIWrapper;
-import com.sourcesense.joyce.core.test.TestUtility;
+import com.sourcesense.joyce.core.model.uri.JoyceURIWrapper;
+import com.sourcesense.joyce.core.test.CommonCoreJoyceTest;
 import org.junit.jupiter.api.Test;
 
-import static com.sourcesense.joyce.core.test.JoyceURIValues.*;
+import static com.sourcesense.joyce.core.model.uri.JoyceURIValues.*;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 
-public class ObjectMapperModuleTest implements TestUtility {
+public class ObjectMapperModuleTest extends CommonCoreJoyceTest {
 
 	@Test
 	public void shouldConvertJoyceTaxonomyURIToString() throws JsonProcessingException {

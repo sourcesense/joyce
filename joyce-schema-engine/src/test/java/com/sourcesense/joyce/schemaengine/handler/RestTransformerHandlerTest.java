@@ -2,7 +2,7 @@ package com.sourcesense.joyce.schemaengine.handler;
 
 import com.fasterxml.jackson.databind.JsonNode;
 import com.sourcesense.joyce.schemaengine.model.dto.SchemaEngineContext;
-import com.sourcesense.joyce.schemaengine.test.TestUtility;
+import com.sourcesense.joyce.schemaengine.test.SchemaEngineJoyceTest;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
@@ -24,7 +24,7 @@ import static org.springframework.test.web.client.response.MockRestResponseCreat
 
 @ExtendWith(MockitoExtension.class)
 @MockitoSettings(strictness = Strictness.LENIENT)
-public class RestTransformerHandlerTest implements TestUtility {
+public class RestTransformerHandlerTest extends SchemaEngineJoyceTest {
 
 	private MockRestServiceServer server;
 	private RestTransformerHandler restTransformerHandler;
@@ -44,7 +44,7 @@ public class RestTransformerHandlerTest implements TestUtility {
 			assertEquals(request.getMethod(), HttpMethod.GET);
 
 		}).andRespond(withSuccess(
-				this.getResourceAsString("rest/response/41.json"),
+				this.computeResourceAsString("rest/response/41.json"),
 				MediaType.APPLICATION_JSON
 		));
 
@@ -63,7 +63,7 @@ public class RestTransformerHandlerTest implements TestUtility {
 			assertEquals(request.getMethod(), HttpMethod.GET);
 
 		}).andRespond(withSuccess(
-				this.getResourceAsString("rest/response/43.json"),
+				this.computeResourceAsString("rest/response/43.json"),
 				MediaType.APPLICATION_JSON
 		));
 
@@ -83,7 +83,7 @@ public class RestTransformerHandlerTest implements TestUtility {
 			assertEquals(request.getBody().toString(), "{\"content\": \"Bret\"}");
 
 		}).andRespond(withSuccess(
-				this.getResourceAsString("rest/response/44.json"),
+				this.computeResourceAsString("rest/response/44.json"),
 				MediaType.APPLICATION_JSON
 		));
 
@@ -105,7 +105,7 @@ public class RestTransformerHandlerTest implements TestUtility {
 			assertEquals(testHeaders, request.getHeaders().get("test"));
 
 		}).andRespond(withSuccess(
-				this.getResourceAsString("rest/response/45.json"),
+				this.computeResourceAsString("rest/response/45.json"),
 				MediaType.APPLICATION_JSON
 		));
 
@@ -123,13 +123,13 @@ public class RestTransformerHandlerTest implements TestUtility {
 			String valuePath,
 			String resultPath) throws IOException, URISyntaxException {
 
-		JsonNode value = this.getResourceAsNode(valuePath);
+		JsonNode value = this.computeResourceAsNode(valuePath);
 		SchemaEngineContext context = SchemaEngineContext.builder()
-				.out(this.getResourceAsNode(sourcePath))
+				.out(this.computeResourceAsNode(sourcePath))
 				.build();
 
 		assertEquals(
-				this.getResourceAsNode(resultPath),
+				this.computeResourceAsNode(resultPath),
 				restTransformerHandler.process(key, "string", value, context)
 		);
 	}

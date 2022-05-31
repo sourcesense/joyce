@@ -3,13 +3,13 @@ package com.sourcesense.joyce.schemaengine.templating.mustache.resolver;
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.node.*;
 import com.samskivert.mustache.Mustache;
-import com.sourcesense.joyce.schemaengine.test.TestUtility;
+import com.sourcesense.joyce.schemaengine.test.SchemaEngineJoyceTest;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
 
-public class MustacheTemplateResolverTest implements TestUtility {
+public class MustacheTemplateResolverTest extends SchemaEngineJoyceTest {
 
 	private final static String TEST_STRING_INPUT = "Test - {{#test}}some text{{/test}} - Test - {{#test}}more text{{/test}} - Test";
 	private final static String TEST_STRING_OUTPUT = "Test - SOME TEXT - Test - MORE TEXT - Test";
@@ -21,11 +21,7 @@ public class MustacheTemplateResolverTest implements TestUtility {
 
 	@BeforeEach
 	public void init() {
-		mustacheTemplateResolver = new MustacheTemplateResolver(
-				jsonMapper,
-				Mustache.compiler(),
-				this.initMustacheLambdas()
-		);
+		mustacheTemplateResolver = new MustacheTemplateResolver(jsonMapper,	Mustache.compiler(), this.initMustacheLambdas());
 	}
 
 	@Test

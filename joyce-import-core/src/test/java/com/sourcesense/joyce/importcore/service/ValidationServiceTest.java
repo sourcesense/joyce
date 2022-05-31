@@ -1,7 +1,7 @@
 package com.sourcesense.joyce.importcore.service;
 
 import com.sourcesense.joyce.importcore.exception.ValidationException;
-import com.sourcesense.joyce.importcore.test.TestUtility;
+import com.sourcesense.joyce.importcore.test.ImportCoreJoyceTest;
 import com.sourcesense.joyce.schemacore.model.dto.SchemaSave;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
@@ -12,11 +12,9 @@ import java.io.IOException;
 import java.net.URISyntaxException;
 
 import static org.junit.jupiter.api.Assertions.assertThrows;
-import static org.mockito.Mockito.times;
-import static org.mockito.Mockito.verify;
 
 @ExtendWith(MockitoExtension.class)
-public class ValidationServiceTest implements TestUtility {
+public class ValidationServiceTest extends ImportCoreJoyceTest {
 
 	private ValidationService validationService;
 
