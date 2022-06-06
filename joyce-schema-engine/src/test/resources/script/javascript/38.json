@@ -1,5 +1,5 @@
 {
   "language": "javascript",
-  "oneLine": false,
+  "multiline": true,
   "code": "const result = 'multiline';\nreturn result;\n"
 }

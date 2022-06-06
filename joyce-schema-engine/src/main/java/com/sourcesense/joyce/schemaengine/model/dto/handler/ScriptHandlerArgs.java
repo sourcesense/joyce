@@ -14,6 +14,6 @@ public class ScriptHandlerArgs {
 
 	@JsonAlias(value = {"lang", "language"})
 	private String language;
-	private boolean oneLine = true;
+	private boolean multiline = false;
 	private String code;
 }

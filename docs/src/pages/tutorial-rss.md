@@ -217,7 +217,7 @@ With some python/regex kung-fu we can write a small script to do that, add this 
     type: object
     $script:
       language: python
-      oneLine: false
+      multiline: true
       code: |
         import urllib
         import re
@@ -390,7 +390,7 @@ properties:
       - handler: script
         args:
           language: python
-          oneLine: false
+          multiline: true
           code: |
             import urllib
             import re

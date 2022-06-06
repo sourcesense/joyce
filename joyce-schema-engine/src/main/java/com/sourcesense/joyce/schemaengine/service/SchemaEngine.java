@@ -344,9 +344,9 @@ public class SchemaEngine<T> {
 	 * @return
 	 */
 	protected Optional<JsonNode> applyHandlers(String key, JsonNode schema, SchemaEngineContext context) {
-		if (! JsonNodeType.OBJECT.equals(context.getOut().getNodeType())) {
-			return Optional.empty();
-		}
+//		if (! JsonNodeType.OBJECT.equals(context.getOut().getNodeType())) {
+//			return Optional.empty();
+//		}
 		// Apply handlers in cascade
 		SchemaPropertyHandlers propertyHandlers = jsonMapper.convertValue(schema, SchemaPropertyHandlers.class);
 		if(Strings.isEmpty(propertyHandlers.getValue()) && propertyHandlers.getApply().isEmpty()) {

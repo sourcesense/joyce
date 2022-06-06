@@ -128,6 +128,12 @@ public class CollectionEnhancerService extends ConsumerService {
 		}
 	}
 
+	private Document computeValidationSchema(JsonSchemaEntry jsonSchemaEntry) {
+		return new Document(
+				"$jsonSchema", jsonMapper.convertValue(jsonSchemaEntry, Document.class)
+		);
+	}
+
 	/**
 	 * This method automatically creates mongo indexes for schema fields and metadata fixed fields.
 	 * An index is created only if it doesn't already exists.
@@ -145,12 +151,6 @@ public class CollectionEnhancerService extends ConsumerService {
 					schema.getUid().getCollection()
 			);
 		}
-	}
-
-	private Document computeValidationSchema(JsonSchemaEntry jsonSchemaEntry) {
-		return new Document(
-				"$jsonSchema", jsonMapper.convertValue(jsonSchemaEntry, Document.class)
-		);
 	}
 
 	/**

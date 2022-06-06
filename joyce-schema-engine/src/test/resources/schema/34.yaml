@@ -22,7 +22,7 @@ properties:
       - handler: script
         args:
           language: python
-          oneLine: false
+          multiline: true
           code: |
             asd = ctx['src']['object']['objectField'].upper()
             return {'field1': asd, 'field2': 'newField'}

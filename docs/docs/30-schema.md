@@ -298,7 +298,7 @@ The code of the script.
 ```yaml
 $script:
   language: python
-  oneLine: false
+  multiline: true
   code: |
     asd = source['object']['objectField'].upper()
     return {'field1': asd, 'field2': 'newField'}

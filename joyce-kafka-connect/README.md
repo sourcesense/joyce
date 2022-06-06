@@ -21,5 +21,5 @@ docker pull sourcesense/joyce-kafka-connect:latest
 
 ## Configuration
 
-Refer to Kafka Connect documetnation to view configurations you can set via environemnt.  
+Refer to Kafka Connect documentation to view configurations you can set via environment.
 Check this [docker-compose](https://github.com/sourcesense/joyce-compose/blob/master/docker-compose.yaml) to view an example.
