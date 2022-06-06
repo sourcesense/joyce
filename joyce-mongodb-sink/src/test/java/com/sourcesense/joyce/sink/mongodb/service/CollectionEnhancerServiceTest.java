@@ -22,7 +22,7 @@ import static org.assertj.core.api.Assertions.assertThat;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 
 @ExtendWith(MockitoExtension.class)
-class CollectionEnhancerTest extends MongodbSinkJoyceTest {
+class CollectionEnhancerServiceTest extends MongodbSinkJoyceTest {
 
 	private static final String SCHEMA_COLLECTION = "joyce_schema";
 
@@ -119,12 +119,8 @@ class CollectionEnhancerTest extends MongodbSinkJoyceTest {
 	}
 
 	private void compareSchemaAndValidator(String schemaPath, String validatorPath) throws URISyntaxException, IOException {
-		String schemaJson = this.computeResourceAsString(schemaPath);
-		String validatorJson = this.computeResourceAsString(validatorPath);
-
-		JsonSchemaEntry jsonSchemaEntry = jsonMapper.readValue(schemaJson, JsonSchemaEntry.class);
-		Map<String, Object> validatorMap = jsonMapper.readValue(validatorJson, new TypeReference<>() {
-		});
+		JsonSchemaEntry jsonSchemaEntry = this.computeResourceAsObject(schemaPath, JsonSchemaEntry.class);
+		Map<String, Object> validatorMap = this.computeResourceAsObject(validatorPath, new TypeReference<>() {});
 
 		CollectionEnhancerService collectionEnhancerService = new CollectionEnhancerService(jsonMapper, null, null, null);
 
