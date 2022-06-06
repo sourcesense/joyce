@@ -18,8 +18,28 @@ import java.util.function.Predicate;
 public class ValidationService {
 
 	public void validateSchema(SchemaSave schema) {
+		this.validateMetadata(schema);
+		this.validateProperties(schema);
 		this.validateParent(schema);
 		this.validateSchemaUid(schema);
+	}
+
+	protected void validateMetadata(SchemaSave schema) {
+		if(Objects.isNull(schema.getMetadata())) {
+			throw new ValidationException(String.format(
+					"Impossible to save schema '%s', metadata node is null",
+					this.computeSchemaURI(schema)
+			));
+		}
+	}
+
+	protected void validateProperties(SchemaSave schema) {
+		if(Objects.isNull(schema.getProperties())) {
+			throw new ValidationException(String.format(
+					"Impossible to save schema '%s', properties node is null",
+					this.computeSchemaURI(schema)
+			));
+		}
 	}
 
 	protected void validateParent(SchemaSave schema) {

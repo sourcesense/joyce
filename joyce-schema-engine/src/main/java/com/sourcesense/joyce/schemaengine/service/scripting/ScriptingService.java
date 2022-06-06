@@ -62,8 +62,8 @@ public abstract class ScriptingService {
 	}
 
 	private String computeScript(ScriptHandlerArgs scriptHandlerArgs) {
-		return scriptHandlerArgs.isOneLine()
-				? this.getOneLineScriptingFunction(scriptHandlerArgs.getCode())
-				: this.getMultilineScriptingFunction(scriptHandlerArgs.getCode());
+		return scriptHandlerArgs.isMultiline()
+				? this.getMultilineScriptingFunction(scriptHandlerArgs.getCode())
+				: this.getOneLineScriptingFunction(scriptHandlerArgs.getCode());
 	}
 }

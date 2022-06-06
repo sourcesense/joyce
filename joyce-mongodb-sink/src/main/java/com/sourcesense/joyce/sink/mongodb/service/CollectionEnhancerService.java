@@ -123,7 +123,9 @@ public class CollectionEnhancerService extends ConsumerService {
 			log.debug("Updating validation schema for schema: '{}'", schema.getUid());
 			LinkedHashMap<String, Object> validatorCommand = new LinkedHashMap<>();
 			validatorCommand.put("collMod", schema.getUid().getCollection());
-			validatorCommand.put("validator", this.computeValidationSchema(jsonSchemaEntry));
+			validatorCommand.put("validator", new Document(
+					"$jsonSchema", jsonMapper.convertValue(jsonSchemaEntry, Document.class)
+			));
 			mongoTemplate.executeCommand(new Document(validatorCommand));
 		}
 	}
@@ -145,12 +147,6 @@ public class CollectionEnhancerService extends ConsumerService {
 					schema.getUid().getCollection()
 			);
 		}
-	}
-
-	private Document computeValidationSchema(JsonSchemaEntry jsonSchemaEntry) {
-		return new Document(
-				"$jsonSchema", jsonMapper.convertValue(jsonSchemaEntry, Document.class)
-		);
 	}
 
 	/**

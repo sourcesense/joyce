@@ -34,6 +34,7 @@ import com.sourcesense.joyce.schemaengine.annotation.SchemaTransformationHandler
 import com.sourcesense.joyce.schemaengine.model.dto.SchemaEngineContext;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import org.apache.logging.log4j.util.Strings;
 import org.springframework.stereotype.Component;
 
 import javax.annotation.PostConstruct;
@@ -78,7 +79,7 @@ public class JsonPathTransformerHandler implements SchemaTransformerHandler {
 
 	@Override
 	public JsonNode process(String key, String type, JsonNode value, SchemaEngineContext context) {
-		if (value.getNodeType().equals(JsonNodeType.ARRAY)){
+		if (JsonNodeType.ARRAY.equals(value.getNodeType())){
 
 			StringBuilder stringBuilder = new StringBuilder();
 			for (JsonNode jsonNode : value) {
@@ -106,13 +107,28 @@ public class JsonPathTransformerHandler implements SchemaTransformerHandler {
 
 		String pathExpr = pathExpressionComponents.get(0);
 
-		JsonNode defaultValue = pathExpressionComponents.size() > 1
-				? new TextNode(pathExpressionComponents.get(1))
-				: NullNode.getInstance();
-
 		JsonNode source = jsonMapper.convertValue(context, JsonNode.class);
-		JsonNode result = this.read(type, source, pathExpr);
-		return ! result.isNull() ? result : defaultValue;
+		JsonNode result = pathExpr.startsWith("$")
+				? this.read(type, source, pathExpr)
+				: new TextNode(pathExpr);
+
+		return ! result.isNull() ? result : this.computeDefaultValue(pathExpressionComponents);
+	}
+
+	protected JsonNode computeDefaultValue(List<String> pathExpressionComponents) {
+		if(pathExpressionComponents.size() <= 1) {
+			return NullNode.getInstance();
+		}
+		String defaultValue = pathExpressionComponents.get(1);
+		if(defaultValue.startsWith("'") && defaultValue.endsWith("'")
+		  || defaultValue.startsWith("\"") && defaultValue.endsWith("\"")) {
+
+			return TextNode.valueOf(defaultValue.substring(1, defaultValue.length() -1));
+		} else if(defaultValue.equals("null")) {
+
+			return NullNode.getInstance();
+		}
+		return TextNode.valueOf(defaultValue);
 	}
 
 	/**

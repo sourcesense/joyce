@@ -64,7 +64,27 @@ public class JsonPathTransformerHandlerTest extends SchemaEngineJoyceTest {
 	@Test
 	void testSimpleJsonPathWithoutValueButWithDefaultValue() {
 		this.testHandlerProcess(
+				new TextNode("$.src.email ?? \"\""),
+				jsonMapper.createObjectNode(),
+				""
+		);
+		this.testHandlerProcess(
+				new TextNode("$.src.email ?? ''"),
+				jsonMapper.createObjectNode(),
+				""
+		);
+		this.testHandlerProcess(
 				new TextNode("$.src.email ?? default@mail.com"),
+				jsonMapper.createObjectNode(),
+				"default@mail.com"
+		);
+		this.testHandlerProcess(
+				new TextNode("$.src.email ?? \"default@mail.com\""),
+				jsonMapper.createObjectNode(),
+				"default@mail.com"
+		);
+		this.testHandlerProcess(
+				new TextNode("$.src.email ?? 'default@mail.com'"),
 				jsonMapper.createObjectNode(),
 				"default@mail.com"
 		);
