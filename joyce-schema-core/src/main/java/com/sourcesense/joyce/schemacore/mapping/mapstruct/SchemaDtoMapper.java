@@ -52,6 +52,7 @@ public abstract class SchemaDtoMapper {
 
 	public abstract SchemaEntity toEntity(SchemaSave dto);
 
+	@Mapping(target = "apply", source = "apply", qualifiedByName = "stringToJsonNode")
 	@Mapping(target = "properties", source = "properties", qualifiedByName = "stringToJsonNode")
 	@Mapping(target = "metadata.data", source = "metadata.data", qualifiedByName = "stringToJsonNode")
 	public abstract SchemaEntity entityFromDocument(SchemaDocument document);
@@ -65,6 +66,7 @@ public abstract class SchemaDtoMapper {
 		return jsonMapper.readTree(string);
 	}
 
+	@Mapping(target = "apply", source = "apply", qualifiedByName = "jsonNodeToString")
 	@Mapping(target = "properties", source = "properties", qualifiedByName = "jsonNodeToString")
 	@Mapping(target = "metadata.data", source = "metadata.data", qualifiedByName = "jsonNodeToString")
 	public abstract SchemaDocument documentFromEntity(SchemaEntity entity);

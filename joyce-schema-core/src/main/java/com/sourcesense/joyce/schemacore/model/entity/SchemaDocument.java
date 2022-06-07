@@ -17,5 +17,7 @@ public class SchemaDocument {
 	private SchemaMetadata metadata;
 	private String type;
 	private List<String> required;
+	private String value;
+	private String apply;
 	private String properties;
 }
