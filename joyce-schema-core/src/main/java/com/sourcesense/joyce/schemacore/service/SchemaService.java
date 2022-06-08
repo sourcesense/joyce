@@ -24,7 +24,6 @@ import com.sourcesense.joyce.core.producer.SchemaProducer;
 import com.sourcesense.joyce.core.service.SchemaClient;
 import com.sourcesense.joyce.schemacore.mapping.mapstruct.SchemaDtoMapper;
 import com.sourcesense.joyce.schemacore.model.dto.SchemaSave;
-import com.sourcesense.joyce.schemacore.model.entity.SchemaDocument;
 import com.sourcesense.joyce.schemacore.repository.SchemaRepository;
 import com.sourcesense.joyce.schemaengine.exception.JoyceSchemaEngineException;
 import com.sourcesense.joyce.schemaengine.service.SchemaEngine;
@@ -49,7 +48,7 @@ public class SchemaService implements SchemaClient {
 
 
 	public Optional<SchemaEntity> get(String id) {
-		return schemaRepository.findById(id).map(schemaMapper::entityFromDocument);
+		return schemaRepository.findById(id);
 	}
 
 	public Optional<SchemaEntity> get(String domain, String product, String name) {
@@ -73,11 +72,7 @@ public class SchemaService implements SchemaClient {
 	}
 
 	public List<SchemaEntity> getAll(Boolean rootOnly) {
-		List<SchemaDocument> schemas = rootOnly
-				? schemaRepository.findAllByMetadata_ParentIsNull()
-				: schemaRepository.findAll();
-
-		return schemaMapper.entitiesFromDocuments(schemas);
+		return rootOnly ? schemaRepository.findAllByMetadata_ParentIsNull()	: schemaRepository.findAll();
 	}
 
 	public List<SchemaEntity> getAllByDomainAndProduct(
@@ -85,20 +80,17 @@ public class SchemaService implements SchemaClient {
 			String product,
 			Boolean rootOnly) {
 
-		List<SchemaDocument> schemas = rootOnly
+		return rootOnly
 				? schemaRepository.findAllByMetadata_DomainAndMetadata_ProductAndMetadata_ParentIsNull(domain, product)
 				: schemaRepository.findAllByMetadata_DomainAndMetadata_Product(domain, product);
-
-		return schemaMapper.entitiesFromDocuments(schemas);
 	}
 
 	public List<SchemaEntity> getAllByReportsIsNotEmpty() {
-		List<SchemaDocument> schemas = schemaRepository.findAllByReportsIsNotEmpty();
-		return schemaMapper.entitiesFromDocuments(schemas);
+		return schemaRepository.findAllByReportsIsNotEmpty();
 	}
 
 	public JoyceSchemaURI save(SchemaSave schema) {
-		SchemaEntity schemaEntity = schemaMapper.toEntity(schema);
+		SchemaEntity schemaEntity = schemaMapper.dtoSaveToEntity(schema);
 
 		JoyceSchemaURI schemaURI = JoyceURIFactory.getInstance().createSchemaURIOrElseThrow(
 				schemaEntity.getMetadata().getDomain(),
@@ -118,16 +110,14 @@ public class SchemaService implements SchemaClient {
 		//	If it exists, we check if there are breaking changes
 		this.validateExisting(schemaEntity);
 
-		SchemaDocument document = schemaMapper.documentFromEntity(schemaEntity);
-		schemaRepository.save(document);
+		schemaRepository.save(schemaEntity);
 		schemaProducer.publish(schemaEntity);
 		return schemaURI;
 	}
 
 	public void delete(String domain, String product, String name) {
 		SchemaEntity schemaEntity = this.getOrElseThrow(domain, product, name);
-		SchemaDocument document = schemaMapper.documentFromEntity(schemaEntity);
-		schemaRepository.delete(document);
+		schemaRepository.delete(schemaEntity);
 		schemaProducer.delete(schemaEntity);
 	}
 

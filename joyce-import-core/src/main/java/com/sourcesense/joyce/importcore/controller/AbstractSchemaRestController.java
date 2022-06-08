@@ -31,7 +31,7 @@ public abstract class AbstractSchemaRestController implements SchemaRestApi {
 			Boolean rootOnly) {
 
 		List<SchemaEntity> schemas = schemaService.getAll(rootOnly);
-		return schemaMapper.entitiesToShortIfFullSchema(schemas, fullSchema);
+		return schemaMapper.entitiesToDtoShortIfFullSchema(schemas, fullSchema);
 	}
 
 	public List<JoyceSchema> getAllSchemasForDomainAndProduct(
@@ -41,7 +41,7 @@ public abstract class AbstractSchemaRestController implements SchemaRestApi {
 			Boolean rootOnly) {
 
 		List<SchemaEntity> schemas = schemaService.getAllByDomainAndProduct(domain, product, rootOnly);
-		return schemaMapper.entitiesToShortIfFullSchema(schemas, fullSchema);
+		return schemaMapper.entitiesToDtoShortIfFullSchema(schemas, fullSchema);
 	}
 
 	@Override
