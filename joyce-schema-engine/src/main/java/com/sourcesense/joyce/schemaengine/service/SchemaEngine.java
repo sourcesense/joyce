@@ -28,7 +28,7 @@ import com.sourcesense.joyce.schemaengine.model.dto.JoyceMetaSchema;
 import com.sourcesense.joyce.schemaengine.model.dto.SchemaEngineContext;
 import com.sourcesense.joyce.schemaengine.model.dto.schema.SchemaPropertyHandler;
 import com.sourcesense.joyce.schemaengine.model.dto.schema.SchemaPropertyHandlers;
-import com.sourcesense.joyce.schemaengine.templating.mustache.resolver.MustacheTemplateResolver;
+import com.sourcesense.joyce.schemaengine.templating.handlebars.resolver.HandlebarsTemplateResolver;
 import org.apache.commons.lang.StringUtils;
 import org.apache.logging.log4j.util.Strings;
 import org.springframework.beans.factory.annotation.Qualifier;
@@ -55,19 +55,19 @@ public class SchemaEngine<T> {
 	public static final String PROPERTIES = "properties";
 
 	protected final ObjectMapper jsonMapper;
-	protected final MustacheTemplateResolver mustacheTemplateResolver;
+	protected final HandlebarsTemplateResolver handlebarsTemplateResolver;
 	protected final Map<String, SchemaTransformerHandler> transformerHandlers;
 
 	protected JsonSchemaFactory factory;
 
 	public SchemaEngine(
 			ObjectMapper jsonMapper,
-			MustacheTemplateResolver mustacheTemplateResolver,
+			HandlebarsTemplateResolver handlebarsTemplateResolver,
 			@Qualifier("transformerHandlers") Map<String, SchemaTransformerHandler> transformerHandlers) {
 
 		this.jsonMapper = jsonMapper;
 		this.transformerHandlers = transformerHandlers;
-		this.mustacheTemplateResolver = mustacheTemplateResolver;
+		this.handlebarsTemplateResolver = handlebarsTemplateResolver;
 		this.factory = JsonSchemaFactory.getInstance(SpecVersion.VersionFlag.V7);
 	}
 
@@ -344,9 +344,6 @@ public class SchemaEngine<T> {
 	 * @return
 	 */
 	protected Optional<JsonNode> applyHandlers(String key, JsonNode schema, SchemaEngineContext context) {
-//		if (! JsonNodeType.OBJECT.equals(context.getOut().getNodeType())) {
-//			return Optional.empty();
-//		}
 		// Apply handlers in cascade
 		SchemaPropertyHandlers propertyHandlers = jsonMapper.convertValue(schema, SchemaPropertyHandlers.class);
 		if(Strings.isEmpty(propertyHandlers.getValue()) && propertyHandlers.getApply().isEmpty()) {
@@ -363,7 +360,7 @@ public class SchemaEngine<T> {
 		JsonNode returnNode = context.getOut().deepCopy();
 		for (SchemaPropertyHandler knownHandler : knownHandlers) {
 
-			JsonNode handlerArgs = mustacheTemplateResolver.resolve(knownHandler.getArgs(), context);
+			JsonNode handlerArgs = handlebarsTemplateResolver.resolve(knownHandler.getArgs(), context);
 			SchemaTransformerHandler handler = transformerHandlers.get(knownHandler.getHandler());
 			returnNode = handler.process(
 					key, propertyHandlers.getType().asText(),

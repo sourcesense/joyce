@@ -13,7 +13,7 @@ import com.sourcesense.joyce.core.model.uri.JoyceURIFactory;
 import com.sourcesense.joyce.importcore.test.ImportCoreJoyceTest;
 import com.sourcesense.joyce.schemacore.model.dto.SchemaSave;
 import com.sourcesense.joyce.schemacore.service.SchemaService;
-import com.sourcesense.joyce.schemaengine.templating.mustache.resolver.MustacheTemplateResolver;
+import com.sourcesense.joyce.schemaengine.templating.handlebars.resolver.HandlebarsTemplateResolver;
 import org.apache.commons.lang3.StringUtils;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
@@ -61,7 +61,7 @@ public class ConnectorServiceTest extends ImportCoreJoyceTest {
 	private SchemaService schemaService;
 
 	@Mock
-	private MustacheTemplateResolver mustacheTemplateResolver;
+	private HandlebarsTemplateResolver handlebarsTemplateResolver;
 
 	private MockRestServiceServer mockServer;
 	private ConnectorService connectorService;
@@ -70,7 +70,7 @@ public class ConnectorServiceTest extends ImportCoreJoyceTest {
 	public void init() {
 		RestTemplate restTemplate = new RestTemplate();
 		mockServer = MockRestServiceServer.createServer(restTemplate);
-		connectorService = new ConnectorService(jsonMapper, restTemplate, schemaService, mustacheTemplateResolver, KAFKA_CONNECT_HOST);
+		connectorService = new ConnectorService(jsonMapper, restTemplate, schemaService, handlebarsTemplateResolver, KAFKA_CONNECT_HOST);
 	}
 
 	@Test
@@ -254,7 +254,7 @@ public class ConnectorServiceTest extends ImportCoreJoyceTest {
 		this.mockRestCall(existingConnectorsEndpoint, null, existingConnectors, HttpMethod.GET, HttpStatus.OK);
 
 		JsonNode connectorConfig = this.computeResourceAsObject(connectorConfigPath, JsonNode.class);
-		when(mustacheTemplateResolver.resolve(connectorConfig)).thenReturn(connectorConfig);
+		when(handlebarsTemplateResolver.resolve(connectorConfig)).thenReturn(connectorConfig);
 
 		String connectorEnrichedConfig = this.computeResourceAsString(newConnectorPath);
 		this.mockRestCall(operationEndpoint, connectorEnrichedConfig, new byte[0], operationMethod, operationStatus);

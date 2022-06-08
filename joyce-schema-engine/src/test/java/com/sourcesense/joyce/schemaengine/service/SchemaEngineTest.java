@@ -20,14 +20,13 @@ import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.node.TextNode;
 import com.networknt.schema.JsonSchemaException;
-import com.samskivert.mustache.Mustache;
 import com.sourcesense.joyce.schemaengine.exception.JoyceSchemaEngineException;
 import com.sourcesense.joyce.schemaengine.handler.JsonPathTransformerHandler;
 import com.sourcesense.joyce.schemaengine.handler.RestTransformerHandler;
 import com.sourcesense.joyce.schemaengine.handler.SchemaTransformerHandler;
 import com.sourcesense.joyce.schemaengine.handler.ScriptingTransformerHandler;
 import com.sourcesense.joyce.schemaengine.model.dto.SchemaEngineContext;
-import com.sourcesense.joyce.schemaengine.templating.mustache.resolver.MustacheTemplateResolver;
+import com.sourcesense.joyce.schemaengine.templating.handlebars.resolver.HandlebarsTemplateResolver;
 import com.sourcesense.joyce.schemaengine.test.SchemaEngineJoyceTest;
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.BeforeEach;
@@ -64,14 +63,14 @@ public class SchemaEngineTest extends SchemaEngineJoyceTest {
 	private RestTemplate restTemplate;
 	private MockRestServiceServer mockServer;
 	private ApplicationContext applicationContext;
-	private MustacheTemplateResolver mustacheTemplateResolver;
+	private HandlebarsTemplateResolver handlebarsTemplateResolver;
 
 	@BeforeEach
 	void init() {
 		restTemplate = new RestTemplate();
 		applicationContext = this.initApplicationContext(jsonMapper);
 		mockServer = MockRestServiceServer.createServer(restTemplate);
-		mustacheTemplateResolver = new MustacheTemplateResolver(jsonMapper,	Mustache.compiler(), this.initMustacheLambdas());
+		handlebarsTemplateResolver = new HandlebarsTemplateResolver(jsonMapper,	this.computeHandlebars());
 	}
 
 	@Test
@@ -83,7 +82,7 @@ public class SchemaEngineTest extends SchemaEngineJoyceTest {
 		Map<String, SchemaTransformerHandler> handlers = Map.of(
 				"extract", dummyHandler
 		);
-		SchemaEngine<?> schemaEngine = new SchemaEngine<>(jsonMapper, mustacheTemplateResolver, handlers);
+		SchemaEngine<?> schemaEngine = new SchemaEngine<>(jsonMapper, handlebarsTemplateResolver, handlers);
 		schemaEngine.defaultInit();
 
 		JsonNode result = schemaEngine.process(schema, source);
@@ -98,7 +97,7 @@ public class SchemaEngineTest extends SchemaEngineJoyceTest {
 		String source = this.computeResourceAsString("source/11.json");
 		SchemaTransformerHandler jsonPathTransformerHandler = mock(SchemaTransformerHandler.class);
 		Map<String, SchemaTransformerHandler> handlers = Map.of("extract", jsonPathTransformerHandler);
-		SchemaEngine<?> schemaEngine = new SchemaEngine<>(jsonMapper, mustacheTemplateResolver,handlers);
+		SchemaEngine<?> schemaEngine = new SchemaEngine<>(jsonMapper, handlebarsTemplateResolver,handlers);
 
 		Assertions.assertThrows(
 				JsonSchemaException.class,
@@ -129,7 +128,7 @@ public class SchemaEngineTest extends SchemaEngineJoyceTest {
 				"transform", handler
 		);
 
-		SchemaEngine<JsonNode> schemaEngine = new SchemaEngine<>(jsonMapper, mustacheTemplateResolver, handlers);
+		SchemaEngine<JsonNode> schemaEngine = new SchemaEngine<>(jsonMapper, handlebarsTemplateResolver, handlers);
 		schemaEngine.defaultInit();
 
 		String expected = "MARIO";
@@ -142,7 +141,7 @@ public class SchemaEngineTest extends SchemaEngineJoyceTest {
 	void addingFieldShouldNotBreakChanges() throws URISyntaxException, IOException {
 		JsonNode schema = this.computeResourceAsNode("schema/11.json");
 		JsonNode newSchema = this.computeResourceAsNode("schema/12.json");
-		SchemaEngine<?> schemaEngine = new SchemaEngine<>(jsonMapper, mustacheTemplateResolver, new HashMap<>());
+		SchemaEngine<?> schemaEngine = new SchemaEngine<>(jsonMapper, handlebarsTemplateResolver, new HashMap<>());
 		Boolean ret = schemaEngine.checkForBreakingChanges(schema, newSchema);
 		Assertions.assertFalse(ret);
 	}
@@ -151,7 +150,7 @@ public class SchemaEngineTest extends SchemaEngineJoyceTest {
 	void deprecatingFieldShouldBreakChanges() throws URISyntaxException, IOException {
 		JsonNode schema = this.computeResourceAsNode("schema/12.json");
 		JsonNode newSchema = this.computeResourceAsNode("schema/13.json");
-		SchemaEngine<?> schemaEngine = new SchemaEngine<>(jsonMapper, mustacheTemplateResolver, new HashMap<>());
+		SchemaEngine<?> schemaEngine = new SchemaEngine<>(jsonMapper, handlebarsTemplateResolver, new HashMap<>());
 		Boolean ret = schemaEngine.checkForBreakingChanges(schema, newSchema);
 		assertTrue(ret);
 	}
@@ -160,7 +159,7 @@ public class SchemaEngineTest extends SchemaEngineJoyceTest {
 	void changingTypeShouldThrow() throws URISyntaxException, IOException {
 		JsonNode schema = this.computeResourceAsNode("schema/13.json");
 		JsonNode newSchema = this.computeResourceAsNode("schema/14.json");
-		SchemaEngine<?> schemaEngine = new SchemaEngine<>(jsonMapper, mustacheTemplateResolver, new HashMap<>());
+		SchemaEngine<?> schemaEngine = new SchemaEngine<>(jsonMapper, handlebarsTemplateResolver, new HashMap<>());
 		Assertions.assertThrows(JoyceSchemaEngineException.class, () ->
 				schemaEngine.checkForBreakingChanges(schema, newSchema)
 		);
@@ -170,7 +169,7 @@ public class SchemaEngineTest extends SchemaEngineJoyceTest {
 	void changingTypeExtendingTypesShouldNotThrowsAndDoNotBreaks() throws URISyntaxException, IOException {
 		JsonNode schema = this.computeResourceAsNode("schema/14.json");
 		JsonNode newSchema = this.computeResourceAsNode("schema/15.json");
-		SchemaEngine<?> schemaEngine = new SchemaEngine<>(jsonMapper, mustacheTemplateResolver, new HashMap<>());
+		SchemaEngine<?> schemaEngine = new SchemaEngine<>(jsonMapper, handlebarsTemplateResolver, new HashMap<>());
 		Assertions.assertFalse(schemaEngine.checkForBreakingChanges(schema, newSchema));
 	}
 
@@ -231,7 +230,7 @@ public class SchemaEngineTest extends SchemaEngineJoyceTest {
 				"rest", restTransformerHandler
 		);
 
-		SchemaEngine<?> schemaEngine = new SchemaEngine<>(jsonMapper, mustacheTemplateResolver, handlers);
+		SchemaEngine<?> schemaEngine = new SchemaEngine<>(jsonMapper, handlebarsTemplateResolver, handlers);
 		schemaEngine.defaultInit();
 
 		JsonNode expected = this.computeResourceAsNode(resultPath);
