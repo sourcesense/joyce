@@ -259,9 +259,6 @@ public class SchemaEngine<T> {
 			// Apply custom handlers
 			Optional<JsonNode> transformed = this.applyHandlers(key, schema, context);
 			if (transformed.isPresent()) {
-//				if (key == null) {
-//					return transformed.get();
-//				}
 				ObjectNode node = jsonMapper.createObjectNode();
 				node.set(key, transformed.get());
 
