@@ -38,5 +38,7 @@ public class SchemaSave {
 
 	private String type;
 	private List<String> required;
+	private String value;
+	private JsonNode apply;
 	private JsonNode properties;
 }
