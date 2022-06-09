@@ -1,25 +1,25 @@
-package com.sourcesense.joyce.schemaengine.templating.mustache.resolver;
+package com.sourcesense.joyce.schemaengine.templating.handlebars.resolver;
 
 import com.fasterxml.jackson.core.type.TypeReference;
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.databind.node.ArrayNode;
-import com.fasterxml.jackson.databind.node.JsonNodeFactory;
 import com.fasterxml.jackson.databind.node.JsonNodeType;
 import com.fasterxml.jackson.databind.node.ObjectNode;
-import com.samskivert.mustache.Mustache;
+import com.fasterxml.jackson.databind.node.TextNode;
+import com.github.jknack.handlebars.Handlebars;
+import com.sourcesense.joyce.schemaengine.exception.JoyceSchemaEngineException;
 import lombok.RequiredArgsConstructor;
 
 import java.util.HashMap;
 import java.util.Map;
-import java.util.Objects;
+import java.util.Optional;
 
 @RequiredArgsConstructor
-public class MustacheTemplateResolver {
+public class HandlebarsTemplateResolver {
 
 	private final ObjectMapper jsonMapper;
-	private final Mustache.Compiler mustacheCompiler;
-	private final Map<String, Mustache.Lambda> mustacheLambdas;
+	private final Handlebars handlebars;
 
 
 	public JsonNode resolve(JsonNode input) {
@@ -35,15 +35,19 @@ public class MustacheTemplateResolver {
 	}
 
 	public String resolve(String template, Object scope) {
-		return mustacheCompiler
-				.compile(template)
-				.execute(Objects.nonNull(scope) ? this.computeEnrichedScope(scope) : mustacheLambdas);
-	}
+		try {
+			return handlebars.compileInline(template).apply(this.computeContext(scope));
 
+		} catch (Exception exception) {
+			throw new JoyceSchemaEngineException(String.format(
+					"Unable to resolve handlebars template, error message is '%s'", exception.getMessage()
+			));
+		}
+	}
 
 	private JsonNode resolveJsonNode(JsonNode input, Object scope) {
 		if (JsonNodeType.STRING.equals(input.getNodeType())) {
-			return JsonNodeFactory.instance.textNode(
+			return new TextNode(
 					this.resolve(input.textValue(), scope)
 			);
 		} else if (input.isObject()) {
@@ -73,11 +77,11 @@ public class MustacheTemplateResolver {
 		}
 	}
 
-	private Map<String, Object> computeEnrichedScope(Object scope) {
-		Map<String, Object> convertedScope = jsonMapper.convertValue(scope, new TypeReference<>() {});
-		Map<String, Object> enrichedScope = new HashMap<>();
-		enrichedScope.put("ctx", convertedScope);
-		enrichedScope.putAll(mustacheLambdas);
-		return enrichedScope;
+	private Map<String, Object> computeContext(Object scope) {
+		return Optional.ofNullable(scope)
+				.map(object -> jsonMapper.convertValue(scope, new TypeReference<Map<String, Object>>() {}))
+				.map(Object.class::cast)
+				.map(convertedScope -> Map.of("ctx", convertedScope))
+				.orElseGet(HashMap::new);
 	}
 }

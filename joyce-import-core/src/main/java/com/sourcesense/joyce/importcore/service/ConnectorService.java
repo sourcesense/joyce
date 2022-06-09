@@ -18,7 +18,7 @@ import com.sourcesense.joyce.importcore.model.entity.JoyceSchemaImportMetadataEx
 import com.sourcesense.joyce.importcore.exception.ConnectorOperationException;
 import com.sourcesense.joyce.schemacore.model.dto.SchemaSave;
 import com.sourcesense.joyce.schemacore.service.SchemaService;
-import com.sourcesense.joyce.schemaengine.templating.mustache.resolver.MustacheTemplateResolver;
+import com.sourcesense.joyce.schemaengine.templating.handlebars.resolver.HandlebarsTemplateResolver;
 import org.apache.commons.lang3.StringUtils;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.http.HttpEntity;
@@ -51,20 +51,20 @@ public class ConnectorService {
 	private final ObjectMapper jsonMapper;
 	private final RestTemplate restTemplate;
 	private final SchemaService schemaService;
-	private final MustacheTemplateResolver mustacheTemplateResolver;
+	private final HandlebarsTemplateResolver handlebarsTemplateResolver;
 
 	public ConnectorService(
 			ObjectMapper jsonMapper,
 			RestTemplate restTemplate,
 			SchemaService schemaService,
-			MustacheTemplateResolver mustacheTemplateResolver,
+			HandlebarsTemplateResolver handlebarsTemplateResolver,
 			@Value("${joyce.connector-service.kafka-connect-host}") String kafkaConnectHost) {
 
 		this.jsonMapper = jsonMapper;
 		this.restTemplate = restTemplate;
 		this.schemaService = schemaService;
 		this.kafkaConnectHost = kafkaConnectHost;
-		this.mustacheTemplateResolver = mustacheTemplateResolver;
+		this.handlebarsTemplateResolver = handlebarsTemplateResolver;
 	}
 
 	public List<JoyceSchemaMetadataExtraConnector> getConnectors(
@@ -268,7 +268,7 @@ public class ConnectorService {
 			JoyceSchemaMetadataExtraConnector connector,
 			ConnectorOperation connectorOperation) {
 
-		ObjectNode enrichedConfig = (ObjectNode) mustacheTemplateResolver.resolve(connector.getConfig());
+		ObjectNode enrichedConfig = (ObjectNode) handlebarsTemplateResolver.resolve(connector.getConfig());
 		enrichedConfig.put(TOPIC, "joyce_import");
 
 		JsonNode transforms = enrichedConfig.path(TRANSFORMS);
