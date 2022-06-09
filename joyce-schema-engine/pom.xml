@@ -32,8 +32,8 @@
     </dependency>
 
     <dependency>
-      <groupId>com.samskivert</groupId>
-      <artifactId>jmustache</artifactId>
+      <groupId>com.github.jknack</groupId>
+      <artifactId>handlebars</artifactId>
     </dependency>
 
     <dependency>

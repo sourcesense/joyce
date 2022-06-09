@@ -1,34 +1,33 @@
-package com.sourcesense.joyce.schemaengine.templating.mustache.resolver;
+package com.sourcesense.joyce.schemaengine.templating.handlebars.resolver;
 
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.node.*;
-import com.samskivert.mustache.Mustache;
 import com.sourcesense.joyce.schemaengine.test.SchemaEngineJoyceTest;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
 
-public class MustacheTemplateResolverTest extends SchemaEngineJoyceTest {
+public class HandlebarsTemplateResolverTest extends SchemaEngineJoyceTest {
 
 	private final static String TEST_STRING_INPUT = "Test - {{#test}}some text{{/test}} - Test - {{#test}}more text{{/test}} - Test";
 	private final static String TEST_STRING_OUTPUT = "Test - SOME TEXT - Test - MORE TEXT - Test";
 
-	private final static TextNode TEST_NODE_INPUT = JsonNodeFactory.instance.textNode(TEST_STRING_INPUT);
-	private final static TextNode TEST_NODE_OUTPUT = JsonNodeFactory.instance.textNode(TEST_STRING_OUTPUT);
+	private final static TextNode TEST_NODE_INPUT = new TextNode(TEST_STRING_INPUT);
+	private final static TextNode TEST_NODE_OUTPUT = new TextNode(TEST_STRING_OUTPUT);
 
-	private MustacheTemplateResolver mustacheTemplateResolver;
+	private HandlebarsTemplateResolver handlebarsTemplateResolver;
 
 	@BeforeEach
 	public void init() {
-		mustacheTemplateResolver = new MustacheTemplateResolver(jsonMapper,	Mustache.compiler(), this.initMustacheLambdas());
+		handlebarsTemplateResolver = new HandlebarsTemplateResolver(jsonMapper,	this.computeHandlebars());
 	}
 
 	@Test
 	public void shouldResolveString() {
 		assertEquals(
 				TEST_STRING_OUTPUT,
-				mustacheTemplateResolver.resolve(TEST_STRING_INPUT)
+				handlebarsTemplateResolver.resolve(TEST_STRING_INPUT)
 		);
 	}
 
@@ -37,7 +36,7 @@ public class MustacheTemplateResolverTest extends SchemaEngineJoyceTest {
 		NullNode nullNode = JsonNodeFactory.instance.nullNode();
 		assertEquals(
 				nullNode,
-				mustacheTemplateResolver.resolve(nullNode));
+				handlebarsTemplateResolver.resolve(nullNode));
 	}
 
 	@Test
@@ -45,7 +44,7 @@ public class MustacheTemplateResolverTest extends SchemaEngineJoyceTest {
 		JsonNode missingNode = JsonNodeFactory.instance.missingNode();
 		assertEquals(
 				missingNode,
-				mustacheTemplateResolver.resolve(missingNode));
+				handlebarsTemplateResolver.resolve(missingNode));
 	}
 
 	@Test
@@ -53,7 +52,7 @@ public class MustacheTemplateResolverTest extends SchemaEngineJoyceTest {
 		NumericNode numberNode = JsonNodeFactory.instance.numberNode(1);
 		assertEquals(
 				numberNode,
-				mustacheTemplateResolver.resolve(numberNode)
+				handlebarsTemplateResolver.resolve(numberNode)
 		);
 	}
 
@@ -62,7 +61,7 @@ public class MustacheTemplateResolverTest extends SchemaEngineJoyceTest {
 		TextNode textNode = JsonNodeFactory.instance.textNode("test");
 		assertEquals(
 				textNode,
-				mustacheTemplateResolver.resolve(textNode)
+				handlebarsTemplateResolver.resolve(textNode)
 		);
 	}
 
@@ -70,7 +69,7 @@ public class MustacheTemplateResolverTest extends SchemaEngineJoyceTest {
 	public void shouldResolveTextNodeWithTemplate() {
 		assertEquals(
 				TEST_NODE_OUTPUT,
-				mustacheTemplateResolver.resolve(TEST_NODE_INPUT)
+				handlebarsTemplateResolver.resolve(TEST_NODE_INPUT)
 		);
 	}
 
@@ -79,7 +78,7 @@ public class MustacheTemplateResolverTest extends SchemaEngineJoyceTest {
 		JsonNode input = JsonNodeFactory.instance.objectNode().set("test", TEST_NODE_INPUT);
 		assertEquals(
 				JsonNodeFactory.instance.objectNode().set("test", TEST_NODE_OUTPUT),
-				mustacheTemplateResolver.resolve(input)
+				handlebarsTemplateResolver.resolve(input)
 		);
 	}
 
@@ -88,7 +87,7 @@ public class MustacheTemplateResolverTest extends SchemaEngineJoyceTest {
 		ArrayNode input = JsonNodeFactory.instance.arrayNode().add(TEST_NODE_INPUT);
 		assertEquals(
 				JsonNodeFactory.instance.arrayNode().add(TEST_NODE_OUTPUT),
-				mustacheTemplateResolver.resolve(input)
+				handlebarsTemplateResolver.resolve(input)
 		);
 	}
 }
