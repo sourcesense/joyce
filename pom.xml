@@ -291,9 +291,9 @@
       </dependency>
 
       <dependency>
-        <groupId>com.samskivert</groupId>
-        <artifactId>jmustache</artifactId>
-        <version>1.15</version>
+        <groupId>com.github.jknack</groupId>
+        <artifactId>handlebars</artifactId>
+        <version>4.3.0</version>
       </dependency>
 
       <dependency>
