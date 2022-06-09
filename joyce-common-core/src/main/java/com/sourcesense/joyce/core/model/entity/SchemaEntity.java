@@ -21,10 +21,12 @@ import com.fasterxml.jackson.databind.JsonNode;
 import com.sourcesense.joyce.core.model.uri.JoyceSchemaURI;
 import lombok.Data;
 import org.springframework.data.annotation.Id;
+import org.springframework.data.mongodb.core.mapping.Document;
 
 import java.util.List;
 
 @Data
+@Document(collection = "#{@mongodbProperties.getSchemaCollection()}")
 public class SchemaEntity implements JoyceSchema {
 
 	@Id
