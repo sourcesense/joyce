@@ -34,14 +34,15 @@ import java.util.Map;
 @EqualsAndHashCode
 public class JoyceSchemaMetadata {
 
-	@JsonProperty("uid")
-	private String uidKey;
 	private String type;
 	private String domain;
 	private String product;
 	private String name;
-	private String description;
 
+	@JsonProperty("uid")
+	private String uidKey;
+
+	private String description;
 	private JoyceSchemaURI parent;
 	private List<Map<String, Object>> indexes;
 
@@ -50,7 +51,7 @@ public class JoyceSchemaMetadata {
 	private Boolean validation = true;
 	private Boolean indexed = true;
 
-	private JsonNode data;
+	private Map<String, Object> data;
 	private Map<String, Object> extra;
 
 	/**

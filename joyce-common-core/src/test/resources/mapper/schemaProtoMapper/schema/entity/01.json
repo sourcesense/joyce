@@ -7,13 +7,14 @@
     "product": "default",
     "name": "user",
     "description": "A test schema",
-    "production": false,
+    "production": "false",
     "store": "true",
     "validation": "true",
     "indexed": "true",
     "uid": "id"
   },
   "type": "object",
+  "value": "",
   "properties": {
     "id": {
       "type": "integer",

@@ -18,5 +18,6 @@ package com.sourcesense.joyce.core.enumeration;
 
 public enum JoyceAction {
     INSERT,
+//		REPROCESS,
     DELETE;
 }

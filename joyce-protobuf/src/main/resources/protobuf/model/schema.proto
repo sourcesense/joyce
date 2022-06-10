@@ -12,26 +12,26 @@ message Schema {
   SchemaMetadata metadata = 3;
   string type = 4;
   repeated string required = 5;
-  google.protobuf.Struct properties = 6;
+  string value = 6;
+  google.protobuf.Struct apply = 7;
+  google.protobuf.Struct properties = 8;
 }
 
 message SchemaMetadata {
-  string uidKey = 1;
-  string type = 2;
-  string domain = 3;
-  string product = 4;
-  string name = 5;
-  string collection = 6;
-  string description = 7;
-  string parent = 8;
-  repeated MongoIndex indexes = 9;
-  string production = 10;
-  string store = 11;
-  string validation = 12;
-  string indexed = 13;
-  string connectors = 14;
-  string export = 15;
-  string extra = 16;
+  string type = 1;
+  string domain = 2;
+  string product = 3;
+  string name = 4;
+  string uidKey = 5;
+  string description = 6;
+  string parent = 7;
+  repeated MongoIndex indexes = 8;
+  string production = 9;
+  string store = 10;
+  string validation = 11;
+  string indexed = 12;
+  google.protobuf.Struct data = 13;
+  google.protobuf.Struct extra = 14;
 }
 
 message MongoIndex{

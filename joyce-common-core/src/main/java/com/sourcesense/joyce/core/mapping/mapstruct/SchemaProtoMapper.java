@@ -1,10 +1,7 @@
 package com.sourcesense.joyce.core.mapping.mapstruct;
 
-import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.core.type.TypeReference;
-import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
-import com.google.common.collect.Lists;
 import com.google.protobuf.Struct;
 import com.sourcesense.joyce.core.model.entity.SchemaEntity;
 import com.sourcesense.joyce.core.model.uri.JoyceSchemaURI;
@@ -17,7 +14,7 @@ import org.mapstruct.Named;
 import org.mapstruct.NullValueCheckStrategy;
 import org.springframework.beans.factory.annotation.Autowired;
 
-import java.util.Iterator;
+import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Optional;
@@ -39,23 +36,21 @@ public abstract class SchemaProtoMapper {
 	}
 
 	@Mapping(target = "uid", source = "uid", qualifiedByName = "stringToJoyceSchemaURI")
+	@Mapping(target = "apply", source = "apply", qualifiedByName = "structToMap")
+	@Mapping(target = "properties", source = "properties", qualifiedByName = "structToMap")
 	@Mapping(target = "metadata.parent", source = "metadata.parent", qualifiedByName = "stringToJoyceSchemaURI")
-	@Mapping(target = "metadata.extra", source = "metadata.extra", qualifiedByName = "stringToMap")
-	@Mapping(target = "properties", source = "properties", qualifiedByName = "structToJsonNode")
+	@Mapping(target = "metadata.data", source = "metadata.data", qualifiedByName = "structToMap")
+	@Mapping(target = "metadata.extra", source = "metadata.extra", qualifiedByName = "structToMap")
 	public abstract SchemaEntity protoToEntity(Schema schema);
 
 	public abstract List<SchemaEntity> protosToEntities(List<Schema> schemas);
 
-	public List<SchemaEntity> protosToEntities(Iterator<Schema> schemas) {
-		return this.protosToEntities(
-				Lists.newArrayList(schemas)
-		);
-	}
-
 	@Mapping(target = "uid", source = "uid", qualifiedByName = "joyceSchemaURIToString")
+	@Mapping(target = "apply", source = "apply", qualifiedByName = "mapToStruct")
+	@Mapping(target = "properties", source = "properties", qualifiedByName = "mapToStruct")
 	@Mapping(target = "metadata.parent", source = "metadata.parent", qualifiedByName = "joyceSchemaURIToString")
-	@Mapping(target = "metadata.extra", source = "metadata.extra", qualifiedByName = "mapToString")
-	@Mapping(target = "properties", source = "properties", qualifiedByName = "jsonNodeToStruct")
+	@Mapping(target = "metadata.data", source = "metadata.data", qualifiedByName = "mapToStruct")
+	@Mapping(target = "metadata.extra", source = "metadata.extra", qualifiedByName = "mapToStruct")
 	public abstract Schema entityToProto(SchemaEntity schema);
 
 	public abstract List<Schema> entitiesToProtos(List<SchemaEntity> schema);
@@ -70,37 +65,36 @@ public abstract class SchemaProtoMapper {
 		return JoyceURIFactory.getInstance().createURI(stringURI, JoyceSchemaURI.class).orElse(null);
 	}
 
-	@Named("stringToMap")
-	public Map<String, Object> stringToMap(String string) throws JsonProcessingException {
-		TypeReference<Map<String, Object>> mapType = new TypeReference<>() {};
-		return ObjectUtils.isNotEmpty(string) ? jsonMapper.readValue(string, mapType) : null;
-	}
-
-	@Named("mapToString")
-	public String mapToString(Map<String, Object> map) throws JsonProcessingException {
-		return ObjectUtils.isNotEmpty(map) ? jsonMapper.writeValueAsString(map) : null;
-	}
-
-	@Named("structToJsonNode")
-	public JsonNode structToJsonNode(Struct struct) throws JsonProcessingException {
+	@Named("structToMap")
+	public Map<String, Object> structToMap(Struct struct) {
 		return Optional.ofNullable(struct)
 				.map(protoConverter::protoToJsonOrElseThrow)
-				.flatMap(this::readTree)
+				.flatMap(this::stringToMap)
 				.orElse(null);
 	}
 
-	@Named("jsonNodeToStruct")
-	public Struct jsonNodeToStruct(JsonNode jsonNode) {
-		return Optional.ofNullable(jsonNode)
-				.map(JsonNode::toPrettyString)
-				.flatMap(json -> protoConverter.jsonToProto(json, Struct.class))
+	@Named("mapToStruct")
+	public Struct mapToStruct(Map<String, Object> map) {
+		return Optional.ofNullable(map)
+				.flatMap(this::mapToString)
+				.map(json -> protoConverter.jsonToProtoOrElseThrow(json, Struct.class))
 				.orElse(null);
 	}
 
-	private Optional<JsonNode> readTree(String json) {
+	private Optional<Map<String, Object>> stringToMap(String json) {
 		try {
 			return Optional.ofNullable(
-					jsonMapper.readTree(json)
+					jsonMapper.readValue(json, new TypeReference<>() {})
+			);
+		} catch (Exception exception) {
+			return Optional.empty();
+		}
+	}
+
+	private Optional<String> mapToString(Map<String, Object> map) {
+		try {
+			return Optional.ofNullable(
+					jsonMapper.writeValueAsString(map)
 			);
 		} catch (Exception exception) {
 			return Optional.empty();

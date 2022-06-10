@@ -25,6 +25,7 @@ import lombok.Data;
 import lombok.NoArgsConstructor;
 
 import java.util.List;
+import java.util.Map;
 
 @Data
 @Builder
@@ -39,6 +40,6 @@ public class SchemaSave {
 	private String type;
 	private List<String> required;
 	private String value;
-	private JsonNode apply;
-	private JsonNode properties;
+	private Map<String, Object> apply;
+	private Map<String, Object> properties;
 }

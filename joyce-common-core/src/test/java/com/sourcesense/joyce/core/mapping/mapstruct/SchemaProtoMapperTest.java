@@ -1,8 +1,7 @@
 package com.sourcesense.joyce.core.mapping.mapstruct;
 
-import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.core.type.TypeReference;
-import com.fasterxml.jackson.databind.JsonNode;
+import com.google.protobuf.Struct;
 import com.sourcesense.joyce.core.model.entity.SchemaEntity;
 import com.sourcesense.joyce.core.model.uri.JoyceSchemaURI;
 import com.sourcesense.joyce.core.model.uri.JoyceURIFactory;
@@ -16,7 +15,6 @@ import org.mockito.junit.jupiter.MockitoExtension;
 import java.io.IOException;
 import java.net.URISyntaxException;
 import java.util.Collections;
-import java.util.List;
 import java.util.Map;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
@@ -109,52 +107,32 @@ public class SchemaProtoMapperTest extends CommonCoreJoyceTest {
 	}
 
 	@Test
-	public void shouldConvertStringToMap() throws IOException, URISyntaxException {
+	public void shouldConvertStructToMap() throws IOException, URISyntaxException {
 		String json = this.computeResourceAsString(SCHEMA_ENTITY_PATH);
+		Struct struct = this.computeStruct(json);
 		Map<String, Object> map = this.computeResourceAsObject(SCHEMA_ENTITY_PATH, new TypeReference<>() {});
 
-		assertEquals(map,	schemaMapper.stringToMap(json));
+		assertEquals(map,	schemaMapper.structToMap(struct));
 	}
 
 	@Test
-	public void shouldConvertMapToString() throws IOException, URISyntaxException {
-		JsonNode json = this.computeResourceAsObject(SCHEMA_ENTITY_PATH, JsonNode.class);
+	public void shouldConvertMapToStruct() throws IOException, URISyntaxException {
+		String json = this.computeResourceAsString(SCHEMA_ENTITY_PATH);
+		Struct struct = this.computeStruct(json);
 		Map<String, Object> map = this.computeResourceAsObject(SCHEMA_ENTITY_PATH, new TypeReference<>() {});
 
-		assertEquals(json.toString(), schemaMapper.mapToString(map));
+		assertEquals(struct, schemaMapper.mapToStruct(map));
 	}
 
 	@Test
-	public void shouldConvertStructToJsonNode() throws IOException, URISyntaxException {
-		String json = this.computeResourceAsString(SCHEMA_ENTITY_PATH);
-
-		assertEquals(
-			jsonMapper.readTree(json),
-			schemaMapper.structToJsonNode(this.computeStruct(json))
-		);
-	}
-
-	@Test
-	public void shouldConvertJsonNodeToStruct() throws IOException, URISyntaxException {
-		String json = this.computeResourceAsString(SCHEMA_ENTITY_PATH);
-
-		assertEquals(
-				this.computeStruct(json),
-				schemaMapper.jsonNodeToStruct(jsonMapper.readTree(json))
-		);
-	}
-
-	@Test
-	public void shouldConvertNullToNull() throws JsonProcessingException {
+	public void shouldConvertNullToNull() {
 		assertNull(schemaMapper.protoToEntity(null));
 		assertNull(schemaMapper.entityToProto(null));
-		assertNull(schemaMapper.protosToEntities((List<Schema>) null));
+		assertNull(schemaMapper.protosToEntities( null));
 		assertNull(schemaMapper.entitiesToProtos(null));
 		assertNull(schemaMapper.joyceSchemaURIToString(null));
 		assertNull(schemaMapper.stringToJoyceSchemaURI(null));
-		assertNull(schemaMapper.stringToMap(null));
-		assertNull(schemaMapper.mapToString(null));
-		assertNull(schemaMapper.structToJsonNode(null));
-		assertNull(schemaMapper.jsonNodeToStruct(null));
+		assertNull(schemaMapper.structToMap(null));
+		assertNull(schemaMapper.mapToStruct(null));
 	}
 }
