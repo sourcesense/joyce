@@ -114,7 +114,7 @@ public class JsonPathTransformerHandlerTest extends SchemaEngineJoyceTest {
 				.out(source)
 				.build();
 
-		JsonNode result = handler.process("test", "string", value, context);
+		JsonNode result = handler.process("test", "test", "string", value, context);
 		Assertions.assertEquals(expected, result.asText());
 	}
 

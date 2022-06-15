@@ -78,7 +78,7 @@ public class JsonPathTransformerHandler implements SchemaTransformerHandler {
 	}
 
 	@Override
-	public JsonNode process(String key, String type, JsonNode value, SchemaEngineContext context) {
+	public JsonNode process(String key, String nestedKey, String type, JsonNode value, SchemaEngineContext context) {
 		if (JsonNodeType.ARRAY.equals(value.getNodeType())){
 
 			StringBuilder stringBuilder = new StringBuilder();
@@ -91,7 +91,7 @@ public class JsonPathTransformerHandler implements SchemaTransformerHandler {
 						stringBuilder.append(jsonNode.asText());
 					}
 				} else {
-					log.error("Values in path handler array must be strings");
+					log.error("Values in path handler for property '{}' array must be strings", nestedKey);
 				}
 			}
 			return new TextNode(stringBuilder.toString());

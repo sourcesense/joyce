@@ -130,7 +130,7 @@ public class RestTransformerHandlerTest extends SchemaEngineJoyceTest {
 
 		assertEquals(
 				this.computeResourceAsNode(resultPath),
-				restTransformerHandler.process(key, "string", value, context)
+				restTransformerHandler.process(key, key,"string", value, context)
 		);
 	}
 }

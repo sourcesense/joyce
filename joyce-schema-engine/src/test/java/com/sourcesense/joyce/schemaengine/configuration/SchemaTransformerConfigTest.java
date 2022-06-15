@@ -96,7 +96,7 @@ public class SchemaTransformerConfigTest extends SchemaEngineJoyceTest {
 	private static class TestEmptyKeywordTransformerHandler implements SchemaTransformerHandler {
 
 		@Override
-		public JsonNode process(String key, String type, JsonNode args, SchemaEngineContext context) {
+		public JsonNode process(String key, String nestedKey, String type, JsonNode args, SchemaEngineContext context) {
 			return null;
 		}
 	}

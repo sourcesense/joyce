@@ -25,7 +25,7 @@ public class RestTransformerHandler implements SchemaTransformerHandler {
 
 
 	@Override
-	public JsonNode process(String key, String type, JsonNode args, SchemaEngineContext context) {
+	public JsonNode process(String key, String nestedKey, String type, JsonNode args, SchemaEngineContext context) {
 		RestHandlerArgs restHandlerArgs = jsonMapper.convertValue(args, RestHandlerArgs.class);
 		try {
 			ResponseEntity<JsonNode> response = restTemplate.exchange(
@@ -34,19 +34,15 @@ public class RestTransformerHandler implements SchemaTransformerHandler {
 					new HttpEntity<>(restHandlerArgs.getBody(), restHandlerArgs.getHeaders()),
 					JsonNode.class
 			);
-
 			if (!HttpStatus.OK.equals(response.getStatusCode())) {
-				throw new JoyceSchemaEngineException(String.format("%d:%s",
-						response.getStatusCode().value(),
-						response.getBody()
-				));
+				throw new JoyceSchemaEngineException(String.format("%d:%s", response.getStatusCode().value(),	response.getBody()));
 			}
 			return response.getBody();
 
 		} catch (Exception exception) {
 			throw new JoyceSchemaEngineException(String.format(
-					"An error happened while executing rest transformation handler, error message is [%s]",
-					exception.getMessage()
+					"An error happened while executing rest transformation handler for property '%s', error message is '%s'",
+					nestedKey, exception.getMessage()
 			));
 		}
 	}

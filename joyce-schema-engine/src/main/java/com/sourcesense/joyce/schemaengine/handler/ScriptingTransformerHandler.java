@@ -30,13 +30,13 @@ public class ScriptingTransformerHandler implements SchemaTransformerHandler {
 	 * @return Result of script processing
 	 */
 	@Override
-	public JsonNode process(String key, String type, JsonNode args, SchemaEngineContext context) {
+	public JsonNode process(String key, String nestedKey, String type, JsonNode args, SchemaEngineContext context) {
 		ScriptHandlerArgs scriptHandlerArgs = mapper.convertValue(args, ScriptHandlerArgs.class);
 		return ScriptingEngine.getScriptingServiceClass(scriptHandlerArgs.getLanguage())
 				.map(applicationContext::getBean)
 				.orElseThrow(() -> new JoyceSchemaEngineException(String.format(
 						"No available scripting service for language '%s' for field '%s'",
-						scriptHandlerArgs.getLanguage(), key)))
+						scriptHandlerArgs.getLanguage(), nestedKey)))
 				.eval(key, scriptHandlerArgs, context);
 	}
 }

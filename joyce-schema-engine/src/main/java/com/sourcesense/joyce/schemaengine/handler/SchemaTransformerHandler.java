@@ -23,5 +23,5 @@ import org.pf4j.ExtensionPoint;
 @FunctionalInterface
 public interface SchemaTransformerHandler extends ExtensionPoint {
 
-	JsonNode process(String key, String type, JsonNode args, SchemaEngineContext context);
+	JsonNode process(String key, String nestedKey, String type, JsonNode args, SchemaEngineContext context);
 }

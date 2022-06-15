@@ -77,7 +77,7 @@ public class ScriptingTransformerHandlerTest extends SchemaEngineJoyceTest {
 				.build();
 
 		String actual = scriptingTransformerHandler
-				.process(key, "string", value, context)
+				.process(key, key, "string", value, context)
 				.asText();
 
 		assertEquals(expected, actual);

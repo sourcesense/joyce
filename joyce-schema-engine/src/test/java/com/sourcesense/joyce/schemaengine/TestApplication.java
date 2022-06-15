@@ -33,6 +33,6 @@ public class TestApplication {
 
 	@Bean(name = "fooHandler")
 	SchemaTransformerHandler handler(){
-		return (key, type, args, context) -> new TextNode("bar");
+		return (key, nestedKey, type, args, context) -> new TextNode("bar");
 	}
 }

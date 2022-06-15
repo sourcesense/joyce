@@ -78,7 +78,7 @@ public class SchemaEngineTest extends SchemaEngineJoyceTest {
 		String schema = this.computeResourceAsString("schema/10.json");
 		String source = this.computeResourceAsString("source/10.json");
 		SchemaTransformerHandler dummyHandler = mock(SchemaTransformerHandler.class);
-		when(dummyHandler.process(any(), any(), any(), any())).thenReturn(new TextNode("foobar"));
+		when(dummyHandler.process(any(), any(), any(), any(), any())).thenReturn(new TextNode("foobar"));
 		Map<String, SchemaTransformerHandler> handlers = Map.of(
 				"extract", dummyHandler
 		);
@@ -117,10 +117,10 @@ public class SchemaEngineTest extends SchemaEngineJoyceTest {
 				.out(sourceNode)
 				.build();
 
-		when(handler.process(any(), any(), eq(new TextNode("$.email")), eq(internalContext)))
+		when(handler.process(any(), any(), any(), eq(new TextNode("$.email")), eq(internalContext)))
 				.thenReturn(new TextNode("mario"));
 
-		when(handler.process(any(), any(), eq(new TextNode("uppercase")), eq(internalContext.withUpdatedOutput(new TextNode("mario")))))
+		when(handler.process(any(), any(), any(), eq(new TextNode("uppercase")), eq(internalContext.withUpdatedOutput(new TextNode("mario")))))
 				.thenReturn(new TextNode("MARIO"));
 
 		Map<String, SchemaTransformerHandler> handlers = Map.of(

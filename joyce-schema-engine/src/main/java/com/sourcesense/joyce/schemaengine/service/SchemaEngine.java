@@ -158,7 +158,7 @@ public class SchemaEngine<T> {
 				.extra(extra)
 				.build();
 
-		JsonNode result = this.parse(null, jsonSchema, internalContext);
+		JsonNode result = this.parse(null, null, jsonSchema, internalContext);
 
 		this.validate(schema, result);
 		return result;
@@ -248,7 +248,7 @@ public class SchemaEngine<T> {
 	 * @param context
 	 * @return
 	 */
-	protected JsonNode parse(String key, JsonNode schema, SchemaEngineContext context) {
+	protected JsonNode parse(String key, String nestedKey, JsonNode schema, SchemaEngineContext context) {
 		if (!JsonNodeType.OBJECT.equals(schema.getNodeType())) {
 			throw new JoyceSchemaEngineException(String.format(
 					"Cannot parse schema '%s', type is not object",
@@ -257,7 +257,7 @@ public class SchemaEngine<T> {
 		}
 		try {
 			// Apply custom handlers
-			Optional<JsonNode> transformed = this.applyHandlers(key, schema, context);
+			Optional<JsonNode> transformed = this.applyHandlers(key, nestedKey, schema, context);
 			if (transformed.isPresent()) {
 				ObjectNode node = jsonMapper.createObjectNode();
 				node.set(key, transformed.get());
@@ -270,28 +270,28 @@ public class SchemaEngine<T> {
 						? transformed.get()
 						: node;
 
-				return this.parse(key, tempSchema, context.withUpdatedOutput(transformedNode));
+				return this.parse(key, nestedKey, tempSchema, context.withUpdatedOutput(transformedNode));
 			}
 			JsonNode type = Optional.ofNullable(schema.get(TYPE)).orElse(new TextNode("string"));
 			if (type.getNodeType().equals(JsonNodeType.ARRAY)) {
 				for (JsonNode aType : type) {
-					JsonNode result = this.parseType(aType.asText(), key, schema, context);
+					JsonNode result = this.parseType(key, nestedKey, aType.asText(), schema, context);
 					if (result != null) {
 						return result;
 					}
 				}
 				return null;
 			} else {
-				return parseType(type.asText(), key, schema, context);
+				return this.parseType(key, nestedKey, type.asText(), schema, context);
 			}
 		} catch (Exception e) {
 			throw new JoyceSchemaEngineException(String.format(
-					"Cannot parse [%s]: %s", key, e.getMessage()
+					"Cannot parse [%s]: %s", nestedKey, e.getMessage()
 			));
 		}
 	}
 
-	protected JsonNode parseType(String type, String key, JsonNode schema, SchemaEngineContext context) {
+	protected JsonNode parseType(String key, String nestedKey, String type, JsonNode schema, SchemaEngineContext context) {
 		if ("object".equals(type)) {
 			ObjectNode objectNode = jsonMapper.createObjectNode();
 			JsonNode props = schema.get(PROPERTIES);
@@ -299,7 +299,8 @@ public class SchemaEngine<T> {
 				Iterator<Map.Entry<String, JsonNode>> iter = props.fields();
 				while (iter.hasNext()) {
 					Map.Entry<String, JsonNode> entry = iter.next();
-					JsonNode node = this.parse(entry.getKey(), entry.getValue(), context);
+					String newNestedKey = this.computeNestedKey(nestedKey, entry.getKey());
+					JsonNode node = this.parse(entry.getKey(), newNestedKey, entry.getValue(), context);
 					objectNode.set(entry.getKey(), node);
 				}
 			}
@@ -307,7 +308,7 @@ public class SchemaEngine<T> {
 		} else if ("array".equals(type)) {
 			ArrayNode arrayNode = jsonMapper.createArrayNode();
 			for (JsonNode item : context.getOut().get(key)) {
-				JsonNode parsedItem = this.parse(null, schema.get(ITEMS), context.withUpdatedOutput(item));
+				JsonNode parsedItem = this.parse(null, nestedKey, schema.get(ITEMS), context.withUpdatedOutput(item));
 				if (!parsedItem.isNull()) {
 					arrayNode.add(parsedItem);
 				}
@@ -340,7 +341,7 @@ public class SchemaEngine<T> {
 	 * @param context
 	 * @return
 	 */
-	protected Optional<JsonNode> applyHandlers(String key, JsonNode schema, SchemaEngineContext context) {
+	protected Optional<JsonNode> applyHandlers(String key, String nestedKey, JsonNode schema, SchemaEngineContext context) {
 		// Apply handlers in cascade
 		SchemaPropertyHandlers propertyHandlers = jsonMapper.convertValue(schema, SchemaPropertyHandlers.class);
 		if(Strings.isEmpty(propertyHandlers.getValue()) && propertyHandlers.getApply().isEmpty()) {
@@ -360,7 +361,8 @@ public class SchemaEngine<T> {
 			JsonNode handlerArgs = handlebarsTemplateResolver.resolve(knownHandler.getArgs(), context);
 			SchemaTransformerHandler handler = transformerHandlers.get(knownHandler.getHandler());
 			returnNode = handler.process(
-					key, propertyHandlers.getType().asText(),
+					key, nestedKey,
+					propertyHandlers.getType().asText(),
 					handlerArgs, context.withUpdatedOutput(returnNode)
 			);
 		}
@@ -414,5 +416,9 @@ public class SchemaEngine<T> {
 						.args(new TextNode(value))
 						.build()
 				);
+	}
+
+	private String computeNestedKey(String parentKey, String childKey) {
+		return Objects.nonNull(parentKey) && !parentKey.isEmpty()  ? parentKey + "." + childKey : childKey;
 	}
 }
